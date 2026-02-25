@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chasing Change — Calculator Hub</title>
-    <meta
-      name="description"
-      content="Your Chasing Change calculator hub. Launch macros, 1RM, and Physique Ledger tools from one place."
-    />
+    <meta name="description" content="One hub. Your calculators. Your data. Your edge." />
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -24,12 +21,7 @@
         theme: {
           extend: {
             colors: {
-              cc: {
-                text: "#071f35",
-                bg: "#f5f5f7",
-                outline: "#77d770",
-                card: "#ffffff",
-              },
+              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
             },
             fontFamily: {
               body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
@@ -38,46 +30,64 @@
             },
             boxShadow: {
               soft: "0 10px 30px rgba(7,31,53,0.10)",
+              neon: "0 24px 80px rgba(119,215,112,0.30)",
             },
           },
         },
       };
     </script>
   </head>
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-soft bg-white mb-6">
-        <div class="relative p-6 sm:p-9">
-          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-          <div class="absolute -bottom-28 -left-28 w-80 h-80 rounded-full bg-cc-text/10 blur-3xl"></div>
 
-          <div class="relative">
-            <p class="text-xs sm:text-sm tracking-[0.3em] uppercase font-brand opacity-60">Chasing Change</p>
-            <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold font-brand leading-tight">Calculator Hub</h1>
-            <p class="mt-3 max-w-2xl text-sm sm:text-base opacity-80">
-              One place for your core tools. Pick the calculator you need and keep your data, planning, and training flow consistent.
-            </p>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div class="absolute inset-0 -z-10 pointer-events-none">
+        <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
+        <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
+      </div>
+
+      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6">
+        <div class="relative p-6 sm:p-10">
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+
+          <div class="relative grid lg:grid-cols-3 gap-6 items-center">
+            <div class="lg:col-span-2">
+              <div class="inline-flex items-center gap-3 rounded-full bg-cc-text/5 ring-1 ring-black/10 px-3 py-2">
+                <img src="./assets/chasing-change-logo.svg" alt="Chasing Change logo" class="w-8 h-8" />
+                <span class="text-xs sm:text-sm tracking-[0.3em] uppercase font-brand opacity-70">Chasing Change</span>
+              </div>
+              <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Calculator Hub</h1>
+              <p class="mt-3 text-base sm:text-lg font-semibold">One hub. Your calculators. Your data. Your edge.</p>
+            </div>
+
+            <div class="rounded-2xl bg-cc-text text-white p-4 ring-1 ring-black/15 shadow-soft">
+              <p class="text-xs uppercase tracking-[0.2em] opacity-70">Quick launch</p>
+              <div class="mt-3 grid gap-2 text-sm font-extrabold">
+                <a href="./macro/index.html" class="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20 transition">Macro Calculator →</a>
+                <a href="./1RM Calculator/Index.html" class="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20 transition">1 Rep Max →</a>
+                <a href="./PhysiqueLedger/index.html" class="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20 transition">Physique Ledger →</a>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       <main>
         <section class="grid md:grid-cols-3 gap-4 sm:gap-5">
-          <a href="./macro/index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 transition">
+          <a href="./macro/index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
             <span class="badge">Nutrition</span>
             <h2 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h2>
             <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
             <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
           </a>
 
-          <a href="./1RM Calculator/Index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 transition">
+          <a href="./1RM Calculator/Index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
             <span class="badge">Strength</span>
             <h2 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h2>
             <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
             <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
           </a>
 
-          <a href="./PhysiqueLedger/index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 transition">
+          <a href="./PhysiqueLedger/index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
             <span class="badge">Tracking</span>
             <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Ledger</h2>
             <p class="mt-2 text-sm opacity-80">Log meals, monitor totals, and keep your nutrition execution tight day to day.</p>
