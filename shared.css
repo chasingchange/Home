@@ -1,0 +1,67 @@
+:root {
+  --cc-bg: #f5f5f7;
+  --cc-text: #071f35;
+  --cc-accent: #77d770;
+  --cc-card: #ffffff;
+  --cc-brand-font: "Museo Moderno", "Raleway", sans-serif;
+  --cc-heading-font: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cc-body-font: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cc-bg);
+  color: var(--cc-text);
+  font-family: var(--cc-body-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cc-brand {
+  font-family: var(--cc-brand-font);
+}
+
+.cc-heading,
+h1,
+h2,
+h3 {
+  font-family: var(--cc-heading-font);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(7, 31, 53, 0.06);
+  border: 1px solid rgba(7, 31, 53, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.cc-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(7, 31, 53, 0.12);
+  background: var(--cc-card);
+  color: var(--cc-text);
+  padding: 0.55rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cc-link-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(7, 31, 53, 0.12);
+}

@@ -19,6 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../shared.css" />
 
     <script>
       tailwind.config = {
@@ -48,8 +49,6 @@
     </script>
 
     <style>
-      html, body { height: 100%; }
-      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
       main { margin-bottom: 2rem; }
 
       /* Swipe row helpers */
@@ -69,16 +68,6 @@
         box-shadow: 0 10px 30px rgba(240,35,72,0.2);
       }
       .swipe-content { will-change: transform; touch-action: pan-y; }
-      .badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        border-radius: 999px;
-        padding: 6px 10px;
-        background: rgba(7,31,53,0.06);
-        border: 1px solid rgba(7,31,53,0.08);
-        font-size: 12px;
-        font-weight: 700;
-        opacity: 0.95;
-      }
       .kbd {
         border: 1px solid rgba(7,31,53,0.15);
         border-bottom-width: 3px;
@@ -147,6 +136,7 @@
                 </div>
 
                 <div class="hidden sm:flex flex-col items-center">
+                  <a href="../index.html" class="cc-link-chip mb-3">All calculators</a>
                   <a
                     href="https://tally.so/r/w5JXKE"
                     target="_blank"
@@ -167,6 +157,7 @@
                 </div>
 
                 <div class="sm:hidden">
+                  <a href="../index.html" class="cc-link-chip mb-2">All calculators</a>
                   <a
                     href="https://tally.so/r/w5JXKE"
                     target="_blank"
