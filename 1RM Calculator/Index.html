@@ -19,6 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../shared.css" />
 
     <!-- Tailwind theme + brand tokens -->
     <script>
@@ -50,29 +51,6 @@
 
     <!-- Custom CSS helpers -->
     <style>
-      html,
-      body {
-        height: 100%;
-      }
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 999px;
-        padding: 6px 10px;
-        background: rgba(7, 31, 53, 0.06);
-        border: 1px solid rgba(7, 31, 53, 0.08);
-        font-size: 12px;
-        font-weight: 700;
-        opacity: 0.95;
-      }
-
-
       /* Print mode */
       @media print {
         header,
@@ -104,7 +82,7 @@
                   class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white ring-1 ring-black/10 shadow-soft flex items-center justify-center"
                   aria-hidden="true"
                 >
-                  <span class="font-brand text-xl">CC</span>
+                  <img src="../assets/chasing-change-logo.svg" alt="Chasing Change logo" class="w-9 h-9" />
                 </div>
                 <div class="flex flex-col">
                   <p class="text-xs sm:text-sm tracking-[0.28em] uppercase font-brand opacity-60">Chasing Change</p>
@@ -114,6 +92,7 @@
               </div>
 
               <div class="flex flex-wrap gap-2 items-center">
+                <a href="../index.html" class="cc-link-chip">All calculators</a>
                 <a
                   href="https://tally.so/r/w5JXKE"
                   target="_blank"

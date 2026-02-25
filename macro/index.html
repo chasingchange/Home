@@ -19,6 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../shared.css" />
 
     <script>
       tailwind.config = {
@@ -48,15 +49,6 @@
     </script>
 
     <style>
-      html,
-      body {
-        height: 100%;
-      }
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
       /* CENTER AND SPACE */
       main {
         margin-bottom: 2rem;
@@ -88,7 +80,7 @@
                   <!-- Logo -->
                   <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
                     <img
-                      src="Chasing Change Logo2.png"
+                      src="../assets/chasing-change-logo.svg"
                       alt="Chasing Change logo"
                       class="w-full h-auto"
                     />
@@ -106,30 +98,32 @@
                   </div>
                 </div>
 
-                <!-- RIGHT: CTA (desktop) -->
-                <div class="hidden sm:flex flex-col items-center">
-                  <a
-                    href="https://tally.so/r/w5JXKE"
-                    target="_blank"
-                    rel="noreferrer"
-                    class="group inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3
-                           text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
-                  >
-                    Apply for Coaching
-                    <span
-                      class="inline-flex items-center justify-center w-8 h-8 rounded-xl
-                             bg-white/10 ring-1 ring-white/15 group-hover:bg-white/15 transition"
-                      aria-hidden="true"
+                <!-- CTA + Navigation -->
+                <div class="hidden sm:flex flex-col items-end gap-2">
+                  <div class="flex items-center gap-2">
+                    <a href="../index.html" class="cc-link-chip">All calculators</a>
+                    <a
+                      href="https://tally.so/r/w5JXKE"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="group inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3
+                             text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
                     >
-                      →
-                    </span>
-                  </a>
-
-                  <p class="mt-2 text-xs opacity-60 text-center">Systems-Based Transformations</p>
+                      Apply for Coaching
+                      <span
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-xl
+                               bg-white/10 ring-1 ring-white/15 group-hover:bg-white/15 transition"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    </a>
+                  </div>
+                  <p class="text-xs opacity-60 text-right">Systems-Based Transformations</p>
                 </div>
 
-                <!-- Mobile CTA -->
-                <div class="sm:hidden">
+                <div class="sm:hidden w-full space-y-2">
+                  <a href="../index.html" class="cc-link-chip">All calculators</a>
                   <a
                     href="https://tally.so/r/w5JXKE"
                     target="_blank"
@@ -139,7 +133,7 @@
                   >
                     Apply for Coaching →
                   </a>
-                  <p class="mt-2 text-xs opacity-60 text-center">Systems-Based Coaching</p>
+                  <p class="text-xs opacity-60 text-center">Systems-Based Coaching</p>
                 </div>
               </div>
             </div>
