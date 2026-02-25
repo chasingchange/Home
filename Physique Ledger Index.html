@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chasing Change — Physique Ledger</title>
+    <meta
+      name="description"
+      content="Physique Ledger: add foods, auto-pull calories + macros, swipe to delete, and track daily totals."
+    />
+
+    <!-- Tailwind via CDN (embed-friendly) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: {
+                text: "#071f35",
+                bg: "#f5f5f7",
+                outline: "#77d770",
+                card: "#ffffff",
+              },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              outline: "0 0 0 1px rgba(119,215,112,0.55)",
+              glow: "0 10px 50px rgba(119,215,112,0.25)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      html, body { height: 100%; }
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      main { margin-bottom: 2rem; }
+
+      /* Swipe row helpers */
+      .swipe-wrap { position: relative; overflow: hidden; }
+      .swipe-delete {
+        position: absolute; inset: 0;
+        display: flex; justify-content: flex-end; align-items: center;
+        padding-right: 14px;
+        background: rgba(240,35,72,0.15);
+      }
+      .swipe-delete button {
+        background: rgba(240,35,72,0.95);
+        color: white;
+        border-radius: 14px;
+        padding: 10px 14px;
+        font-weight: 800;
+        box-shadow: 0 10px 30px rgba(240,35,72,0.2);
+      }
+      .swipe-content { will-change: transform; touch-action: pan-y; }
+      .badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(7,31,53,0.06);
+        border: 1px solid rgba(7,31,53,0.08);
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0.95;
+      }
+      .kbd {
+        border: 1px solid rgba(7,31,53,0.15);
+        border-bottom-width: 3px;
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        background: white;
+      }
+
+      @media print {
+        header,
+        .no-print,
+        #searchAddCard,
+        #foodDbQuickEdit,
+        #foodDbEditor,
+        #clearBtn {
+          display: none !important;
+        }
+
+        body {
+          background: #ffffff;
+        }
+
+        main {
+          box-shadow: none !important;
+          border: 1px solid rgba(7,31,53,0.15);
+        }
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div class="mx-auto max-w-xl">
+        <!-- Header -->
+        <header class="mb-3 sm:mb-4">
+          <div class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-soft bg-white">
+            <div class="relative p-6 sm:p-8">
+              <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+              <div class="absolute -bottom-28 -left-28 w-80 h-80 rounded-full bg-cc-text/10 blur-3xl"></div>
+
+              <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                  <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
+                    <img
+                      src="Chasing Change Logo2.png"
+                      alt="Chasing Change logo"
+                      class="w-full h-auto"
+                      onerror="this.style.display='none'"
+                    />
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-cc-outline/20 ring-1 ring-cc-outline/30 flex items-center justify-center"
+                         id="fallbackLogo" style="display:none">
+                      <span class="font-brand font-extrabold">CC</span>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <p class="text-xs sm:text-sm tracking-[0.3em] uppercase font-brand opacity-60">
+                      Chasing Change
+                    </p>
+                    <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold font-heading leading-tight">
+                      Physique Ledger
+                    </h1>
+                  </div>
+                </div>
+
+                <div class="hidden sm:flex flex-col items-center">
+                  <a
+                    href="https://tally.so/r/w5JXKE"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="group inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3
+                           text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
+                  >
+                    Apply for Coaching
+                    <span
+                      class="inline-flex items-center justify-center w-8 h-8 rounded-xl
+                             bg-white/10 ring-1 ring-white/15 group-hover:bg-white/15 transition"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </a>
+                  <p class="mt-2 text-xs opacity-60 text-center">Systems-Based Transformations</p>
+                </div>
+
+                <div class="sm:hidden">
+                  <a
+                    href="https://tally.so/r/w5JXKE"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-extrabold
+                           bg-cc-text text-white hover:opacity-95 transition shadow-soft"
+                  >
+                    Apply for Coaching →
+                  </a>
+                  <p class="mt-2 text-xs opacity-60 text-center">Systems-Based Coaching</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- App Card -->
+        <div class="flex justify-center">
+          <main class="w-full max-w-xl rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+            <div class="p-5 sm:p-8">
+              <div class="flex items-start gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                    <path d="M9 6h6"/>
+                    <path d="M9 10h6"/>
+                    <path d="M9 14h6"/>
+                    <path d="M9 18h6"/>
+                  </svg>
+                </div>
+
+                <div>
+                  <h2 class="text-lg sm:text-xl font-bold font-heading">Log your food. Track your macros.</h2>
+                  <p class="text-sm opacity-80">
+                    Type a food, pick a match, add servings. Swipe left to delete.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="space-y-5">
+                <!-- Search + Bulk Add -->
+                <div id="searchAddCard" class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p class="text-sm font-semibold">Food Search + Bulk Add</p>
+                      <p class="text-xs opacity-70">
+                        Use search for single adds, or paste multiple lines to bulk add.
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge"><span class="kbd">↵</span> add selected</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 space-y-3">
+                    <div>
+                      <label class="block text-xs font-semibold opacity-70 mb-2">Search food</label>
+                      <input
+                        id="searchInput"
+                        type="text"
+                        placeholder="e.g. Greek yogurt, chicken breast, jasmine rice..."
+                        class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                               focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                        autocomplete="off"
+                      />
+                      <p id="searchHint" class="mt-2 text-xs opacity-70">
+                        Tip: you can add your own foods in the database below.
+                      </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-xs font-semibold opacity-70 mb-2">Servings</label>
+                        <input
+                          id="servingsInput"
+                          type="number"
+                          inputmode="decimal"
+                          min="0"
+                          step="0.25"
+                          value="1"
+                          class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                        />
+                      </div>
+
+                      <div class="flex items-end gap-2">
+                        <button
+                          id="addBtn"
+                          type="button"
+                          class="w-full rounded-2xl py-3 font-extrabold
+                                 bg-cc-outline text-cc-text hover:opacity-90 transition shadow-outline"
+                        >
+                          Add to Ledger
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="rounded-2xl p-4 bg-white ring-1 ring-black/10">
+                      <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                          <p class="text-sm font-semibold">Bulk Input</p>
+                          <p class="text-xs opacity-70">One per line: <span class="font-semibold">Food, servings</span></p>
+                        </div>
+                        <button
+                          id="bulkAddBtn"
+                          type="button"
+                          class="rounded-2xl px-4 py-2 text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
+                        >
+                          Add All
+                        </button>
+                      </div>
+
+                      <textarea
+                        id="bulkInput"
+                        rows="5"
+                        placeholder="Greek yogurt, 1&#10;Chicken breast, 1.5&#10;Jasmine rice (cooked), 2"
+                        class="mt-3 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                               focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                      ></textarea>
+
+                      <p id="bulkResult" class="hidden mt-2 text-xs"></p>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div id="suggestionsWrap" class="hidden">
+                      <div class="rounded-2xl bg-white ring-1 ring-black/10 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-black/5 flex items-center justify-between">
+                          <p class="text-sm font-semibold">Matches</p>
+                          <p class="text-xs opacity-60">Click one to select</p>
+                        </div>
+                        <div id="suggestions" class="divide-y divide-black/5"></div>
+                      </div>
+                    </div>
+
+                    <p id="selectedFoodNote" class="hidden text-xs mt-1">
+                      Selected: <span class="font-extrabold" id="selectedFoodName">—</span>
+                      <span class="opacity-60">(per serving)</span>
+                      · <span class="font-semibold" id="selectedFoodMacros">—</span>
+                    </p>
+
+                    <p id="addError" class="hidden text-sm text-red-600">
+                      Please select a food and enter a valid servings amount.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Totals -->
+                <div class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <h3 class="text-base sm:text-lg font-bold font-heading">Today’s Totals</h3>
+                      <p class="text-xs opacity-70">Auto-calculated from your ledger items.</p>
+                    </div>
+                    <button
+                      id="clearBtn"
+                      type="button"
+                      class="rounded-2xl px-4 py-2 text-sm font-extrabold bg-black/5 ring-1 ring-black/10 hover:opacity-90 transition"
+                    >
+                      Clear Day
+                    </button>
+                  </div>
+
+                  <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="rounded-xl p-4 ring-1 ring-black/10 bg-black/5">
+                      <p class="text-xs uppercase tracking-wide opacity-70">Calories</p>
+                      <p class="text-2xl font-extrabold"><span id="totCal">0</span></p>
+                    </div>
+
+                    <div class="rounded-xl p-4 ring-1 ring-black/10 bg-[#77d770]/20">
+                      <p class="text-xs uppercase tracking-wide opacity-70">Protein</p>
+                      <p class="text-2xl font-extrabold"><span id="totP">0</span><span class="text-base font-semibold opacity-70">g</span></p>
+                    </div>
+
+                    <div class="rounded-xl p-4 ring-1 ring-black/10 bg-[#d8c3a5]/30">
+                      <p class="text-xs uppercase tracking-wide opacity-70">Carbs</p>
+                      <p class="text-2xl font-extrabold"><span id="totC">0</span><span class="text-base font-semibold opacity-70">g</span></p>
+                    </div>
+
+                    <div class="rounded-xl p-4 ring-1 ring-black/10 bg-[#f02348]/20">
+                      <p class="text-xs uppercase tracking-wide opacity-70">Fat</p>
+                      <p class="text-2xl font-extrabold"><span id="totF">0</span><span class="text-base font-semibold opacity-70">g</span></p>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-xs opacity-70">
+                    <p><span class="font-semibold">Swipe left</span> on an item to delete.</p>
+                    <p>Saved locally in your browser.</p>
+                  </div>
+
+                  <div class="mt-3 flex flex-wrap gap-2 no-print">
+                    <button
+                      id="printBtn"
+                      type="button"
+                      class="rounded-2xl px-4 py-2 text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
+                    >
+                      Print / Save PDF
+                    </button>
+                    <button
+                      id="saveLedgerBtn"
+                      type="button"
+                      class="rounded-2xl px-4 py-2 text-sm font-extrabold bg-black/5 ring-1 ring-black/10 hover:opacity-90 transition"
+                    >
+                      Save Ledger File
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Ledger -->
+                <div class="rounded-2xl p-0 ring-1 ring-black/10 bg-white overflow-hidden">
+                  <div class="px-5 py-4 border-b border-black/5 flex items-center justify-between">
+                    <div>
+                      <h3 class="text-base sm:text-lg font-bold font-heading">Ledger</h3>
+                      <p class="text-xs opacity-70">Your logged foods for the day.</p>
+                    </div>
+                    <span class="badge"><span id="itemCount">0</span> items</span>
+                  </div>
+
+                  <div id="ledgerList" class="divide-y divide-black/5"></div>
+
+                  <div id="emptyState" class="px-5 py-10 text-center">
+                    <p class="text-sm font-semibold">No foods yet.</p>
+                    <p class="text-xs opacity-70 mt-1">Search + add your first item above.</p>
+                  </div>
+                </div>
+
+                <!-- Food DB -->
+                <div id="foodDbQuickEdit" class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <h3 class="text-base sm:text-lg font-bold font-heading">Food Database — Quick Edit</h3>
+                      <p class="text-xs opacity-70">
+                        Filter and click a food to load it into the editor.
+                      </p>
+                    </div>
+                    <button
+                      id="addFoodBtn"
+                      type="button"
+                      class="rounded-2xl px-4 py-2 text-sm font-extrabold bg-cc-text text-white hover:opacity-95 transition shadow-soft"
+                    >
+                      Add Food
+                    </button>
+                  </div>
+
+                  <div class="mt-4">
+                    <input
+                      id="dbSearch"
+                      type="text"
+                      placeholder="Filter foods..."
+                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                    />
+                  </div>
+
+                  <div class="mt-3 rounded-2xl bg-white ring-1 ring-black/10 overflow-hidden">
+                    <div id="dbList" class="max-h-64 overflow-auto divide-y divide-black/5"></div>
+                  </div>
+                </div>
+
+                <div id="foodDbEditor" class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
+                  <div class="rounded-2xl p-4 bg-white ring-1 ring-black/10">
+                      <p class="text-sm font-semibold font-heading">Editor</p>
+                      <p class="text-xs opacity-70 mt-1">Per 1 serving.</p>
+
+                      <div class="mt-3 space-y-3">
+                        <div>
+                          <label class="block text-xs font-semibold opacity-70 mb-2">Food name</label>
+                          <input
+                            id="foodName"
+                            type="text"
+                            placeholder="e.g. Oikos Triple Zero"
+                            class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                   focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                          />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-xs font-semibold opacity-70 mb-2">Calories</label>
+                            <input
+                              id="foodCal"
+                              type="number"
+                              inputmode="numeric"
+                              placeholder="e.g. 90"
+                              class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                     focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold opacity-70 mb-2">Protein (g)</label>
+                            <input
+                              id="foodP"
+                              type="number"
+                              inputmode="decimal"
+                              placeholder="e.g. 15"
+                              class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                     focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-xs font-semibold opacity-70 mb-2">Carbs (g)</label>
+                            <input
+                              id="foodC"
+                              type="number"
+                              inputmode="decimal"
+                              placeholder="e.g. 10"
+                              class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                     focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold opacity-70 mb-2">Fat (g)</label>
+                            <input
+                              id="foodF"
+                              type="number"
+                              inputmode="decimal"
+                              placeholder="e.g. 0"
+                              class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
+                                     focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                            />
+                          </div>
+                        </div>
+
+                        <p id="dbError" class="hidden text-sm text-red-600">Enter a name + valid numbers.</p>
+
+                        <div class="flex gap-2">
+                          <button
+                            id="saveFoodBtn"
+                            type="button"
+                            class="w-full rounded-2xl py-3 font-extrabold bg-cc-outline text-cc-text hover:opacity-90 transition shadow-outline"
+                          >
+                            Save / Update
+                          </button>
+                          <button
+                            id="deleteFoodBtn"
+                            type="button"
+                            class="w-full rounded-2xl py-3 font-extrabold bg-black/5 ring-1 ring-black/10 hover:opacity-90 transition"
+                          >
+                            Delete Food
+                          </button>
+                        </div>
+
+                        <p class="text-xs opacity-70">
+                          This database is stored locally (localStorage). If you clear browser storage, it resets.
+                        </p>
+                      </div>
+                  </div>
+                </div>
+
+                <p class="text-xs pt-2 text-center opacity-60">© 2026 Chasing Change — 1% better every day</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------- Utilities ----------
+      const $ = (id) => document.getElementById(id);
+      const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+      const round1 = (n) => Math.round((n + Number.EPSILON) * 10) / 10;
+      const norm = (s) => String(s || "").trim().toLowerCase();
+      const safeNum = (v) => (Number.isFinite(v) ? v : 0);
+
+      // ---------- Local Storage Keys ----------
+      const LS_DB = "cc_physique_ledger_food_db_v1";
+      const LS_LEDGER = "cc_physique_ledger_items_v1";
+
+      // ---------- Default Food DB (per serving) ----------
+      const DEFAULT_DB = [
+        { name: "Greek yogurt (plain)", cal: 100, p: 17, c: 6, f: 0 },
+        { name: "Oikos Triple Zero", cal: 90, p: 15, c: 10, f: 0 },
+        { name: "Kodiak protein granola", cal: 260, p: 12, c: 45, f: 6 },
+        { name: "Chicken breast (cooked)", cal: 248, p: 46, c: 0, f: 5 },
+        { name: "Jasmine rice (cooked)", cal: 242, p: 4.5, c: 54, f: 0.5 },
+        { name: "Whole milk (1 cup)", cal: 150, p: 8, c: 12, f: 8 },
+        { name: "Egg (large)", cal: 72, p: 6.3, c: 0.4, f: 5 },
+        { name: "Apple (medium)", cal: 100, p: 0.5, c: 25, f: 0.3 },
+        { name: "Cashews (1 oz)", cal: 160, p: 5, c: 9, f: 13 },
+        { name: "Cheese stick", cal: 86, p: 6, c: 1, f: 6 },
+        { name: "Protein shake (30g)", cal: 167, p: 30, c: 5, f: 3 },
+        { name: "Peanut butter (1 tbsp)", cal: 102, p: 4, c: 3.5, f: 9 },
+      ];
+
+      function loadDB() {
+        try {
+          const raw = localStorage.getItem(LS_DB);
+          if (!raw) return [...DEFAULT_DB];
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) return [...DEFAULT_DB];
+          return parsed
+            .filter((x) => x && x.name)
+            .map((x) => ({
+              name: String(x.name),
+              cal: safeNum(Number(x.cal)),
+              p: safeNum(Number(x.p)),
+              c: safeNum(Number(x.c)),
+              f: safeNum(Number(x.f)),
+            }));
+        } catch {
+          return [...DEFAULT_DB];
+        }
+      }
+
+      function saveDB(db) {
+        localStorage.setItem(LS_DB, JSON.stringify(db));
+      }
+
+      function loadLedger() {
+        try {
+          const raw = localStorage.getItem(LS_LEDGER);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) return [];
+          return parsed.map((x) => ({
+            id: String(x.id || crypto.randomUUID()),
+            name: String(x.name || ""),
+            servings: safeNum(Number(x.servings)),
+            per: {
+              cal: safeNum(Number(x?.per?.cal)),
+              p: safeNum(Number(x?.per?.p)),
+              c: safeNum(Number(x?.per?.c)),
+              f: safeNum(Number(x?.per?.f)),
+            },
+            createdAt: safeNum(Number(x.createdAt || Date.now())),
+          }));
+        } catch {
+          return [];
+        }
+      }
+
+      function saveLedger(items) {
+        localStorage.setItem(LS_LEDGER, JSON.stringify(items));
+      }
+
+      // ---------- App State ----------
+      let foodDB = loadDB();
+      let ledger = loadLedger();
+      let selectedFood = null; // object from DB
+      let selectedFoodKey = null; // normalized name key
+      let editingFoodKey = null; // normalized name key for DB editor
+
+      // ---------- Elements ----------
+      const searchInput = $("searchInput");
+      const servingsInput = $("servingsInput");
+      const addBtn = $("addBtn");
+      const addError = $("addError");
+      const suggestionsWrap = $("suggestionsWrap");
+      const suggestionsEl = $("suggestions");
+      const selectedFoodNote = $("selectedFoodNote");
+      const selectedFoodName = $("selectedFoodName");
+      const selectedFoodMacros = $("selectedFoodMacros");
+
+      const bulkInput = $("bulkInput");
+      const bulkAddBtn = $("bulkAddBtn");
+      const bulkResult = $("bulkResult");
+
+      const ledgerList = $("ledgerList");
+      const emptyState = $("emptyState");
+      const itemCount = $("itemCount");
+
+      const totCal = $("totCal");
+      const totP = $("totP");
+      const totC = $("totC");
+      const totF = $("totF");
+
+      const clearBtn = $("clearBtn");
+      const printBtn = $("printBtn");
+      const saveLedgerBtn = $("saveLedgerBtn");
+
+      const dbSearch = $("dbSearch");
+      const dbList = $("dbList");
+      const addFoodBtn = $("addFoodBtn");
+
+      const foodName = $("foodName");
+      const foodCal = $("foodCal");
+      const foodP = $("foodP");
+      const foodC = $("foodC");
+      const foodF = $("foodF");
+      const saveFoodBtn = $("saveFoodBtn");
+      const deleteFoodBtn = $("deleteFoodBtn");
+      const dbError = $("dbError");
+
+      // ---------- Search + Suggestions ----------
+      function getMatches(query) {
+        const q = norm(query);
+        if (!q) return [];
+        const ranked = foodDB
+          .map((f) => {
+            const n = norm(f.name);
+            let score = 0;
+            if (n === q) score += 100;
+            if (n.startsWith(q)) score += 60;
+            if (n.includes(q)) score += 30;
+            // token match
+            const qTokens = q.split(/\s+/).filter(Boolean);
+            const nTokens = n.split(/\s+/);
+            const hits = qTokens.filter((t) => nTokens.some((nt) => nt.includes(t))).length;
+            score += hits * 6;
+            return { f, score };
+          })
+          .filter((x) => x.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 8)
+          .map((x) => x.f);
+        return ranked;
+      }
+
+      function setSelectedFood(food) {
+        selectedFood = food || null;
+        selectedFoodKey = food ? norm(food.name) : null;
+
+        if (!selectedFood) {
+          selectedFoodNote.classList.add("hidden");
+          selectedFoodName.textContent = "—";
+          selectedFoodMacros.textContent = "—";
+          return;
+        }
+
+        selectedFoodName.textContent = selectedFood.name;
+        selectedFoodMacros.textContent = `${selectedFood.cal} cal · P ${round1(selectedFood.p)}g · C ${round1(selectedFood.c)}g · F ${round1(selectedFood.f)}g`;
+        selectedFoodNote.classList.remove("hidden");
+      }
+
+      function renderSuggestions(list) {
+        if (!list.length) {
+          suggestionsWrap.classList.add("hidden");
+          suggestionsEl.innerHTML = "";
+          return;
+        }
+
+        suggestionsWrap.classList.remove("hidden");
+        suggestionsEl.innerHTML = "";
+
+        list.forEach((f) => {
+          const row = document.createElement("button");
+          row.type = "button";
+          row.className =
+            "w-full text-left px-4 py-3 hover:bg-black/5 transition flex items-center justify-between gap-3";
+          row.innerHTML = `
+            <div class="min-w-0">
+              <p class="text-sm font-extrabold truncate">${escapeHtml(f.name)}</p>
+              <p class="text-xs opacity-70 truncate">${f.cal} cal · P ${round1(f.p)}g · C ${round1(f.c)}g · F ${round1(f.f)}g</p>
+            </div>
+            <span class="text-xs font-extrabold opacity-60">Select</span>
+          `;
+          row.addEventListener("click", () => {
+            setSelectedFood(f);
+            renderSuggestions([]);
+            searchInput.value = f.name;
+            searchInput.blur();
+          });
+          suggestionsEl.appendChild(row);
+        });
+      }
+
+      function onSearchInput() {
+        addError.classList.add("hidden");
+        const q = searchInput.value;
+        const matches = getMatches(q);
+        renderSuggestions(matches);
+
+        // auto-select exact match
+        const exact = matches.find((m) => norm(m.name) === norm(q));
+        if (exact) setSelectedFood(exact);
+        else if (selectedFoodKey && norm(q) !== selectedFoodKey) setSelectedFood(null);
+      }
+
+      // ---------- Ledger + Totals ----------
+      function calcTotals(items) {
+        let cal = 0, p = 0, c = 0, f = 0;
+        items.forEach((it) => {
+          const s = safeNum(it.servings);
+          cal += safeNum(it.per.cal) * s;
+          p += safeNum(it.per.p) * s;
+          c += safeNum(it.per.c) * s;
+          f += safeNum(it.per.f) * s;
+        });
+        return { cal, p, c, f };
+      }
+
+      function updateTotalsUI() {
+        const t = calcTotals(ledger);
+        totCal.textContent = Math.round(t.cal);
+        totP.textContent = Math.round(t.p);
+        totC.textContent = Math.round(t.c);
+        totF.textContent = Math.round(t.f);
+
+        itemCount.textContent = String(ledger.length);
+      }
+
+      function addLedgerItem(food, servings) {
+        const s = Number(servings);
+        if (!food || !Number.isFinite(s) || s <= 0) return false;
+
+        ledger.unshift({
+          id: crypto.randomUUID(),
+          name: food.name,
+          servings: s,
+          per: { cal: food.cal, p: food.p, c: food.c, f: food.f },
+          createdAt: Date.now(),
+        });
+
+        saveLedger(ledger);
+        renderLedger();
+        return true;
+      }
+
+      function removeLedgerItem(id) {
+        ledger = ledger.filter((x) => x.id !== id);
+        saveLedger(ledger);
+        renderLedger();
+      }
+
+      function clearLedger() {
+        ledger = [];
+        saveLedger(ledger);
+        renderLedger();
+      }
+
+      function saveLedgerFile() {
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          totals: {
+            calories: Number(totCal.textContent || 0),
+            protein: Number(totP.textContent || 0),
+            carbs: Number(totC.textContent || 0),
+            fat: Number(totF.textContent || 0),
+          },
+          items: ledger,
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const stamp = new Date().toISOString().slice(0, 10);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `physique-ledger-${stamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      // ---------- Swipe-to-delete ----------
+      function attachSwipeHandlers(container, onDelete) {
+        const content = container.querySelector(".swipe-content");
+        const deleteBtn = container.querySelector(".deleteBtn");
+
+        const MAX_LEFT = -88; // px reveal
+        const SNAP_DELETE = -64; // if past this on release, snap open
+        const SNAP_CLOSE = -20;
+
+        let startX = 0;
+        let currentX = 0;
+        let dragging = false;
+        let open = false;
+
+        const setX = (x, animate = false) => {
+          if (animate) content.style.transition = "transform 160ms ease";
+          else content.style.transition = "none";
+          content.style.transform = `translateX(${x}px)`;
+        };
+
+        const onPointerDown = (e) => {
+          // ignore if clicking a button/interactive element
+          if (e.target.closest("button, a, input, textarea, select")) return;
+          dragging = true;
+          startX = e.clientX;
+          currentX = open ? MAX_LEFT : 0;
+          content.setPointerCapture(e.pointerId);
+        };
+
+        const onPointerMove = (e) => {
+          if (!dragging) return;
+          const dx = e.clientX - startX;
+          const next = clamp(currentX + dx, MAX_LEFT, 0);
+          setX(next);
+        };
+
+        const onPointerUp = (e) => {
+          if (!dragging) return;
+          dragging = false;
+
+          // decide snap
+          const matrix = new DOMMatrixReadOnly(getComputedStyle(content).transform);
+          const x = matrix.m41 || 0;
+
+          if (x <= SNAP_DELETE) {
+            open = true;
+            setX(MAX_LEFT, true);
+          } else if (x >= SNAP_CLOSE) {
+            open = false;
+            setX(0, true);
+          } else {
+            // middle: if open-ish, keep open
+            open = x < -42;
+            setX(open ? MAX_LEFT : 0, true);
+          }
+        };
+
+        container.addEventListener("pointerdown", onPointerDown);
+        container.addEventListener("pointermove", onPointerMove);
+        container.addEventListener("pointerup", onPointerUp);
+        container.addEventListener("pointercancel", onPointerUp);
+
+        deleteBtn.addEventListener("click", () => onDelete());
+      }
+
+      // ---------- Rendering ----------
+      function renderLedger() {
+        ledgerList.innerHTML = "";
+
+        if (!ledger.length) {
+          emptyState.classList.remove("hidden");
+        } else {
+          emptyState.classList.add("hidden");
+        }
+
+        ledger.forEach((it) => {
+          const totalCal = it.per.cal * it.servings;
+          const totalP = it.per.p * it.servings;
+          const totalC = it.per.c * it.servings;
+          const totalF = it.per.f * it.servings;
+
+          const row = document.createElement("div");
+          row.className = "swipe-wrap";
+          row.innerHTML = `
+            <div class="swipe-delete">
+              <button type="button" class="deleteBtn">Delete</button>
+            </div>
+
+            <div class="swipe-content px-5 py-4 bg-white">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-extrabold truncate">${escapeHtml(it.name)}</p>
+                  <p class="text-xs opacity-70 mt-1">
+                    Servings: <span class="font-semibold">${round1(it.servings)}</span>
+                    <span class="opacity-50">·</span>
+                    Per serving: ${Math.round(it.per.cal)} cal · P ${round1(it.per.p)}g · C ${round1(it.per.c)}g · F ${round1(it.per.f)}g
+                  </p>
+                </div>
+
+                <div class="text-right flex-shrink-0">
+                  <p class="text-sm font-extrabold">${Math.round(totalCal)} cal</p>
+                  <p class="text-xs opacity-70 mt-1">P ${Math.round(totalP)} · C ${Math.round(totalC)} · F ${Math.round(totalF)}</p>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // swipe handlers
+          attachSwipeHandlers(row, () => removeLedgerItem(it.id));
+
+          ledgerList.appendChild(row);
+        });
+
+        updateTotalsUI();
+        renderDBList();
+      }
+
+      function renderDBList() {
+        const q = norm(dbSearch.value);
+        const list = foodDB
+          .slice()
+          .sort((a, b) => norm(a.name).localeCompare(norm(b.name)))
+          .filter((f) => !q || norm(f.name).includes(q));
+
+        dbList.innerHTML = "";
+
+        if (!list.length) {
+          const empty = document.createElement("div");
+          empty.className = "px-4 py-4 text-xs opacity-70";
+          empty.textContent = "No foods found.";
+          dbList.appendChild(empty);
+          return;
+        }
+
+        list.forEach((f) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "w-full text-left px-4 py-3 hover:bg-black/5 transition";
+          btn.innerHTML = `
+            <p class="text-sm font-extrabold truncate">${escapeHtml(f.name)}</p>
+            <p class="text-xs opacity-70 truncate">${f.cal} cal · P ${round1(f.p)}g · C ${round1(f.c)}g · F ${round1(f.f)}g</p>
+          `;
+          btn.addEventListener("click", () => loadEditor(f));
+          dbList.appendChild(btn);
+        });
+      }
+
+      function loadEditor(food) {
+        editingFoodKey = norm(food.name);
+        foodName.value = food.name;
+        foodCal.value = food.cal;
+        foodP.value = food.p;
+        foodC.value = food.c;
+        foodF.value = food.f;
+        dbError.classList.add("hidden");
+      }
+
+      function resetEditor() {
+        editingFoodKey = null;
+        foodName.value = "";
+        foodCal.value = "";
+        foodP.value = "";
+        foodC.value = "";
+        foodF.value = "";
+        dbError.classList.add("hidden");
+      }
+
+      // ---------- DB Mutations ----------
+      function upsertFood() {
+        dbError.classList.add("hidden");
+
+        const name = String(foodName.value || "").trim();
+        const cal = Number(foodCal.value);
+        const p = Number(foodP.value);
+        const c = Number(foodC.value);
+        const f = Number(foodF.value);
+
+        const valid =
+          name.length >= 2 &&
+          Number.isFinite(cal) && cal >= 0 &&
+          Number.isFinite(p) && p >= 0 &&
+          Number.isFinite(c) && c >= 0 &&
+          Number.isFinite(f) && f >= 0;
+
+        if (!valid) {
+          dbError.classList.remove("hidden");
+          return;
+        }
+
+        const key = norm(name);
+        const next = { name, cal, p, c, f };
+
+        const idx = foodDB.findIndex((x) => norm(x.name) === (editingFoodKey || key));
+        if (idx >= 0) foodDB[idx] = next;
+        else foodDB.push(next);
+
+        editingFoodKey = key;
+        saveDB(foodDB);
+        renderDBList();
+
+        // keep selected food synced if it was edited
+        if (selectedFoodKey && (selectedFoodKey === key || selectedFoodKey === editingFoodKey)) {
+          setSelectedFood(next);
+        }
+      }
+
+      function deleteFood() {
+        dbError.classList.add("hidden");
+        const key = editingFoodKey || norm(foodName.value);
+        if (!key) return;
+
+        foodDB = foodDB.filter((x) => norm(x.name) !== key);
+        saveDB(foodDB);
+
+        // if selected food deleted
+        if (selectedFoodKey === key) {
+          setSelectedFood(null);
+          searchInput.value = "";
+        }
+
+        resetEditor();
+        renderDBList();
+      }
+
+      // ---------- Bulk Add ----------
+      function bulkAdd() {
+        bulkResult.classList.add("hidden");
+        const lines = String(bulkInput.value || "")
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
+
+        if (!lines.length) return;
+
+        let added = 0;
+        let notFound = 0;
+        let bad = 0;
+
+        const failures = [];
+
+        lines.forEach((line) => {
+          // Accept formats:
+          // 1) Food, servings
+          // 2) Food | servings
+          // 3) Food (servings)  => optional if it ends with x? We'll keep it strict-ish
+          let namePart = line;
+          let servingsPart = "1";
+
+          const commaSplit = line.split(",");
+          const pipeSplit = line.split("|");
+
+          if (commaSplit.length >= 2) {
+            namePart = commaSplit[0].trim();
+            servingsPart = commaSplit.slice(1).join(",").trim();
+          } else if (pipeSplit.length >= 2) {
+            namePart = pipeSplit[0].trim();
+            servingsPart = pipeSplit.slice(1).join("|").trim();
+          }
+
+          const s = Number(servingsPart);
+          if (!namePart || !Number.isFinite(s) || s <= 0) {
+            bad++;
+            failures.push(line);
+            return;
+          }
+
+          // find match (exact first, then contains)
+          const key = norm(namePart);
+          let food = foodDB.find((f) => norm(f.name) === key);
+          if (!food) {
+            const matches = getMatches(namePart);
+            food = matches[0] || null;
+          }
+
+          if (!food) {
+            notFound++;
+            failures.push(line);
+            return;
+          }
+
+          addLedgerItem(food, s);
+          added++;
+        });
+
+        const msgParts = [];
+        msgParts.push(`<span class="font-extrabold">${added}</span> added`);
+        if (notFound) msgParts.push(`<span class="font-extrabold">${notFound}</span> not found`);
+        if (bad) msgParts.push(`<span class="font-extrabold">${bad}</span> invalid lines`);
+
+        bulkResult.innerHTML = msgParts.join(" · ");
+        bulkResult.className = "mt-2 text-xs " + (notFound || bad ? "text-amber-800" : "text-emerald-800");
+        bulkResult.classList.remove("hidden");
+
+        if (failures.length) {
+          bulkResult.innerHTML += `<div class="mt-2 opacity-80">Fix lines like: <span class="font-semibold">Food, servings</span></div>`;
+        }
+      }
+
+      // ---------- Add Flow ----------
+      function addSelected() {
+        addError.classList.add("hidden");
+
+        const s = Number(servingsInput.value);
+        if (!selectedFood || !Number.isFinite(s) || s <= 0) {
+          addError.classList.remove("hidden");
+          return;
+        }
+
+        addLedgerItem(selectedFood, s);
+
+        // keep selection but reset servings for speed
+        servingsInput.value = "1";
+        searchInput.select();
+      }
+
+      // ---------- Escaping ----------
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      // ---------- Events ----------
+      searchInput.addEventListener("input", onSearchInput);
+      searchInput.addEventListener("focus", onSearchInput);
+
+      // Enter key: if suggestions visible, select top match, else add
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+
+        const matches = getMatches(searchInput.value);
+        if (!selectedFood && matches.length) {
+          setSelectedFood(matches[0]);
+          searchInput.value = matches[0].name;
+          renderSuggestions([]);
+          return;
+        }
+        addSelected();
+      });
+
+      addBtn.addEventListener("click", addSelected);
+
+      servingsInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addSelected();
+        }
+      });
+
+      bulkAddBtn.addEventListener("click", bulkAdd);
+
+      clearBtn.addEventListener("click", () => {
+        clearLedger();
+      });
+
+      printBtn.addEventListener("click", () => {
+        window.print();
+      });
+
+      saveLedgerBtn.addEventListener("click", saveLedgerFile);
+
+      dbSearch.addEventListener("input", renderDBList);
+
+      addFoodBtn.addEventListener("click", () => {
+        resetEditor();
+        foodName.focus();
+      });
+
+      saveFoodBtn.addEventListener("click", upsertFood);
+      deleteFoodBtn.addEventListener("click", deleteFood);
+
+      // Fallback logo if image missing
+      window.addEventListener("load", () => {
+        const img = document.querySelector("img[alt='Chasing Change logo']");
+        if (!img || img.style.display === "none") {
+          const fb = $("fallbackLogo");
+          if (fb) fb.style.display = "flex";
+        }
+      });
+
+      // ---------- Init ----------
+      renderLedger();
+      renderDBList();
+      onSearchInput();
+    </script>
+  </body>
+</html>
