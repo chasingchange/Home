@@ -82,7 +82,7 @@
                   class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white ring-1 ring-black/10 shadow-soft flex items-center justify-center"
                   aria-hidden="true"
                 >
-                  <img src="../assets/chasing-change-logo.svg" alt="Chasing Change logo" class="w-9 h-9" />
+                  <img src="../Logo.png" alt="Chasing Change logo" class="w-9 h-9" />
                 </div>
                 <div class="flex flex-col">
                   <p class="text-xs sm:text-sm tracking-[0.28em] uppercase font-brand opacity-60">Chasing Change</p>
@@ -91,27 +91,31 @@
                 </div>
               </div>
 
-              <div class="flex flex-wrap gap-2 items-center">
-                <a href="../index.html" class="cc-link-chip">All calculators</a>
-                <a
-                  href="https://tally.so/r/w5JXKE"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-extrabold bg-cc-outline text-cc-text hover:opacity-90 transition shadow-outline"
-                >
-                  Want this dialed in? Apply for coaching →
-                </a>
-                <button
-                  id="resetBtn"
-                  class="px-5 py-3 rounded-2xl bg-cc-text text-white shadow-soft font-extrabold hover:opacity-95 transition"
-                >
-                  Reset
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </header>
+
+      <div class="no-print cc-cta-block mb-4">
+        <p class="cc-cta-eyebrow">Quick actions</p>
+        <div class="cc-cta-actions">
+          <a href="../index.html" class="cc-link-chip">All calculators</a>
+          <a
+            href="https://tally.so/r/w5JXKE"
+            target="_blank"
+            rel="noreferrer"
+            class="cc-cta-coaching"
+          >
+            Want this dialed in? Apply for coaching →
+          </a>
+          <button
+            id="resetBtn"
+            class="cc-cta-reset"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
 
       <main class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden p-4 sm:p-6">
         <section class="grid lg:grid-cols-12 gap-4">
@@ -304,7 +308,7 @@
             </div>
 
             <div class="rounded-2xl bg-cc-bg/60 border border-black/10 p-4">
-              <div class="flex flex-wrap items-center gap-2">
+              <div class="flex flex-wrap gap-2">
                 <span id="bmiBadge" class="badge">BMI: —</span>
                 <span id="sexFactorBadge" class="badge">Sex factor: —</span>
                 <span id="current1rmBadge" class="badge bg-cc-outline/25 border-cc-outline/50 text-cc-text font-extrabold">Current 1RM: —</span>
@@ -693,6 +697,38 @@
           multipliers: { beginner: 0.07, novice: 0.09, intermediate: 0.11, athlete: 0.14 },
           meta: "Per dumbbell (each hand). Strict curls.",
           perSide: true,
+        },
+        {
+          id: "barbell_curl",
+          name: "Barbell Curl",
+          category: "Barbell — Pull",
+          type: "bw",
+          multipliers: { beginner: 0.22, novice: 0.3, intermediate: 0.4, athlete: 0.5 },
+          meta: "Strict standing curl; avoid leaning back.",
+        },
+        {
+          id: "preacher_curl",
+          name: "Preacher Curl (EZ bar or machine)",
+          category: "Machines",
+          type: "bw",
+          multipliers: { beginner: 0.14, novice: 0.2, intermediate: 0.27, athlete: 0.35 },
+          meta: "Control the negative and keep elbows stable.",
+        },
+        {
+          id: "calf_raise",
+          name: "Standing Calf Raise (machine/stack)",
+          category: "Machines",
+          type: "bw",
+          multipliers: { beginner: 0.7, novice: 0.95, intermediate: 1.2, athlete: 1.45 },
+          meta: "Pause at top and bottom for full range.",
+        },
+        {
+          id: "triceps_overhead_extension",
+          name: "Overhead Triceps Extension (dumbbell)",
+          category: "Dumbbell",
+          type: "bw",
+          multipliers: { beginner: 0.16, novice: 0.22, intermediate: 0.3, athlete: 0.38 },
+          meta: "Single dumbbell, strict elbow path.",
         },
         {
           id: "triceps_pushdown",
