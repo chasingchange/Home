@@ -20,21 +20,8 @@ body {
   font-family: var(--cc-body-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  width: 72px;
-  height: 72px;
-  background: url("./Logo.png") center/contain no-repeat;
-  opacity: 0.9;
-  pointer-events: none;
-  z-index: 5;
-}
 
 .cc-brand {
   font-family: var(--cc-brand-font);
