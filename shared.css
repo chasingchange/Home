@@ -32,6 +32,11 @@ h1,
 h2,
 h3 {
   font-family: var(--cc-heading-font);
+  text-transform: capitalize;
+}
+
+.cc-title-case {
+  text-transform: capitalize;
 }
 
 .badge {
@@ -135,3 +140,46 @@ h3 {
   transform: translateY(-1px);
 }
 
+
+.cc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cc-home-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  background: rgba(119, 215, 112, 0.2);
+  color: var(--cc-text);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cc-home-icon-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(7, 31, 53, 0.14);
+}
+
+.cc-home-icon-link svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.cc-cta-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.cc-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

@@ -86,8 +86,17 @@
                 </div>
                 <div class="flex flex-col">
                   <p class="text-xs sm:text-sm tracking-[0.28em] uppercase font-brand opacity-60">Chasing Change</p>
-                  <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold font-heading leading-tight">1 Rep Max Calculator</h1>
-                  <p class="text-sm opacity-80 mt-1">Stop guessing. Pick a lift, see your target numbers, and train with a plan that moves the needle.</p>
+                  <div class="cc-title-row mt-1">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold font-heading leading-tight">1 Rep Max Calculator</h1>
+                    <a href="../index.html" class="cc-home-icon-link" aria-label="Go to home">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 10.5 12 3l9 7.5" />
+                        <path d="M5 9.5V21h14V9.5" />
+                        <path d="M10 21v-6h4v6" />
+                      </svg>
+                    </a>
+                  </div>
+                  <p class="text-sm opacity-80 mt-1">Stop guessing. Pick A Lift, see your target numbers, and train with a plan that moves the needle.</p>
                 </div>
               </div>
 
@@ -98,8 +107,7 @@
 
       <div class="no-print cc-cta-block mb-4">
         <p class="cc-cta-eyebrow">Quick actions</p>
-        <div class="cc-cta-actions">
-          <a href="../index.html" class="cc-link-chip">All calculators</a>
+        <div class="cc-cta-grid">
           <a
             href="https://tally.so/r/w5JXKE"
             target="_blank"
@@ -108,12 +116,15 @@
           >
             Want this dialed in? Apply for coaching →
           </a>
-          <button
-            id="resetBtn"
-            class="cc-cta-reset"
-          >
-            Reset
-          </button>
+          <div class="cc-cta-row">
+            <a href="../index.html" class="cc-link-chip">All calculators</a>
+            <button
+              id="resetBtn"
+              class="cc-cta-reset"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 
@@ -226,7 +237,7 @@
           <div class="p-5 border-b border-black/5">
             <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-                <div class="font-heading font-extrabold text-xl">Pick a lift</div>
+                <div class="font-heading font-extrabold text-xl">Pick A Lift</div>
                 <p class="text-sm opacity-70 mt-1">
                   Search an exercise, or use the categories. Then you’ll see tier targets + working weights.
                 </p>
@@ -319,7 +330,7 @@
             <div class="rounded-3xl bg-cc-card shadow-outline ring-1 ring-black/5 overflow-hidden">
               <div class="p-4 border-b border-black/5 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <div class="font-heading font-extrabold">Tier targets</div>
+                  <div class="font-heading font-extrabold">Tier Targets</div>
                 </div>
                 <span id="exerciseMeta" class="badge">—</span>
               </div>
@@ -339,12 +350,12 @@
               </div>
             </div>
 
-            <!-- Working weights -->
+            <!-- Working Weights -->
             <div class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
               <div class="p-4 border-b border-black/5 flex items-center justify-between gap-2">
                 <div>
-                  <div class="font-heading font-extrabold">Working weights</div>
-                  <div class="text-sm opacity-70">Based on the selected tier’s 1RM.</div>
+                  <div class="font-heading font-extrabold">Working Weights</div>
+                  <div class="text-sm opacity-70">Calculate using selected tier (Beginner, Novice, Intermediate, or Athlete).</div>
                 </div>
                 <label class="flex items-center gap-2">
                   <span class="text-sm font-extrabold">Use tier</span>
@@ -412,7 +423,7 @@
         {
           id: "back_squat",
           name: "Back Squat (barbell)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 1.0, novice: 1.25, intermediate: 1.5, athlete: 1.75 },
           meta: "Full range, stable bracing, to depth.",
@@ -420,7 +431,7 @@
         {
           id: "front_squat",
           name: "Front Squat (barbell)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.8, novice: 1.0, intermediate: 1.2, athlete: 1.4 },
           meta: "Typically ~80% of back squat for many lifters.",
@@ -428,7 +439,7 @@
         {
           id: "deadlift",
           name: "Deadlift (conventional)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 1.25, novice: 1.5, intermediate: 1.75, athlete: 2.0 },
           meta: "Strong hinge + bracing. No bounce.",
@@ -436,7 +447,7 @@
         {
           id: "sumo_deadlift",
           name: "Deadlift (sumo)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 1.2, novice: 1.45, intermediate: 1.7, athlete: 1.95 },
           meta: "Similar to conventional for many; varies by build.",
@@ -444,7 +455,7 @@
         {
           id: "bench",
           name: "Bench Press (barbell)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.75, novice: 1.0, intermediate: 1.15, athlete: 1.3 },
           meta: "Paused touch recommended for consistency.",
@@ -452,7 +463,7 @@
         {
           id: "ohp",
           name: "Overhead Press (barbell)",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.45, novice: 0.55, intermediate: 0.65, athlete: 0.75 },
           meta: "Strict press (no leg drive).",
@@ -460,7 +471,7 @@
         {
           id: "power_clean",
           name: "Power Clean (barbell)",
-          category: "Barbell — Athletic",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.5, novice: 0.75, intermediate: 0.95, athlete: 1.15 },
           meta: "Athletic tier here is attainable, not Olympic-elite.",
@@ -468,7 +479,7 @@
         {
           id: "hang_clean",
           name: "Hang Power Clean (barbell)",
-          category: "Barbell — Athletic",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.45, novice: 0.7, intermediate: 0.9, athlete: 1.1 },
           meta: "From hang; tends to be slightly lower than floor.",
@@ -476,7 +487,7 @@
         {
           id: "push_press",
           name: "Push Press (barbell)",
-          category: "Barbell — Athletic",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.55, novice: 0.7, intermediate: 0.85, athlete: 1.0 },
           meta: "Leg drive allowed; lockout controlled.",
@@ -486,7 +497,7 @@
         {
           id: "rdl",
           name: "Romanian Deadlift (barbell)",
-          category: "Barbell — Variations",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.9, novice: 1.1, intermediate: 1.3, athlete: 1.5 },
           meta: "Controlled eccentric; no floor touch needed.",
@@ -494,7 +505,7 @@
         {
           id: "incline_bench",
           name: "Incline Bench Press (barbell)",
-          category: "Barbell — Variations",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.6, novice: 0.8, intermediate: 0.95, athlete: 1.1 },
           meta: "Lower than flat bench for most lifters.",
@@ -502,7 +513,7 @@
         {
           id: "pause_bench",
           name: "Paused Bench Press (barbell)",
-          category: "Barbell — Variations",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.7, novice: 0.95, intermediate: 1.1, athlete: 1.25 },
           meta: "Stricter standard; removes bounce.",
@@ -510,7 +521,7 @@
         {
           id: "hip_thrust",
           name: "Hip Thrust (barbell)",
-          category: "Barbell — Variations",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 1.25, novice: 1.75, intermediate: 2.25, athlete: 2.75 },
           meta: "Big numbers are common here. Control matters.",
@@ -591,7 +602,7 @@
         {
           id: "pullup_weighted",
           name: "Pull-Up (weighted) — added load",
-          category: "Bodyweight + Weighted",
+          category: "Body Weight",
           type: "bw",
           multipliers: { beginner: 0.0, novice: 0.1, intermediate: 0.2, athlete: 0.35 },
           meta: "We show added load targets (not counting bodyweight).",
@@ -601,7 +612,7 @@
         {
           id: "dip_weighted",
           name: "Dip (weighted) — added load",
-          category: "Bodyweight + Weighted",
+          category: "Body Weight",
           type: "bw",
           multipliers: { beginner: 0.0, novice: 0.15, intermediate: 0.3, athlete: 0.5 },
           meta: "Added load targets (not counting bodyweight). Shoulder-friendly depth.",
@@ -611,7 +622,7 @@
         {
           id: "chinup_weighted",
           name: "Chin-Up (weighted) — added load",
-          category: "Bodyweight + Weighted",
+          category: "Body Weight",
           type: "bw",
           multipliers: { beginner: 0.0, novice: 0.12, intermediate: 0.25, athlete: 0.4 },
           meta: "Added load targets (not counting bodyweight).",
@@ -623,7 +634,7 @@
         {
           id: "farmers_carry",
           name: "Farmer’s Carry (each hand) — 10–20m",
-          category: "Carries + Athletic",
+          category: "Carries",
           type: "bw",
           multipliers: { beginner: 0.25, novice: 0.33, intermediate: 0.42, athlete: 0.5 },
           meta: "Target shown per hand for a strong 10–20m carry.",
@@ -635,7 +646,7 @@
         {
           id: "barbell_row",
           name: "Barbell Row (Pendlay-ish)",
-          category: "Barbell — Pull",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.65, novice: 0.85, intermediate: 1.0, athlete: 1.15 },
           meta: "Back parallel, controlled from floor (or near).",
@@ -643,7 +654,7 @@
         {
           id: "trap_bar_deadlift",
           name: "Trap Bar Deadlift",
-          category: "Barbell — Big Lifts",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 1.35, novice: 1.65, intermediate: 1.9, athlete: 2.15 },
           meta: "Often higher than conventional due to leverage.",
@@ -701,7 +712,7 @@
         {
           id: "barbell_curl",
           name: "Barbell Curl",
-          category: "Barbell — Pull",
+          category: "Barbell",
           type: "bw",
           multipliers: { beginner: 0.22, novice: 0.3, intermediate: 0.4, athlete: 0.5 },
           meta: "Strict standing curl; avoid leaning back.",
@@ -832,13 +843,13 @@
 
       function getCategories() {
         const set = new Set(EXERCISES.map((e) => e.category));
-        return ["All categories", ...Array.from(set).sort()];
+        return ["All Categories", ...Array.from(set).sort()];
       }
 
       function filterExercises(category, searchText) {
         const q = (searchText || "").trim().toLowerCase();
         return EXERCISES.filter((e) => {
-          const inCat = category === "All categories" ? true : e.category === category;
+          const inCat = category === "All Categories" ? true : e.category === category;
           const inSearch = !q ? true : e.name.toLowerCase().includes(q);
           return inCat && inSearch;
         }).sort((a, b) => a.name.localeCompare(b.name));
@@ -866,7 +877,7 @@
       }
 
       /***********************
-       * Working weights
+       * Working Weights
        ***********************/
       // Approx rep->intensity map (simple and useful)
       const WORK_SETS = [
@@ -990,7 +1001,7 @@
         const metaBits = [];
         metaBits.push(exercise.category);
         if (exercise.perSide) metaBits.push("per side");
-        if (exercise.bodyweightMove) metaBits.push("weighted BW");
+        if (exercise.bodyweightMove) metaBits.push("Body Weight");
         $("exerciseMeta").textContent = metaBits.join(" • ") || "—";
 
         // Render tier table
@@ -1034,12 +1045,12 @@
           tiersBody.appendChild(tr);
         });
 
-        // Working weights from selected tier
+        // Working Weights from selected tier
         const useTier = $("useTier").value;
         let baseOneRmLb = targetsLb[useTier];
 
         // If bodyweight move with added load: "1RM" here is "added load 1RM"
-        // Working weights still apply to that added load.
+        // Working Weights still apply to that added load.
         renderWorkingWeights(baseOneRmLb, units, roundChoice);
       }
 
@@ -1087,12 +1098,12 @@
           $("units").value = "lb";
           $("roundTo").value = "2.5";
           $("search").value = "";
-          $("category").value = "All categories";
+          $("category").value = "All Categories";
           window.__current1rmLb = null;
           $("setWeight").value = "";
           $("setReps").value = "";
           $("current1rmBadge").textContent = "Current 1RM: —";
-          populateExerciseSelect(filterExercises("All categories", ""), "back_squat");
+          populateExerciseSelect(filterExercises("All Categories", ""), "back_squat");
           $("useTier").value = "novice";
           renderAll();
         });
@@ -1111,8 +1122,8 @@
       function init() {
         populateCategorySelect();
         populateUseTierSelect();
-        $("category").value = "All categories";
-        populateExerciseSelect(filterExercises("All categories", ""), "back_squat");
+        $("category").value = "All Categories";
+        populateExerciseSelect(filterExercises("All Categories", ""), "back_squat");
         attachEvents();
         renderAll();
       }
