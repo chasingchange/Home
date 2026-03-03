@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chasing Change — AI Meal Plan Generator</title>
+    <meta
+      name="description"
+      content="Create a daily macro-aligned meal plan and save it as an image with Chasing Change branding."
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: {
+                text: "#071f35",
+                bg: "#f5f5f7",
+                outline: "#77d770",
+                card: "#ffffff",
+              },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              glow: "0 24px 70px rgba(119,215,112,0.25)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-glow bg-white mb-6">
+        <div class="relative p-6 sm:p-8">
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+          <div class="relative flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+              <img src="../Logo.png" alt="Chasing Change logo" class="w-12 h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+              <div>
+                <p class="text-xs tracking-[0.3em] uppercase font-brand opacity-60">Chasing Change</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold font-heading">AI Meal Plan Generator</h1>
+              </div>
+            </div>
+            <a href="../index.html" class="cc-link-chip">All calculators</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid lg:grid-cols-2 gap-6 items-start">
+        <section class="rounded-3xl bg-cc-card ring-1 ring-black/10 shadow-soft p-5 sm:p-6">
+          <h2 class="text-xl font-heading font-extrabold">Daily Meal Plan Inputs</h2>
+          <p class="mt-2 text-sm opacity-80">Enter your daily macro targets and preferences. We'll generate a plan with roughly matched meals.</p>
+
+          <div class="mt-5 grid sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-semibold">Calories</span>
+              <input id="calories" type="number" inputmode="numeric" placeholder="e.g. 2200" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">Protein (g)</span>
+              <input id="protein" type="number" inputmode="numeric" placeholder="e.g. 180" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">Carbs (g)</span>
+              <input id="carbs" type="number" inputmode="numeric" placeholder="e.g. 220" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">Fat (g)</span>
+              <input id="fat" type="number" inputmode="numeric" placeholder="e.g. 70" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+            </label>
+
+            <label class="block">
+              <span class="text-sm font-semibold">Meals per day</span>
+              <select id="mealCount" class="mt-2 w-full px-4 py-3 rounded-xl bg-white border border-black/10 focus:border-cc-outline focus:ring-2 focus:ring-cc-outline/70 focus:outline-none">
+                <option value="3">3 meals</option>
+                <option value="4" selected>4 meals</option>
+                <option value="5">5 meals</option>
+                <option value="6">6 meals</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <span class="text-sm font-semibold">Eating style</span>
+              <select id="style" class="mt-2 w-full px-4 py-3 rounded-xl bg-white border border-black/10 focus:border-cc-outline focus:ring-2 focus:ring-cc-outline/70 focus:outline-none">
+                <option value="balanced" selected>Balanced</option>
+                <option value="highProtein">High Protein</option>
+                <option value="lowerCarb">Lower Carb</option>
+                <option value="vegetarian">Vegetarian</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="block mt-4">
+            <span class="text-sm font-semibold">Food notes, allergies, or dislikes (optional)</span>
+            <textarea id="notes" rows="3" placeholder="Example: dairy-free, no shellfish, I prefer chicken + rice meals." class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none"></textarea>
+          </label>
+
+          <p id="error" class="hidden mt-3 text-sm text-red-600 font-semibold">Please fill in all macro fields with valid numbers.</p>
+
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button id="generateBtn" class="px-5 py-3 rounded-2xl font-bold bg-cc-outline text-cc-text ring-1 ring-cc-outline/60 hover:opacity-90">Generate meal plan</button>
+            <button id="saveBtn" class="px-5 py-3 rounded-2xl font-bold bg-white ring-1 ring-black/15 hover:bg-black/5" disabled>Save plan as photo</button>
+          </div>
+
+          <div class="mt-4 rounded-2xl p-4 bg-black/5 ring-1 ring-black/10 text-sm">
+            <p class="font-semibold">To make this more accurate, share:</p>
+            <ul class="mt-1 list-disc list-inside opacity-80 space-y-1">
+              <li>Any strict allergies/intolerances</li>
+              <li>How much time you have to cook</li>
+              <li>Budget range and preferred food variety</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="planCard" class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-5 sm:p-6 min-h-[420px]">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs tracking-[0.3em] uppercase font-brand opacity-60">Chasing Change</p>
+              <h2 class="text-xl font-heading font-extrabold">Generated Daily Meal Plan</h2>
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-cc-outline/20 ring-1 ring-cc-outline/50">Macro Aligned</span>
+          </div>
+
+          <div id="emptyState" class="mt-6 rounded-2xl p-6 bg-black/5 ring-1 ring-black/10 text-sm opacity-80">
+            No plan generated yet. Add your macros and click <span class="font-bold">Generate meal plan</span>.
+          </div>
+
+          <div id="planOutput" class="hidden mt-5 space-y-4"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const foodDb = {
+        proteins: {
+          omnivore: [
+            { item: "Chicken breast", p: 31, c: 0, f: 3.6, grams: 100 },
+            { item: "Lean ground turkey", p: 27, c: 0, f: 8, grams: 100 },
+            { item: "Salmon", p: 25, c: 0, f: 13, grams: 100 },
+            { item: "Egg whites", p: 11, c: 1, f: 0.2, grams: 100 },
+            { item: "Greek yogurt (2%)", p: 10, c: 4, f: 2, grams: 100 },
+            { item: "Whey protein", p: 24, c: 3, f: 2, grams: 32 },
+          ],
+          vegetarian: [
+            { item: "Tofu", p: 12, c: 2, f: 7, grams: 100 },
+            { item: "Tempeh", p: 20, c: 8, f: 11, grams: 100 },
+            { item: "Seitan", p: 25, c: 4, f: 2, grams: 100 },
+            { item: "Greek yogurt (2%)", p: 10, c: 4, f: 2, grams: 100 },
+            { item: "Cottage cheese", p: 11, c: 3, f: 4, grams: 100 },
+            { item: "Protein powder", p: 24, c: 3, f: 2, grams: 32 },
+          ],
+        },
+        carbs: [
+          { item: "Cooked rice", p: 2.7, c: 28, f: 0.3, grams: 100 },
+          { item: "Oats", p: 13, c: 68, f: 7, grams: 100 },
+          { item: "Sweet potato", p: 2, c: 20, f: 0.1, grams: 100 },
+          { item: "Whole grain wrap", p: 8, c: 34, f: 6, grams: 80 },
+          { item: "Blueberries", p: 0.7, c: 14, f: 0.3, grams: 100 },
+          { item: "Banana", p: 1.1, c: 23, f: 0.3, grams: 100 },
+        ],
+        fats: [
+          { item: "Avocado", p: 2, c: 9, f: 15, grams: 100 },
+          { item: "Olive oil", p: 0, c: 0, f: 14, grams: 14 },
+          { item: "Almond butter", p: 21, c: 19, f: 55, grams: 100 },
+          { item: "Mixed nuts", p: 20, c: 22, f: 50, grams: 100 },
+          { item: "Chia seeds", p: 17, c: 42, f: 31, grams: 100 },
+        ],
+        vegetables: ["Spinach", "Broccoli", "Bell peppers", "Cucumber", "Asparagus", "Green beans"],
+      };
+
+      const mealTemplates = ["Breakfast", "Lunch", "Snack", "Dinner", "Post-workout", "Evening meal"];
+
+      const round = (n) => Math.max(0, Math.round(n));
+      const pick = (arr, seed) => arr[seed % arr.length];
+
+      function buildMacroSplit(meals, style) {
+        const base = Array.from({ length: meals }, () => ({ p: 1 / meals, c: 1 / meals, f: 1 / meals }));
+
+        if (style === "highProtein") {
+          base[0].p += 0.05;
+          base[Math.min(2, meals - 1)].p += 0.05;
+        }
+
+        if (style === "lowerCarb") {
+          base[0].c -= 0.05;
+          base[meals - 1].c -= 0.05;
+          base[Math.floor(meals / 2)].f += 0.08;
+        }
+
+        if (style === "balanced") {
+          base[0].c += 0.04;
+          base[meals - 1].f += 0.04;
+        }
+
+        if (style === "vegetarian") {
+          base[0].c += 0.03;
+          base[meals - 1].p += 0.03;
+        }
+
+        const normalize = (arr, key) => {
+          const total = arr.reduce((sum, m) => sum + m[key], 0);
+          arr.forEach((m) => {
+            m[key] /= total;
+          });
+        };
+
+        normalize(base, "p");
+        normalize(base, "c");
+        normalize(base, "f");
+
+        return base;
+      }
+
+      function renderPlan(data) {
+        const planOutput = document.getElementById("planOutput");
+        const emptyState = document.getElementById("emptyState");
+
+        emptyState.classList.add("hidden");
+        planOutput.classList.remove("hidden");
+
+        const { calories, protein, carbs, fat, meals, style, notes } = data;
+        const splits = buildMacroSplit(meals, style);
+        const proteinPool = style === "vegetarian" ? foodDb.proteins.vegetarian : foodDb.proteins.omnivore;
+
+        let rows = "";
+        let totals = { p: 0, c: 0, f: 0 };
+
+        for (let i = 0; i < meals; i += 1) {
+          const targetP = round(protein * splits[i].p);
+          const targetC = round(carbs * splits[i].c);
+          const targetF = round(fat * splits[i].f);
+
+          totals.p += targetP;
+          totals.c += targetC;
+          totals.f += targetF;
+
+          const proteinChoice = pick(proteinPool, i + meals);
+          const carbChoice = pick(foodDb.carbs, i + protein);
+          const fatChoice = pick(foodDb.fats, i + carbs);
+          const vegChoice = pick(foodDb.vegetables, i + fat);
+
+          const mealName = mealTemplates[i] || `Meal ${i + 1}`;
+
+          rows += `
+            <article class="rounded-2xl p-4 bg-cc-bg ring-1 ring-black/10">
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <h3 class="font-heading font-bold text-lg">${mealName}</h3>
+                <p class="text-xs font-semibold px-2 py-1 rounded-lg bg-cc-outline/20 ring-1 ring-cc-outline/50">P ${targetP}g • C ${targetC}g • F ${targetF}g</p>
+              </div>
+              <ul class="mt-3 text-sm space-y-1 opacity-90">
+                <li>• ${proteinChoice.item} + ${carbChoice.item}</li>
+                <li>• ${fatChoice.item} + ${vegChoice}</li>
+              </ul>
+            </article>
+          `;
+        }
+
+        planOutput.innerHTML = `
+          <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/50">
+            <p class="text-sm"><span class="font-semibold">Daily target:</span> ${calories} calories, ${protein}g protein, ${carbs}g carbs, ${fat}g fat</p>
+            <p class="text-sm mt-1"><span class="font-semibold">Generated split:</span> ${totals.p}g protein, ${totals.c}g carbs, ${totals.f}g fat across ${meals} meals</p>
+          </div>
+          ${rows}
+          <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/10 text-sm">
+            <p class="font-semibold">Personal notes</p>
+            <p class="mt-1 opacity-80">${notes || "No special notes added. Add allergies/dislikes for higher accuracy."}</p>
+          </div>
+        `;
+
+        document.getElementById("saveBtn").disabled = false;
+      }
+
+      document.getElementById("generateBtn").addEventListener("click", () => {
+        const calories = Number(document.getElementById("calories").value);
+        const protein = Number(document.getElementById("protein").value);
+        const carbs = Number(document.getElementById("carbs").value);
+        const fat = Number(document.getElementById("fat").value);
+        const meals = Number(document.getElementById("mealCount").value);
+        const style = document.getElementById("style").value;
+        const notes = document.getElementById("notes").value.trim();
+
+        const isValid = [calories, protein, carbs, fat].every((v) => Number.isFinite(v) && v > 0);
+        document.getElementById("error").classList.toggle("hidden", isValid);
+
+        if (!isValid) {
+          return;
+        }
+
+        renderPlan({ calories, protein, carbs, fat, meals, style, notes });
+      });
+
+      document.getElementById("saveBtn").addEventListener("click", async () => {
+        const card = document.getElementById("planCard");
+
+        const canvas = await html2canvas(card, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+        });
+
+        const link = document.createElement("a");
+        link.download = `chasing-change-meal-plan-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    </script>
+  </body>
+</html>
