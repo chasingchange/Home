@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preparing the Route | Chasing Change</title>
+    <meta name="description" content="Locked Chasing Change page for meal plan and physique tracking tools." />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              neon: "0 24px 80px rgba(119,215,112,0.30)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
+        <div class="relative p-6 sm:p-10">
+          <div class="flex items-center gap-3">
+            <img src="../Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+            <div>
+              <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Preparing the Route</h1>
+              <p class="mt-2 text-lg sm:text-xl font-bold font-heading">Locked access to planning and tracking tools.</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
+          <div class="inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+            <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Calculators</a>
+            <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
+            <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Preparing the Route</a>
+          </div>
+
+          <section id="lockCard" class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+            <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Protected page</p>
+            <h2 class="mt-2 text-2xl font-extrabold font-heading">Enter password</h2>
+            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access Meal Plan + Physique Ledger.</p>
+
+            <form id="unlockForm" class="mt-6 flex flex-col sm:flex-row gap-3">
+              <input
+                id="passwordInput"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Password"
+                class="flex-1 rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline"
+                required
+              />
+              <button type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">
+                Unlock
+              </button>
+            </form>
+            <p id="unlockMessage" class="mt-3 min-h-[1.25rem] text-sm text-red-600"></p>
+          </section>
+
+          <section id="lockedTools" class="hidden mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-4 sm:p-5">
+            <div class="flex flex-wrap items-center gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10 w-fit">
+              <button id="showMealPlan" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text" type="button">Meal Plan Tool</button>
+              <button id="showLedger" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition" type="button">Physique Ledger</button>
+            </div>
+
+            <div class="mt-4 rounded-2xl overflow-hidden ring-1 ring-black/10">
+              <iframe id="toolFrame" title="Locked Tool" src="../meal-plan/tool.html" class="w-full h-[2200px] border-0"></iframe>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const PASSWORD = "Chasing1228!";
+      const unlockForm = document.getElementById("unlockForm");
+      const passwordInput = document.getElementById("passwordInput");
+      const unlockMessage = document.getElementById("unlockMessage");
+      const lockCard = document.getElementById("lockCard");
+      const lockedTools = document.getElementById("lockedTools");
+      const toolFrame = document.getElementById("toolFrame");
+      const showMealPlan = document.getElementById("showMealPlan");
+      const showLedger = document.getElementById("showLedger");
+
+      const setActiveTool = (tool) => {
+        if (tool === "meal") {
+          toolFrame.src = "../meal-plan/tool.html";
+          showMealPlan.classList.add("bg-cc-outline");
+          showMealPlan.classList.remove("hover:bg-white");
+          showLedger.classList.remove("bg-cc-outline");
+          showLedger.classList.add("hover:bg-white");
+        } else {
+          toolFrame.src = "../PhysiqueLedger/index.html";
+          showLedger.classList.add("bg-cc-outline");
+          showLedger.classList.remove("hover:bg-white");
+          showMealPlan.classList.remove("bg-cc-outline");
+          showMealPlan.classList.add("hover:bg-white");
+        }
+      };
+
+      unlockForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        if (passwordInput.value === PASSWORD) {
+          unlockMessage.textContent = "";
+          lockCard.classList.add("hidden");
+          lockedTools.classList.remove("hidden");
+          setActiveTool("meal");
+        } else {
+          unlockMessage.textContent = "Incorrect password. Try again.";
+        }
+      });
+
+      showMealPlan.addEventListener("click", () => setActiveTool("meal"));
+      showLedger.addEventListener("click", () => setActiveTool("ledger"));
+    </script>
+  </body>
+</html>
