@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chasing Change — AI Meal Plan Generator</title>
+    <meta
+      name="description"
+      content="Create a daily meal plan by target-based or own-food mode and save it as an image with Chasing Change branding."
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: {
+                text: "#071f35",
+                bg: "#f5f5f7",
+                outline: "#77d770",
+                card: "#ffffff",
+              },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              glow: "0 24px 70px rgba(119,215,112,0.25)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-glow bg-white mb-6">
+        <div class="relative p-6 sm:p-8">
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+          <div class="relative flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+              <img src="../Logo.png" alt="Chasing Change logo" class="w-12 h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+              <div>
+                <p class="text-xs tracking-[0.3em] uppercase font-brand opacity-60">Chasing Change</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold font-heading">AI Meal Plan Generator</h1>
+              </div>
+            </div>
+            <a href="../index.html" class="cc-link-chip">All calculators</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid lg:grid-cols-2 gap-6 items-start">
+        <section class="rounded-3xl bg-cc-card ring-1 ring-black/10 shadow-soft p-5 sm:p-6">
+          <h2 class="text-xl font-heading font-extrabold">Daily Meal Plan Inputs</h2>
+          <p class="mt-2 text-sm opacity-80">Choose a generation mode: use your daily targets or build from your own foods.</p>
+
+          <div class="mt-5 rounded-2xl p-4 bg-black/5 ring-1 ring-black/10">
+            <p class="text-sm font-semibold mb-2">Generation mode</p>
+            <div class="inline-flex rounded-xl bg-white p-1 ring-1 ring-black/10 flex-wrap gap-1">
+              <button id="sourceTargetBtn" type="button" class="sourceBtn px-4 py-2 text-sm font-bold rounded-lg bg-cc-outline/20 ring-1 ring-cc-outline/40">Use my target</button>
+              <button id="sourceOwnFoodBtn" type="button" class="sourceBtn px-4 py-2 text-sm font-bold rounded-lg opacity-70 hover:opacity-100">Use my own food</button>
+            </div>
+          </div>
+
+          <div id="targetSection" class="mt-5">
+            <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/10 mb-4">
+              <p class="text-sm font-semibold mb-2">Target type</p>
+              <div class="inline-flex rounded-xl bg-white p-1 ring-1 ring-black/10">
+                <button id="modeMacroBtn" type="button" class="targetModeBtn px-4 py-2 text-sm font-bold rounded-lg bg-cc-outline/20 ring-1 ring-cc-outline/40">Macro targets</button>
+                <button id="modeCalorieBtn" type="button" class="targetModeBtn px-4 py-2 text-sm font-bold rounded-lg opacity-70 hover:opacity-100">Calories only</button>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm font-semibold">Calories</span>
+                <input id="calories" type="number" inputmode="numeric" placeholder="e.g. 2200" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+              </label>
+              <label class="block">
+                <span class="text-sm font-semibold">Protein (g)</span>
+                <input id="protein" type="number" inputmode="numeric" placeholder="e.g. 180" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+              </label>
+              <label class="block">
+                <span class="text-sm font-semibold">Carbs (g)</span>
+                <input id="carbs" type="number" inputmode="numeric" placeholder="e.g. 220" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+              </label>
+              <label class="block">
+                <span class="text-sm font-semibold">Fat (g)</span>
+                <input id="fat" type="number" inputmode="numeric" placeholder="e.g. 70" class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none" />
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-5 grid sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-semibold">Meals per day</span>
+              <select id="mealCount" class="mt-2 w-full px-4 py-3 rounded-xl bg-white border border-black/10 focus:border-cc-outline focus:ring-2 focus:ring-cc-outline/70 focus:outline-none">
+                <option value="3">3 meals</option>
+                <option value="4" selected>4 meals</option>
+                <option value="5">5 meals</option>
+                <option value="6">6 meals</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <span class="text-sm font-semibold">Eating style</span>
+              <select id="style" class="mt-2 w-full px-4 py-3 rounded-xl bg-white border border-black/10 focus:border-cc-outline focus:ring-2 focus:ring-cc-outline/70 focus:outline-none">
+                <option value="balanced" selected>Balanced</option>
+                <option value="highProtein">High Protein</option>
+                <option value="lowerCarb">Lower Carb</option>
+                <option value="vegetarian">Vegetarian</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="block mt-4">
+            <span class="text-sm font-semibold">Food notes, allergies, or dislikes (optional)</span>
+            <textarea id="notes" rows="3" placeholder="Example: dairy-free, no shellfish, I prefer quick prep meals under 20 minutes." class="mt-2 w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none"></textarea>
+          </label>
+
+          <div class="mt-4 rounded-2xl p-4 bg-black/5 ring-1 ring-black/10">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <p class="text-sm font-semibold">Your foods</p>
+              <button id="addFoodBtn" type="button" class="text-sm font-bold px-3 py-2 rounded-lg bg-white ring-1 ring-black/15 hover:bg-black/5">+ Add food</button>
+            </div>
+            <p class="text-xs opacity-70 mt-1">Type foods like “apple” and macros auto-fill while you type. You can also set serving amount + measurement (serving, g, lb, ml, oz).</p>
+            <div id="customFoodsList" class="mt-3 space-y-2"></div>
+            <datalist id="foodSuggestions"></datalist>
+          </div>
+
+          <p id="error" class="hidden mt-3 text-sm text-red-600 font-semibold">Please add valid targets for the selected mode.</p>
+
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button id="generateBtn" class="px-5 py-3 rounded-2xl font-bold bg-cc-outline text-cc-text ring-1 ring-cc-outline/60 hover:opacity-90">Generate meal plan</button>
+            <button id="saveBtn" class="px-5 py-3 rounded-2xl font-bold bg-white ring-1 ring-black/15 hover:bg-black/5" disabled>Save plan as photo</button>
+          </div>
+        </section>
+
+        <section id="planCard" class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-5 sm:p-6 min-h-[420px]">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs tracking-[0.3em] uppercase font-brand opacity-60">Chasing Change</p>
+              <h2 class="text-xl font-heading font-extrabold">Generated Daily Meal Plan</h2>
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-cc-outline/20 ring-1 ring-cc-outline/50">Macro Aligned</span>
+          </div>
+
+          <div id="emptyState" class="mt-6 rounded-2xl p-6 bg-black/5 ring-1 ring-black/10 text-sm opacity-80">
+            No plan generated yet. Add your targets or foods and click <span class="font-bold">Generate meal plan</span>.
+          </div>
+
+          <div id="planOutput" class="hidden mt-5 space-y-4"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const foodDb = {
+        proteins: {
+          omnivore: [
+            { item: "Chicken breast", p: 31, c: 0, f: 3.6 },
+            { item: "Lean ground turkey", p: 27, c: 0, f: 8 },
+            { item: "Salmon", p: 25, c: 0, f: 13 },
+            { item: "Egg whites", p: 11, c: 1, f: 0.2 },
+            { item: "Greek yogurt (2%)", p: 10, c: 4, f: 2 },
+            { item: "Whey protein", p: 24, c: 3, f: 2 },
+          ],
+          vegetarian: [
+            { item: "Tofu", p: 12, c: 2, f: 7 },
+            { item: "Tempeh", p: 20, c: 8, f: 11 },
+            { item: "Seitan", p: 25, c: 4, f: 2 },
+            { item: "Greek yogurt (2%)", p: 10, c: 4, f: 2 },
+            { item: "Cottage cheese", p: 11, c: 3, f: 4 },
+            { item: "Protein powder", p: 24, c: 3, f: 2 },
+          ],
+        },
+        carbs: [
+          { item: "Cooked rice", p: 2.7, c: 28, f: 0.3 },
+          { item: "Oats", p: 13, c: 68, f: 7 },
+          { item: "Sweet potato", p: 2, c: 20, f: 0.1 },
+          { item: "Whole grain wrap", p: 8, c: 34, f: 6 },
+          { item: "Blueberries", p: 0.7, c: 14, f: 0.3 },
+          { item: "Banana", p: 1.1, c: 23, f: 0.3 },
+        ],
+        fats: [
+          { item: "Avocado", p: 2, c: 9, f: 15 },
+          { item: "Olive oil", p: 0, c: 0, f: 100 },
+          { item: "Almond butter", p: 21, c: 19, f: 55 },
+          { item: "Mixed nuts", p: 20, c: 22, f: 50 },
+          { item: "Chia seeds", p: 17, c: 42, f: 31 },
+        ],
+        vegetables: ["Spinach", "Broccoli", "Bell peppers", "Cucumber", "Asparagus", "Green beans"],
+      };
+
+      const commonFoods = [
+        { item: "Apple", calories: 95, p: 0.5, c: 25, f: 0.3, servingAmount: 1, servingUnit: "serving" },
+        { item: "Banana", calories: 105, p: 1.3, c: 27, f: 0.3, servingAmount: 1, servingUnit: "serving" },
+        { item: "Blueberries", calories: 84, p: 1.1, c: 21, f: 0.5, servingAmount: 1, servingUnit: "cup" },
+        { item: "Chicken breast", calories: 165, p: 31, c: 0, f: 3.6, servingAmount: 100, servingUnit: "g" },
+        { item: "Salmon", calories: 208, p: 20, c: 0, f: 13, servingAmount: 100, servingUnit: "g" },
+        { item: "Egg whites", calories: 52, p: 11, c: 0.7, f: 0.2, servingAmount: 100, servingUnit: "g" },
+        { item: "Cooked rice", calories: 130, p: 2.7, c: 28, f: 0.3, servingAmount: 100, servingUnit: "g" },
+        { item: "Oats", calories: 389, p: 16.9, c: 66.3, f: 6.9, servingAmount: 100, servingUnit: "g" },
+        { item: "Sweet potato", calories: 86, p: 1.6, c: 20.1, f: 0.1, servingAmount: 100, servingUnit: "g" },
+        { item: "Greek yogurt (2%)", calories: 73, p: 10, c: 3.9, f: 2, servingAmount: 100, servingUnit: "g" },
+        { item: "Avocado", calories: 160, p: 2, c: 9, f: 15, servingAmount: 100, servingUnit: "g" },
+        { item: "Olive oil", calories: 119, p: 0, c: 0, f: 13.5, servingAmount: 1, servingUnit: "tbsp" },
+        { item: "Almond milk", calories: 30, p: 1, c: 1, f: 2.5, servingAmount: 240, servingUnit: "ml" },
+        { item: "Whole milk", calories: 149, p: 7.7, c: 11.7, f: 7.9, servingAmount: 240, servingUnit: "ml" },
+        { item: "Protein powder", calories: 120, p: 24, c: 3, f: 2, servingAmount: 1, servingUnit: "scoop" },
+      ];
+      const servingUnits = ["serving", "g", "kg", "oz", "lb", "ml", "l", "cup", "tbsp", "tsp", "scoop", "piece"];
+
+      const state = { sourceMode: "target", targetMode: "macro", customFoods: [] };
+      const round = (n) => Math.max(0, Math.round(n));
+      const calsFromMacros = (p, c, f) => p * 4 + c * 4 + f * 9;
+
+      function hashSeed(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i += 1) {
+          h ^= str.charCodeAt(i);
+          h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+        }
+        return Math.abs(h >>> 0);
+      }
+
+      function getMealLabels(meals) {
+        const map = {
+          3: ["Breakfast", "Lunch", "Dinner"],
+          4: ["Breakfast", "Lunch", "Snack", "Dinner"],
+          5: ["Breakfast", "Lunch", "Snack", "Dinner", "Evening meal"],
+          6: ["Breakfast", "Mid-morning", "Lunch", "Snack", "Dinner", "Evening meal"],
+        };
+        return map[meals] || Array.from({ length: meals }, (_, i) => `Meal ${i + 1}`);
+      }
+
+      function updateModeUI() {
+        const sourceTargetBtn = document.getElementById("sourceTargetBtn");
+        const sourceOwnFoodBtn = document.getElementById("sourceOwnFoodBtn");
+        const targetSection = document.getElementById("targetSection");
+        const styleField = document.getElementById("style");
+
+        sourceTargetBtn.className = `sourceBtn px-4 py-2 text-sm font-bold rounded-lg ${state.sourceMode === "target" ? "bg-cc-outline/20 ring-1 ring-cc-outline/40" : "opacity-70 hover:opacity-100"}`;
+        sourceOwnFoodBtn.className = `sourceBtn px-4 py-2 text-sm font-bold rounded-lg ${state.sourceMode === "ownFood" ? "bg-cc-outline/20 ring-1 ring-cc-outline/40" : "opacity-70 hover:opacity-100"}`;
+
+        targetSection.classList.toggle("hidden", state.sourceMode !== "target");
+        styleField.disabled = state.sourceMode !== "target";
+        styleField.classList.toggle("opacity-60", state.sourceMode !== "target");
+
+        const macroBtn = document.getElementById("modeMacroBtn");
+        const calorieBtn = document.getElementById("modeCalorieBtn");
+        const macroFields = ["protein", "carbs", "fat"].map((id) => document.getElementById(id));
+
+        macroBtn.className = `targetModeBtn px-4 py-2 text-sm font-bold rounded-lg ${state.targetMode === "macro" ? "bg-cc-outline/20 ring-1 ring-cc-outline/40" : "opacity-70 hover:opacity-100"}`;
+        calorieBtn.className = `targetModeBtn px-4 py-2 text-sm font-bold rounded-lg ${state.targetMode === "calorie" ? "bg-cc-outline/20 ring-1 ring-cc-outline/40" : "opacity-70 hover:opacity-100"}`;
+
+        macroFields.forEach((field) => {
+          field.disabled = state.sourceMode !== "target" || state.targetMode !== "macro";
+          field.classList.toggle("opacity-60", field.disabled);
+        });
+      }
+
+      function buildMacroSplit(meals, style) {
+        const base = Array.from({ length: meals }, () => ({ p: 1 / meals, c: 1 / meals, f: 1 / meals }));
+
+        if (style === "highProtein") {
+          base[0].p += 0.06;
+          base[Math.min(2, meals - 1)].p += 0.04;
+        }
+        if (style === "lowerCarb") {
+          base[0].c -= 0.05;
+          base[meals - 1].c -= 0.05;
+          base[Math.floor(meals / 2)].f += 0.08;
+        }
+        if (style === "balanced") {
+          base[0].c += 0.03;
+          base[meals - 1].f += 0.03;
+        }
+        if (style === "vegetarian") {
+          base[0].c += 0.03;
+          base[meals - 1].p += 0.03;
+        }
+
+        ["p", "c", "f"].forEach((key) => {
+          const total = base.reduce((sum, m) => sum + m[key], 0);
+          base.forEach((m) => {
+            m[key] /= total;
+          });
+        });
+
+        return base;
+      }
+
+      function populateFoodSuggestions() {
+        const list = document.getElementById("foodSuggestions");
+        list.innerHTML = commonFoods.map((food) => `<option value="${food.item}"></option>`).join("");
+      }
+
+      function findFoodMatch(query) {
+        const q = (query || "").trim().toLowerCase();
+        if (q.length < 2) return null;
+        return commonFoods.find((food) => food.item.toLowerCase().includes(q)) || null;
+      }
+
+      function applyFoodMatch(idx, match) {
+        if (!match || !state.customFoods[idx]) return;
+        state.customFoods[idx] = {
+          ...state.customFoods[idx],
+          name: match.item,
+          calories: String(round(match.calories)),
+          protein: String(match.p),
+          carbs: String(match.c),
+          fat: String(match.f),
+          servingAmount: String(match.servingAmount),
+          servingUnit: match.servingUnit,
+        };
+        renderCustomFoods();
+      }
+
+      function addCustomFoodRow(food = { name: "", calories: "", protein: "", carbs: "", fat: "", servingAmount: "1", servingUnit: "serving" }) {
+        state.customFoods.push(food);
+        renderCustomFoods();
+      }
+
+      function renderCustomFoods() {
+        const container = document.getElementById("customFoodsList");
+        const labelRow = `
+          <div class="hidden sm:grid grid-cols-12 gap-2 items-center text-[11px] font-semibold uppercase tracking-wide opacity-70 px-1">
+            <div class="col-span-3">Food</div>
+            <div class="col-span-1">Serving</div>
+            <div class="col-span-1">Unit</div>
+            <div class="col-span-2">Calories</div>
+            <div class="col-span-2">Protein (g)</div>
+            <div class="col-span-1">Fat (g)</div>
+            <div class="col-span-1">Carbs (g)</div>
+            <div class="col-span-1">Remove</div>
+          </div>
+        `;
+
+        container.innerHTML = labelRow + state.customFoods
+          .map(
+            (f, idx) => `
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <input data-idx="${idx}" data-key="name" value="${f.name}" list="foodSuggestions" placeholder="Food name" class="col-span-12 sm:col-span-3 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <input data-idx="${idx}" data-key="servingAmount" value="${f.servingAmount || "1"}" type="number" inputmode="decimal" placeholder="1" aria-label="Serving amount" class="col-span-4 sm:col-span-1 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <select data-idx="${idx}" data-key="servingUnit" class="col-span-4 sm:col-span-1 px-2 py-2 rounded-lg ring-1 ring-black/10 bg-white" aria-label="Serving unit">
+                  ${servingUnits
+                    .map((unit) => `<option value="${unit}" ${unit === (f.servingUnit || "serving") ? "selected" : ""}>${unit}</option>`)
+                    .join("")}
+                </select>
+                <input data-idx="${idx}" data-key="calories" value="${f.calories}" type="number" inputmode="decimal" placeholder="Calories" aria-label="Calories" class="col-span-6 sm:col-span-2 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <input data-idx="${idx}" data-key="protein" value="${f.protein}" type="number" inputmode="decimal" placeholder="Protein (g)" aria-label="Protein" class="col-span-6 sm:col-span-2 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <input data-idx="${idx}" data-key="fat" value="${f.fat}" type="number" inputmode="decimal" placeholder="Fat (g)" aria-label="Fat" class="col-span-6 sm:col-span-1 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <input data-idx="${idx}" data-key="carbs" value="${f.carbs}" type="number" inputmode="decimal" placeholder="Carbs (g)" aria-label="Carbs" class="col-span-6 sm:col-span-1 px-3 py-2 rounded-lg ring-1 ring-black/10" />
+                <button data-remove="${idx}" type="button" class="col-span-4 sm:col-span-1 text-xs font-bold px-2 py-2 rounded-lg bg-white ring-1 ring-black/15 hover:bg-black/5">✕</button>
+              </div>
+            `
+          )
+          .join("");
+
+        container.querySelectorAll("input[data-idx]").forEach((input) => {
+          input.addEventListener("input", (e) => {
+            const idx = Number(e.target.dataset.idx);
+            const key = e.target.dataset.key;
+            state.customFoods[idx][key] = e.target.value;
+            if (key === "name") {
+              const match = findFoodMatch(e.target.value);
+              if (match) applyFoodMatch(idx, match);
+            }
+          });
+        });
+
+        container.querySelectorAll("select[data-idx]").forEach((select) => {
+          select.addEventListener("change", (e) => {
+            const idx = Number(e.target.dataset.idx);
+            const key = e.target.dataset.key;
+            state.customFoods[idx][key] = e.target.value;
+          });
+        });
+
+        container.querySelectorAll("button[data-remove]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const idx = Number(e.target.dataset.remove);
+            state.customFoods.splice(idx, 1);
+            renderCustomFoods();
+          });
+        });
+      }
+
+      function parseCustomFoods() {
+        return state.customFoods
+          .map((f) => ({
+            item: (f.name || "").trim(),
+            calories: Number(f.calories) || 0,
+            p: Number(f.protein) || 0,
+            c: Number(f.carbs) || 0,
+            f: Number(f.fat) || 0,
+            servingAmount: Number(f.servingAmount) || 1,
+            servingUnit: (f.servingUnit || "serving").trim() || "serving",
+          }))
+          .filter((f) => f.item && (f.calories > 0 || f.p > 0 || f.c > 0 || f.f > 0));
+      }
+
+      function targetsFromInputs() {
+        const calories = Number(document.getElementById("calories").value);
+        const protein = Number(document.getElementById("protein").value);
+        const carbs = Number(document.getElementById("carbs").value);
+        const fat = Number(document.getElementById("fat").value);
+
+        if (!Number.isFinite(calories) || calories <= 0) return null;
+
+        if (state.targetMode === "macro") {
+          if (![protein, carbs, fat].every((v) => Number.isFinite(v) && v > 0)) return null;
+          return { calories, protein, carbs, fat, derived: false };
+        }
+
+        const style = document.getElementById("style").value;
+        const styleRatios = {
+          balanced: { p: 0.3, c: 0.4, f: 0.3 },
+          highProtein: { p: 0.36, c: 0.34, f: 0.3 },
+          lowerCarb: { p: 0.4, c: 0.25, f: 0.35 },
+          vegetarian: { p: 0.28, c: 0.47, f: 0.25 },
+        };
+        const r = styleRatios[style] || styleRatios.balanced;
+        return {
+          calories,
+          protein: round((calories * r.p) / 4),
+          carbs: round((calories * r.c) / 4),
+          fat: round((calories * r.f) / 9),
+          derived: true,
+        };
+      }
+
+      function renderPlan(data) {
+        const { calories, protein, carbs, fat, meals, style, notes, customFoods, derived, summaryLabel } = data;
+        const planOutput = document.getElementById("planOutput");
+        document.getElementById("emptyState").classList.add("hidden");
+        planOutput.classList.remove("hidden");
+
+        const splits = buildMacroSplit(meals, style);
+        const labels = getMealLabels(meals);
+        const proteinPool = style === "vegetarian" ? foodDb.proteins.vegetarian : foodDb.proteins.omnivore;
+        const customPool = customFoods.map((f) => ({ item: f.item, p: f.p, c: f.c, f: f.f }));
+
+        const poolBySlot = [
+          [...proteinPool, ...customPool],
+          [...foodDb.carbs, ...customPool],
+          [...foodDb.fats, ...customPool],
+        ];
+
+        const planSeed = hashSeed(`${calories}-${protein}-${carbs}-${fat}-${style}-${meals}-${notes}-${JSON.stringify(customFoods)}`);
+
+        let totals = { p: 0, c: 0, f: 0, kcal: 0 };
+        const rows = labels
+          .map((mealName, i) => {
+            const targetP = round(protein * splits[i].p);
+            const targetC = round(carbs * splits[i].c);
+            const targetF = round(fat * splits[i].f);
+
+            const pFood = poolBySlot[0][(planSeed + i * 11) % poolBySlot[0].length];
+            const cFood = poolBySlot[1][(planSeed + i * 17) % poolBySlot[1].length];
+            const fFood = poolBySlot[2][(planSeed + i * 23) % poolBySlot[2].length];
+            const veg = foodDb.vegetables[(planSeed + i * 7) % foodDb.vegetables.length];
+
+            const qty = (target, macroPer100) => round((target / Math.max(macroPer100, 0.1)) * 100);
+            const pQty = qty(targetP, pFood?.p || 20);
+            const cQty = qty(targetC, cFood?.c || 25);
+            const fQty = qty(targetF, fFood?.f || 20);
+
+            const mealP = round(((pQty / 100) * (pFood?.p || 0)) + ((cQty / 100) * (cFood?.p || 0)) + ((fQty / 100) * (fFood?.p || 0)));
+            const mealC = round(((pQty / 100) * (pFood?.c || 0)) + ((cQty / 100) * (cFood?.c || 0)) + ((fQty / 100) * (fFood?.c || 0)));
+            const mealF = round(((pQty / 100) * (pFood?.f || 0)) + ((cQty / 100) * (cFood?.f || 0)) + ((fQty / 100) * (fFood?.f || 0)));
+            const mealKcal = calsFromMacros(mealP, mealC, mealF);
+
+            totals.p += mealP;
+            totals.c += mealC;
+            totals.f += mealF;
+            totals.kcal += mealKcal;
+
+            return `
+              <article class="rounded-2xl p-4 bg-cc-bg ring-1 ring-black/10">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                  <h3 class="font-heading font-bold text-lg">${mealName}</h3>
+                  <p class="text-xs font-semibold px-2 py-1 rounded-lg bg-cc-outline/20 ring-1 ring-cc-outline/50">~${mealKcal} kcal • P ${mealP}g • C ${mealC}g • F ${mealF}g</p>
+                </div>
+                <ul class="mt-3 text-sm space-y-1 opacity-90">
+                  <li>• ${pFood?.item || "Protein source"} (${pQty}g)</li>
+                  <li>• ${cFood?.item || "Carb source"} (${cQty}g)</li>
+                  <li>• ${fFood?.item || "Fat source"} (${fQty}g) + ${veg}</li>
+                </ul>
+              </article>
+            `;
+          })
+          .join("");
+
+        planOutput.innerHTML = `
+          <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/50 text-sm">
+            <p><span class="font-semibold">Mode:</span> ${summaryLabel}${derived ? " (macros derived from calories + style)" : ""}</p>
+            <p class="mt-1"><span class="font-semibold">Daily target:</span> ${calories} kcal, ${protein}g protein, ${carbs}g carbs, ${fat}g fat</p>
+            <p class="mt-1"><span class="font-semibold">Generated plan total:</span> ${totals.kcal} kcal, ${totals.p}g protein, ${totals.c}g carbs, ${totals.f}g fat</p>
+          </div>
+          ${rows}
+          <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/10 text-sm">
+            <p class="font-semibold">Personal notes</p>
+            <p class="mt-1 opacity-80">${notes || "No special notes added. Add allergies/dislikes for higher accuracy."}</p>
+          </div>
+        `;
+
+        document.getElementById("saveBtn").disabled = false;
+      }
+
+      function renderOwnFoodPlan(data) {
+        const { meals, notes, customFoods } = data;
+        const planOutput = document.getElementById("planOutput");
+        document.getElementById("emptyState").classList.add("hidden");
+        planOutput.classList.remove("hidden");
+
+        const labels = getMealLabels(meals);
+        const totals = customFoods.reduce(
+          (sum, food) => {
+            sum.kcal += round(food.calories || calsFromMacros(food.p, food.c, food.f));
+            sum.p += round(food.p);
+            sum.c += round(food.c);
+            sum.f += round(food.f);
+            return sum;
+          },
+          { kcal: 0, p: 0, c: 0, f: 0 }
+        );
+
+        const rows = labels
+          .map((mealName, i) => {
+            const assigned = customFoods.filter((_, idx) => idx % meals === i);
+            const mealTotals = assigned.reduce(
+              (sum, food) => {
+                sum.kcal += round(food.calories || calsFromMacros(food.p, food.c, food.f));
+                sum.p += round(food.p);
+                sum.c += round(food.c);
+                sum.f += round(food.f);
+                return sum;
+              },
+              { kcal: 0, p: 0, c: 0, f: 0 }
+            );
+
+            return `
+              <article class="rounded-2xl p-4 bg-cc-bg ring-1 ring-black/10">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                  <h3 class="font-heading font-bold text-lg">${mealName}</h3>
+                  <p class="text-xs font-semibold px-2 py-1 rounded-lg bg-cc-outline/20 ring-1 ring-cc-outline/50">~${mealTotals.kcal} kcal • P ${mealTotals.p}g • C ${mealTotals.c}g • F ${mealTotals.f}g</p>
+                </div>
+                <ul class="mt-3 text-sm space-y-1 opacity-90">
+                  ${assigned.length ? assigned.map((food) => `<li>• ${food.item} (${food.servingAmount} ${food.servingUnit})</li>`).join("") : "<li>• Add more foods to fill this meal.</li>"}
+                </ul>
+              </article>
+            `;
+          })
+          .join("");
+
+        planOutput.innerHTML = `
+          <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/50 text-sm">
+            <p><span class="font-semibold">Mode:</span> Use my own food</p>
+            <p class="mt-1"><span class="font-semibold">Plan totals from your foods:</span> ${totals.kcal} kcal, ${totals.p}g protein, ${totals.c}g carbs, ${totals.f}g fat</p>
+          </div>
+          ${rows}
+          <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/10 text-sm">
+            <p class="font-semibold">Personal notes</p>
+            <p class="mt-1 opacity-80">${notes || "No special notes added."}</p>
+          </div>
+        `;
+
+        document.getElementById("saveBtn").disabled = false;
+      }
+
+      document.getElementById("sourceTargetBtn").addEventListener("click", () => {
+        state.sourceMode = "target";
+        updateModeUI();
+      });
+
+      document.getElementById("sourceOwnFoodBtn").addEventListener("click", () => {
+        state.sourceMode = "ownFood";
+        updateModeUI();
+      });
+
+      document.getElementById("modeMacroBtn").addEventListener("click", () => {
+        state.targetMode = "macro";
+        updateModeUI();
+      });
+
+      document.getElementById("modeCalorieBtn").addEventListener("click", () => {
+        state.targetMode = "calorie";
+        updateModeUI();
+      });
+
+      document.getElementById("addFoodBtn").addEventListener("click", () => addCustomFoodRow());
+
+      document.getElementById("generateBtn").addEventListener("click", () => {
+        const meals = Number(document.getElementById("mealCount").value);
+        const style = document.getElementById("style").value;
+        const notes = document.getElementById("notes").value.trim();
+        const customFoods = parseCustomFoods();
+
+        let isValid = Number.isFinite(meals) && meals >= 3 && meals <= 6;
+
+        if (state.sourceMode === "target") {
+          const targets = targetsFromInputs();
+          isValid = isValid && Boolean(targets);
+          document.getElementById("error").classList.toggle("hidden", isValid);
+          if (!isValid) return;
+
+          renderPlan({
+            ...targets,
+            meals,
+            style,
+            notes,
+            customFoods,
+            summaryLabel: state.targetMode === "macro" ? "Use my target — Macro targets" : "Use my target — Calories only",
+          });
+          return;
+        }
+
+        isValid = isValid && customFoods.length > 0;
+        document.getElementById("error").classList.toggle("hidden", isValid);
+        if (!isValid) {
+          document.getElementById("error").textContent = "Add at least one valid custom food when using your own food mode.";
+          document.getElementById("error").classList.remove("hidden");
+          return;
+        }
+
+        document.getElementById("error").textContent = "Please add valid targets for the selected mode.";
+        renderOwnFoodPlan({ meals, notes, customFoods });
+      });
+
+      document.getElementById("saveBtn").addEventListener("click", async () => {
+        const card = document.getElementById("planCard");
+        const canvas = await html2canvas(card, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+        });
+
+        const link = document.createElement("a");
+        link.download = `chasing-change-meal-plan-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+
+      updateModeUI();
+      populateFoodSuggestions();
+      addCustomFoodRow({ name: "", calories: "", protein: "", carbs: "", fat: "", servingAmount: "1", servingUnit: "serving" });
+    </script>
+  </body>
+</html>
