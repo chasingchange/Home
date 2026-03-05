@@ -60,13 +60,34 @@
 
       <main>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
-          <div class="inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-            <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Calculators</a>
-            <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
-            <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
-            <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Preparing the Route</a>
-            <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
-          </div>
+          <nav>
+            <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+              <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Calculators</a>
+              <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
+              <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
+              <a href="../contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Contact</a>
+              <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Preparing the Route</a>
+            </div>
+
+            <div class="md:hidden">
+              <button id="menuToggle" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text" aria-expanded="false" aria-controls="mobileMenu">
+                <span>Menu</span>
+                <span class="text-lg leading-none">☰</span>
+              </button>
+              <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+                <div class="grid gap-1">
+                  <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Calculators</a>
+                  <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Testimonials</a>
+                  <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
+                  <a href="../contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Contact</a>
+                  <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Preparing the Route</a>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <h2 class="mt-5 text-2xl sm:text-3xl font-extrabold font-heading">Preparing the Route</h2>
+          <p class="mt-2 text-sm sm:text-base opacity-80">Locked access to planning and tracking tools.</p>
 
           <h2 class="mt-5 text-2xl sm:text-3xl font-extrabold font-heading">Preparing the Route</h2>
           <p class="mt-2 text-sm sm:text-base opacity-80">Locked access to planning and tracking tools.</p>
@@ -107,6 +128,14 @@
     </div>
 
     <script>
+      const menuToggle = document.getElementById("menuToggle");
+      const mobileMenu = document.getElementById("mobileMenu");
+      menuToggle?.addEventListener("click", () => {
+        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!expanded));
+        mobileMenu.classList.toggle("hidden");
+      });
+
       const PASSWORD = "Chasing1228!";
       const unlockForm = document.getElementById("unlockForm");
       const passwordInput = document.getElementById("passwordInput");
