@@ -66,6 +66,7 @@
               <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Calculators</a>
               <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
               <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
+              <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">About</a>
               <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Contact</a>
               <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Preparing the Route</a>
             </div>
@@ -80,6 +81,7 @@
                   <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Calculators</a>
                   <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Testimonials</a>
                   <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
+                  <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">About</a>
                   <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Contact</a>
                   <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Preparing the Route</a>
                 </div>
@@ -87,30 +89,37 @@
             </div>
           </nav>
 
-          <div class="mt-4 flex flex-wrap gap-2">
-            <span class="category-chip" style="--chip-color: #77d770">Body</span>
-            <span class="category-chip" style="--chip-color: #ffbd59">Art</span>
-            <span class="category-chip" style="--chip-color: #2a9df0">Mind</span>
-            <span class="category-chip" style="--chip-color: #aa70d7">Soul</span>
-            <span class="category-chip" style="--chip-color: #f02348">Career</span>
-            <span class="category-chip" style="--chip-color: #e46702">Life</span>
+          <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
+            <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to start your change?</p>
+            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
           </div>
 
-          <div class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-            <a href="./macro/index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+          <p class="mt-4 text-sm opacity-80">Tap a core below to filter tools by focus. Example: selecting <strong>Body</strong> shows only Body tools.</p>
+          <div id="coreFilters" class="mt-3 flex flex-wrap gap-2">
+            <button type="button" class="category-chip is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">Body</button>
+            <button type="button" class="category-chip" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">Art</button>
+            <button type="button" class="category-chip" style="--chip-color: #2a9df0" data-core="mind" aria-pressed="false">Mind</button>
+            <button type="button" class="category-chip" style="--chip-color: #aa70d7" data-core="soul" aria-pressed="false">Soul</button>
+            <button type="button" class="category-chip" style="--chip-color: #f02348" data-core="career" aria-pressed="false">Career</button>
+            <button type="button" class="category-chip" style="--chip-color: #e46702" data-core="life" aria-pressed="false">Life</button>
+          </div>
+
+          <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+            <a href="./macro/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <span class="category-badge">BODY</span>
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h2>
               <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a href="./1RM Calculator/Index.html" class="group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./1RM Calculator/Index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <span class="category-badge">BODY</span>
               <h2 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h2>
               <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
           </div>
+                    <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
         </section>
 
       <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
@@ -126,6 +135,34 @@
         menuToggle.setAttribute("aria-expanded", String(!expanded));
         mobileMenu.classList.toggle("hidden");
       });
+
+      const coreFilters = document.getElementById("coreFilters");
+      const coreCards = Array.from(document.querySelectorAll(".core-card"));
+      const noToolsMessage = document.getElementById("noToolsMessage");
+
+      const setCoreFilter = (core) => {
+        const visibleCount = coreCards.reduce((count, card) => {
+          const visible = card.dataset.core === core;
+          card.classList.toggle("hidden", !visible);
+          return count + (visible ? 1 : 0);
+        }, 0);
+
+        noToolsMessage?.classList.toggle("hidden", visibleCount > 0);
+
+        coreFilters?.querySelectorAll("[data-core]").forEach((button) => {
+          const isActive = button.dataset.core === core;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        });
+      };
+
+      coreFilters?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-core]");
+        if (!button) return;
+        setCoreFilter(button.dataset.core);
+      });
+
+      setCoreFilter("body");
     </script>
   </body>
 </html>

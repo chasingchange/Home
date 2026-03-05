@@ -66,6 +66,9 @@ h3 {
 }
 
 .category-chip {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -75,6 +78,11 @@ h3 {
   border: 1px solid rgba(7, 31, 53, 0.12);
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+.category-chip.is-active {
+  background: rgba(119, 215, 112, 0.2);
+  border-color: rgba(119, 215, 112, 0.8);
 }
 
 .category-chip::before {
