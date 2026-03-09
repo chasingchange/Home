@@ -16,6 +16,39 @@
     />
     <link rel="stylesheet" href="./shared.css" />
 
+    <style>
+      .testimonial-card {
+        cursor: pointer;
+      }
+
+      .testimonial-content {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-0.25rem);
+        transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .testimonial-card:hover .testimonial-content,
+      .testimonial-card:focus-within .testimonial-content,
+      .testimonial-card.is-open .testimonial-content {
+        max-height: 16rem;
+        overflow-y: auto;
+        opacity: 0.95;
+        transform: translateY(0);
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(7, 31, 53, 0.12);
+      }
+
+      .testimonial-card:hover,
+      .testimonial-card:focus-within,
+      .testimonial-card.is-open {
+        background: #ffffff;
+        transform: translateY(-2px);
+      }
+    </style>
+
     <script>
       tailwind.config = {
         theme: {
@@ -95,31 +128,39 @@
           </div>
 
           <h2 class="mt-6 text-2xl sm:text-3xl font-extrabold font-heading">Testimonials</h2>
+          <p class="mt-2 text-sm sm:text-base opacity-80">Hover over a name (or tap on mobile) to expand a shorter testimonial card.</p>
 
-          <div class="mt-4 grid gap-5 lg:grid-cols-2">
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-              <p class="text-sm sm:text-base leading-relaxed opacity-90">“I worked with Tyler for 12 weeks, and the experience changed my approach to how I manage my health and fitness. During our time together, I lost over 10 pounds and, more importantly, built sustainable habits that I know will stay with me for a long time. Tyler helped me establish a consistent workout routine, set realistic goals, taught me how to meal prep effectively, and guided me in tracking my food intake in a realistic way.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">What stood out most was Tyler’s ability to meet me where I was. He created a supportive, judgment-free environment while still holding me accountable to my goals. He was very approachable and I felt he truly cared about my progress. His coaching made healthy living feel achievable rather than overwhelming. I’m leaving this program not just lighter, but more confident and equipped with the tools to maintain a healthy lifestyle. I highly recommend Tyler to anyone looking for real, lasting change.”</p>
-              <p class="mt-5 text-sm font-bold tracking-wide">— William Guthrie 2025 Cohort</p>
+          <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
+              <h3 class="text-base sm:text-lg font-extrabold font-heading">William Guthrie <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
+              <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
+                <p>“I worked with Tyler for 12 weeks, and the experience changed my approach to how I manage my health and fitness. During our time together, I lost over 10 pounds and, more importantly, built sustainable habits that I know will stay with me for a long time.</p>
+                <p class="mt-3">What stood out most was Tyler’s ability to meet me where I was. He created a supportive, judgment-free environment while still holding me accountable to my goals. I highly recommend Tyler to anyone looking for real, lasting change.”</p>
+              </div>
             </article>
 
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-              <p class="text-sm sm:text-base leading-relaxed opacity-90">“In October of 2025, I found myself doing a lot of deep personal reflection. I was completing the final year of my 20s and trying to understand who I wanted to be as I moved into my 30s. People always say those are the ‘best years of your life,’ but at the time, I couldn’t see how that would be true for me. What I did know—deep down—was that if I didn’t change something within myself, nothing around me was going to change either.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">I’m 6’2” and weighed 231 pounds. I avoided mirrors. Clothes that were once a comfortable size no longer fit. I felt disconnected from the version of myself I wanted to be, and I knew a change needed to happen—and it needed to happen quickly.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">A few months prior, I had come across Tyler Wade on social media. For the first time, I saw someone I genuinely related to: gay, Christian, living in Austin, Texas. But there was one major difference—Tyler was doing the work. He was fit, active, disciplined, and intentionally chasing change in every area of his life. I wasn’t.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">As October approached, I continued following Tyler’s content. I listened to what he was saying, engaged with his posts, and paid attention. Many times, I jokingly felt ‘called out’ or ‘attacked’—not because Tyler was trying to shame anyone, but because his words were speaking directly to the part of me that knew better. The part of me that wanted change, but was afraid of the work it would require.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">Eventually, something clicked. I filled out the interest form in his bio, and that moment marked the beginning of me choosing myself. I didn’t do it because anyone pressured me—I did it because I finally decided I was ready to chase change for me.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">From the very first introductory call, I knew I was all in—and Tyler was too. We hit the ground running. On good days and bad days, Tyler showed up consistently. We tackled everything one day at a time. He celebrated my small wins, supported me through tough moments, and never let me lose sight of why I started. His investment in his clients is genuine, and you can feel it in every interaction.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">Now, nearly three months into my journey with Tyler and Chasing Change, I can confidently say my life has shifted. The mirror is no longer my enemy. The scale is no longer something I fear. The gym no longer feels intimidating. I’ve lost 23 pounds, reached my first major goal, and—more importantly—rebuilt trust in myself. The best part, this is only the beginning.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">Chasing Change works. Tyler Wade cares. If you’re willing to trust the process, trust the coach, and show up for yourself, this program will change your life.</p>
-              <p class="mt-4 text-sm sm:text-base leading-relaxed opacity-90">Trust Tyler. Trust the process. Chase Change.”</p>
-              <p class="mt-5 text-sm font-bold tracking-wide">— Tanner Childress 2025 Cohort</p>
+            <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
+              <h3 class="text-base sm:text-lg font-extrabold font-heading">Tanner Childress <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
+              <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
+                <p>“In October of 2025, I knew I had to change. I was 6'2", weighed 231 pounds, and felt disconnected from the version of myself I wanted to become.</p>
+                <p class="mt-3">Working with Tyler helped me rebuild trust in myself. I’ve lost 23 pounds, reached my first major goal, and learned that if you trust Tyler, trust the process, and show up for yourself, this program will change your life.”</p>
+              </div>
             </article>
 
-               <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-              <p class="text-sm sm:text-base leading-relaxed opacity-90">“          When I first started working with Tyler, I weighed 236 lbs and struggled to jog even half a mile without stopping. Today, I’m down to 217 lbs and can run three miles straight. Tyler and Chasing Change helped me pivot toward a healthier direction exactly when I needed it. I highly recommend them to anyone ready to take that next step—whether it’s physical, mental, or spiritual."
-</p>
-              <p class="mt-5 text-sm font-bold tracking-wide">— Aaron J Crowell DNP, CRNA Certified Registered Nurse Anesthetist (CRNA) 2025 Cohort</p>
+            <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
+              <h3 class="text-base sm:text-lg font-extrabold font-heading">Aaron J Crowell <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
+              <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
+                <p>“When I first started working with Tyler, I weighed 236 lbs and struggled to jog even half a mile without stopping.</p>
+                <p class="mt-3">Today, I’m down to 217 lbs and can run three miles straight. Tyler and Chasing Change helped me pivot toward a healthier direction exactly when I needed it.”</p>
+              </div>
+            </article>
+
+            <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
+              <h3 class="text-base sm:text-lg font-extrabold font-heading">Alfredo Riva <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
+              <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
+                <p>“Before I joined Chasing Change with Tyler, I had just left my previous gym and trainer, had no direction on workout splits, and gained more weight than I wanted.</p>
+                <p class="mt-3">Tyler set me up for success, taught me the ‘why’ behind the plan, and encouraged independence. I went from 21% to 18% body fat, ran my first 5k, and learned to meal prep for my week. I owe it to Tyler helping me chase change!”</p>
+              </div>
             </article>
           </div>
         </section>
@@ -136,6 +177,22 @@
         const expanded = menuToggle.getAttribute("aria-expanded") === "true";
         menuToggle.setAttribute("aria-expanded", String(!expanded));
         mobileMenu.classList.toggle("hidden");
+      });
+
+      const testimonialCards = document.querySelectorAll(".testimonial-card");
+      testimonialCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const isOpen = card.classList.contains("is-open");
+          testimonialCards.forEach((item) => item.classList.remove("is-open"));
+          if (!isOpen) card.classList.add("is-open");
+        });
+
+        card.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            card.click();
+          }
+        });
       });
     </script>
   </body>
