@@ -499,6 +499,14 @@
 
                 <!-- Results -->
                 <div id="results" class="hidden mt-6 space-y-4">
+                  <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-cc-outline/10">
+                    <p class="text-sm font-semibold">Send these targets to Physique Ledger</p>
+                    <p id="ledgerSyncStatus" class="text-xs opacity-75 mt-1">Calculate first, then save and open the ledger.</p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                      <button id="saveToLedgerBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-cc-outline text-cc-text hover:opacity-90 transition">Save targets to Physique Ledger</button>
+                      <a href="../PhysiqueLedger/index.html" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Open Physique Ledger</a>
+                    </div>
+                  </div>
                   <div class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
                     <h3 class="text-base sm:text-lg font-bold mb-2 font-heading">Daily Target</h3>
                     <p class="text-3xl sm:text-4xl font-extrabold">
@@ -680,6 +688,9 @@
       const proteinShareOut = document.getElementById("proteinShareOut");
       const carbsShareOut = document.getElementById("carbsShareOut");
       const fatShareOut = document.getElementById("fatShareOut");
+      const ledgerSyncStatus = document.getElementById("ledgerSyncStatus");
+
+      const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
 
       const activityFactors = {
         sedentary: 1.2,
@@ -1068,6 +1079,30 @@ const proteinPerLb =
         show(resultsEl);
       }
 
+      function saveTargetsToLedger() {
+        const calories = Number(caloriesOut.textContent || 0);
+        const protein = Number(proteinOut.textContent || 0);
+        const carbs = Number(carbsOut.textContent || 0);
+        const fat = Number(fatOut.textContent || 0);
+
+        if (!calories || !protein || !carbs || !fat) {
+          ledgerSyncStatus.textContent = "Run Calculate Macros first so we have targets to save.";
+          return;
+        }
+
+        const payload = {
+          calories,
+          protein,
+          carbs,
+          fat,
+          source: "Macro Calculator",
+          savedAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem(LEDGER_TARGETS_KEY, JSON.stringify(payload));
+        ledgerSyncStatus.textContent = "Saved. Open Physique Ledger and click Import Macro Targets.";
+      }
+
       // Init
       setGoal("maintain");
       setGoalMode("standard");
@@ -1092,6 +1127,7 @@ const proteinPerLb =
       });
 
       document.getElementById("calcBtn").addEventListener("click", calculate);
+      document.getElementById("saveToLedgerBtn").addEventListener("click", saveTargetsToLedger);
       updateIdealBodyWeightPreview();
     </script>
   </body>

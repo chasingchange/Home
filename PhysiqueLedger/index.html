@@ -276,7 +276,11 @@
           </div>
 
           <div class="plan-wrap">
-            <h3>Daily Targets</h3>
+            <div class="row" style="align-items:center; margin-bottom:.45rem;">
+              <h3>Daily Targets</h3>
+              <button id="importMacroTargets" type="button" class="alt">Import Macro Targets</button>
+            </div>
+            <p id="importStatus" class="muted" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
             <div class="targets">
               <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
               <label>Protein (g)<input id="targetProtein" type="number" min="0" value="180" /></label>
@@ -333,6 +337,10 @@
       const rings = document.getElementById("rings");
       const mealItems = document.getElementById("mealItems");
       const clearPlan = document.getElementById("clearPlan");
+      const importMacroTargetsBtn = document.getElementById("importMacroTargets");
+      const importStatus = document.getElementById("importStatus");
+
+      const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
 
       const targetInputs = {
         calories: document.getElementById("targetCalories"),
@@ -478,6 +486,30 @@
         ].join("");
       }
 
+      function importMacroTargets() {
+        const raw = localStorage.getItem(LEDGER_TARGETS_KEY);
+        if (!raw) {
+          importStatus.textContent = "No saved targets found yet. Open Macro Calculator and save your targets first.";
+          return;
+        }
+
+        try {
+          const saved = JSON.parse(raw);
+          const required = ["calories", "protein", "carbs", "fat"];
+          const hasAll = required.every((key) => Number(saved[key]) > 0);
+          if (!hasAll) throw new Error("Invalid payload");
+
+          targetInputs.calories.value = Math.round(Number(saved.calories));
+          targetInputs.protein.value = Math.round(Number(saved.protein));
+          targetInputs.carbs.value = Math.round(Number(saved.carbs));
+          targetInputs.fat.value = Math.round(Number(saved.fat));
+          importStatus.textContent = `Imported from ${saved.source || "Macro Calculator"} (${new Date(saved.savedAt || Date.now()).toLocaleString()}).`;
+          renderRings();
+        } catch (err) {
+          importStatus.textContent = "Saved target data was invalid. Recalculate and save again from Macro Calculator.";
+        }
+      }
+
       function renderMealPlan() {
         if (!mealPlan.length) {
           mealItems.innerHTML = "<p class='muted'>No recipes selected yet.</p>";
@@ -521,6 +553,7 @@
         mealPlan = [];
         renderMealPlan();
       });
+      importMacroTargetsBtn.addEventListener("click", importMacroTargets);
 
       dialogClose.addEventListener("click", () => dialog.close());
       dialogAdd.addEventListener("click", () => {
@@ -535,6 +568,7 @@
       initCuisineOptions();
       renderRecipes();
       renderMealPlan();
+      importMacroTargets();
     </script>
   </body>
 </html>
