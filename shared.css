@@ -81,8 +81,8 @@ h3 {
 }
 
 .category-chip.is-active {
-  background: rgba(119, 215, 112, 0.2);
-  border-color: rgba(119, 215, 112, 0.8);
+  background: var(--chip-color, var(--cc-accent));
+  border-color: var(--chip-color, var(--cc-accent));
 }
 
 .category-chip::before {
