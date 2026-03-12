@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preparing the Route | Chasing Change</title>
-    <meta name="description" content="Locked Chasing Change page for meal plan and physique tracking tools." />
+    <meta name="description" content="Locked Chasing Change page for Physique Ledger access." />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,7 +96,7 @@
           <section id="lockCard" class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
             <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Protected page</p>
             <h2 class="mt-2 text-2xl font-extrabold font-heading">Enter password</h2>
-            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access Meal Plan + Physique Ledger.</p>
+            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access Physique Ledger.</p>
 
             <form id="unlockForm" class="mt-6 flex flex-col sm:flex-row gap-3">
               <input
@@ -115,13 +115,12 @@
           </section>
 
           <section id="lockedTools" class="hidden mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-4 sm:p-5">
-            <div class="flex flex-wrap items-center gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10 w-fit">
-              <button id="showMealPlan" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text" type="button">Meal Plan Tool</button>
-              <button id="showLedger" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition" type="button">Physique Ledger</button>
+            <div class="rounded-xl border border-cc-outline/40 bg-cc-outline/10 px-4 py-3 text-sm">
+              Meal plan tool has been retired. You can now use Physique Ledger directly below.
             </div>
 
             <div class="mt-4 rounded-2xl overflow-hidden ring-1 ring-black/10">
-              <iframe id="toolFrame" title="Locked Tool" src="../meal-plan/tool.html" class="w-full h-[2200px] border-0"></iframe>
+              <iframe id="toolFrame" title="Physique Ledger" src="../PhysiqueLedger/index.html" class="w-full h-[2200px] border-0"></iframe>
             </div>
           </section>
         </section>
@@ -147,24 +146,6 @@
       const lockCard = document.getElementById("lockCard");
       const lockedTools = document.getElementById("lockedTools");
       const toolFrame = document.getElementById("toolFrame");
-      const showMealPlan = document.getElementById("showMealPlan");
-      const showLedger = document.getElementById("showLedger");
-
-      const setActiveTool = (tool) => {
-        if (tool === "meal") {
-          toolFrame.src = "../meal-plan/tool.html";
-          showMealPlan.classList.add("bg-cc-outline");
-          showMealPlan.classList.remove("hover:bg-white");
-          showLedger.classList.remove("bg-cc-outline");
-          showLedger.classList.add("hover:bg-white");
-        } else {
-          toolFrame.src = "../PhysiqueLedger/index.html";
-          showLedger.classList.add("bg-cc-outline");
-          showLedger.classList.remove("hover:bg-white");
-          showMealPlan.classList.remove("bg-cc-outline");
-          showMealPlan.classList.add("hover:bg-white");
-        }
-      };
 
       unlockForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -173,14 +154,13 @@
           unlockMessage.textContent = "";
           lockCard.classList.add("hidden");
           lockedTools.classList.remove("hidden");
-          setActiveTool("meal");
+          toolFrame.src = "../PhysiqueLedger/index.html";
         } else {
           unlockMessage.textContent = "Incorrect password. Try again.";
         }
       });
 
-      showMealPlan.addEventListener("click", () => setActiveTool("meal"));
-      showLedger.addEventListener("click", () => setActiveTool("ledger"));
+
     </script>
   </body>
 </html>
