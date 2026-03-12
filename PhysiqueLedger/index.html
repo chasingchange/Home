@@ -134,6 +134,29 @@
         overflow: auto;
       }
 
+      .meal-group {
+        margin-top: 0.75rem;
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        border-radius: 14px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .meal-group > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.75rem 0.9rem;
+        background: rgba(7, 31, 53, 0.04);
+        font-family: "Raleway", system-ui, sans-serif;
+        font-weight: 700;
+      }
+
+      .meal-group > summary::-webkit-details-marker { display: none; }
+
+      .meal-group-body {
+        padding: 0 0.7rem 0.75rem;
+      }
+
       .recipe-card {
         border: 1px solid rgba(7, 31, 53, 0.12);
         border-radius: 16px;
@@ -310,6 +333,10 @@
         display: none;
       }
 
+      .library-widget {
+        padding: 0 1.1rem 1rem;
+      }
+
       @media (max-width: 940px) {
         .recipe-list { max-height: none; }
         .controls { grid-template-columns: 1fr; }
@@ -333,11 +360,20 @@
           <div class="panel-head">
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
+            <p class="muted" style="margin-top:.35rem; font-size:.85rem;">Sections: Breakfast, Lunch, Dinner, Snacks, <strong>Dessert</strong>.</p>
           </div>
 
           <div class="controls">
             <input id="search" type="text" placeholder="Search recipes..." />
             <select id="cuisineFilter"></select>
+          </div>
+
+          <div class="library-widget">
+            <div class="row" style="align-items:center; margin-bottom:.45rem;">
+              <h3>Live Progress</h3>
+              <button id="goToPlan" type="button" class="alt">View Full Meal Plan</button>
+            </div>
+            <div id="quickRings" class="rings"></div>
           </div>
 
           <div id="recipeList" class="recipe-list"></div>
@@ -444,6 +480,8 @@
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
       const rings = document.getElementById("rings");
+      const quickRings = document.getElementById("quickRings");
+      const goToPlanBtn = document.getElementById("goToPlan");
       const mealItems = document.getElementById("mealItems");
       const clearPlan = document.getElementById("clearPlan");
       const importMacroTargetsBtn = document.getElementById("importMacroTargets");
@@ -481,8 +519,17 @@
 
       let selectedRecipe = null;
       let mealPlan = [];
+      const MEAL_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snacks", "Dessert"];
 
       const formatMacros = (r) => `${r.calories} kcal • ${r.protein}P • ${r.carbs}C • ${r.fat}F`;
+
+      const normalizeMeal = (meal = "") => {
+        const value = String(meal).trim().toLowerCase();
+        if (!value) return "Breakfast";
+        if (value === "desert") return "Dessert";
+        const match = MEAL_CATEGORIES.find((item) => item.toLowerCase() === value);
+        return match || "Snacks";
+      };
 
       const getArrayContent = (value, fallback) => {
         if (Array.isArray(value)) return value.filter(Boolean).map((item) => String(item).trim()).filter(Boolean);
@@ -498,7 +545,7 @@
           carbs: Number(entry.carbs),
           fat: Number(entry.fat),
           cuisine: entry.cuisine || "Global",
-          meal: entry.meal || "Breakfast",
+          meal: normalizeMeal(entry.meal || "Breakfast"),
           ingredients: getArrayContent(entry.ingredients, ["Ingredients not provided."]),
           instructions: getArrayContent(entry.instructions || entry.steps, ["Instructions not provided."]),
         };
@@ -553,24 +600,52 @@
           return;
         }
 
-        recipeList.innerHTML = list
-          .map((recipe, idx) => `
-            <article class="recipe-card" tabindex="0" data-open="${idx}">
-              <div class="row">
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <div class="chips">
-                    <span class="chip">${recipe.cuisine}</span>
-                    <span class="chip">${recipe.meal}</span>
-                    <span class="chip">${formatMacros(recipe)}</span>
-                  </div>
-                </div>
-                <div style="display:grid; gap:.4rem;">
-                  <button type="button" class="alt" data-add="${idx}">Add</button>
-                </div>
-              </div>
-            </article>
-          `)
+        const grouped = MEAL_CATEGORIES.reduce((acc, meal) => {
+          acc[meal] = [];
+          return acc;
+        }, {});
+
+        list.forEach((recipe) => {
+          const meal = normalizeMeal(recipe.meal);
+          recipe.meal = meal;
+          grouped[meal].push(recipe);
+        });
+
+        recipeList.innerHTML = MEAL_CATEGORIES
+          .map((meal, groupIdx) => {
+            const recipesInGroup = grouped[meal];
+            const cards = recipesInGroup.length
+              ? recipesInGroup
+                  .map((recipe, idx) => {
+                    const sourceIndex = list.findIndex((item) => item.name === recipe.name);
+                    return `
+                      <article class="recipe-card" tabindex="0" data-open="${sourceIndex}">
+                        <div class="row">
+                          <div>
+                            <h3>${recipe.name}</h3>
+                            <div class="chips">
+                              <span class="chip">${recipe.cuisine}</span>
+                              <span class="chip">${recipe.meal}</span>
+                              <span class="chip">${formatMacros(recipe)}</span>
+                            </div>
+                          </div>
+                          <div style="display:grid; gap:.4rem;">
+                            <button type="button" class="alt" data-add="${sourceIndex}">Add</button>
+                          </div>
+                        </div>
+                      </article>
+                    `;
+                  })
+                  .join("")
+              : "<p class='muted' style='padding:.65rem 0;'>No recipes in this section yet.</p>";
+
+            return `
+              <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
+                <summary>${meal} (${recipesInGroup.length})</summary>
+                <div class="meal-group-body">${cards}</div>
+              </details>
+            `;
+          })
           .join("");
 
         recipeList.querySelectorAll(".recipe-card").forEach((card) => {
@@ -668,12 +743,14 @@
 
       function renderRings() {
         const total = totals();
-        rings.innerHTML = [
+        const html = [
           ringCard("Calories", total.calories, Number(targetInputs.calories.value || 0)),
           ringCard("Protein (g)", total.protein, Number(targetInputs.protein.value || 0)),
           ringCard("Carbs (g)", total.carbs, Number(targetInputs.carbs.value || 0)),
           ringCard("Fat (g)", total.fat, Number(targetInputs.fat.value || 0)),
         ].join("");
+        rings.innerHTML = html;
+        quickRings.innerHTML = html;
       }
 
       function importMacroTargets() {
@@ -744,6 +821,7 @@
         renderMealPlan();
       });
       importMacroTargetsBtn.addEventListener("click", importMacroTargets);
+      goToPlanBtn.addEventListener("click", () => setTab("plan"));
       importNotionBtn.addEventListener("click", () => {
         try {
           const message = importNotionRecipes(notionInput.value);
