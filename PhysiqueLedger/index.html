@@ -54,9 +54,37 @@
 
       .layout {
         margin-top: 1.4rem;
-        display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 1rem;
+      }
+
+      .tabs {
+        display: inline-flex;
+        gap: 0.5rem;
+        background: rgba(7, 31, 53, 0.06);
+        border-radius: 999px;
+        padding: 0.35rem;
+      }
+
+      .tab-btn {
+        border: none;
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 0.5rem 0.9rem;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .tab-btn.active {
+        background: var(--accent);
+      }
+
+      .tab-panel {
+        display: none;
+        margin-top: 1rem;
+      }
+
+      .tab-panel.active {
+        display: block;
       }
 
       .panel {
@@ -106,11 +134,39 @@
         overflow: auto;
       }
 
+      .meal-group {
+        margin-top: 0.75rem;
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        border-radius: 14px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .meal-group > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.75rem 0.9rem;
+        background: rgba(7, 31, 53, 0.04);
+        font-family: "Raleway", system-ui, sans-serif;
+        font-weight: 700;
+      }
+
+      .meal-group > summary::-webkit-details-marker { display: none; }
+
+      .meal-group-body {
+        padding: 0 0.7rem 0.75rem;
+      }
+
       .recipe-card {
         border: 1px solid rgba(7, 31, 53, 0.12);
         border-radius: 16px;
         padding: 0.9rem;
         margin-top: 0.7rem;
+        cursor: pointer;
+      }
+
+      .recipe-card:hover {
+        border-color: rgba(119, 215, 112, 0.8);
       }
 
       .row {
@@ -241,9 +297,49 @@
 
       .muted { opacity: 0.75; }
 
+      .admin-panel {
+        margin-top: 1rem;
+        padding: 1rem 1.1rem;
+      }
+
+      .admin-card {
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        border-radius: 14px;
+        background: #fff;
+        padding: 0.9rem;
+      }
+
+      .admin-card h3 {
+        margin-bottom: 0.35rem;
+      }
+
+      .admin-grid {
+        display: grid;
+        gap: 0.6rem;
+        margin-top: 0.65rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 130px;
+        border: 1px solid rgba(7, 31, 53, 0.2);
+        border-radius: 12px;
+        padding: 0.68rem 0.78rem;
+        resize: vertical;
+        font: inherit;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .library-widget {
+        padding: 0 1.1rem 1rem;
+      }
+
       @media (max-width: 940px) {
-        .layout { grid-template-columns: 1fr; }
         .recipe-list { max-height: none; }
+        .controls { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -255,10 +351,16 @@
       </header>
 
       <div class="layout">
-        <section class="panel">
+        <div class="tabs" role="tablist" aria-label="Physique Ledger tabs">
+          <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="library">Recipe Library</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="plan">Meal Plan</button>
+        </div>
+
+        <section class="panel tab-panel active" data-panel="library">
           <div class="panel-head">
             <h2>Recipe Library</h2>
-            <p class="muted">Search, filter by cuisine, then open or add any recipe to your daily plan.</p>
+            <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
+            <p class="muted" style="margin-top:.35rem; font-size:.85rem;">Sections: Breakfast, Lunch, Dinner, Snacks, <strong>Dessert</strong>.</p>
           </div>
 
           <div class="controls">
@@ -266,12 +368,20 @@
             <select id="cuisineFilter"></select>
           </div>
 
+          <div class="library-widget">
+            <div class="row" style="align-items:center; margin-bottom:.45rem;">
+              <h3>Live Progress</h3>
+              <button id="goToPlan" type="button" class="alt">View Full Meal Plan</button>
+            </div>
+            <div id="quickRings" class="rings"></div>
+          </div>
+
           <div id="recipeList" class="recipe-list"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel tab-panel" data-panel="plan">
           <div class="panel-head">
-            <h2>Daily Meal Plan</h2>
+            <h2>Expanded Meal Plan</h2>
             <p class="muted">Add recipes and adjust servings. Rings show progress toward your targets.</p>
           </div>
 
@@ -296,16 +406,51 @@
             </div>
             <div id="mealItems" class="meal-items"></div>
           </div>
+
+          <div style="padding:0 1.1rem 1.1rem;">
+            <a href="../apply-for-coaching/index.html" style="display:inline-flex; border-radius:12px; background:var(--accent); color:var(--text); text-decoration:none; font-weight:800; padding:0.65rem 0.9rem;">Want this dialed in? Apply for coaching →</a>
+          </div>
         </section>
       </div>
+
+      <section class="panel admin-panel" aria-label="Admin tools">
+        <div id="adminLockCard" class="admin-card">
+          <h3>Admin Tools</h3>
+          <p class="muted" style="margin:0;">Locked section for recipe management.</p>
+          <form id="adminUnlockForm" class="admin-grid">
+            <input id="adminPasswordInput" type="password" autocomplete="current-password" placeholder="Enter admin password" required />
+            <button type="submit">Unlock Admin Tools</button>
+          </form>
+          <p id="adminUnlockMessage" class="muted" style="margin:.5rem 0 0;"></p>
+        </div>
+
+        <div id="adminTools" class="admin-card hidden">
+          <div class="row" style="align-items:center;">
+            <div>
+              <h3>Notion Recipe Import</h3>
+              <p class="muted" style="margin:0; font-size:.85rem;">Paste Notion JSON array to import and merge recipes.</p>
+            </div>
+            <button id="adminLock" type="button" class="alt">Lock</button>
+          </div>
+          <div class="admin-grid">
+            <textarea id="notionInput" placeholder='[{"name":"Turkey Egg Bites","calories":230,"protein":28,"carbs":4,"fat":10,"cuisine":"American","meal":"Breakfast","ingredients":["6 eggs"],"instructions":["Whisk and bake."]}]'></textarea>
+            <div class="row" style="align-items:center;">
+              <button id="importNotion" type="button">Import Recipes</button>
+              <p id="importRecipeStatus" class="muted" style="margin:0; font-size:.85rem;"></p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <dialog id="recipeDialog">
       <h3 id="dialogTitle"></h3>
       <p id="dialogCuisine" class="muted"></p>
       <p id="dialogMacros"></p>
-      <p class="muted">Open full recipe instructions in Notion:</p>
-      <p><a id="dialogLink" href="#" target="_blank" rel="noreferrer">Open recipe page</a></p>
+      <h4 style="font-family: 'Raleway', sans-serif; margin: .8rem 0 .35rem;">Ingredients</h4>
+      <ul id="dialogIngredients" style="margin:0; padding-left:1.1rem;"></ul>
+      <h4 style="font-family: 'Raleway', sans-serif; margin: .8rem 0 .35rem;">Instructions</h4>
+      <ol id="dialogInstructions" style="margin:0; padding-left:1.1rem;"></ol>
       <div class="row" style="margin-top: 1rem;">
         <button id="dialogAdd" type="button">Add to meal plan</button>
         <button id="dialogClose" class="alt" type="button">Close</button>
@@ -314,8 +459,8 @@
 
     <script>
       const recipes = [
-        { name: "Egg Muffins", calories: 165, protein: 14, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", url: "#" },
-        { name: "Turkey Egg Bites", calories: 230, protein: 28, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Turkey-Egg-Bites-230Kcals-28P-4C-10F-2efa17b3a0bb804bb587c77e42090d19?pvs=21" },
+        { name: "Egg Muffins", calories: 165, protein: 14, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", ingredients: ["Eggs", "Veggies", "Seasoning"], instructions: ["Whisk ingredients.", "Pour into muffin tray.", "Bake until set."] },
+        { name: "Turkey Egg Bites", calories: 230, protein: 28, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", ingredients: ["Ground turkey", "Egg whites", "Cheese"], instructions: ["Cook turkey and season.", "Mix with eggs.", "Bake in muffin tin."] },
         { name: "Greek Yogurt Protein Pancake Stack", calories: 360, protein: 32, carbs: 32, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Greek-Yogurt-Protein-Pancake-Stack-360Kcals-32P-32C-10F-2d9a17b3a0bb8099938fe3da5a55eb8a?pvs=21" },
         { name: "Healthy Cinnastack Protein Pancakes", calories: 360, protein: 32, carbs: 35, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Healthy-Cinnastack-Protein-Pancakes-360Kacls-32P-35C-10F-2d9a17b3a0bb807cb46ee4f4fe3e0ce2?pvs=21" },
         { name: "Overnight Oats Strawberry Cheesecake", calories: 370, protein: 34, carbs: 36, fat: 8, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Overnight-Oats-Strawberry-Cheesecake-370Kcals-34P-36C-8F-2afa17b3a0bb8002a31be75478cd5bf1?pvs=21" },
@@ -328,19 +473,31 @@
         { name: "Chia Pudding", calories: 430, protein: 32, carbs: 38, fat: 18, cuisine: "Global", meal: "Breakfast", url: "https://www.notion.so/Chia-Pudding-430Kcals-32P-38C-18F-30ba17b3a0bb8065a931d0596b5fb948?pvs=21" },
         { name: "Overnight Oats", calories: 435, protein: 34, carbs: 57, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Overnight-Oats-435Kcals-34P-57C-10F-280a17b3a0bb80b2b6f9d8eca81f049e?pvs=21" },
         { name: "Breakfast Burrito", calories: 485, protein: 28, carbs: 38, fat: 23, cuisine: "Mexican-Inspired", meal: "Breakfast", url: "https://www.notion.so/Breakfast-Burrito-485Kcals-28P-38C-23F-280a17b3a0bb80f785e3ebe98868080b?pvs=21" },
-        { name: "Pecan Overnight Oats", calories: 560, protein: 41, carbs: 50, fat: 24, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Pecan-Overnight-Oats-560Kcals-41P-50C-24F-2cda17b3a0bb804b9dbbd2b6db58dab5?pvs=21" }
+        { name: "Pecan Overnight Oats", calories: 560, protein: 41, carbs: 50, fat: 24, cuisine: "American", meal: "Breakfast", ingredients: ["Oats", "Protein powder", "Pecans"], instructions: ["Combine in jar.", "Stir thoroughly.", "Refrigerate overnight."] }
       ];
 
       const searchInput = document.getElementById("search");
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
       const rings = document.getElementById("rings");
+      const quickRings = document.getElementById("quickRings");
+      const goToPlanBtn = document.getElementById("goToPlan");
       const mealItems = document.getElementById("mealItems");
       const clearPlan = document.getElementById("clearPlan");
       const importMacroTargetsBtn = document.getElementById("importMacroTargets");
       const importStatus = document.getElementById("importStatus");
+      const notionInput = document.getElementById("notionInput");
+      const importNotionBtn = document.getElementById("importNotion");
+      const importRecipeStatus = document.getElementById("importRecipeStatus");
+      const adminUnlockForm = document.getElementById("adminUnlockForm");
+      const adminPasswordInput = document.getElementById("adminPasswordInput");
+      const adminUnlockMessage = document.getElementById("adminUnlockMessage");
+      const adminTools = document.getElementById("adminTools");
+      const adminLockCard = document.getElementById("adminLockCard");
+      const adminLockBtn = document.getElementById("adminLock");
 
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
+      const ADMIN_IMPORT_PASSWORD = "Chasing1228!";
 
       const targetInputs = {
         calories: document.getElementById("targetCalories"),
@@ -353,14 +510,73 @@
       const dialogTitle = document.getElementById("dialogTitle");
       const dialogCuisine = document.getElementById("dialogCuisine");
       const dialogMacros = document.getElementById("dialogMacros");
-      const dialogLink = document.getElementById("dialogLink");
+      const dialogIngredients = document.getElementById("dialogIngredients");
+      const dialogInstructions = document.getElementById("dialogInstructions");
       const dialogAdd = document.getElementById("dialogAdd");
       const dialogClose = document.getElementById("dialogClose");
+      const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
+      const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
       let selectedRecipe = null;
       let mealPlan = [];
+      const MEAL_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snacks", "Dessert"];
 
       const formatMacros = (r) => `${r.calories} kcal • ${r.protein}P • ${r.carbs}C • ${r.fat}F`;
+
+      const normalizeMeal = (meal = "") => {
+        const value = String(meal).trim().toLowerCase();
+        if (!value) return "Breakfast";
+        if (value === "desert") return "Dessert";
+        const match = MEAL_CATEGORIES.find((item) => item.toLowerCase() === value);
+        return match || "Snacks";
+      };
+
+      const getArrayContent = (value, fallback) => {
+        if (Array.isArray(value)) return value.filter(Boolean).map((item) => String(item).trim()).filter(Boolean);
+        if (typeof value === "string") return value.split("\n").map((item) => item.trim()).filter(Boolean);
+        return fallback;
+      };
+
+      const normalizeRecipe = (entry) => {
+        const recipe = {
+          name: entry.name || entry.title,
+          calories: Number(entry.calories),
+          protein: Number(entry.protein),
+          carbs: Number(entry.carbs),
+          fat: Number(entry.fat),
+          cuisine: entry.cuisine || "Global",
+          meal: normalizeMeal(entry.meal || "Breakfast"),
+          ingredients: getArrayContent(entry.ingredients, ["Ingredients not provided."]),
+          instructions: getArrayContent(entry.instructions || entry.steps, ["Instructions not provided."]),
+        };
+        if (!recipe.name || Number.isNaN(recipe.calories) || Number.isNaN(recipe.protein) || Number.isNaN(recipe.carbs) || Number.isNaN(recipe.fat)) return null;
+        return recipe;
+      };
+
+      function importNotionRecipes(rawText) {
+        try {
+          const parsed = JSON.parse(rawText);
+          if (!Array.isArray(parsed)) throw new Error("Expected array");
+          const imported = parsed.map(normalizeRecipe).filter(Boolean);
+          if (!imported.length) throw new Error("No valid recipes found.");
+
+          imported.forEach((recipe) => {
+            const existing = recipes.findIndex((r) => r.name === recipe.name);
+            if (existing >= 0) recipes[existing] = recipe;
+            else recipes.push(recipe);
+          });
+          initCuisineOptions();
+          renderRecipes();
+          return `Imported ${imported.length} recipe(s) from Notion export.`;
+        } catch (err) {
+          throw new Error("Import failed. Paste a valid JSON array from Notion export.");
+        }
+      }
+
+      function showAdminTools(isUnlocked) {
+        adminTools.classList.toggle("hidden", !isUnlocked);
+        adminLockCard.classList.toggle("hidden", isUnlocked);
+      }
 
       function initCuisineOptions() {
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
@@ -384,33 +600,69 @@
           return;
         }
 
-        recipeList.innerHTML = list
-          .map((recipe, idx) => `
-            <article class="recipe-card">
-              <div class="row">
-                <div>
-                  <h3>${recipe.name}</h3>
-                  <div class="chips">
-                    <span class="chip">${recipe.cuisine}</span>
-                    <span class="chip">${recipe.meal}</span>
-                    <span class="chip">${formatMacros(recipe)}</span>
-                  </div>
-                </div>
-                <div style="display:grid; gap:.4rem;">
-                  <button type="button" data-open="${idx}">View</button>
-                  <button type="button" class="alt" data-add="${idx}">Add</button>
-                </div>
-              </div>
-            </article>
-          `)
+        const grouped = MEAL_CATEGORIES.reduce((acc, meal) => {
+          acc[meal] = [];
+          return acc;
+        }, {});
+
+        list.forEach((recipe) => {
+          const meal = normalizeMeal(recipe.meal);
+          recipe.meal = meal;
+          grouped[meal].push(recipe);
+        });
+
+        recipeList.innerHTML = MEAL_CATEGORIES
+          .map((meal, groupIdx) => {
+            const recipesInGroup = grouped[meal];
+            const cards = recipesInGroup.length
+              ? recipesInGroup
+                  .map((recipe, idx) => {
+                    const sourceIndex = list.findIndex((item) => item.name === recipe.name);
+                    return `
+                      <article class="recipe-card" tabindex="0" data-open="${sourceIndex}">
+                        <div class="row">
+                          <div>
+                            <h3>${recipe.name}</h3>
+                            <div class="chips">
+                              <span class="chip">${recipe.cuisine}</span>
+                              <span class="chip">${recipe.meal}</span>
+                              <span class="chip">${formatMacros(recipe)}</span>
+                            </div>
+                          </div>
+                          <div style="display:grid; gap:.4rem;">
+                            <button type="button" class="alt" data-add="${sourceIndex}">Add</button>
+                          </div>
+                        </div>
+                      </article>
+                    `;
+                  })
+                  .join("")
+              : "<p class='muted' style='padding:.65rem 0;'>No recipes in this section yet.</p>";
+
+            return `
+              <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
+                <summary>${meal} (${recipesInGroup.length})</summary>
+                <div class="meal-group-body">${cards}</div>
+              </details>
+            `;
+          })
           .join("");
 
-        recipeList.querySelectorAll("[data-open]").forEach((btn) => {
-          btn.addEventListener("click", () => openDialog(list[Number(btn.dataset.open)]));
+        recipeList.querySelectorAll(".recipe-card").forEach((card) => {
+          card.addEventListener("click", () => openDialog(list[Number(card.dataset.open)]));
+          card.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openDialog(list[Number(card.dataset.open)]);
+            }
+          });
         });
 
         recipeList.querySelectorAll("[data-add]").forEach((btn) => {
-          btn.addEventListener("click", () => addToMealPlan(list[Number(btn.dataset.add)]));
+          btn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            addToMealPlan(list[Number(btn.dataset.add)]);
+          });
         });
       }
 
@@ -419,9 +671,22 @@
         dialogTitle.textContent = recipe.name;
         dialogCuisine.textContent = `${recipe.cuisine} • ${recipe.meal}`;
         dialogMacros.textContent = formatMacros(recipe);
-        dialogLink.href = recipe.url && recipe.url !== "#" ? recipe.url : "#";
-        dialogLink.textContent = recipe.url && recipe.url !== "#" ? "Open recipe page" : "Recipe link not provided";
+        dialogIngredients.innerHTML = (recipe.ingredients || ["Ingredients not provided."])
+          .map((item) => `<li>${item}</li>`)
+          .join("");
+        dialogInstructions.innerHTML = (recipe.instructions || ["Instructions not provided."])
+          .map((step) => `<li>${step}</li>`)
+          .join("");
         dialog.showModal();
+      }
+
+      function setTab(tab) {
+        tabButtons.forEach((btn) => {
+          const isActive = btn.dataset.tab === tab;
+          btn.classList.toggle("active", isActive);
+          btn.setAttribute("aria-selected", String(isActive));
+        });
+        tabPanels.forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === tab));
       }
 
       function addToMealPlan(recipe) {
@@ -478,12 +743,14 @@
 
       function renderRings() {
         const total = totals();
-        rings.innerHTML = [
+        const html = [
           ringCard("Calories", total.calories, Number(targetInputs.calories.value || 0)),
           ringCard("Protein (g)", total.protein, Number(targetInputs.protein.value || 0)),
           ringCard("Carbs (g)", total.carbs, Number(targetInputs.carbs.value || 0)),
           ringCard("Fat (g)", total.fat, Number(targetInputs.fat.value || 0)),
         ].join("");
+        rings.innerHTML = html;
+        quickRings.innerHTML = html;
       }
 
       function importMacroTargets() {
@@ -554,6 +821,34 @@
         renderMealPlan();
       });
       importMacroTargetsBtn.addEventListener("click", importMacroTargets);
+      goToPlanBtn.addEventListener("click", () => setTab("plan"));
+      importNotionBtn.addEventListener("click", () => {
+        try {
+          const message = importNotionRecipes(notionInput.value);
+          importRecipeStatus.textContent = message;
+        } catch (err) {
+          importRecipeStatus.textContent = err.message;
+        }
+      });
+
+      adminUnlockForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (adminPasswordInput.value === ADMIN_IMPORT_PASSWORD) {
+          adminUnlockMessage.textContent = "";
+          adminPasswordInput.value = "";
+          showAdminTools(true);
+        } else {
+          adminUnlockMessage.textContent = "Incorrect password. Try again.";
+        }
+      });
+
+      adminLockBtn.addEventListener("click", () => {
+        notionInput.value = "";
+        importRecipeStatus.textContent = "";
+        showAdminTools(false);
+      });
+
+      tabButtons.forEach((btn) => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
 
       dialogClose.addEventListener("click", () => dialog.close());
       dialogAdd.addEventListener("click", () => {
@@ -569,6 +864,7 @@
       renderRecipes();
       renderMealPlan();
       importMacroTargets();
+      showAdminTools(false);
     </script>
   </body>
 </html>
