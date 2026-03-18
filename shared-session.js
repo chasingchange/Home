@@ -27,16 +27,20 @@
   };
 
   const ensureAccountShape = (account) => ({
+    name: account?.name || "",
     password: account?.password || "",
     calculators: account?.calculators || {},
     createdAt: account?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
 
-  const createAccount = (email, password) => {
+  const createAccount = (input, maybePassword) => {
+    const name = typeof input === "object" ? String(input?.name || "").trim() : "";
+    const email = typeof input === "object" ? input?.email : input;
+    const password = typeof input === "object" ? input?.password : maybePassword;
     const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail || !password) {
-      return { ok: false, error: "Enter email + password to create an account." };
+    if (!name || !normalizedEmail || !password) {
+      return { ok: false, error: "Enter your name, email, and password to create an account." };
     }
 
     const accounts = readAccounts();
@@ -44,11 +48,11 @@
       return { ok: false, error: "Account already exists. Log in instead." };
     }
 
-    accounts[normalizedEmail] = ensureAccountShape({ password });
+    accounts[normalizedEmail] = ensureAccountShape({ name, password });
     writeAccounts(accounts);
     localStorage.setItem(SESSION_KEY, normalizedEmail);
 
-    return { ok: true, email: normalizedEmail };
+    return { ok: true, email: normalizedEmail, name };
   };
 
   const login = (email, password) => {
@@ -95,11 +99,18 @@
     return session.account.calculators?.[calculatorKey] || null;
   };
 
+  const getCurrentDisplayName = () => {
+    const session = getCurrentAccount();
+    if (!session) return "";
+    return session.account.name || session.email.split("@")[0];
+  };
+
   window.ChasingChangeSession = {
     createAccount,
     login,
     logout,
     getCurrentUserEmail,
+    getCurrentDisplayName,
     getCurrentAccount,
     saveCalculatorData,
     getCalculatorData,
