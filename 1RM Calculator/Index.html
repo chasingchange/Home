@@ -20,7 +20,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
-    <script defer src="../shared-session.js"></script>
+    <script src="../shared-session.js"></script>
 
     <!-- Tailwind theme + brand tokens -->
     <script>
@@ -1117,12 +1117,13 @@
       /***********************
        * Init
        ***********************/
-      function init() {
+      async function init() {
         populateCategorySelect();
         populateUseTierSelect();
         $("category").value = "All Categories";
         populateExerciseSelect(filterExercises("All Categories", ""), "back_squat");
         attachEvents();
+        await window.ChasingChangeSession?.whenReady?.();
         const displayName = window.ChasingChangeSession?.getCurrentDisplayName?.() || "";
         const pageLoginStatus = $("pageLoginStatus");
         if (pageLoginStatus) {

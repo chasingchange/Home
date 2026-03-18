@@ -1,37 +1,16 @@
 (() => {
   const ACCOUNTS_KEY = "ccAccounts";
   const SESSION_KEY = "ccSession";
+  const OPFS_SUPPORTED = typeof navigator !== "undefined" && !!navigator.storage?.getDirectory;
+  const DATA_FOLDER = "chasing-change-secure-data";
+  const DATA_FILE = "accounts.json";
+
+  let accountsCache = null;
+  let pendingWrite = Promise.resolve();
 
   const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
 
-  const readAccounts = () => {
-    try {
-      return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}");
-    } catch {
-      return {};
-    }
-  };
-
-  const writeAccounts = (accounts) => {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-  };
-
-  const getCurrentUserEmail = () => normalizeEmail(localStorage.getItem(SESSION_KEY) || "");
-
-  const getCurrentAccount = () => {
-    const email = getCurrentUserEmail();
-    if (!email) return null;
-
-    const accounts = readAccounts();
-    return accounts[email] ? { email, account: accounts[email] } : null;
-  };
-
-  const findAccountByName = (name) => {
-    const normalizedName = String(name || "").trim().toLowerCase();
-    if (!normalizedName) return null;
-
-    return Object.entries(readAccounts()).find(([, account]) => String(account?.name || "").trim().toLowerCase() === normalizedName) || null;
-  };
+  const cloneAccounts = (accounts) => JSON.parse(JSON.stringify(accounts || {}));
 
   const ensureAccountShape = (account) => ({
     name: account?.name || "",
@@ -41,36 +20,141 @@
     updatedAt: new Date().toISOString(),
   });
 
-  const createAccount = (input, maybePassword) => {
+  const normalizeAccounts = (accounts) => Object.fromEntries(
+    Object.entries(accounts || {}).map(([email, account]) => [normalizeEmail(email), ensureAccountShape(account)]),
+  );
+
+  const readLocalAccounts = () => {
+    try {
+      return normalizeAccounts(JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}"));
+    } catch {
+      return {};
+    }
+  };
+
+  const writeLocalAccounts = (accounts) => {
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  };
+
+  const readOpfsAccounts = async () => {
+    if (!OPFS_SUPPORTED) return null;
+
+    try {
+      const root = await navigator.storage.getDirectory();
+      const dataFolder = await root.getDirectoryHandle(DATA_FOLDER, { create: true });
+      const fileHandle = await dataFolder.getFileHandle(DATA_FILE, { create: true });
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      return text ? normalizeAccounts(JSON.parse(text)) : {};
+    } catch (error) {
+      console.warn("Unable to read secure account storage. Falling back to browser storage.", error);
+      return null;
+    }
+  };
+
+  const writeOpfsAccounts = async (accounts) => {
+    if (!OPFS_SUPPORTED) return false;
+
+    try {
+      const root = await navigator.storage.getDirectory();
+      const dataFolder = await root.getDirectoryHandle(DATA_FOLDER, { create: true });
+      const fileHandle = await dataFolder.getFileHandle(DATA_FILE, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(accounts, null, 2));
+      await writable.close();
+      return true;
+    } catch (error) {
+      console.warn("Unable to write secure account storage. Falling back to browser storage.", error);
+      return false;
+    }
+  };
+
+  const syncAccountsToAllStores = async (accounts) => {
+    const normalized = normalizeAccounts(accounts);
+    accountsCache = cloneAccounts(normalized);
+    writeLocalAccounts(normalized);
+    await writeOpfsAccounts(normalized);
+    return cloneAccounts(normalized);
+  };
+
+  const ready = (async () => {
+    const opfsAccounts = await readOpfsAccounts();
+    const localAccounts = readLocalAccounts();
+    const initialAccounts = Object.keys(opfsAccounts || {}).length ? opfsAccounts : localAccounts;
+    await syncAccountsToAllStores(initialAccounts);
+    return cloneAccounts(accountsCache);
+  })();
+
+  const whenReady = () => ready;
+
+  const getCurrentUserEmail = () => normalizeEmail(localStorage.getItem(SESSION_KEY) || "");
+
+  const getCurrentAccount = () => {
+    const email = getCurrentUserEmail();
+    if (!email || !accountsCache?.[email]) return null;
+    return { email, account: cloneAccounts(accountsCache[email]) };
+  };
+
+  const getCurrentDisplayName = () => {
+    const session = getCurrentAccount();
+    if (!session) return "";
+    return session.account.name || session.email.split("@")[0];
+  };
+
+  const findAccountByName = (name) => {
+    const normalizedName = String(name || "").trim().toLowerCase();
+    if (!normalizedName) return null;
+
+    return Object.entries(accountsCache || {}).find(([, account]) => String(account?.name || "").trim().toLowerCase() === normalizedName) || null;
+  };
+
+  const createAccount = async (input, maybePassword) => {
+    await ready;
+
     const name = typeof input === "object" ? String(input?.name || "").trim() : "";
     const email = typeof input === "object" ? input?.email : input;
     const password = typeof input === "object" ? input?.password : maybePassword;
     const normalizedEmail = normalizeEmail(email);
+
     if (!name || !normalizedEmail || !password) {
       return { ok: false, error: "Enter your name, email, and password to create an account." };
     }
 
-    const accounts = readAccounts();
-    if (accounts[normalizedEmail]) {
+    if (accountsCache[normalizedEmail]) {
       return { ok: false, error: "Account already exists. Log in instead." };
     }
 
-    accounts[normalizedEmail] = ensureAccountShape({ name, password });
-    writeAccounts(accounts);
+    accountsCache[normalizedEmail] = ensureAccountShape({
+      name,
+      password,
+      calculators: {
+        profile: {
+          macroTargets: null,
+        },
+      },
+    });
+
+    pendingWrite = pendingWrite.then(() => syncAccountsToAllStores(accountsCache));
+    await pendingWrite;
     localStorage.setItem(SESSION_KEY, normalizedEmail);
 
-    return { ok: true, email: normalizedEmail, name };
+    return {
+      ok: true,
+      email: normalizedEmail,
+      name,
+      storage: OPFS_SUPPORTED ? "secure-browser-folder" : "browser-storage-fallback",
+    };
   };
 
-  const login = (email, password) => {
+  const login = async (email, password) => {
+    await ready;
+
     const normalizedEmail = normalizeEmail(email);
     if (!normalizedEmail || !password) {
       return { ok: false, error: "Enter email + password." };
     }
 
-    const accounts = readAccounts();
-    const account = accounts[normalizedEmail];
-
+    const account = accountsCache[normalizedEmail];
     if (!account || account.password !== password) {
       return { ok: false, error: "Login failed. Check your email/password." };
     }
@@ -83,10 +167,11 @@
     localStorage.removeItem(SESSION_KEY);
   };
 
-  const sendCredentialReminder = ({ name, email } = {}) => {
+  const sendCredentialReminder = async ({ name, email } = {}) => {
+    await ready;
+
     const normalizedEmail = normalizeEmail(email);
-    const accounts = readAccounts();
-    const emailMatch = normalizedEmail ? [normalizedEmail, accounts[normalizedEmail]] : null;
+    const emailMatch = normalizedEmail ? [normalizedEmail, accountsCache[normalizedEmail]] : null;
     const nameMatch = !normalizedEmail && name ? findAccountByName(name) : null;
     const match = emailMatch?.[1] ? emailMatch : nameMatch;
 
@@ -103,7 +188,7 @@
       reminderParts.push(`Email reminder sent to ${matchedEmail}.`);
     }
 
-    reminderParts.push("This site stores sign-in details locally in this browser, so your reminder is shown here for now.");
+    reminderParts.push("Your account is stored in this browser's private Chasing Change data folder when supported.");
 
     return {
       ok: true,
@@ -113,36 +198,42 @@
     };
   };
 
-  const saveCalculatorData = (calculatorKey, data) => {
+  const saveCalculatorData = async (calculatorKey, data) => {
+    await ready;
+
     const session = getCurrentAccount();
     if (!session || !calculatorKey) return false;
 
-    const accounts = readAccounts();
-    const nextAccount = ensureAccountShape(accounts[session.email]);
+    const nextAccount = ensureAccountShape(accountsCache[session.email]);
     nextAccount.calculators[calculatorKey] = {
       ...(nextAccount.calculators[calculatorKey] || {}),
       ...data,
       updatedAt: new Date().toISOString(),
     };
 
-    accounts[session.email] = nextAccount;
-    writeAccounts(accounts);
+    if (calculatorKey === "macroCalculator") {
+      nextAccount.calculators.profile = {
+        ...(nextAccount.calculators.profile || {}),
+        macroTargets: data?.outputs || null,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    accountsCache[session.email] = nextAccount;
+    pendingWrite = pendingWrite.then(() => syncAccountsToAllStores(accountsCache));
+    await pendingWrite;
     return true;
   };
 
   const getCalculatorData = (calculatorKey) => {
     const session = getCurrentAccount();
     if (!session || !calculatorKey) return null;
-    return session.account.calculators?.[calculatorKey] || null;
-  };
-
-  const getCurrentDisplayName = () => {
-    const session = getCurrentAccount();
-    if (!session) return "";
-    return session.account.name || session.email.split("@")[0];
+    return cloneAccounts(session.account.calculators?.[calculatorKey] || null);
   };
 
   window.ChasingChangeSession = {
+    ready,
+    whenReady,
     createAccount,
     login,
     logout,

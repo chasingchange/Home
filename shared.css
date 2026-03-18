@@ -224,3 +224,73 @@ h3 {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+
+.race-card-track {
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 2rem;
+  background:
+    linear-gradient(180deg, rgba(7, 31, 53, 0.10), rgba(7, 31, 53, 0.45)),
+    radial-gradient(circle at top right, rgba(119, 215, 112, 0.30), transparent 35%),
+    repeating-linear-gradient(
+      -12deg,
+      #991b1b 0,
+      #991b1b 38px,
+      #f9d2d2 38px,
+      #f9d2d2 42px,
+      #b91c1c 42px,
+      #b91c1c 82px,
+      #f9d2d2 82px,
+      #f9d2d2 86px
+    );
+}
+
+.race-card-track::before,
+.race-card-track::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.race-card-track::before {
+  right: -40px;
+  bottom: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(119, 215, 112, 0.55), rgba(119, 215, 112, 0));
+}
+
+.race-card-track::after {
+  left: -80px;
+  top: -80px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0));
+}
+
+.race-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, rgba(7, 31, 53, 0.22) 5%, rgba(7, 31, 53, 0.06) 35%, rgba(7, 31, 53, 0.60) 100%);
+}
+
+.race-card-kicker {
+  display: inline-flex;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.72rem;
+  font-family: var(--cc-heading-font);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
