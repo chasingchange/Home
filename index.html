@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./shared.css" />
-    <script defer src="./shared-session.js"></script>
+    <script src="./shared-session.js"></script>
 
     <script>
       tailwind.config = {
@@ -151,6 +151,17 @@
         </div>
       </div>
 
+      <section id="welcomeRaceCard" class="mb-6 hidden overflow-hidden rounded-[2rem] bg-white ring-1 ring-black/5 shadow-soft">
+        <div class="race-card-track p-6 sm:p-8">
+          <div class="race-card-overlay"></div>
+          <div class="relative z-10 max-w-2xl">
+            <p class="race-card-kicker">Chasing Change</p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to Your Race, <span id="welcomeRaceName">Athlete</span></h2>
+            <p class="mt-3 max-w-xl text-sm sm:text-base font-semibold text-white/90">Your account is ready. We’ll keep your Chasing Change profile, macro targets, and calculator progress stored inside your private browser data folder whenever your device supports it.</p>
+          </div>
+        </div>
+      </section>
+
       <main>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
           <nav>
@@ -222,6 +233,8 @@
     <script>
       const sessionApi = window.ChasingChangeSession;
       const menuToggle = document.getElementById("menuToggle");
+      const welcomeRaceCard = document.getElementById("welcomeRaceCard");
+      const welcomeRaceName = document.getElementById("welcomeRaceName");
       const mobileMenu = document.getElementById("mobileMenu");
       menuToggle?.addEventListener("click", () => {
         const expanded = menuToggle.getAttribute("aria-expanded") === "true";
@@ -283,6 +296,8 @@
         homeLoginBtn?.classList.toggle("hidden", !!displayName);
         homeCreateAccountBtn?.classList.toggle("hidden", !!displayName);
         homeLogoutBtn?.classList.toggle("hidden", !displayName);
+        welcomeRaceCard?.classList.toggle("hidden", !displayName);
+        if (welcomeRaceName) welcomeRaceName.textContent = displayName || "Athlete";
       };
 
       const resetRecoveryUI = () => {
@@ -330,16 +345,22 @@
         refreshHomeAuthUI();
       });
 
-      authForm?.addEventListener("submit", (event) => {
+      authForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        authModalSubmit.disabled = true;
+        authModalSubmit.classList.add("opacity-70", "cursor-not-allowed");
+
         const result = authMode === "create"
-          ? sessionApi.createAccount({
+          ? await sessionApi.createAccount({
               name: authName.value,
               email: authEmail.value,
               password: authPassword.value,
             })
-          : sessionApi.login(authEmail.value, authPassword.value);
+          : await sessionApi.login(authEmail.value, authPassword.value);
+
+        authModalSubmit.disabled = false;
+        authModalSubmit.classList.remove("opacity-70", "cursor-not-allowed");
 
         if (!result.ok) {
           window.alert(result.error);
@@ -364,8 +385,8 @@
         }
       });
 
-      authRecoverySubmit?.addEventListener("click", () => {
-        const result = sessionApi.sendCredentialReminder({
+      authRecoverySubmit?.addEventListener("click", async () => {
+        const result = await sessionApi.sendCredentialReminder({
           name: authRecoveryName.value,
           email: authRecoveryEmail.value,
         });
@@ -390,7 +411,7 @@
       });
 
       setCoreFilter("body");
-      refreshHomeAuthUI();
+      sessionApi?.whenReady?.().finally(refreshHomeAuthUI);
     </script>
   </body>
 </html>
