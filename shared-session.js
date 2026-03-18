@@ -26,6 +26,13 @@
     return accounts[email] ? { email, account: accounts[email] } : null;
   };
 
+  const findAccountByName = (name) => {
+    const normalizedName = String(name || "").trim().toLowerCase();
+    if (!normalizedName) return null;
+
+    return Object.entries(readAccounts()).find(([, account]) => String(account?.name || "").trim().toLowerCase() === normalizedName) || null;
+  };
+
   const ensureAccountShape = (account) => ({
     name: account?.name || "",
     password: account?.password || "",
@@ -76,6 +83,36 @@
     localStorage.removeItem(SESSION_KEY);
   };
 
+  const sendCredentialReminder = ({ name, email } = {}) => {
+    const normalizedEmail = normalizeEmail(email);
+    const accounts = readAccounts();
+    const emailMatch = normalizedEmail ? [normalizedEmail, accounts[normalizedEmail]] : null;
+    const nameMatch = !normalizedEmail && name ? findAccountByName(name) : null;
+    const match = emailMatch?.[1] ? emailMatch : nameMatch;
+
+    if (!match) {
+      return { ok: false, message: "We could not find an account with that information yet." };
+    }
+
+    const [matchedEmail, account] = match;
+    const reminderParts = [];
+
+    if (normalizedEmail) {
+      reminderParts.push(`Password reminder sent to ${matchedEmail}. Password: ${account.password}`);
+    } else {
+      reminderParts.push(`Email reminder sent to ${matchedEmail}.`);
+    }
+
+    reminderParts.push("This site stores sign-in details locally in this browser, so your reminder is shown here for now.");
+
+    return {
+      ok: true,
+      message: reminderParts.join(" "),
+      email: matchedEmail,
+      password: account.password,
+    };
+  };
+
   const saveCalculatorData = (calculatorKey, data) => {
     const session = getCurrentAccount();
     if (!session || !calculatorKey) return false;
@@ -114,5 +151,6 @@
     getCurrentAccount,
     saveCalculatorData,
     getCalculatorData,
+    sendCredentialReminder,
   };
 })();
