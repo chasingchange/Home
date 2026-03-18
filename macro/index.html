@@ -20,6 +20,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
+    <script defer src="../shared-session.js"></script>
 
     <script>
       tailwind.config = {
@@ -63,52 +64,38 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      <div class="mx-auto max-w-xl">
-        <!-- Header -->
-        <header class="mb-3 sm:mb-4">
-          <div class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-soft bg-white">
-            <div class="relative p-6 sm:p-8">
-              <!-- background flair -->
+      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div class="absolute inset-0 -z-10 pointer-events-none">
+          <div class="absolute -top-16 right-8 h-72 w-72 rounded-full bg-cc-outline/30 blur-3xl"></div>
+          <div class="absolute top-40 -left-12 h-72 w-72 rounded-full bg-cc-text/15 blur-3xl"></div>
+        </div>
+        <div class="mx-auto max-w-xl">
+          <!-- Header -->
+          <header class="mb-4 sm:mb-6 rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-[0_24px_80px_rgba(119,215,112,0.20)] bg-white">
+            <div class="relative p-6 sm:p-10">
               <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-              <div class="absolute -bottom-28 -left-28 w-80 h-80 rounded-full bg-cc-text/10 blur-3xl"></div>
-
-              <!-- IMPORTANT: stack on mobile, row on desktop -->
-              <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <!-- LEFT: Brand + Title -->
-                <div class="flex items-center gap-4">
-                  <!-- Logo -->
-                  <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
-                    <img
-                      src="../Logo.png"
-                      alt="Chasing Change logo"
-                      class="w-full h-auto"
-                    />
-                  </div>
-
-                  <!-- Text stack -->
-                  <div class="flex flex-col">
-                    <p class="text-xs sm:text-sm tracking-[0.3em] uppercase font-brand opacity-60">
-                      Chasing Change
-                    </p>
-
-                    <div class="cc-title-row mt-1">
-                      <h1 class="text-2xl sm:text-3xl font-extrabold font-heading leading-tight">Macro Calculator</h1>
-                      <a href="../index.html" class="cc-home-icon-link" aria-label="Go to home">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                          <path d="M3 10.5 12 3l9 7.5" />
-                          <path d="M5 9.5V21h14V9.5" />
-                          <path d="M10 21v-6h4v6" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
+              <p id="pageLoginStatus" class="absolute right-4 top-4 rounded-full bg-cc-text/5 px-3 py-1 text-xs font-extrabold text-cc-text/70 ring-1 ring-black/10 sm:right-6 sm:top-6">Not Logged In</p>
+              <div class="relative">
+                <div class="flex items-center gap-3">
+                  <img src="../Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+                  <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
                 </div>
-
+                <div class="mt-3 flex flex-wrap items-center gap-3">
+                  <p class="text-xl sm:text-2xl font-bold font-heading">Pursuing Peace, Pursuing Purpose</p>
+                  <a href="../index.html" class="cc-home-icon-link" aria-label="Go to home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 10.5 12 3l9 7.5" />
+                      <path d="M5 9.5V21h14V9.5" />
+                      <path d="M10 21v-6h4v6" />
+                    </svg>
+                  </a>
+                </div>
+                <div class="mt-5 inline-flex items-center rounded-2xl bg-cc-text/5 px-4 py-3 ring-1 ring-black/10">
+                  <p class="text-lg sm:text-xl font-extrabold font-heading">Macro Calculator</p>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
         <div class="cc-cta-block mb-4">
           <p class="cc-cta-eyebrow">Quick actions</p>
@@ -121,9 +108,6 @@
             >
               Want this dialed in? Apply for coaching →
             </a>
-            <div class="cc-cta-row">
-              <a href="../index.html" class="cc-link-chip">All calculators</a>
-            </div>
           </div>
         </div>
 
@@ -468,6 +452,35 @@
                   </div>
                 </div>
 
+                <!-- Macro Style -->
+                <div>
+                  <label class="block text-sm font-semibold mb-2">Macro Style</label>
+                  <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <p class="text-sm font-semibold">Nutrition Preference</p>
+                        <p class="text-xs opacity-70">Standard keeps carbs moderate. Keto sets carbs to 0g and shifts calories to fat.</p>
+                      </div>
+                      <div class="inline-flex rounded-2xl bg-white ring-1 ring-black/10 p-1">
+                        <button
+                          id="macroStyleStandard"
+                          type="button"
+                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30"
+                        >
+                          Standard
+                        </button>
+                        <button
+                          id="macroStyleKeto"
+                          type="button"
+                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100"
+                        >
+                          Keto
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Weekly Change -->
                 <div id="weeklyWrap" class="hidden">
                   <label id="weeklyLabel" class="block text-sm font-semibold mb-2">Weekly Change</label>
@@ -617,8 +630,11 @@
       let goal = "maintain";
       let unit = "us"; // "us" | "metric"
       let goalMode = "standard"; // "standard" | "targetWeight" | "targetBodyFat"
+      let macroStyle = "standard"; // "standard" | "keto"
 
       // Elements
+      const pageLoginStatus = document.getElementById("pageLoginStatus");
+
       const sexEl = document.getElementById("sex");
       const ageEl = document.getElementById("age");
 
@@ -645,6 +661,8 @@
       const weeklyLabel = document.getElementById("weeklyLabel");
       const weeklyEl = document.getElementById("weeklyChange");
       const gainNote = document.getElementById("gainNote");
+      const macroStyleStandardBtn = document.getElementById("macroStyleStandard");
+      const macroStyleKetoBtn = document.getElementById("macroStyleKeto");
 
       const goalModeStandardBtn = document.getElementById("goalModeStandard");
       const goalModeWeightBtn = document.getElementById("goalModeWeight");
@@ -690,7 +708,9 @@
       const fatShareOut = document.getElementById("fatShareOut");
       const ledgerSyncStatus = document.getElementById("ledgerSyncStatus");
 
+      const sessionApi = window.ChasingChangeSession;
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
+      const MACRO_STORAGE_KEY = "macroCalculator";
 
       const activityFactors = {
         sedentary: 1.2,
@@ -702,6 +722,98 @@
 
       function show(el) { el.classList.remove("hidden"); }
       function hide(el) { el.classList.add("hidden"); }
+
+      function collectStoredMacroData() {
+        return {
+          profile: { goal, goalMode, unit, macroStyle },
+          inputs: {
+            sex: sexEl.value,
+            age: ageEl.value,
+            weightLb: weightLbEl.value,
+            weightKg: weightKgEl.value,
+            bodyFat: bodyFatEl.value,
+            heightFt: heightFtEl.value,
+            heightIn: heightInEl.value,
+            heightCm: heightCmEl.value,
+            activityLevel: activityEl.value,
+            weeklyChange: weeklyEl.value,
+            targetWeightLb: targetWeightLbEl.value,
+            targetWeightKg: targetWeightKgEl.value,
+            targetBodyFat: targetBodyFatEl.value,
+          },
+          outputs: {
+            calories: caloriesOut.textContent,
+            bmr: bmrOut.textContent,
+            tdee: tdeeOut.textContent,
+            protein: proteinOut.textContent,
+            carbs: carbsOut.textContent,
+            fat: fatOut.textContent,
+            proteinPct: proteinPctOut.textContent,
+            proteinShare: proteinShareOut.textContent,
+            carbsShare: carbsShareOut.textContent,
+            fatShare: fatShareOut.textContent,
+          },
+          updatedAt: new Date().toISOString(),
+        };
+      }
+
+      function applyStoredMacroData(data) {
+        if (!data) return;
+
+        const profile = data.profile || {};
+        const inputs = data.inputs || {};
+        const outputs = data.outputs || {};
+
+        weightLbEl.value = inputs.weightLb || "";
+        weightKgEl.value = inputs.weightKg || "";
+        bodyFatEl.value = inputs.bodyFat || "";
+        ageEl.value = inputs.age || "";
+        sexEl.value = inputs.sex || "male";
+        heightFtEl.value = inputs.heightFt || "";
+        heightInEl.value = inputs.heightIn || "";
+        heightCmEl.value = inputs.heightCm || "";
+        activityEl.value = inputs.activityLevel || "moderate";
+        targetWeightLbEl.value = inputs.targetWeightLb || "";
+        targetWeightKgEl.value = inputs.targetWeightKg || "";
+        targetBodyFatEl.value = inputs.targetBodyFat || "";
+
+        setGoal(profile.goal || "maintain");
+        setGoalMode(profile.goalMode || "standard");
+        setMacroStyle(profile.macroStyle || "standard");
+        setUnit(profile.unit || "us");
+
+        if (inputs.weeklyChange && Array.from(weeklyEl.options).some((opt) => opt.value === String(inputs.weeklyChange))) {
+          weeklyEl.value = String(inputs.weeklyChange);
+        }
+
+        if (outputs.calories) {
+          caloriesOut.textContent = outputs.calories || "0";
+          bmrOut.textContent = outputs.bmr || "0";
+          tdeeOut.textContent = outputs.tdee || "0";
+          proteinOut.textContent = outputs.protein || "0";
+          carbsOut.textContent = outputs.carbs || "0";
+          fatOut.textContent = outputs.fat || "0";
+          proteinPctOut.textContent = outputs.proteinPct || "0";
+          proteinShareOut.textContent = outputs.proteinShare || "0";
+          carbsShareOut.textContent = outputs.carbsShare || "0";
+          fatShareOut.textContent = outputs.fatShare || "0";
+          show(resultsEl);
+        }
+
+        updateWeeklyByTargets();
+        updateIdealBodyWeightPreview();
+      }
+
+      function refreshAccountNotice() {
+        const displayName = sessionApi?.getCurrentDisplayName?.() || "";
+        pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
+      }
+
+      function restoreSessionData() {
+        refreshAccountNotice();
+        const stored = sessionApi?.getCalculatorData?.(MACRO_STORAGE_KEY);
+        if (stored) applyStoredMacroData(stored);
+      }
 
       function setUnit(next) {
         unit = next;
@@ -740,6 +852,22 @@
         } else {
           hide(weeklyWrap);
           hide(gainNote);
+        }
+      }
+
+      function setMacroStyle(nextStyle) {
+        macroStyle = nextStyle;
+
+        if (macroStyle === "keto") {
+          macroStyleKetoBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleKetoBtn.classList.remove("opacity-70");
+          macroStyleStandardBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleStandardBtn.classList.add("opacity-70");
+        } else {
+          macroStyleStandardBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleStandardBtn.classList.remove("opacity-70");
+          macroStyleKetoBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleKetoBtn.classList.add("opacity-70");
         }
       }
 
@@ -1019,8 +1147,10 @@ const proteinPerLb =
         const proteinCapped = protein < proteinTarget;
 
         // Fat: % calories + minimum floor
-        const fatPct = derivedGoal === "lose" ? 0.25 : derivedGoal === "gain" ? 0.30 : 0.28;
-        const fatMin = 45;
+        const fatPct = macroStyle === "keto"
+          ? 0.60
+          : (derivedGoal === "lose" ? 0.25 : derivedGoal === "gain" ? 0.30 : 0.28);
+        const fatMin = macroStyle === "keto" ? 70 : 45;
         const fatCalTarget = targetCalories * fatPct;
 
         let fat = Math.max(fatMin, fatCalTarget / 9);
@@ -1041,9 +1171,16 @@ const proteinPerLb =
           }
         }
 
-        // Carbs fill remaining calories
-        const carbCals = targetCalories - proteinCals - fatCals;
-        const carbs = Math.max(0, carbCals / 4);
+        // Carbs fill remaining calories (keto forces 0g carbs)
+        let carbCals = targetCalories - proteinCals - fatCals;
+        let carbs = Math.max(0, carbCals / 4);
+
+        if (macroStyle === "keto") {
+          carbs = 0;
+          carbCals = 0;
+          fatCals = Math.max(0, targetCalories - proteinCals);
+          fat = fatCals / 9;
+        }
 
         // Round outputs
         const caloriesR = Math.round(targetCalories);
@@ -1077,6 +1214,7 @@ const proteinPerLb =
         else hide(proteinCapBox);
 
         show(resultsEl);
+        sessionApi?.saveCalculatorData?.(MACRO_STORAGE_KEY, collectStoredMacroData());
       }
 
       function saveTargetsToLedger() {
@@ -1085,7 +1223,7 @@ const proteinPerLb =
         const carbs = Number(carbsOut.textContent || 0);
         const fat = Number(fatOut.textContent || 0);
 
-        if (!calories || !protein || !carbs || !fat) {
+        if (!calories || !protein || !fat || carbs < 0) {
           ledgerSyncStatus.textContent = "Run Calculate Macros first so we have targets to save.";
           return;
         }
@@ -1106,6 +1244,7 @@ const proteinPerLb =
       // Init
       setGoal("maintain");
       setGoalMode("standard");
+      setMacroStyle("standard");
       setUnit("us");
 
       document.getElementById("unitUS").addEventListener("click", () => setUnit("us"));
@@ -1117,6 +1256,8 @@ const proteinPerLb =
       goalModeStandardBtn.addEventListener("click", () => setGoalMode("standard"));
       goalModeWeightBtn.addEventListener("click", () => setGoalMode("targetWeight"));
       goalModeBodyFatBtn.addEventListener("click", () => setGoalMode("targetBodyFat"));
+      macroStyleStandardBtn.addEventListener("click", () => setMacroStyle("standard"));
+      macroStyleKetoBtn.addEventListener("click", () => setMacroStyle("keto"));
       [weightLbEl, weightKgEl, bodyFatEl, targetWeightLbEl, targetWeightKgEl, targetBodyFatEl].forEach((el) => {
         el.addEventListener("input", updateWeeklyByTargets);
       });
@@ -1128,6 +1269,7 @@ const proteinPerLb =
 
       document.getElementById("calcBtn").addEventListener("click", calculate);
       document.getElementById("saveToLedgerBtn").addEventListener("click", saveTargetsToLedger);
+      restoreSessionData();
       updateIdealBodyWeightPreview();
     </script>
   </body>

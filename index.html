@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./shared.css" />
+    <script defer src="./shared-session.js"></script>
 
     <script>
       tailwind.config = {
@@ -48,6 +49,14 @@
       <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
         <div class="relative p-6 sm:p-10">
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+          <div class="absolute right-4 top-4 flex flex-col items-end gap-2 sm:right-6 sm:top-6">
+            <p id="homeLoginStatus" class="rounded-full bg-cc-text/5 px-3 py-1 text-xs font-extrabold text-cc-text/70 ring-1 ring-black/10">Not Logged In</p>
+            <div class="flex flex-wrap justify-end gap-2">
+              <button id="homeLoginBtn" type="button" class="rounded-xl bg-cc-outline px-3 py-2 text-xs font-extrabold text-cc-text transition hover:brightness-95 sm:px-4 sm:text-sm">Log In</button>
+              <button id="homeCreateAccountBtn" type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Create Account</button>
+              <button id="homeLogoutBtn" type="button" class="hidden rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Log Out</button>
+            </div>
+          </div>
 
           <div class="relative">
             <div class="flex items-center gap-3">
@@ -128,6 +137,7 @@
     </div>
 
     <script>
+      const sessionApi = window.ChasingChangeSession;
       const menuToggle = document.getElementById("menuToggle");
       const mobileMenu = document.getElementById("mobileMenu");
       menuToggle?.addEventListener("click", () => {
@@ -162,7 +172,48 @@
         setCoreFilter(button.dataset.core);
       });
 
+      const homeLoginBtn = document.getElementById("homeLoginBtn");
+      const homeCreateAccountBtn = document.getElementById("homeCreateAccountBtn");
+      const homeLogoutBtn = document.getElementById("homeLogoutBtn");
+      const homeLoginStatus = document.getElementById("homeLoginStatus");
+
+      const refreshHomeAuthUI = () => {
+        const displayName = sessionApi?.getCurrentDisplayName?.() || "";
+        homeLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
+        homeLoginBtn?.classList.toggle("hidden", !!displayName);
+        homeCreateAccountBtn?.classList.toggle("hidden", !!displayName);
+        homeLogoutBtn?.classList.toggle("hidden", !displayName);
+      };
+
+      homeLoginBtn?.addEventListener("click", () => {
+        const email = window.prompt("Email");
+        if (email === null) return;
+        const password = window.prompt("Password");
+        if (password === null) return;
+        const result = sessionApi.login(email, password);
+        if (!result.ok) window.alert(result.error);
+        refreshHomeAuthUI();
+      });
+
+      homeCreateAccountBtn?.addEventListener("click", () => {
+        const name = window.prompt("Your Name");
+        if (name === null) return;
+        const email = window.prompt("Email");
+        if (email === null) return;
+        const password = window.prompt("Password");
+        if (password === null) return;
+        const result = sessionApi.createAccount({ name, email, password });
+        if (!result.ok) window.alert(result.error);
+        refreshHomeAuthUI();
+      });
+
+      homeLogoutBtn?.addEventListener("click", () => {
+        sessionApi.logout();
+        refreshHomeAuthUI();
+      });
+
       setCoreFilter("body");
+      refreshHomeAuthUI();
     </script>
   </body>
 </html>
