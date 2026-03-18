@@ -68,6 +68,45 @@
         </div>
       </header>
 
+      <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4">
+        <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/10">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wide opacity-70">Account</p>
+              <h2 id="authModalTitle" class="mt-2 text-2xl font-extrabold font-heading">Log In</h2>
+            </div>
+            <button id="authModalClose" type="button" class="rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Close</button>
+          </div>
+
+          <div class="mt-4 grid gap-3">
+            <input
+              id="authName"
+              type="text"
+              placeholder="Your Name"
+              class="hidden w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
+            />
+            <input
+              id="authEmail"
+              type="email"
+              inputmode="email"
+              placeholder="Email"
+              class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
+            />
+            <input
+              id="authPassword"
+              type="password"
+              placeholder="Password"
+              class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
+            />
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button id="authModalSubmit" type="button" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Continue</button>
+            <button id="authModalCancel" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       <main>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
           <nav>
@@ -210,6 +249,15 @@
       const homeCreateAccountBtn = document.getElementById("homeCreateAccountBtn");
       const homeLogoutBtn = document.getElementById("homeLogoutBtn");
       const homeLoginStatus = document.getElementById("homeLoginStatus");
+      const authModal = document.getElementById("authModal");
+      const authModalTitle = document.getElementById("authModalTitle");
+      const authModalClose = document.getElementById("authModalClose");
+      const authModalCancel = document.getElementById("authModalCancel");
+      const authModalSubmit = document.getElementById("authModalSubmit");
+      const authName = document.getElementById("authName");
+      const authEmail = document.getElementById("authEmail");
+      const authPassword = document.getElementById("authPassword");
+      let authMode = "login";
 
       const refreshHomeAuthUI = () => {
         const displayName = sessionApi?.getCurrentDisplayName?.() || "";
@@ -219,31 +267,54 @@
         homeLogoutBtn?.classList.toggle("hidden", !displayName);
       };
 
-      homeLoginBtn?.addEventListener("click", () => {
-        const email = window.prompt("Email");
-        if (email === null) return;
-        const password = window.prompt("Password");
-        if (password === null) return;
-        const result = sessionApi.login(email, password);
-        if (!result.ok) window.alert(result.error);
-        refreshHomeAuthUI();
-      });
+      const openAuthModal = (mode) => {
+        authMode = mode;
+        authModalTitle.textContent = mode === "create" ? "Create Account" : "Log In";
+        authModalSubmit.textContent = mode === "create" ? "Create Account" : "Log In";
+        authName.classList.toggle("hidden", mode !== "create");
+        authName.value = "";
+        authEmail.value = "";
+        authPassword.value = "";
+        authModal.classList.remove("hidden");
+        authModal.classList.add("flex");
+        (mode === "create" ? authName : authEmail).focus();
+      };
 
-      homeCreateAccountBtn?.addEventListener("click", () => {
-        const name = window.prompt("Your Name");
-        if (name === null) return;
-        const email = window.prompt("Email");
-        if (email === null) return;
-        const password = window.prompt("Password");
-        if (password === null) return;
-        const result = sessionApi.createAccount({ name, email, password });
-        if (!result.ok) window.alert(result.error);
-        refreshHomeAuthUI();
-      });
+      const closeAuthModal = () => {
+        authModal.classList.add("hidden");
+        authModal.classList.remove("flex");
+      };
+
+      homeLoginBtn?.addEventListener("click", () => openAuthModal("login"));
+      homeCreateAccountBtn?.addEventListener("click", () => openAuthModal("create"));
 
       homeLogoutBtn?.addEventListener("click", () => {
         sessionApi.logout();
         refreshHomeAuthUI();
+      });
+
+      authModalSubmit?.addEventListener("click", () => {
+        const result = authMode === "create"
+          ? sessionApi.createAccount({
+              name: authName.value,
+              email: authEmail.value,
+              password: authPassword.value,
+            })
+          : sessionApi.login(authEmail.value, authPassword.value);
+
+        if (!result.ok) {
+          window.alert(result.error);
+          return;
+        }
+
+        closeAuthModal();
+        refreshHomeAuthUI();
+      });
+
+      authModalClose?.addEventListener("click", closeAuthModal);
+      authModalCancel?.addEventListener("click", closeAuthModal);
+      authModal?.addEventListener("click", (event) => {
+        if (event.target === authModal) closeAuthModal();
       });
 
       setCoreFilter("body");
