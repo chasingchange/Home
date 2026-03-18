@@ -49,12 +49,15 @@
       <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
         <div class="relative p-6 sm:p-10">
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-          <div class="absolute right-4 top-4 flex flex-col items-end gap-2 sm:right-6 sm:top-6">
-            <p id="homeLoginStatus" class="rounded-full bg-cc-text/5 px-3 py-1 text-xs font-extrabold text-cc-text/70 ring-1 ring-black/10">Not Logged In</p>
-            <div class="flex flex-wrap justify-end gap-2">
-              <button id="homeLoginBtn" type="button" class="rounded-xl bg-cc-outline px-3 py-2 text-xs font-extrabold text-cc-text transition hover:brightness-95 sm:px-4 sm:text-sm">Log In</button>
-              <button id="homeCreateAccountBtn" type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Create Account</button>
-              <button id="homeLogoutBtn" type="button" class="hidden rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Log Out</button>
+          <div class="absolute right-4 top-4 sm:right-6 sm:top-6">
+            <div class="rounded-2xl bg-white/90 px-3 py-3 shadow-soft ring-1 ring-black/10 backdrop-blur-sm">
+              <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cc-text/55">Account</p>
+              <p id="homeLoginStatus" class="mt-2 text-xs font-extrabold text-cc-text sm:text-sm">Not Logged In</p>
+              <div class="mt-3 flex flex-wrap justify-end gap-2">
+                <button id="homeLoginBtn" type="button" class="rounded-xl bg-cc-outline px-3 py-2 text-xs font-extrabold text-cc-text transition hover:brightness-95 sm:px-4 sm:text-sm">Log In</button>
+                <button id="homeCreateAccountBtn" type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Create Account</button>
+                <button id="homeLogoutBtn" type="button" class="hidden rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Log Out</button>
+              </div>
             </div>
           </div>
 
@@ -68,8 +71,9 @@
         </div>
       </header>
 
-      <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4">
+      <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4 backdrop-blur-sm">
         <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/10">
+          <div class="mb-5 h-1.5 w-20 rounded-full bg-cc-outline/70"></div>
           <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-xs font-bold uppercase tracking-wide opacity-70">Account</p>
@@ -315,6 +319,9 @@
       authModalCancel?.addEventListener("click", closeAuthModal);
       authModal?.addEventListener("click", (event) => {
         if (event.target === authModal) closeAuthModal();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && authModal.classList.contains("flex")) closeAuthModal();
       });
 
       setCoreFilter("body");
