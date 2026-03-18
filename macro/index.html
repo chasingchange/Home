@@ -468,6 +468,35 @@
                   </div>
                 </div>
 
+                <!-- Macro Style -->
+                <div>
+                  <label class="block text-sm font-semibold mb-2">Macro Style</label>
+                  <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <p class="text-sm font-semibold">Nutrition Preference</p>
+                        <p class="text-xs opacity-70">Standard keeps carbs moderate. Keto sets carbs to 0g and shifts calories to fat.</p>
+                      </div>
+                      <div class="inline-flex rounded-2xl bg-white ring-1 ring-black/10 p-1">
+                        <button
+                          id="macroStyleStandard"
+                          type="button"
+                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30"
+                        >
+                          Standard
+                        </button>
+                        <button
+                          id="macroStyleKeto"
+                          type="button"
+                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100"
+                        >
+                          Keto
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Weekly Change -->
                 <div id="weeklyWrap" class="hidden">
                   <label id="weeklyLabel" class="block text-sm font-semibold mb-2">Weekly Change</label>
@@ -617,6 +646,7 @@
       let goal = "maintain";
       let unit = "us"; // "us" | "metric"
       let goalMode = "standard"; // "standard" | "targetWeight" | "targetBodyFat"
+      let macroStyle = "standard"; // "standard" | "keto"
 
       // Elements
       const sexEl = document.getElementById("sex");
@@ -645,6 +675,8 @@
       const weeklyLabel = document.getElementById("weeklyLabel");
       const weeklyEl = document.getElementById("weeklyChange");
       const gainNote = document.getElementById("gainNote");
+      const macroStyleStandardBtn = document.getElementById("macroStyleStandard");
+      const macroStyleKetoBtn = document.getElementById("macroStyleKeto");
 
       const goalModeStandardBtn = document.getElementById("goalModeStandard");
       const goalModeWeightBtn = document.getElementById("goalModeWeight");
@@ -740,6 +772,22 @@
         } else {
           hide(weeklyWrap);
           hide(gainNote);
+        }
+      }
+
+      function setMacroStyle(nextStyle) {
+        macroStyle = nextStyle;
+
+        if (macroStyle === "keto") {
+          macroStyleKetoBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleKetoBtn.classList.remove("opacity-70");
+          macroStyleStandardBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleStandardBtn.classList.add("opacity-70");
+        } else {
+          macroStyleStandardBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleStandardBtn.classList.remove("opacity-70");
+          macroStyleKetoBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
+          macroStyleKetoBtn.classList.add("opacity-70");
         }
       }
 
@@ -1019,8 +1067,10 @@ const proteinPerLb =
         const proteinCapped = protein < proteinTarget;
 
         // Fat: % calories + minimum floor
-        const fatPct = derivedGoal === "lose" ? 0.25 : derivedGoal === "gain" ? 0.30 : 0.28;
-        const fatMin = 45;
+        const fatPct = macroStyle === "keto"
+          ? 0.60
+          : (derivedGoal === "lose" ? 0.25 : derivedGoal === "gain" ? 0.30 : 0.28);
+        const fatMin = macroStyle === "keto" ? 70 : 45;
         const fatCalTarget = targetCalories * fatPct;
 
         let fat = Math.max(fatMin, fatCalTarget / 9);
@@ -1041,9 +1091,16 @@ const proteinPerLb =
           }
         }
 
-        // Carbs fill remaining calories
-        const carbCals = targetCalories - proteinCals - fatCals;
-        const carbs = Math.max(0, carbCals / 4);
+        // Carbs fill remaining calories (keto forces 0g carbs)
+        let carbCals = targetCalories - proteinCals - fatCals;
+        let carbs = Math.max(0, carbCals / 4);
+
+        if (macroStyle === "keto") {
+          carbs = 0;
+          carbCals = 0;
+          fatCals = Math.max(0, targetCalories - proteinCals);
+          fat = fatCals / 9;
+        }
 
         // Round outputs
         const caloriesR = Math.round(targetCalories);
@@ -1106,6 +1163,7 @@ const proteinPerLb =
       // Init
       setGoal("maintain");
       setGoalMode("standard");
+      setMacroStyle("standard");
       setUnit("us");
 
       document.getElementById("unitUS").addEventListener("click", () => setUnit("us"));
@@ -1117,6 +1175,8 @@ const proteinPerLb =
       goalModeStandardBtn.addEventListener("click", () => setGoalMode("standard"));
       goalModeWeightBtn.addEventListener("click", () => setGoalMode("targetWeight"));
       goalModeBodyFatBtn.addEventListener("click", () => setGoalMode("targetBodyFat"));
+      macroStyleStandardBtn.addEventListener("click", () => setMacroStyle("standard"));
+      macroStyleKetoBtn.addEventListener("click", () => setMacroStyle("keto"));
       [weightLbEl, weightKgEl, bodyFatEl, targetWeightLbEl, targetWeightKgEl, targetBodyFatEl].forEach((el) => {
         el.addEventListener("input", updateWeeklyByTargets);
       });
