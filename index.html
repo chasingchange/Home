@@ -49,24 +49,25 @@
       <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
         <div class="relative p-6 sm:p-10">
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-          <div class="absolute right-4 top-4 sm:right-6 sm:top-6">
-            <div class="rounded-2xl bg-white/90 px-3 py-3 shadow-soft ring-1 ring-black/10 backdrop-blur-sm">
+
+          <div class="relative flex flex-col gap-5 sm:pr-[18rem]">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="./Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+                <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
+              </div>
+              <p class="mt-3 text-xl sm:text-2xl font-bold font-heading">Pursuing Peace, Pursuing Purpose</p>
+            </div>
+
+            <div class="w-full rounded-2xl bg-white/90 px-4 py-4 shadow-soft ring-1 ring-black/10 backdrop-blur-sm sm:absolute sm:right-0 sm:top-0 sm:w-[17rem] sm:px-4 sm:py-3">
               <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cc-text/55">Account</p>
-              <p id="homeLoginStatus" class="mt-2 text-xs font-extrabold text-cc-text sm:text-sm">Not Logged In</p>
-              <div class="mt-3 flex flex-wrap justify-end gap-2">
-                <button id="homeLoginBtn" type="button" class="rounded-xl bg-cc-outline px-3 py-2 text-xs font-extrabold text-cc-text transition hover:brightness-95 sm:px-4 sm:text-sm">Log In</button>
-                <button id="homeCreateAccountBtn" type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Create Account</button>
-                <button id="homeLogoutBtn" type="button" class="hidden rounded-xl bg-white px-3 py-2 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:px-4 sm:text-sm">Log Out</button>
+              <p id="homeLoginStatus" class="mt-2 text-sm font-extrabold text-cc-text">Not Logged In</p>
+              <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                <button id="homeLoginBtn" type="button" class="w-full rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95 sm:w-auto">Log In</button>
+                <button id="homeCreateAccountBtn" type="button" class="w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Create Account</button>
+                <button id="homeLogoutBtn" type="button" class="hidden w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Log Out</button>
               </div>
             </div>
-          </div>
-
-          <div class="relative">
-            <div class="flex items-center gap-3">
-              <img src="./Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
-              <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
-            </div>
-            <p class="mt-3 text-xl sm:text-2xl font-bold font-heading">Pursuing Peace, Pursuing Purpose</p>
           </div>
         </div>
       </header>
@@ -144,40 +145,6 @@
           <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
             <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to start your change?</p>
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
-          </div>
-
-          <div class="mt-4 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Account</p>
-                <h2 class="mt-2 text-2xl font-extrabold font-heading">Save your progress across calculators</h2>
-                <p class="mt-2 text-sm opacity-80">Log in on the home page and your saved calculator data will follow you anywhere on this device.</p>
-              </div>
-              <p id="homeLoginStatus" class="text-sm font-bold opacity-70">Not logged in</p>
-            </div>
-
-            <div class="mt-4 grid gap-3 sm:grid-cols-2">
-              <input
-                id="homeLoginEmail"
-                type="email"
-                inputmode="email"
-                placeholder="Email"
-                class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-              />
-              <input
-                id="homeLoginPassword"
-                type="password"
-                placeholder="Password"
-                class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-              />
-            </div>
-
-            <div class="mt-4 flex flex-wrap gap-2">
-              <button id="homeLoginBtn" type="button" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Log in</button>
-              <button id="homeCreateAccountBtn" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Create account</button>
-              <button id="homeLogoutBtn" type="button" class="hidden rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Log out</button>
-            </div>
-            <p class="mt-3 text-xs opacity-70">This login is stored locally on this device so your calculator data can come with you between pages.</p>
           </div>
 
           <p class="mt-4 text-sm opacity-80">Tap a core below to filter tools by focus. Example: selecting <strong>Body</strong> shows only Body tools.</p>
