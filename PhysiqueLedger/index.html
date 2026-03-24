@@ -190,6 +190,15 @@
         padding: 0.2rem 0.5rem;
       }
 
+      .serving-meta {
+        margin-top: 0.45rem;
+        font-size: 0.82rem;
+      }
+
+      .serving-select {
+        min-width: 70px;
+      }
+
       button {
         border: none;
         background: var(--accent);
@@ -448,6 +457,9 @@
       <h3 id="dialogTitle"></h3>
       <p id="dialogCuisine" class="muted"></p>
       <p id="dialogMacros"></p>
+      <p id="dialogQuantity" class="muted" style="margin-top:-.3rem;"></p>
+      <label for="dialogServings" style="font-size:.85rem;">Servings (1-7)</label>
+      <select id="dialogServings" class="serving-select" style="margin-top:.35rem; width:auto;"></select>
       <h4 style="font-family: 'Raleway', sans-serif; margin: .8rem 0 .35rem;">Ingredients</h4>
       <ul id="dialogIngredients" style="margin:0; padding-left:1.1rem;"></ul>
       <h4 style="font-family: 'Raleway', sans-serif; margin: .8rem 0 .35rem;">Instructions</h4>
@@ -460,11 +472,11 @@
 
     <script>
       const recipes = [
-        { name: "Egg Muffins", calories: 165, protein: 14, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", ingredients: ["Eggs", "Veggies", "Seasoning"], instructions: ["Whisk ingredients.", "Pour into muffin tray.", "Bake until set."] },
-        { name: "Turkey Egg Bites", calories: 230, protein: 28, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", ingredients: ["Ground turkey", "Egg whites", "Cheese"], instructions: ["Cook turkey and season.", "Mix with eggs.", "Bake in muffin tin."] },
-        { name: "Greek Yogurt Protein Pancake Stack", calories: 360, protein: 32, carbs: 32, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Greek-Yogurt-Protein-Pancake-Stack-360Kcals-32P-32C-10F-2d9a17b3a0bb8099938fe3da5a55eb8a?pvs=21" },
+        { name: "Egg Muffins", calories: 165, protein: 14, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", quantity: "2 egg muffins", ingredients: ["Eggs", "Veggies", "Seasoning"], instructions: ["Whisk ingredients.", "Pour into muffin tray.", "Bake until set."] },
+        { name: "Turkey Egg Bites", calories: 230, protein: 28, carbs: 4, fat: 10, cuisine: "American", meal: "Breakfast", quantity: "2 egg bites", ingredients: ["Ground turkey", "Egg whites", "Cheese"], instructions: ["Cook turkey and season.", "Mix with eggs.", "Bake in muffin tin."] },
+        { name: "Greek Yogurt Protein Pancake Stack", calories: 360, protein: 32, carbs: 32, fat: 10, cuisine: "American", meal: "Breakfast", quantity: "2 pancakes", url: "https://www.notion.so/Greek-Yogurt-Protein-Pancake-Stack-360Kcals-32P-32C-10F-2d9a17b3a0bb8099938fe3da5a55eb8a?pvs=21" },
         { name: "Healthy Cinnastack Protein Pancakes", calories: 360, protein: 32, carbs: 35, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Healthy-Cinnastack-Protein-Pancakes-360Kacls-32P-35C-10F-2d9a17b3a0bb807cb46ee4f4fe3e0ce2?pvs=21" },
-        { name: "Overnight Oats Strawberry Cheesecake", calories: 370, protein: 34, carbs: 36, fat: 8, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Overnight-Oats-Strawberry-Cheesecake-370Kcals-34P-36C-8F-2afa17b3a0bb8002a31be75478cd5bf1?pvs=21" },
+        { name: "Overnight Oats Strawberry Cheesecake", calories: 370, protein: 34, carbs: 36, fat: 8, cuisine: "American", meal: "Breakfast", quantity: "1 jar", url: "https://www.notion.so/Overnight-Oats-Strawberry-Cheesecake-370Kcals-34P-36C-8F-2afa17b3a0bb8002a31be75478cd5bf1?pvs=21" },
         { name: "Chasing Change Turkey Egg Biscuit", calories: 380, protein: 20, carbs: 35, fat: 15, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Chasing-Change-Turkey-Egg-Biscuit-380Kcals-20-P-35C-15F-2d9a17b3a0bb8038bf1ac4bd25616280?pvs=21" },
         { name: "Greek Yogurt Bowl", calories: 380, protein: 24, carbs: 42, fat: 10, cuisine: "Mediterranean", meal: "Breakfast", url: "https://www.notion.so/Greek-Yogurt-Bowl-380Kcals-24P-42C-10F-280a17b3a0bb805b81f1dd7df5dfd9f1?pvs=21" },
         { name: "Breakfast Quesadillas", calories: 390, protein: 20, carbs: 35, fat: 19, cuisine: "Mexican-Inspired", meal: "Breakfast", url: "https://www.notion.so/Breakfast-Quesadillas-390Kcals-20P-35C-19F-Ed-280a17b3a0bb80509a2ae1ae35d8b39b?pvs=21" },
@@ -472,7 +484,7 @@
         { name: "Carrot Cake Overnight Oats", calories: 425, protein: 28, carbs: 54, fat: 9, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Carrot-Cake-Overnight-Oats-425Kcals-28P-54C-9F-2afa17b3a0bb8038a9f1d52a51fb17b6?pvs=21" },
         { name: "Egg & Potato Skillet", calories: 430, protein: 24, carbs: 40, fat: 16, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Egg-Potato-Skillet-430Kcals-24P-40C-16F-280a17b3a0bb8002acafdc6b0745c9c9?pvs=21" },
         { name: "Chia Pudding", calories: 430, protein: 32, carbs: 38, fat: 18, cuisine: "Global", meal: "Breakfast", url: "https://www.notion.so/Chia-Pudding-430Kcals-32P-38C-18F-30ba17b3a0bb8065a931d0596b5fb948?pvs=21" },
-        { name: "Overnight Oats", calories: 435, protein: 34, carbs: 57, fat: 10, cuisine: "American", meal: "Breakfast", url: "https://www.notion.so/Overnight-Oats-435Kcals-34P-57C-10F-280a17b3a0bb80b2b6f9d8eca81f049e?pvs=21" },
+        { name: "Overnight Oats", calories: 435, protein: 34, carbs: 57, fat: 10, cuisine: "American", meal: "Breakfast", quantity: "1 jar", url: "https://www.notion.so/Overnight-Oats-435Kcals-34P-57C-10F-280a17b3a0bb80b2b6f9d8eca81f049e?pvs=21" },
         { name: "Breakfast Burrito", calories: 485, protein: 28, carbs: 38, fat: 23, cuisine: "Mexican-Inspired", meal: "Breakfast", url: "https://www.notion.so/Breakfast-Burrito-485Kcals-28P-38C-23F-280a17b3a0bb80f785e3ebe98868080b?pvs=21" },
         { name: "Pecan Overnight Oats", calories: 560, protein: 41, carbs: 50, fat: 24, cuisine: "American", meal: "Breakfast", ingredients: ["Oats", "Protein powder", "Pecans"], instructions: ["Combine in jar.", "Stir thoroughly.", "Refrigerate overnight."] }
       ];
@@ -511,6 +523,8 @@
       const dialogTitle = document.getElementById("dialogTitle");
       const dialogCuisine = document.getElementById("dialogCuisine");
       const dialogMacros = document.getElementById("dialogMacros");
+      const dialogQuantity = document.getElementById("dialogQuantity");
+      const dialogServings = document.getElementById("dialogServings");
       const dialogIngredients = document.getElementById("dialogIngredients");
       const dialogInstructions = document.getElementById("dialogInstructions");
       const dialogAdd = document.getElementById("dialogAdd");
@@ -523,6 +537,38 @@
       const MEAL_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snacks", "Dessert"];
 
       const formatMacros = (r) => `${r.calories} kcal • ${r.protein}P • ${r.carbs}C • ${r.fat}F`;
+      const formatQuantity = (recipe) => recipe.quantity || "1 serving";
+      const servingOptions = (selected = 1) =>
+        Array.from({ length: 7 }, (_, index) => index + 1)
+          .map((value) => `<option value="${value}" ${value === Number(selected) ? "selected" : ""}>${value}</option>`)
+          .join("");
+      const parseAmount = (token) => {
+        const clean = token.trim();
+        if (/^\d+\s+\d+\/\d+$/.test(clean)) {
+          const [whole, fraction] = clean.split(/\s+/);
+          const [num, den] = fraction.split("/").map(Number);
+          if (den) return Number(whole) + num / den;
+        }
+        if (/^\d+\/\d+$/.test(clean)) {
+          const [num, den] = clean.split("/").map(Number);
+          if (den) return num / den;
+        }
+        const numeric = Number(clean);
+        if (!Number.isNaN(numeric)) return numeric;
+        return null;
+      };
+      const formatAmount = (amount) => {
+        const rounded = Math.round(amount * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace(/\.?0+$/, "");
+      };
+      const scaleIngredientLine = (line, servings) => {
+        if (servings === 1) return line;
+        const match = String(line).trim().match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)(\s+.*)?$/);
+        if (!match) return line;
+        const amount = parseAmount(match[1]);
+        if (amount === null) return line;
+        return `${formatAmount(amount * servings)}${match[2] || ""}`;
+      };
 
       const normalizeMeal = (meal = "") => {
         const value = String(meal).trim().toLowerCase();
@@ -547,6 +593,7 @@
           fat: Number(entry.fat),
           cuisine: entry.cuisine || "Global",
           meal: normalizeMeal(entry.meal || "Breakfast"),
+          quantity: String(entry.quantity || entry.servingYield || "1 serving").trim(),
           ingredients: getArrayContent(entry.ingredients, ["Ingredients not provided."]),
           instructions: getArrayContent(entry.instructions || entry.steps, ["Instructions not provided."]),
         };
@@ -617,7 +664,7 @@
             const recipesInGroup = grouped[meal];
             const cards = recipesInGroup.length
               ? recipesInGroup
-                  .map((recipe, idx) => {
+                  .map((recipe) => {
                     const sourceIndex = list.findIndex((item) => item.name === recipe.name);
                     return `
                       <article class="recipe-card" tabindex="0" data-open="${sourceIndex}">
@@ -629,6 +676,7 @@
                               <span class="chip">${recipe.meal}</span>
                               <span class="chip">${formatMacros(recipe)}</span>
                             </div>
+                            <div class="serving-meta muted">Makes ${formatQuantity(recipe)} per serving</div>
                           </div>
                           <div style="display:grid; gap:.4rem;">
                             <button type="button" class="alt" data-add="${sourceIndex}">Add</button>
@@ -662,7 +710,7 @@
         recipeList.querySelectorAll("[data-add]").forEach((btn) => {
           btn.addEventListener("click", (event) => {
             event.stopPropagation();
-            addToMealPlan(list[Number(btn.dataset.add)]);
+            addToMealPlan(list[Number(btn.dataset.add)], 1);
           });
         });
       }
@@ -672,13 +720,23 @@
         dialogTitle.textContent = recipe.name;
         dialogCuisine.textContent = `${recipe.cuisine} • ${recipe.meal}`;
         dialogMacros.textContent = formatMacros(recipe);
-        dialogIngredients.innerHTML = (recipe.ingredients || ["Ingredients not provided."])
-          .map((item) => `<li>${item}</li>`)
-          .join("");
+        dialogQuantity.textContent = `Makes ${formatQuantity(recipe)} per serving`;
+        dialogServings.innerHTML = servingOptions(1);
+        renderDialogIngredients(1);
         dialogInstructions.innerHTML = (recipe.instructions || ["Instructions not provided."])
           .map((step) => `<li>${step}</li>`)
           .join("");
         dialog.showModal();
+      }
+
+      function renderDialogIngredients(servings = 1) {
+        if (!selectedRecipe) {
+          dialogIngredients.innerHTML = "";
+          return;
+        }
+        dialogIngredients.innerHTML = (selectedRecipe.ingredients || ["Ingredients not provided."])
+          .map((item) => `<li>${scaleIngredientLine(item, servings)}</li>`)
+          .join("");
       }
 
       function setTab(tab) {
@@ -690,12 +748,13 @@
         tabPanels.forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === tab));
       }
 
-      function addToMealPlan(recipe) {
+      function addToMealPlan(recipe, servingsToAdd = 1) {
+        const servings = Math.max(1, Math.min(7, Number(servingsToAdd) || 1));
         const existing = mealPlan.find((item) => item.name === recipe.name);
         if (existing) {
-          existing.servings += 1;
+          existing.servings = Math.min(7, existing.servings + servings);
         } else {
-          mealPlan.push({ ...recipe, servings: 1 });
+          mealPlan.push({ ...recipe, servings });
         }
         renderMealPlan();
       }
@@ -705,14 +764,10 @@
         renderMealPlan();
       }
 
-      function adjustServings(name, delta) {
+      function setServings(name, value) {
         const item = mealPlan.find((meal) => meal.name === name);
         if (!item) return;
-        item.servings = Math.max(0, item.servings + delta);
-        if (item.servings === 0) {
-          removeFromMealPlan(name);
-          return;
-        }
+        item.servings = Math.max(1, Math.min(7, Number(value) || 1));
         renderMealPlan();
       }
 
@@ -791,22 +846,21 @@
               <div>
                 <strong>${item.name}</strong>
                 <div class="muted">${formatMacros(item)}</div>
+                <div class="muted" style="font-size:.82rem;">Makes ${formatQuantity(item)} per serving</div>
               </div>
               <div class="qty">
-                <button type="button" class="alt" data-dec="${item.name}">−</button>
-                <span>${item.servings}x</span>
-                <button type="button" data-inc="${item.name}">+</button>
+                <label for="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="muted" style="font-size:.8rem;">Servings</label>
+                <select id="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="serving-select" data-set-servings="${item.name}">
+                  ${servingOptions(item.servings)}
+                </select>
                 <button type="button" class="alt" data-remove="${item.name}">Remove</button>
               </div>
             </div>
           `)
           .join("");
 
-        mealItems.querySelectorAll("[data-dec]").forEach((btn) => {
-          btn.addEventListener("click", () => adjustServings(btn.dataset.dec, -1));
-        });
-        mealItems.querySelectorAll("[data-inc]").forEach((btn) => {
-          btn.addEventListener("click", () => adjustServings(btn.dataset.inc, 1));
+        mealItems.querySelectorAll("[data-set-servings]").forEach((select) => {
+          select.addEventListener("change", () => setServings(select.dataset.setServings, select.value));
         });
         mealItems.querySelectorAll("[data-remove]").forEach((btn) => {
           btn.addEventListener("click", () => removeFromMealPlan(btn.dataset.remove));
@@ -852,8 +906,9 @@
       tabButtons.forEach((btn) => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
 
       dialogClose.addEventListener("click", () => dialog.close());
+      dialogServings.addEventListener("change", () => renderDialogIngredients(Number(dialogServings.value || 1)));
       dialogAdd.addEventListener("click", () => {
-        if (selectedRecipe) addToMealPlan(selectedRecipe);
+        if (selectedRecipe) addToMealPlan(selectedRecipe, Number(dialogServings.value || 1));
         dialog.close();
       });
 
