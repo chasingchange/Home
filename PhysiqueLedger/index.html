@@ -195,15 +195,6 @@
         font-size: 0.82rem;
       }
 
-      .serving-controls {
-        display: grid;
-        gap: 0.35rem;
-      }
-
-      .serving-controls label {
-        font-size: 0.78rem;
-      }
-
       .serving-select {
         min-width: 70px;
       }
@@ -551,6 +542,33 @@
         Array.from({ length: 7 }, (_, index) => index + 1)
           .map((value) => `<option value="${value}" ${value === Number(selected) ? "selected" : ""}>${value}</option>`)
           .join("");
+      const parseAmount = (token) => {
+        const clean = token.trim();
+        if (/^\d+\s+\d+\/\d+$/.test(clean)) {
+          const [whole, fraction] = clean.split(/\s+/);
+          const [num, den] = fraction.split("/").map(Number);
+          if (den) return Number(whole) + num / den;
+        }
+        if (/^\d+\/\d+$/.test(clean)) {
+          const [num, den] = clean.split("/").map(Number);
+          if (den) return num / den;
+        }
+        const numeric = Number(clean);
+        if (!Number.isNaN(numeric)) return numeric;
+        return null;
+      };
+      const formatAmount = (amount) => {
+        const rounded = Math.round(amount * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace(/\.?0+$/, "");
+      };
+      const scaleIngredientLine = (line, servings) => {
+        if (servings === 1) return line;
+        const match = String(line).trim().match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)(\s+.*)?$/);
+        if (!match) return line;
+        const amount = parseAmount(match[1]);
+        if (amount === null) return line;
+        return `${formatAmount(amount * servings)}${match[2] || ""}`;
+      };
 
       const normalizeMeal = (meal = "") => {
         const value = String(meal).trim().toLowerCase();
@@ -646,7 +664,7 @@
             const recipesInGroup = grouped[meal];
             const cards = recipesInGroup.length
               ? recipesInGroup
-                  .map((recipe, idx) => {
+                  .map((recipe) => {
                     const sourceIndex = list.findIndex((item) => item.name === recipe.name);
                     return `
                       <article class="recipe-card" tabindex="0" data-open="${sourceIndex}">
@@ -696,10 +714,7 @@
         recipeList.querySelectorAll("[data-add]").forEach((btn) => {
           btn.addEventListener("click", (event) => {
             event.stopPropagation();
-            const sourceIndex = Number(btn.dataset.add);
-            const servingsInput = recipeList.querySelector(`[data-servings-for="${sourceIndex}"]`);
-            const servings = Math.max(1, Math.min(7, Number(servingsInput?.value || 1)));
-            addToMealPlan(list[sourceIndex], servings);
+            addToMealPlan(list[Number(btn.dataset.add)], 1);
           });
         });
 
@@ -716,13 +731,21 @@
         dialogMacros.textContent = formatMacros(recipe);
         dialogQuantity.textContent = `Makes ${formatQuantity(recipe)} per serving`;
         dialogServings.innerHTML = servingOptions(1);
-        dialogIngredients.innerHTML = (recipe.ingredients || ["Ingredients not provided."])
-          .map((item) => `<li>${item}</li>`)
-          .join("");
+        renderDialogIngredients(1);
         dialogInstructions.innerHTML = (recipe.instructions || ["Instructions not provided."])
           .map((step) => `<li>${step}</li>`)
           .join("");
         dialog.showModal();
+      }
+
+      function renderDialogIngredients(servings = 1) {
+        if (!selectedRecipe) {
+          dialogIngredients.innerHTML = "";
+          return;
+        }
+        dialogIngredients.innerHTML = (selectedRecipe.ingredients || ["Ingredients not provided."])
+          .map((item) => `<li>${scaleIngredientLine(item, servings)}</li>`)
+          .join("");
       }
 
       function setTab(tab) {
@@ -892,6 +915,7 @@
       tabButtons.forEach((btn) => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
 
       dialogClose.addEventListener("click", () => dialog.close());
+      dialogServings.addEventListener("change", () => renderDialogIngredients(Number(dialogServings.value || 1)));
       dialogAdd.addEventListener("click", () => {
         if (selectedRecipe) addToMealPlan(selectedRecipe, Number(dialogServings.value || 1));
         dialog.close();
