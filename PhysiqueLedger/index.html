@@ -678,7 +678,11 @@
                             </div>
                             <div class="serving-meta muted">Makes ${formatQuantity(recipe)} per serving</div>
                           </div>
-                          <div style="display:grid; gap:.4rem;">
+                          <div class="serving-controls">
+                            <label for="recipeServings-${meal}-${idx}">Servings</label>
+                            <select id="recipeServings-${meal}-${idx}" class="serving-select" data-servings-for="${sourceIndex}" aria-label="Select servings">
+                              ${servingOptions(1)}
+                            </select>
                             <button type="button" class="alt" data-add="${sourceIndex}">Add</button>
                           </div>
                         </div>
@@ -712,6 +716,11 @@
             event.stopPropagation();
             addToMealPlan(list[Number(btn.dataset.add)], 1);
           });
+        });
+
+        recipeList.querySelectorAll("[data-servings-for]").forEach((select) => {
+          select.addEventListener("click", (event) => event.stopPropagation());
+          select.addEventListener("keydown", (event) => event.stopPropagation());
         });
       }
 
