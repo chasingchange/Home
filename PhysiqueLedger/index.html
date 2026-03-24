@@ -663,8 +663,8 @@
           .map((meal, groupIdx) => {
             const recipesInGroup = grouped[meal];
             const cards = recipesInGroup.length
-              ? recipesInGroup
-                  .map((recipe) => {
+                ? recipesInGroup
+                  .map((recipe, idx) => {
                     const sourceIndex = list.findIndex((item) => item.name === recipe.name);
                     return `
                       <article class="recipe-card" tabindex="0" data-open="${sourceIndex}">
@@ -714,7 +714,10 @@
         recipeList.querySelectorAll("[data-add]").forEach((btn) => {
           btn.addEventListener("click", (event) => {
             event.stopPropagation();
-            addToMealPlan(list[Number(btn.dataset.add)], 1);
+            const sourceIndex = Number(btn.dataset.add);
+            const servingsSelect = recipeList.querySelector(`[data-servings-for="${sourceIndex}"]`);
+            const servings = Number(servingsSelect?.value || 1);
+            addToMealPlan(list[sourceIndex], servings);
           });
         });
 
