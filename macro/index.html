@@ -537,6 +537,12 @@
                     </p>
                   </div>
 
+                  <div id="timelineBox" class="hidden rounded-2xl p-4 text-sm ring-1 ring-black/10 bg-white">
+                    <p id="timelineTitle" class="font-bold">Estimated Timeline</p>
+                    <p id="timelineOut" class="text-base mt-1 font-semibold">--</p>
+                    <p id="timelineDetail" class="mt-1 opacity-75">Timeline updates when you choose a target weight or target body fat %.</p>
+                  </div>
+
                   <div
                     id="minCalWarning"
                     class="hidden rounded-2xl p-4 text-sm ring-1 ring-red-300/60 bg-red-50 text-red-900"
@@ -686,6 +692,10 @@
       const minCalWarningEl = document.getElementById("minCalWarning");
       const requestedCaloriesOut = document.getElementById("requestedCaloriesOut");
       const minCaloriesOut = document.getElementById("minCaloriesOut");
+      const timelineBox = document.getElementById("timelineBox");
+      const timelineTitle = document.getElementById("timelineTitle");
+      const timelineOut = document.getElementById("timelineOut");
+      const timelineDetail = document.getElementById("timelineDetail");
 
       // Outputs
       const caloriesOut = document.getElementById("caloriesOut");
@@ -996,6 +1006,24 @@
         return goal;
       }
 
+      function renderTimeline(weeks, summary, detail) {
+        if (!summary) {
+          hide(timelineBox);
+          return;
+        }
+
+        if (Number.isFinite(weeks) && weeks > 0) {
+          const months = weeks / 4.345;
+          timelineOut.textContent = `${weeks.toFixed(1)} weeks (${months.toFixed(1)} months)`;
+        } else {
+          timelineOut.textContent = "You are already at your target.";
+        }
+
+        timelineTitle.textContent = summary;
+        timelineDetail.textContent = detail;
+        show(timelineBox);
+      }
+
       function updateIdealBodyWeightPreview() {
         const age = parseInt(ageEl.value, 10);
         const { weightLb, totalInches } = getInputsAsLbsAndInches();
@@ -1118,6 +1146,37 @@
         if (derivedGoal === "lose") targetCalories = tdee - weeklyChangeLb * 500; // ~500/day per 1 lb/week
         if (derivedGoal === "gain") targetCalories = tdee + weeklyChangeLb * 300;
 
+        let timelineWeeks = null;
+        let timelineSummary = "";
+        let timelineAssumption = "";
+
+        if (goalMode === "targetWeight") {
+          const deltaLb = Math.abs(targetWeightLb - weightLb);
+          if (derivedGoal === "maintain" || deltaLb < 0.05) {
+            timelineWeeks = 0;
+            timelineSummary = "Target Weight Timeline";
+            timelineAssumption = "Current and target weight are effectively the same.";
+          } else if (weeklyChangeLb > 0) {
+            timelineWeeks = deltaLb / weeklyChangeLb;
+            timelineSummary = "Target Weight Timeline";
+            timelineAssumption = `Estimated using ${weeklyChangeLb} lb/week and a ${deltaLb.toFixed(1)} lb change.`;
+          }
+        } else if (goalMode === "targetBodyFat" && bodyFat > 0 && targetBodyFat > 0 && targetBodyFat < 100) {
+          const currentLeanMassLb = weightLb * (1 - bodyFat / 100);
+          const targetWeightFromBodyFat = currentLeanMassLb / (1 - targetBodyFat / 100);
+          const deltaLb = Math.abs(targetWeightFromBodyFat - weightLb);
+
+          if (derivedGoal === "maintain" || deltaLb < 0.05) {
+            timelineWeeks = 0;
+            timelineSummary = "Target Body Fat Timeline";
+            timelineAssumption = "Current and target body fat are effectively the same.";
+          } else if (weeklyChangeLb > 0) {
+            timelineWeeks = deltaLb / weeklyChangeLb;
+            timelineSummary = "Target Body Fat Timeline";
+            timelineAssumption = `Assumes lean mass is maintained. Estimated ${deltaLb.toFixed(1)} lb change at ${weeklyChangeLb} lb/week.`;
+          }
+        }
+
         // Daily minimum calories (Male 1500 / Female 1200) + warning
         const minCalories = isMale ? 1500 : 1200;
         const requestedCalories = targetCalories;
@@ -1213,6 +1272,8 @@ const proteinPerLb =
 
         if (proteinCapped) show(proteinCapBox);
         else hide(proteinCapBox);
+
+        renderTimeline(timelineWeeks, timelineSummary, timelineAssumption);
 
         show(resultsEl);
         sessionApi?.saveCalculatorData?.(MACRO_STORAGE_KEY, collectStoredMacroData());
