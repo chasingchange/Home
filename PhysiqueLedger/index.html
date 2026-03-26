@@ -267,10 +267,14 @@
         background: #fff;
         border: 1px solid rgba(7, 31, 53, 0.11);
         border-radius: 14px;
-        padding: 0.65rem;
+        padding: 0.8rem;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 0.65rem;
+        justify-content: center;
+        text-align: center;
+        aspect-ratio: 1 / 1;
+        gap: 0.55rem;
       }
 
       .ring-chart {
@@ -304,6 +308,7 @@
         gap: 0.45rem;
         overflow-x: auto;
         padding-bottom: 0.2rem;
+        justify-content: center;
       }
 
       .pill {
@@ -439,7 +444,6 @@
         .recipe-list { max-height: none; }
         .controls { grid-template-columns: 1fr; }
         .rings { grid-template-columns: 1fr; }
-        .meal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
     </style>
   </head>
@@ -462,12 +466,6 @@
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
           </div>
-
-          <div class="controls">
-            <input id="search" type="text" placeholder="Search recipes..." />
-            <select id="categoryFilter"></select>
-            <select id="cuisineFilter"></select>
-          </div>
           <div id="mealCards" class="meal-cards"></div>
 
           <div class="library-widget">
@@ -481,6 +479,12 @@
               <h3 id="quickWeekTitle">Work Week 1 Picks</h3>
             </div>
             <div id="quickMeals" class="meal-items"></div>
+          </div>
+
+          <div class="controls">
+            <input id="search" type="text" placeholder="Search recipes..." />
+            <select id="categoryFilter"></select>
+            <select id="cuisineFilter"></select>
           </div>
 
           <div id="recipeList" class="recipe-list"></div>
@@ -518,8 +522,8 @@
 
             <div id="rings" class="rings"></div>
 
-            <div class="row" style="margin-top:1rem; align-items:center;">
-              <h3 id="selectedMealsTitle">Selected Meals</h3>
+            <h3 id="selectedMealsTitle" style="text-align:center; margin-top:1rem;">Selected Meals</h3>
+            <div class="row" style="margin-top:.45rem; justify-content:flex-end;">
               <button id="clearDay" class="alt" type="button">Clear day</button>
             </div>
             <div id="mealItems" class="meal-items"></div>
@@ -807,11 +811,6 @@
         const diffDays = Math.round((mondayDate - currentMonday) / 86400000);
         return Math.round(diffDays / 7);
       }
-      function renderMealCards() {
-        mealCards.innerHTML = MEAL_CATEGORIES.map((meal) => `
-          <a class="meal-nav-card" href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener">${meal}</a>
-        `).join("");
-      }
       function populateArchiveControls(selectedYear = new Date().getFullYear()) {
         const years = [];
         for (let y = 2025; y <= new Date().getFullYear(); y += 1) years.push(y);
@@ -865,51 +864,12 @@
         }
       }
 
-      function saveLedgerState() {
-        const targets = {
-          calories: Number(targetInputs.calories.value || 0),
-          protein: Number(targetInputs.protein.value || 0),
-          carbs: Number(targetInputs.carbs.value || 0),
-          fat: Number(targetInputs.fat.value || 0),
-        };
-        localStorage.setItem(LEDGER_STATE_KEY, JSON.stringify({
-          mealPlanByDay,
-          activeDay,
-          prepDays,
-          checkedGroceries,
-          targets,
-        }));
-      }
-
-      function loadLedgerState() {
-        try {
-          const raw = localStorage.getItem(LEDGER_STATE_KEY);
-          if (!raw) return;
-          const state = JSON.parse(raw);
-          if (state.mealPlanByDay && typeof state.mealPlanByDay === "object") mealPlanByDay = state.mealPlanByDay;
-          if (Number.isInteger(state.activeDay)) activeDay = state.activeDay;
-          if (Number(state.prepDays) > 0) {
-            prepDays = Number(state.prepDays);
-            prepDaysInput.value = String(prepDays);
-          }
-          if (state.checkedGroceries && typeof state.checkedGroceries === "object") checkedGroceries = state.checkedGroceries;
-          if (state.targets) {
-            targetInputs.calories.value = Number(state.targets.calories || targetInputs.calories.value);
-            targetInputs.protein.value = Number(state.targets.protein || targetInputs.protein.value);
-            targetInputs.carbs.value = Number(state.targets.carbs || targetInputs.carbs.value);
-            targetInputs.fat.value = Number(state.targets.fat || targetInputs.fat.value);
-          }
-        } catch (err) {
-          console.warn("Unable to load saved ledger state.", err);
-        }
-      }
-
       function initCuisineOptions() {
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
         cuisineFilter.innerHTML = cuisines.map((c) => `<option value="${c}">${c}</option>`).join("");
       }
       function initCategoryOptions() {
-        categoryFilter.innerHTML = ["All categories", ...MEAL_CATEGORIES].map((item) => `<option>${item}</option>`).join("");
+        categoryFilter.innerHTML = ["All meals", ...MEAL_CATEGORIES].map((item) => `<option>${item}</option>`).join("");
       }
 
       function filteredRecipes() {
@@ -919,7 +879,7 @@
         return recipes.filter((recipe) => {
           const nameMatch = recipe.name.toLowerCase().includes(q);
           const cuisineMatch = cuisine === "All cuisines" || recipe.cuisine === cuisine;
-          const categoryMatch = category === "All categories" || normalizeMeal(recipe.meal) === category;
+          const categoryMatch = category === "All meals" || normalizeMeal(recipe.meal) === category;
           return nameMatch && cuisineMatch && categoryMatch;
         });
       }
@@ -974,8 +934,8 @@
             return `
               <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
                 <summary>
-                  <span>${meal} (${recipesInGroup.length})</span>
-                  <a href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener" class="chip" style="margin-left:.45rem;">Open ${meal} page</a>
+                  ${meal} (${recipesInGroup.length})
+                  <a href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener" class="chip" style="margin-left:.45rem;">Open page ↗</a>
                 </summary>
                 <div class="meal-group-body">${cards}</div>
               </details>
@@ -1381,7 +1341,6 @@
       loadLedgerState();
       initCuisineOptions();
       initCategoryOptions();
-      renderMealCards();
       populateArchiveControls(new Date().getFullYear());
       if (mealQuery && MEAL_CATEGORIES.includes(mealQuery)) {
         categoryFilter.value = mealQuery;
