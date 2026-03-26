@@ -240,7 +240,7 @@
         grid-template-columns: 1fr;
         gap: 0.7rem;
         margin-top: 0.9rem;
-        width: min(560px, 100%);
+        width: 100%;
         margin-inline: auto;
       }
 
@@ -419,6 +419,7 @@
       @media (max-width: 940px) {
         .recipe-list { max-height: none; }
         .controls { grid-template-columns: 1fr; }
+        .rings { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -440,7 +441,6 @@
           <div class="panel-head">
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
-            <p class="muted" style="margin-top:.35rem; font-size:.85rem;">Sections: Breakfast, Lunch, Dinner, Snacks, <strong>Dessert</strong>.</p>
           </div>
 
           <div class="controls">
@@ -613,6 +613,7 @@
       const adminLockBtn = document.getElementById("adminLock");
 
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
+      const LEDGER_STATE_KEY = "physiqueLedgerStateV2";
       const ADMIN_IMPORT_PASSWORD = "Chasing1228!";
 
       const targetInputs = {
@@ -634,6 +635,7 @@
       const dialogClose = document.getElementById("dialogClose");
       const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
       const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+      const mealQuery = new URLSearchParams(window.location.search).get("meal");
 
       let selectedRecipe = null;
       let mealPlanByDay = { 0: [] };
@@ -741,6 +743,45 @@
         adminLockCard.classList.toggle("hidden", isUnlocked);
       }
 
+      function saveLedgerState() {
+        const targets = {
+          calories: Number(targetInputs.calories.value || 0),
+          protein: Number(targetInputs.protein.value || 0),
+          carbs: Number(targetInputs.carbs.value || 0),
+          fat: Number(targetInputs.fat.value || 0),
+        };
+        localStorage.setItem(LEDGER_STATE_KEY, JSON.stringify({
+          mealPlanByDay,
+          activeDay,
+          prepDays,
+          checkedGroceries,
+          targets,
+        }));
+      }
+
+      function loadLedgerState() {
+        try {
+          const raw = localStorage.getItem(LEDGER_STATE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.mealPlanByDay && typeof state.mealPlanByDay === "object") mealPlanByDay = state.mealPlanByDay;
+          if (Number.isInteger(state.activeDay)) activeDay = state.activeDay;
+          if (Number(state.prepDays) > 0) {
+            prepDays = Number(state.prepDays);
+            prepDaysInput.value = String(prepDays);
+          }
+          if (state.checkedGroceries && typeof state.checkedGroceries === "object") checkedGroceries = state.checkedGroceries;
+          if (state.targets) {
+            targetInputs.calories.value = Number(state.targets.calories || targetInputs.calories.value);
+            targetInputs.protein.value = Number(state.targets.protein || targetInputs.protein.value);
+            targetInputs.carbs.value = Number(state.targets.carbs || targetInputs.carbs.value);
+            targetInputs.fat.value = Number(state.targets.fat || targetInputs.fat.value);
+          }
+        } catch (err) {
+          console.warn("Unable to load saved ledger state.", err);
+        }
+      }
+
       function initCuisineOptions() {
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
         cuisineFilter.innerHTML = cuisines.map((c) => `<option value="${c}">${c}</option>`).join("");
@@ -810,7 +851,10 @@
 
             return `
               <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
-                <summary>${meal} (${recipesInGroup.length})</summary>
+                <summary>
+                  <span>${meal} (${recipesInGroup.length})</span>
+                  <a href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener" class="chip" style="margin-left:.45rem;">Open ${meal} page</a>
+                </summary>
                 <div class="meal-group-body">${cards}</div>
               </details>
             `;
@@ -879,6 +923,7 @@
           today.push({ ...recipe, servings, id: Date.now() + Math.random() });
         }
         mealPlanByDay[activeDay] = today;
+        saveLedgerState();
         renderMealPlan();
         renderGrocery();
       }
@@ -886,6 +931,7 @@
       function removeFromMealPlan(id) {
         const itemId = Number(id);
         mealPlanByDay[activeDay] = (mealPlanByDay[activeDay] || []).filter((item) => item.id !== itemId);
+        saveLedgerState();
         renderMealPlan();
         renderGrocery();
       }
@@ -895,6 +941,7 @@
         const item = (mealPlanByDay[activeDay] || []).find((meal) => meal.id === itemId);
         if (!item) return;
         item.servings = Math.max(1, Math.min(7, Number(value) || 1));
+        saveLedgerState();
         renderMealPlan();
         renderGrocery();
       }
@@ -955,6 +1002,7 @@
           targetInputs.carbs.value = Math.round(Number(saved.carbs));
           targetInputs.fat.value = Math.round(Number(saved.fat));
           importStatus.textContent = `Imported from ${saved.source || "Macro Calculator"} (${new Date(saved.savedAt || Date.now()).toLocaleString()}).`;
+          saveLedgerState();
           renderRings();
         } catch (err) {
           importStatus.textContent = "Saved target data was invalid. Recalculate and save again from Macro Calculator.";
@@ -1018,8 +1066,18 @@
         monday.setDate(today.getDate() + mondayOffset + index * 7);
         const friday = new Date(monday);
         friday.setDate(monday.getDate() + 4);
+        const getIsoWeek = (date) => {
+          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+          d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+          return {
+            week: Math.ceil((((d - yearStart) / 86400000) + 1) / 7),
+            year: d.getUTCFullYear(),
+          };
+        };
+        const { week, year } = getIsoWeek(monday);
         const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        return `Work Week ${index + 1} • ${fmt(monday)}–${fmt(friday)}`;
+        return `Work Week ${week}, ${year} • ${fmt(monday)}–${fmt(friday)}`;
       }
       function renderQuickMeals() {
         const dayMeals = mealPlanByDay[activeDay] || [];
@@ -1049,6 +1107,7 @@
         dayPills.querySelectorAll("[data-day]").forEach((btn) => {
           btn.addEventListener("click", () => {
             activeDay = Number(btn.dataset.day);
+            saveLedgerState();
             renderMealPlan();
           });
         });
@@ -1056,6 +1115,7 @@
           const next = Math.max(...days) + 1;
           mealPlanByDay[next] = [];
           activeDay = next;
+          saveLedgerState();
           renderMealPlan();
         });
       }
@@ -1119,12 +1179,14 @@
         `).join("");
         grocerySummary.querySelector("#clearChecks")?.addEventListener("click", () => {
           checkedGroceries = {};
+          saveLedgerState();
           renderGrocery();
         });
         groceryItems.querySelectorAll("[data-grocery]").forEach((row) => {
           row.addEventListener("click", () => {
             const name = decodeURIComponent(row.dataset.grocery);
             checkedGroceries[name] = !checkedGroceries[name];
+            saveLedgerState();
             renderGrocery();
           });
         });
@@ -1135,6 +1197,7 @@
       cuisineFilter.addEventListener("change", renderRecipes);
       clearDay.addEventListener("click", () => {
         mealPlanByDay[activeDay] = [];
+        saveLedgerState();
         renderMealPlan();
         renderGrocery();
       });
@@ -1142,6 +1205,7 @@
       goToPlanBtn.addEventListener("click", () => setTab("plan"));
       prepDaysInput.addEventListener("change", () => {
         prepDays = Number(prepDaysInput.value || 1);
+        saveLedgerState();
         renderGrocery();
       });
       importNotionBtn.addEventListener("click", () => {
@@ -1180,11 +1244,18 @@
       });
 
       Object.values(targetInputs).forEach((input) => {
-        input.addEventListener("input", renderRings);
+        input.addEventListener("input", () => {
+          saveLedgerState();
+          renderRings();
+        });
       });
 
+      loadLedgerState();
       initCuisineOptions();
       initCategoryOptions();
+      if (mealQuery && MEAL_CATEGORIES.includes(mealQuery)) {
+        categoryFilter.value = mealQuery;
+      }
       renderRecipes();
       renderMealPlan();
       renderGrocery();
