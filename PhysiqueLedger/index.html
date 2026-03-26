@@ -105,7 +105,7 @@
 
       .controls {
         display: grid;
-        grid-template-columns: 1fr 220px;
+        grid-template-columns: 1fr 170px 220px;
         gap: 0.7rem;
         padding: 0.8rem 1.1rem 1.1rem;
       }
@@ -276,6 +276,55 @@
         gap: 0.5rem;
       }
 
+      .day-pills {
+        display: flex;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding-bottom: 0.2rem;
+      }
+
+      .pill {
+        border-radius: 999px;
+        border: 1px solid rgba(7, 31, 53, 0.18);
+        background: #fff;
+        padding: 0.4rem 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .pill.active {
+        border-color: var(--accent);
+        background: rgba(119, 215, 112, 0.32);
+      }
+
+      .grocery-row {
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        border-radius: 12px;
+        padding: 0.62rem 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .grocery-row.checked {
+        opacity: 0.6;
+        text-decoration: line-through;
+      }
+
+      .check {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid rgba(7, 31, 53, 0.28);
+      }
+
+      .grocery-row.checked .check {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+
       .meal-item {
         border: 1px solid rgba(7, 31, 53, 0.12);
         border-radius: 12px;
@@ -363,6 +412,7 @@
         <div class="tabs" role="tablist" aria-label="Physique Ledger tabs">
           <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="library">Recipe Library</button>
           <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="plan">Meal Plan</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="grocery">Grocery</button>
         </div>
 
         <section class="panel tab-panel active" data-panel="library">
@@ -374,6 +424,7 @@
 
           <div class="controls">
             <input id="search" type="text" placeholder="Search recipes..." />
+            <select id="categoryFilter"></select>
             <select id="cuisineFilter"></select>
           </div>
 
@@ -400,6 +451,7 @@
               <h3>Daily Targets</h3>
               <button id="importMacroTargets" type="button" class="alt">Import Macro Targets</button>
             </div>
+            <div class="day-pills" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
             <p id="importStatus" class="muted" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
             <div class="targets">
               <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
@@ -411,14 +463,32 @@
             <div id="rings" class="rings"></div>
 
             <div class="row" style="margin-top:1rem; align-items:center;">
-              <h3>Selected Meals</h3>
-              <button id="clearPlan" class="alt" type="button">Clear plan</button>
+              <h3 id="selectedMealsTitle">Selected Meals</h3>
+              <button id="clearDay" class="alt" type="button">Clear day</button>
             </div>
             <div id="mealItems" class="meal-items"></div>
           </div>
 
           <div style="padding:0 1.1rem 1.1rem;">
             <a href="../apply-for-coaching/index.html" style="display:inline-flex; border-radius:12px; background:var(--accent); color:var(--text); text-decoration:none; font-weight:800; padding:0.65rem 0.9rem;">Want this dialed in? Apply for coaching →</a>
+          </div>
+        </section>
+
+        <section class="panel tab-panel" data-panel="grocery">
+          <div class="panel-head">
+            <h2>Grocery List</h2>
+            <p class="muted">Generated from all planned days and scaled by prep days.</p>
+          </div>
+          <div class="plan-wrap">
+            <div class="row">
+              <label for="prepDays"><strong>Prep Days</strong></label>
+              <select id="prepDays" style="width:auto;">
+                <option>1</option><option>2</option><option>3</option><option>4</option>
+                <option selected>5</option><option>6</option><option>7</option>
+              </select>
+            </div>
+            <p id="grocerySummary" class="muted" style="margin:.45rem 0;">0 items</p>
+            <div id="groceryItems" class="meal-items"></div>
           </div>
         </section>
       </div>
@@ -490,15 +560,21 @@
       ];
 
       const searchInput = document.getElementById("search");
+      const categoryFilter = document.getElementById("categoryFilter");
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
       const rings = document.getElementById("rings");
       const quickRings = document.getElementById("quickRings");
       const goToPlanBtn = document.getElementById("goToPlan");
       const mealItems = document.getElementById("mealItems");
-      const clearPlan = document.getElementById("clearPlan");
+      const clearDay = document.getElementById("clearDay");
+      const dayPills = document.getElementById("dayPills");
+      const selectedMealsTitle = document.getElementById("selectedMealsTitle");
       const importMacroTargetsBtn = document.getElementById("importMacroTargets");
       const importStatus = document.getElementById("importStatus");
+      const prepDaysInput = document.getElementById("prepDays");
+      const grocerySummary = document.getElementById("grocerySummary");
+      const groceryItems = document.getElementById("groceryItems");
       const notionInput = document.getElementById("notionInput");
       const importNotionBtn = document.getElementById("importNotion");
       const importRecipeStatus = document.getElementById("importRecipeStatus");
@@ -533,7 +609,10 @@
       const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
       let selectedRecipe = null;
-      let mealPlan = [];
+      let mealPlanByDay = { 0: [] };
+      let activeDay = 0;
+      let prepDays = 5;
+      let checkedGroceries = {};
       const MEAL_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snacks", "Dessert"];
 
       const formatMacros = (r) => `${r.calories} kcal • ${r.protein}P • ${r.carbs}C • ${r.fat}F`;
@@ -630,14 +709,19 @@
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
         cuisineFilter.innerHTML = cuisines.map((c) => `<option value="${c}">${c}</option>`).join("");
       }
+      function initCategoryOptions() {
+        categoryFilter.innerHTML = ["All categories", ...MEAL_CATEGORIES].map((item) => `<option>${item}</option>`).join("");
+      }
 
       function filteredRecipes() {
         const q = searchInput.value.trim().toLowerCase();
         const cuisine = cuisineFilter.value;
+        const category = categoryFilter.value;
         return recipes.filter((recipe) => {
           const nameMatch = recipe.name.toLowerCase().includes(q);
           const cuisineMatch = cuisine === "All cuisines" || recipe.cuisine === cuisine;
-          return nameMatch && cuisineMatch;
+          const categoryMatch = category === "All categories" || normalizeMeal(recipe.meal) === category;
+          return nameMatch && cuisineMatch && categoryMatch;
         });
       }
 
@@ -762,29 +846,34 @@
 
       function addToMealPlan(recipe, servingsToAdd = 1) {
         const servings = Math.max(1, Math.min(7, Number(servingsToAdd) || 1));
-        const existing = mealPlan.find((item) => item.name === recipe.name);
+        const today = mealPlanByDay[activeDay] || [];
+        const existing = today.find((item) => item.name === recipe.name);
         if (existing) {
           existing.servings = Math.min(7, existing.servings + servings);
         } else {
-          mealPlan.push({ ...recipe, servings });
+          today.push({ ...recipe, servings, id: Date.now() + Math.random() });
         }
+        mealPlanByDay[activeDay] = today;
         renderMealPlan();
+        renderGrocery();
       }
 
-      function removeFromMealPlan(name) {
-        mealPlan = mealPlan.filter((item) => item.name !== name);
+      function removeFromMealPlan(id) {
+        mealPlanByDay[activeDay] = (mealPlanByDay[activeDay] || []).filter((item) => item.id !== id);
         renderMealPlan();
+        renderGrocery();
       }
 
-      function setServings(name, value) {
-        const item = mealPlan.find((meal) => meal.name === name);
+      function setServings(id, value) {
+        const item = (mealPlanByDay[activeDay] || []).find((meal) => meal.id === id);
         if (!item) return;
         item.servings = Math.max(1, Math.min(7, Number(value) || 1));
         renderMealPlan();
+        renderGrocery();
       }
 
       function totals() {
-        return mealPlan.reduce(
+        return (mealPlanByDay[activeDay] || []).reduce(
           (acc, item) => {
             acc.calories += item.calories * item.servings;
             acc.protein += item.protein * item.servings;
@@ -846,13 +935,16 @@
       }
 
       function renderMealPlan() {
-        if (!mealPlan.length) {
+        const dayMeals = mealPlanByDay[activeDay] || [];
+        selectedMealsTitle.textContent = `Selected Meals • Day ${activeDay + 1}`;
+        renderDayPills();
+        if (!dayMeals.length) {
           mealItems.innerHTML = "<p class='muted'>No recipes selected yet.</p>";
           renderRings();
           return;
         }
 
-        mealItems.innerHTML = mealPlan
+        mealItems.innerHTML = dayMeals
           .map((item) => `
             <div class="meal-item">
               <div>
@@ -861,11 +953,11 @@
                 <div class="muted" style="font-size:.82rem;">Makes ${formatQuantity(item)} per serving</div>
               </div>
               <div class="qty">
-                <label for="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="muted" style="font-size:.8rem;">Servings</label>
-                <select id="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="serving-select" data-set-servings="${item.name}">
+                <label for="meal-serving-${item.id}" class="muted" style="font-size:.8rem;">Servings</label>
+                <select id="meal-serving-${item.id}" class="serving-select" data-set-servings="${item.id}">
                   ${servingOptions(item.servings)}
                 </select>
-                <button type="button" class="alt" data-remove="${item.name}">Remove</button>
+                <button type="button" class="alt" data-remove="${item.id}">Remove</button>
               </div>
             </div>
           `)
@@ -880,15 +972,76 @@
 
         renderRings();
       }
+      function renderDayPills() {
+        const days = Object.keys(mealPlanByDay).map(Number).sort((a, b) => a - b);
+        dayPills.innerHTML = `${days
+          .map((day) => `<button class="pill ${day === activeDay ? "active" : ""}" type="button" data-day="${day}">Day ${day + 1} (${(mealPlanByDay[day] || []).length})</button>`)
+          .join("")}
+          <button class="pill" type="button" id="addDayPill">+ Day</button>`;
+        dayPills.querySelectorAll("[data-day]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            activeDay = Number(btn.dataset.day);
+            renderMealPlan();
+          });
+        });
+        dayPills.querySelector("#addDayPill")?.addEventListener("click", () => {
+          const next = Math.max(...days) + 1;
+          mealPlanByDay[next] = [];
+          activeDay = next;
+          renderMealPlan();
+        });
+      }
+      function buildGrocery() {
+        const map = {};
+        Object.values(mealPlanByDay).forEach((dayMeals) => {
+          dayMeals.forEach((item) => {
+            (item.ingredients || []).forEach((line) => {
+              const key = line.toLowerCase();
+              map[key] = map[key] || { name: line, qty: 0 };
+              map[key].qty += item.servings * prepDays;
+            });
+          });
+        });
+        return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
+      }
+      function renderGrocery() {
+        const grocery = buildGrocery();
+        const checkedCount = grocery.filter((g) => checkedGroceries[g.name]).length;
+        grocerySummary.textContent = `${grocery.length} items • ${checkedCount} checked • scaled ${prepDays}×`;
+        if (!grocery.length) {
+          groceryItems.innerHTML = "<p class='muted'>No grocery items yet. Add recipes to your plan first.</p>";
+          return;
+        }
+        groceryItems.innerHTML = grocery.map((item) => `
+          <div class="grocery-row ${checkedGroceries[item.name] ? "checked" : ""}" data-grocery="${encodeURIComponent(item.name)}">
+            <span class="check"></span>
+            <span style="flex:1">${item.name}</span>
+            <span class="muted">${item.qty.toFixed(1)} portions</span>
+          </div>
+        `).join("");
+        groceryItems.querySelectorAll("[data-grocery]").forEach((row) => {
+          row.addEventListener("click", () => {
+            const name = decodeURIComponent(row.dataset.grocery);
+            checkedGroceries[name] = !checkedGroceries[name];
+            renderGrocery();
+          });
+        });
+      }
 
       searchInput.addEventListener("input", renderRecipes);
+      categoryFilter.addEventListener("change", renderRecipes);
       cuisineFilter.addEventListener("change", renderRecipes);
-      clearPlan.addEventListener("click", () => {
-        mealPlan = [];
+      clearDay.addEventListener("click", () => {
+        mealPlanByDay[activeDay] = [];
         renderMealPlan();
+        renderGrocery();
       });
       importMacroTargetsBtn.addEventListener("click", importMacroTargets);
       goToPlanBtn.addEventListener("click", () => setTab("plan"));
+      prepDaysInput.addEventListener("change", () => {
+        prepDays = Number(prepDaysInput.value || 1);
+        renderGrocery();
+      });
       importNotionBtn.addEventListener("click", () => {
         try {
           const message = importNotionRecipes(notionInput.value);
@@ -929,8 +1082,10 @@
       });
 
       initCuisineOptions();
+      initCategoryOptions();
       renderRecipes();
       renderMealPlan();
+      renderGrocery();
       importMacroTargets();
       showAdminTools(false);
     </script>
