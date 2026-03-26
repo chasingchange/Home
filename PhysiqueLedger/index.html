@@ -256,7 +256,7 @@
 
       .rings {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 0.7rem;
         margin-top: 0.9rem;
         width: 100%;
@@ -865,6 +865,45 @@
         }
       }
 
+      function saveLedgerState() {
+        const targets = {
+          calories: Number(targetInputs.calories.value || 0),
+          protein: Number(targetInputs.protein.value || 0),
+          carbs: Number(targetInputs.carbs.value || 0),
+          fat: Number(targetInputs.fat.value || 0),
+        };
+        localStorage.setItem(LEDGER_STATE_KEY, JSON.stringify({
+          mealPlanByDay,
+          activeDay,
+          prepDays,
+          checkedGroceries,
+          targets,
+        }));
+      }
+
+      function loadLedgerState() {
+        try {
+          const raw = localStorage.getItem(LEDGER_STATE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.mealPlanByDay && typeof state.mealPlanByDay === "object") mealPlanByDay = state.mealPlanByDay;
+          if (Number.isInteger(state.activeDay)) activeDay = state.activeDay;
+          if (Number(state.prepDays) > 0) {
+            prepDays = Number(state.prepDays);
+            prepDaysInput.value = String(prepDays);
+          }
+          if (state.checkedGroceries && typeof state.checkedGroceries === "object") checkedGroceries = state.checkedGroceries;
+          if (state.targets) {
+            targetInputs.calories.value = Number(state.targets.calories || targetInputs.calories.value);
+            targetInputs.protein.value = Number(state.targets.protein || targetInputs.protein.value);
+            targetInputs.carbs.value = Number(state.targets.carbs || targetInputs.carbs.value);
+            targetInputs.fat.value = Number(state.targets.fat || targetInputs.fat.value);
+          }
+        } catch (err) {
+          console.warn("Unable to load saved ledger state.", err);
+        }
+      }
+
       function initCuisineOptions() {
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
         cuisineFilter.innerHTML = cuisines.map((c) => `<option value="${c}">${c}</option>`).join("");
@@ -934,7 +973,10 @@
 
             return `
               <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
-                <summary>${meal} (${recipesInGroup.length})</summary>
+                <summary>
+                  <span>${meal} (${recipesInGroup.length})</span>
+                  <a href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener" class="chip" style="margin-left:.45rem;">Open ${meal} page</a>
+                </summary>
                 <div class="meal-group-body">${cards}</div>
               </details>
             `;
