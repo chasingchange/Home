@@ -256,10 +256,10 @@
 
       .rings {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.7rem;
-        margin-top: 0.9rem;
-        width: 100%;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+        margin-top: 0.7rem;
+        width: min(560px, 100%);
         margin-inline: auto;
       }
 
@@ -267,20 +267,20 @@
         background: #fff;
         border: 1px solid rgba(7, 31, 53, 0.11);
         border-radius: 14px;
-        padding: 0.8rem;
+        padding: 0.55rem 0.6rem;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        justify-content: center;
-        text-align: center;
-        aspect-ratio: 1 / 1;
-        gap: 0.55rem;
+        justify-content: flex-start;
+        text-align: left;
+        min-height: 96px;
+        gap: 0.5rem;
       }
 
       .ring-chart {
         --pct: 0;
-        width: 58px;
-        height: 58px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: conic-gradient(var(--accent) calc(var(--pct) * 1%), rgba(7, 31, 53, 0.1) 0);
         position: relative;
@@ -289,7 +289,7 @@
       .ring-chart::after {
         content: "";
         position: absolute;
-        inset: 9px;
+        inset: 8px;
         border-radius: 50%;
         background: #fff;
       }
