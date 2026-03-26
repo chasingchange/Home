@@ -57,11 +57,13 @@
       }
 
       .tabs {
-        display: inline-flex;
+        display: flex;
         gap: 0.5rem;
         background: rgba(7, 31, 53, 0.06);
         border-radius: 999px;
         padding: 0.35rem;
+        width: min(760px, 100%);
+        margin: 0 auto;
       }
 
       .tab-btn {
@@ -105,7 +107,7 @@
 
       .controls {
         display: grid;
-        grid-template-columns: 1fr 220px;
+        grid-template-columns: 1fr 170px 220px;
         gap: 0.7rem;
         padding: 0.8rem 1.1rem 1.1rem;
       }
@@ -238,16 +240,22 @@
         grid-template-columns: 1fr 1fr;
         gap: 0.7rem;
         margin-top: 0.9rem;
+        width: 100%;
+        margin-inline: auto;
       }
 
       .ring {
         background: #fff;
         border: 1px solid rgba(7, 31, 53, 0.11);
         border-radius: 14px;
-        padding: 0.65rem;
+        padding: 0.8rem;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 0.65rem;
+        justify-content: center;
+        text-align: center;
+        aspect-ratio: 1 / 1;
+        gap: 0.55rem;
       }
 
       .ring-chart {
@@ -274,6 +282,69 @@
         margin-top: 0.9rem;
         display: grid;
         gap: 0.5rem;
+      }
+
+      .day-pills {
+        display: flex;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding-bottom: 0.2rem;
+        justify-content: center;
+      }
+
+      .pill {
+        border-radius: 999px;
+        border: 1px solid rgba(7, 31, 53, 0.18);
+        background: #fff;
+        padding: 0.4rem 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .pill.active {
+        border-color: var(--accent);
+        background: rgba(119, 215, 112, 0.32);
+      }
+
+      .grocery-row {
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        border-radius: 12px;
+        padding: 0.62rem 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .grocery-row.checked {
+        opacity: 0.6;
+        text-decoration: line-through;
+      }
+
+      .check {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid rgba(7, 31, 53, 0.28);
+      }
+
+      .grocery-row.checked .check {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(7, 31, 53, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--accent);
       }
 
       .meal-item {
@@ -346,9 +417,14 @@
         padding: 0 1.1rem 1rem;
       }
 
+      .center-head {
+        text-align: center;
+      }
+
       @media (max-width: 940px) {
         .recipe-list { max-height: none; }
         .controls { grid-template-columns: 1fr; }
+        .rings { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -363,18 +439,13 @@
         <div class="tabs" role="tablist" aria-label="Physique Ledger tabs">
           <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="library">Recipe Library</button>
           <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="plan">Meal Plan</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="grocery">Grocery List</button>
         </div>
 
         <section class="panel tab-panel active" data-panel="library">
           <div class="panel-head">
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
-            <p class="muted" style="margin-top:.35rem; font-size:.85rem;">Sections: Breakfast, Lunch, Dinner, Snacks, <strong>Dessert</strong>.</p>
-          </div>
-
-          <div class="controls">
-            <input id="search" type="text" placeholder="Search recipes..." />
-            <select id="cuisineFilter"></select>
           </div>
 
           <div class="library-widget">
@@ -384,14 +455,24 @@
             </div>
             <p class="muted" style="margin:0 0 .55rem; font-size:.8rem;">Tap <strong>Add</strong> on any recipe to see these rings update instantly.</p>
             <div id="quickRings" class="rings"></div>
+            <div class="row" style="align-items:center; margin:.8rem 0 .35rem;">
+              <h3 id="quickWeekTitle">Work Week 1 Picks</h3>
+            </div>
+            <div id="quickMeals" class="meal-items"></div>
+          </div>
+
+          <div class="controls">
+            <input id="search" type="text" placeholder="Search recipes..." />
+            <select id="categoryFilter"></select>
+            <select id="cuisineFilter"></select>
           </div>
 
           <div id="recipeList" class="recipe-list"></div>
         </section>
 
         <section class="panel tab-panel" data-panel="plan">
-          <div class="panel-head">
-            <h2>Expanded Meal Plan</h2>
+          <div class="panel-head center-head">
+            <h2>Meal Plan</h2>
             <p class="muted">Add recipes and adjust servings. Rings show progress toward your targets.</p>
           </div>
 
@@ -400,6 +481,17 @@
               <h3>Daily Targets</h3>
               <button id="importMacroTargets" type="button" class="alt">Import Macro Targets</button>
             </div>
+            <details class="meal-group" style="margin-top:0;">
+              <summary>Work Week Archive</summary>
+              <div class="meal-group-body" style="padding-top:.7rem;">
+                <div class="controls" style="padding:0; grid-template-columns: 1fr 1fr auto;">
+                  <select id="archiveYear"></select>
+                  <select id="archiveWeek"></select>
+                  <button id="loadArchiveWeek" type="button">Load</button>
+                </div>
+              </div>
+            </details>
+            <div class="day-pills" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
             <p id="importStatus" class="muted" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
             <div class="targets">
               <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
@@ -410,15 +502,33 @@
 
             <div id="rings" class="rings"></div>
 
-            <div class="row" style="margin-top:1rem; align-items:center;">
-              <h3>Selected Meals</h3>
-              <button id="clearPlan" class="alt" type="button">Clear plan</button>
+            <h3 id="selectedMealsTitle" style="text-align:center; margin-top:1rem;">Selected Meals</h3>
+            <div class="row" style="margin-top:.45rem; justify-content:flex-end;">
+              <button id="clearDay" class="alt" type="button">Clear day</button>
             </div>
             <div id="mealItems" class="meal-items"></div>
           </div>
 
           <div style="padding:0 1.1rem 1.1rem;">
             <a href="../apply-for-coaching/index.html" style="display:inline-flex; border-radius:12px; background:var(--accent); color:var(--text); text-decoration:none; font-weight:800; padding:0.65rem 0.9rem;">Want this dialed in? Apply for coaching →</a>
+          </div>
+        </section>
+
+        <section class="panel tab-panel" data-panel="grocery">
+          <div class="panel-head center-head">
+            <h2>Grocery List</h2>
+            <p class="muted">Generated from all planned days and scaled by prep days.</p>
+          </div>
+          <div class="plan-wrap">
+            <div class="row">
+              <label for="prepDays"><strong>Prep Days</strong></label>
+              <select id="prepDays" style="width:auto;">
+                <option>1</option><option>2</option><option>3</option><option>4</option>
+                <option selected>5</option><option>6</option><option>7</option>
+              </select>
+            </div>
+            <p id="grocerySummary" class="muted" style="margin:.45rem 0;">0 items</p>
+            <div id="groceryItems" class="meal-items"></div>
           </div>
         </section>
       </div>
@@ -490,15 +600,26 @@
       ];
 
       const searchInput = document.getElementById("search");
+      const categoryFilter = document.getElementById("categoryFilter");
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
       const rings = document.getElementById("rings");
       const quickRings = document.getElementById("quickRings");
       const goToPlanBtn = document.getElementById("goToPlan");
       const mealItems = document.getElementById("mealItems");
-      const clearPlan = document.getElementById("clearPlan");
+      const quickMeals = document.getElementById("quickMeals");
+      const quickWeekTitle = document.getElementById("quickWeekTitle");
+      const clearDay = document.getElementById("clearDay");
+      const dayPills = document.getElementById("dayPills");
+      const selectedMealsTitle = document.getElementById("selectedMealsTitle");
       const importMacroTargetsBtn = document.getElementById("importMacroTargets");
       const importStatus = document.getElementById("importStatus");
+      const prepDaysInput = document.getElementById("prepDays");
+      const grocerySummary = document.getElementById("grocerySummary");
+      const groceryItems = document.getElementById("groceryItems");
+      const archiveYear = document.getElementById("archiveYear");
+      const archiveWeek = document.getElementById("archiveWeek");
+      const loadArchiveWeek = document.getElementById("loadArchiveWeek");
       const notionInput = document.getElementById("notionInput");
       const importNotionBtn = document.getElementById("importNotion");
       const importRecipeStatus = document.getElementById("importRecipeStatus");
@@ -510,6 +631,7 @@
       const adminLockBtn = document.getElementById("adminLock");
 
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
+      const LEDGER_STATE_KEY = "physiqueLedgerStateV2";
       const ADMIN_IMPORT_PASSWORD = "Chasing1228!";
 
       const targetInputs = {
@@ -531,12 +653,16 @@
       const dialogClose = document.getElementById("dialogClose");
       const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
       const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+      const mealQuery = new URLSearchParams(window.location.search).get("meal");
 
       let selectedRecipe = null;
-      let mealPlan = [];
+      let mealPlanByDay = { 0: [] };
+      let activeDay = 0;
+      let prepDays = 5;
+      let checkedGroceries = {};
       const MEAL_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snacks", "Dessert"];
 
-      const formatMacros = (r) => `${r.calories} kcal • ${r.protein}P • ${r.carbs}C • ${r.fat}F`;
+      const formatMacros = (r) => `${Math.round(r.calories)} kcal • ${Math.round(r.protein)}P • ${Math.round(r.carbs)}C • ${Math.round(r.fat)}F`;
       const formatQuantity = (recipe) => recipe.quantity || "1 serving";
       const servingOptions = (selected = 1) =>
         Array.from({ length: 7 }, (_, index) => index + 1)
@@ -585,6 +711,11 @@
       };
 
       const normalizeRecipe = (entry) => {
+        const normalizedIngredients = getArrayContent(entry.ingredients, ["Ingredients not provided."])
+          .map((line) => {
+            const cleaned = String(line).trim();
+            return /^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)\s+/.test(cleaned) ? cleaned : `1 item ${cleaned}`;
+          });
         const recipe = {
           name: entry.name || entry.title,
           calories: Number(entry.calories),
@@ -594,12 +725,16 @@
           cuisine: entry.cuisine || "Global",
           meal: normalizeMeal(entry.meal || "Breakfast"),
           quantity: String(entry.quantity || entry.servingYield || "1 serving").trim(),
-          ingredients: getArrayContent(entry.ingredients, ["Ingredients not provided."]),
+          ingredients: normalizedIngredients,
           instructions: getArrayContent(entry.instructions || entry.steps, ["Instructions not provided."]),
         };
         if (!recipe.name || Number.isNaN(recipe.calories) || Number.isNaN(recipe.protein) || Number.isNaN(recipe.carbs) || Number.isNaN(recipe.fat)) return null;
         return recipe;
       };
+      recipes.forEach((recipe, index) => {
+        const normalized = normalizeRecipe(recipe);
+        if (normalized) recipes[index] = { ...recipe, ...normalized };
+      });
 
       function importNotionRecipes(rawText) {
         try {
@@ -625,19 +760,106 @@
         adminTools.classList.toggle("hidden", !isUnlocked);
         adminLockCard.classList.toggle("hidden", isUnlocked);
       }
+      function getCurrentMonday() {
+        const today = new Date();
+        const day = today.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        const monday = new Date(today);
+        monday.setHours(0, 0, 0, 0);
+        monday.setDate(today.getDate() + mondayOffset);
+        return monday;
+      }
+      function getIsoWeek(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return {
+          week: Math.ceil((((d - yearStart) / 86400000) + 1) / 7),
+          year: d.getUTCFullYear(),
+        };
+      }
+      function getMondayFromIsoWeek(year, week) {
+        const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+        const dow = simple.getUTCDay() || 7;
+        if (dow <= 4) simple.setUTCDate(simple.getUTCDate() - dow + 1);
+        else simple.setUTCDate(simple.getUTCDate() + 8 - dow);
+        return new Date(simple.getUTCFullYear(), simple.getUTCMonth(), simple.getUTCDate());
+      }
+      function indexForMonday(mondayDate) {
+        const currentMonday = getCurrentMonday();
+        const diffDays = Math.round((mondayDate - currentMonday) / 86400000);
+        return Math.round(diffDays / 7);
+      }
+      function populateArchiveControls(selectedYear = new Date().getFullYear()) {
+        const years = [];
+        for (let y = 2025; y <= new Date().getFullYear(); y += 1) years.push(y);
+        archiveYear.innerHTML = years.map((year) => `<option value="${year}" ${year === selectedYear ? "selected" : ""}>${year}</option>`).join("");
+        archiveWeek.innerHTML = Array.from({ length: 53 }, (_, i) => i + 1)
+          .map((week) => {
+            const monday = getMondayFromIsoWeek(Number(archiveYear.value), week);
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+            const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            return `<option value="${week}">Week ${week} • ${fmt(monday)}–${fmt(friday)}</option>`;
+          }).join("");
+      }
+
+      function saveLedgerState() {
+        const targets = {
+          calories: Number(targetInputs.calories.value || 0),
+          protein: Number(targetInputs.protein.value || 0),
+          carbs: Number(targetInputs.carbs.value || 0),
+          fat: Number(targetInputs.fat.value || 0),
+        };
+        localStorage.setItem(LEDGER_STATE_KEY, JSON.stringify({
+          mealPlanByDay,
+          activeDay,
+          prepDays,
+          checkedGroceries,
+          targets,
+        }));
+      }
+
+      function loadLedgerState() {
+        try {
+          const raw = localStorage.getItem(LEDGER_STATE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.mealPlanByDay && typeof state.mealPlanByDay === "object") mealPlanByDay = state.mealPlanByDay;
+          if (Number.isInteger(state.activeDay)) activeDay = state.activeDay;
+          if (Number(state.prepDays) > 0) {
+            prepDays = Number(state.prepDays);
+            prepDaysInput.value = String(prepDays);
+          }
+          if (state.checkedGroceries && typeof state.checkedGroceries === "object") checkedGroceries = state.checkedGroceries;
+          if (state.targets) {
+            targetInputs.calories.value = Number(state.targets.calories || targetInputs.calories.value);
+            targetInputs.protein.value = Number(state.targets.protein || targetInputs.protein.value);
+            targetInputs.carbs.value = Number(state.targets.carbs || targetInputs.carbs.value);
+            targetInputs.fat.value = Number(state.targets.fat || targetInputs.fat.value);
+          }
+        } catch (err) {
+          console.warn("Unable to load saved ledger state.", err);
+        }
+      }
 
       function initCuisineOptions() {
         const cuisines = ["All cuisines", ...new Set(recipes.map((r) => r.cuisine))];
         cuisineFilter.innerHTML = cuisines.map((c) => `<option value="${c}">${c}</option>`).join("");
       }
+      function initCategoryOptions() {
+        categoryFilter.innerHTML = ["All meals", ...MEAL_CATEGORIES].map((item) => `<option>${item}</option>`).join("");
+      }
 
       function filteredRecipes() {
         const q = searchInput.value.trim().toLowerCase();
         const cuisine = cuisineFilter.value;
+        const category = categoryFilter.value;
         return recipes.filter((recipe) => {
           const nameMatch = recipe.name.toLowerCase().includes(q);
           const cuisineMatch = cuisine === "All cuisines" || recipe.cuisine === cuisine;
-          return nameMatch && cuisineMatch;
+          const categoryMatch = category === "All meals" || normalizeMeal(recipe.meal) === category;
+          return nameMatch && cuisineMatch && categoryMatch;
         });
       }
 
@@ -679,11 +901,7 @@
                             <div class="serving-meta muted">Makes ${formatQuantity(recipe)} per serving</div>
                           </div>
                           <div class="serving-controls">
-                            <label for="recipeServings-${meal}-${idx}">Servings</label>
-                            <select id="recipeServings-${meal}-${idx}" class="serving-select" data-servings-for="${sourceIndex}" aria-label="Select servings">
-                              ${servingOptions(1)}
-                            </select>
-                            <button type="button" class="alt" data-add="${sourceIndex}">Add</button>
+                            <button type="button" class="alt" data-add="${sourceIndex}">+ Add to week</button>
                           </div>
                         </div>
                       </article>
@@ -694,7 +912,10 @@
 
             return `
               <details class="meal-group" ${groupIdx === 0 ? "open" : ""}>
-                <summary>${meal} (${recipesInGroup.length})</summary>
+                <summary>
+                  ${meal} (${recipesInGroup.length})
+                  <a href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener" class="chip" style="margin-left:.45rem;">Open page ↗</a>
+                </summary>
                 <div class="meal-group-body">${cards}</div>
               </details>
             `;
@@ -715,15 +936,8 @@
           btn.addEventListener("click", (event) => {
             event.stopPropagation();
             const sourceIndex = Number(btn.dataset.add);
-            const servingsSelect = recipeList.querySelector(`[data-servings-for="${sourceIndex}"]`);
-            const servings = Number(servingsSelect?.value || 1);
-            addToMealPlan(list[sourceIndex], servings);
+            addToMealPlan(list[sourceIndex], 1);
           });
-        });
-
-        recipeList.querySelectorAll("[data-servings-for]").forEach((select) => {
-          select.addEventListener("click", (event) => event.stopPropagation());
-          select.addEventListener("keydown", (event) => event.stopPropagation());
         });
       }
 
@@ -762,29 +976,39 @@
 
       function addToMealPlan(recipe, servingsToAdd = 1) {
         const servings = Math.max(1, Math.min(7, Number(servingsToAdd) || 1));
-        const existing = mealPlan.find((item) => item.name === recipe.name);
+        const today = mealPlanByDay[activeDay] || [];
+        const existing = today.find((item) => item.name === recipe.name);
         if (existing) {
           existing.servings = Math.min(7, existing.servings + servings);
         } else {
-          mealPlan.push({ ...recipe, servings });
+          today.push({ ...recipe, servings, id: Date.now() + Math.random() });
         }
+        mealPlanByDay[activeDay] = today;
+        saveLedgerState();
         renderMealPlan();
+        renderGrocery();
       }
 
-      function removeFromMealPlan(name) {
-        mealPlan = mealPlan.filter((item) => item.name !== name);
+      function removeFromMealPlan(id) {
+        const itemId = Number(id);
+        mealPlanByDay[activeDay] = (mealPlanByDay[activeDay] || []).filter((item) => item.id !== itemId);
+        saveLedgerState();
         renderMealPlan();
+        renderGrocery();
       }
 
-      function setServings(name, value) {
-        const item = mealPlan.find((meal) => meal.name === name);
+      function setServings(id, value) {
+        const itemId = Number(id);
+        const item = (mealPlanByDay[activeDay] || []).find((meal) => meal.id === itemId);
         if (!item) return;
         item.servings = Math.max(1, Math.min(7, Number(value) || 1));
+        saveLedgerState();
         renderMealPlan();
+        renderGrocery();
       }
 
       function totals() {
-        return mealPlan.reduce(
+        return (mealPlanByDay[activeDay] || []).reduce(
           (acc, item) => {
             acc.calories += item.calories * item.servings;
             acc.protein += item.protein * item.servings;
@@ -839,6 +1063,7 @@
           targetInputs.carbs.value = Math.round(Number(saved.carbs));
           targetInputs.fat.value = Math.round(Number(saved.fat));
           importStatus.textContent = `Imported from ${saved.source || "Macro Calculator"} (${new Date(saved.savedAt || Date.now()).toLocaleString()}).`;
+          saveLedgerState();
           renderRings();
         } catch (err) {
           importStatus.textContent = "Saved target data was invalid. Recalculate and save again from Macro Calculator.";
@@ -846,29 +1071,50 @@
       }
 
       function renderMealPlan() {
-        if (!mealPlan.length) {
+        const dayMeals = mealPlanByDay[activeDay] || [];
+        const monday = getCurrentMonday();
+        monday.setDate(monday.getDate() + activeDay * 7);
+        const activeMeta = getIsoWeek(monday);
+        if (String(archiveYear.value) !== String(activeMeta.year)) {
+          populateArchiveControls(activeMeta.year);
+        }
+        archiveWeek.value = String(activeMeta.week);
+        selectedMealsTitle.textContent = `Selected Meals • ${workWeekLabel(activeDay)}`;
+        quickWeekTitle.textContent = `${workWeekLabel(activeDay)} Picks`;
+        renderDayPills();
+        renderQuickMeals();
+        if (!dayMeals.length) {
           mealItems.innerHTML = "<p class='muted'>No recipes selected yet.</p>";
           renderRings();
           return;
         }
 
-        mealItems.innerHTML = mealPlan
-          .map((item) => `
-            <div class="meal-item">
+        mealItems.innerHTML = MEAL_CATEGORIES
+          .map((mealCategory) => {
+            const meals = dayMeals.filter((item) => normalizeMeal(item.meal) === mealCategory);
+            if (!meals.length) return "";
+            return `
               <div>
-                <strong>${item.name}</strong>
-                <div class="muted">${formatMacros(item)}</div>
-                <div class="muted" style="font-size:.82rem;">Makes ${formatQuantity(item)} per serving</div>
+                <h3 style="font-size:.86rem; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.4rem;">${mealCategory}</h3>
+                ${meals.map((item) => `
+                  <div class="meal-item" style="margin-bottom:.4rem;">
+                    <div>
+                      <strong>${item.name}</strong>
+                      <div class="muted">${formatMacros(item)}</div>
+                      <div class="muted" style="font-size:.82rem;">Makes ${formatQuantity(item)} per serving</div>
+                    </div>
+                    <div class="qty">
+                      <label for="meal-serving-${item.id}" class="muted" style="font-size:.8rem;">Servings</label>
+                      <select id="meal-serving-${item.id}" class="serving-select" data-set-servings="${item.id}">
+                        ${servingOptions(item.servings)}
+                      </select>
+                      <button type="button" class="alt" data-remove="${item.id}">Remove</button>
+                    </div>
+                  </div>
+                `).join("")}
               </div>
-              <div class="qty">
-                <label for="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="muted" style="font-size:.8rem;">Servings</label>
-                <select id="meal-serving-${item.name.replace(/[^a-z0-9]/gi, "")}" class="serving-select" data-set-servings="${item.name}">
-                  ${servingOptions(item.servings)}
-                </select>
-                <button type="button" class="alt" data-remove="${item.name}">Remove</button>
-              </div>
-            </div>
-          `)
+            `;
+          })
           .join("");
 
         mealItems.querySelectorAll("[data-set-servings]").forEach((select) => {
@@ -880,15 +1126,155 @@
 
         renderRings();
       }
+      function workWeekLabel(index) {
+        const monday = getCurrentMonday();
+        monday.setDate(monday.getDate() + index * 7);
+        const friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
+        const { week, year } = getIsoWeek(monday);
+        const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        return `Work Week ${week}, ${year} • ${fmt(monday)}–${fmt(friday)}`;
+      }
+      function renderQuickMeals() {
+        const dayMeals = mealPlanByDay[activeDay] || [];
+        if (!dayMeals.length) {
+          quickMeals.innerHTML = "<p class='muted'>No recipes added yet for this week.</p>";
+          return;
+        }
+        quickMeals.innerHTML = dayMeals.map((item) => `
+          <div class="meal-item">
+            <div>
+              <strong>${item.name}</strong>
+              <div class="muted" style="font-size:.82rem;">${formatMacros(item)}</div>
+            </div>
+            <button type="button" class="alt" data-remove-quick="${item.id}">Remove</button>
+          </div>
+        `).join("");
+        quickMeals.querySelectorAll("[data-remove-quick]").forEach((btn) => {
+          btn.addEventListener("click", () => removeFromMealPlan(btn.dataset.removeQuick));
+        });
+      }
+      function renderDayPills() {
+        const days = Object.keys(mealPlanByDay).map(Number).sort((a, b) => a - b);
+        dayPills.innerHTML = `${days
+          .map((day) => `<button class="pill ${day === activeDay ? "active" : ""}" type="button" data-day="${day}">${workWeekLabel(day)} (${(mealPlanByDay[day] || []).length})</button>`)
+          .join("")}
+          <button class="pill" type="button" id="addDayPill">+ Work Week</button>`;
+        dayPills.querySelectorAll("[data-day]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            activeDay = Number(btn.dataset.day);
+            saveLedgerState();
+            renderMealPlan();
+          });
+        });
+        dayPills.querySelector("#addDayPill")?.addEventListener("click", () => {
+          const next = Math.max(...days) + 1;
+          mealPlanByDay[next] = [];
+          activeDay = next;
+          saveLedgerState();
+          renderMealPlan();
+        });
+      }
+      function buildGrocery() {
+        const map = {};
+        const parseIngredient = (line) => {
+          const raw = String(line || "").trim();
+          const match = raw.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)\s+([a-zA-Z]+)?\s*(.*)$/);
+          if (!match) return { name: raw, amount: null, unit: "", key: raw.toLowerCase() };
+          const amount = parseAmount(match[1]);
+          const unit = (match[2] || "").toLowerCase();
+          const name = (match[3] || raw).trim();
+          return {
+            name: name || raw,
+            amount: amount ?? null,
+            unit,
+            key: `${(name || raw).toLowerCase()}__${unit}`,
+          };
+        };
+        Object.values(mealPlanByDay).forEach((dayMeals) => {
+          dayMeals.forEach((item) => {
+            (item.ingredients || []).forEach((line) => {
+              const parsed = parseIngredient(line);
+              map[parsed.key] = map[parsed.key] || { name: parsed.name, amount: 0, unit: parsed.unit, portions: 0 };
+              if (parsed.amount !== null) map[parsed.key].amount += parsed.amount * item.servings * prepDays;
+              else map[parsed.key].portions += item.servings * prepDays;
+            });
+          });
+        });
+        return Object.values(map)
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((item) => ({
+            ...item,
+            amountLabel: item.amount > 0
+              ? `${formatAmount(item.amount)}${item.unit ? ` ${item.unit}` : ""}`
+              : `${formatAmount(item.portions)} portions`,
+          }));
+      }
+      function renderGrocery() {
+        const grocery = buildGrocery();
+        const checkedCount = grocery.filter((g) => checkedGroceries[g.name]).length;
+        const pct = grocery.length ? Math.round((checkedCount / grocery.length) * 100) : 0;
+        grocerySummary.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
+            <span>${grocery.length} items • ${checkedCount} checked • scaled ${prepDays}×</span>
+            ${checkedCount ? '<button id="clearChecks" class="alt" type="button">Clear checks</button>' : ""}
+          </div>
+          <div class="progress-track" style="margin-top:.55rem;"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="muted" style="margin-top:.35rem;">Shopping progress: ${pct}%</div>
+        `;
+        if (!grocery.length) {
+          groceryItems.innerHTML = "<p class='muted'>No grocery items yet. Add recipes to your plan first.</p>";
+          return;
+        }
+        groceryItems.innerHTML = grocery.map((item) => `
+          <div class="grocery-row ${checkedGroceries[item.name] ? "checked" : ""}" data-grocery="${encodeURIComponent(item.name)}">
+            <span class="check"></span>
+            <span style="flex:1">${item.name}</span>
+            <span class="muted">${item.amountLabel}</span>
+          </div>
+        `).join("");
+        grocerySummary.querySelector("#clearChecks")?.addEventListener("click", () => {
+          checkedGroceries = {};
+          saveLedgerState();
+          renderGrocery();
+        });
+        groceryItems.querySelectorAll("[data-grocery]").forEach((row) => {
+          row.addEventListener("click", () => {
+            const name = decodeURIComponent(row.dataset.grocery);
+            checkedGroceries[name] = !checkedGroceries[name];
+            saveLedgerState();
+            renderGrocery();
+          });
+        });
+      }
 
       searchInput.addEventListener("input", renderRecipes);
+      categoryFilter.addEventListener("change", renderRecipes);
       cuisineFilter.addEventListener("change", renderRecipes);
-      clearPlan.addEventListener("click", () => {
-        mealPlan = [];
+      clearDay.addEventListener("click", () => {
+        mealPlanByDay[activeDay] = [];
+        saveLedgerState();
         renderMealPlan();
+        renderGrocery();
       });
       importMacroTargetsBtn.addEventListener("click", importMacroTargets);
       goToPlanBtn.addEventListener("click", () => setTab("plan"));
+      prepDaysInput.addEventListener("change", () => {
+        prepDays = Number(prepDaysInput.value || 1);
+        saveLedgerState();
+        renderGrocery();
+      });
+      archiveYear.addEventListener("change", () => populateArchiveControls(Number(archiveYear.value)));
+      loadArchiveWeek.addEventListener("click", () => {
+        const year = Number(archiveYear.value);
+        const week = Number(archiveWeek.value);
+        const monday = getMondayFromIsoWeek(year, week);
+        activeDay = indexForMonday(monday);
+        mealPlanByDay[activeDay] = mealPlanByDay[activeDay] || [];
+        saveLedgerState();
+        renderMealPlan();
+        renderGrocery();
+      });
       importNotionBtn.addEventListener("click", () => {
         try {
           const message = importNotionRecipes(notionInput.value);
@@ -925,12 +1311,22 @@
       });
 
       Object.values(targetInputs).forEach((input) => {
-        input.addEventListener("input", renderRings);
+        input.addEventListener("input", () => {
+          saveLedgerState();
+          renderRings();
+        });
       });
 
+      loadLedgerState();
       initCuisineOptions();
+      initCategoryOptions();
+      populateArchiveControls(new Date().getFullYear());
+      if (mealQuery && MEAL_CATEGORIES.includes(mealQuery)) {
+        categoryFilter.value = mealQuery;
+      }
       renderRecipes();
       renderMealPlan();
+      renderGrocery();
       importMacroTargets();
       showAdminTools(false);
     </script>
