@@ -143,6 +143,25 @@
         background: #fff;
         overflow: hidden;
       }
+      .meal-cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.6rem;
+        padding: 0 1.1rem 0.8rem;
+      }
+      .meal-nav-card {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        padding: 0.7rem 0.5rem;
+        border: 1px solid rgba(7, 31, 53, 0.15);
+        border-radius: 12px;
+        color: var(--text);
+        font-family: "Raleway", system-ui, sans-serif;
+        font-weight: 700;
+        background: #fff;
+      }
+      .meal-nav-card:hover { border-color: var(--accent); }
 
       .meal-group > summary {
         list-style: none;
@@ -447,6 +466,7 @@
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
           </div>
+          <div id="mealCards" class="meal-cards"></div>
 
           <div class="library-widget">
             <div class="row" style="align-items:center; margin-bottom:.45rem;">
@@ -603,6 +623,7 @@
       const categoryFilter = document.getElementById("categoryFilter");
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
+      const mealCards = document.getElementById("mealCards");
       const rings = document.getElementById("rings");
       const quickRings = document.getElementById("quickRings");
       const goToPlanBtn = document.getElementById("goToPlan");
