@@ -143,6 +143,25 @@
         background: #fff;
         overflow: hidden;
       }
+      .meal-cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.6rem;
+        padding: 0 1.1rem 0.8rem;
+      }
+      .meal-nav-card {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        padding: 0.7rem 0.5rem;
+        border: 1px solid rgba(7, 31, 53, 0.15);
+        border-radius: 12px;
+        color: var(--text);
+        font-family: "Raleway", system-ui, sans-serif;
+        font-weight: 700;
+        background: #fff;
+      }
+      .meal-nav-card:hover { border-color: var(--accent); }
 
       .meal-group > summary {
         list-style: none;
@@ -420,6 +439,7 @@
         .recipe-list { max-height: none; }
         .controls { grid-template-columns: 1fr; }
         .rings { grid-template-columns: 1fr; }
+        .meal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
     </style>
   </head>
@@ -448,6 +468,7 @@
             <select id="categoryFilter"></select>
             <select id="cuisineFilter"></select>
           </div>
+          <div id="mealCards" class="meal-cards"></div>
 
           <div class="library-widget">
             <div class="row" style="align-items:center; margin-bottom:.45rem;">
@@ -467,7 +488,7 @@
 
         <section class="panel tab-panel" data-panel="plan">
           <div class="panel-head center-head">
-            <h2>Expanded Meal Plan</h2>
+            <h2>Meal Plan</h2>
             <p class="muted">Add recipes and adjust servings. Rings show progress toward your targets.</p>
           </div>
 
@@ -476,6 +497,16 @@
               <h3>Daily Targets</h3>
               <button id="importMacroTargets" type="button" class="alt">Import Macro Targets</button>
             </div>
+            <details class="meal-group" style="margin-top:0;">
+              <summary>Work Week Archive</summary>
+              <div class="meal-group-body" style="padding-top:.7rem;">
+                <div class="controls" style="padding:0; grid-template-columns: 1fr 1fr auto;">
+                  <select id="archiveYear"></select>
+                  <select id="archiveWeek"></select>
+                  <button id="loadArchiveWeek" type="button">Load</button>
+                </div>
+              </div>
+            </details>
             <div class="day-pills" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
             <p id="importStatus" class="muted" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
             <div class="targets">
@@ -588,6 +619,7 @@
       const categoryFilter = document.getElementById("categoryFilter");
       const cuisineFilter = document.getElementById("cuisineFilter");
       const recipeList = document.getElementById("recipeList");
+      const mealCards = document.getElementById("mealCards");
       const rings = document.getElementById("rings");
       const quickRings = document.getElementById("quickRings");
       const goToPlanBtn = document.getElementById("goToPlan");
@@ -602,6 +634,9 @@
       const prepDaysInput = document.getElementById("prepDays");
       const grocerySummary = document.getElementById("grocerySummary");
       const groceryItems = document.getElementById("groceryItems");
+      const archiveYear = document.getElementById("archiveYear");
+      const archiveWeek = document.getElementById("archiveWeek");
+      const loadArchiveWeek = document.getElementById("loadArchiveWeek");
       const notionInput = document.getElementById("notionInput");
       const importNotionBtn = document.getElementById("importNotion");
       const importRecipeStatus = document.getElementById("importRecipeStatus");
@@ -741,6 +776,93 @@
       function showAdminTools(isUnlocked) {
         adminTools.classList.toggle("hidden", !isUnlocked);
         adminLockCard.classList.toggle("hidden", isUnlocked);
+      }
+      function getCurrentMonday() {
+        const today = new Date();
+        const day = today.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        const monday = new Date(today);
+        monday.setHours(0, 0, 0, 0);
+        monday.setDate(today.getDate() + mondayOffset);
+        return monday;
+      }
+      function getIsoWeek(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return {
+          week: Math.ceil((((d - yearStart) / 86400000) + 1) / 7),
+          year: d.getUTCFullYear(),
+        };
+      }
+      function getMondayFromIsoWeek(year, week) {
+        const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+        const dow = simple.getUTCDay() || 7;
+        if (dow <= 4) simple.setUTCDate(simple.getUTCDate() - dow + 1);
+        else simple.setUTCDate(simple.getUTCDate() + 8 - dow);
+        return new Date(simple.getUTCFullYear(), simple.getUTCMonth(), simple.getUTCDate());
+      }
+      function indexForMonday(mondayDate) {
+        const currentMonday = getCurrentMonday();
+        const diffDays = Math.round((mondayDate - currentMonday) / 86400000);
+        return Math.round(diffDays / 7);
+      }
+      function renderMealCards() {
+        mealCards.innerHTML = MEAL_CATEGORIES.map((meal) => `
+          <a class="meal-nav-card" href="./index.html?meal=${encodeURIComponent(meal)}" target="_blank" rel="noopener">${meal}</a>
+        `).join("");
+      }
+      function populateArchiveControls(selectedYear = new Date().getFullYear()) {
+        const years = [];
+        for (let y = 2025; y <= new Date().getFullYear(); y += 1) years.push(y);
+        archiveYear.innerHTML = years.map((year) => `<option value="${year}" ${year === selectedYear ? "selected" : ""}>${year}</option>`).join("");
+        archiveWeek.innerHTML = Array.from({ length: 53 }, (_, i) => i + 1)
+          .map((week) => {
+            const monday = getMondayFromIsoWeek(Number(archiveYear.value), week);
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+            const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            return `<option value="${week}">Week ${week} • ${fmt(monday)}–${fmt(friday)}</option>`;
+          }).join("");
+      }
+
+      function saveLedgerState() {
+        const targets = {
+          calories: Number(targetInputs.calories.value || 0),
+          protein: Number(targetInputs.protein.value || 0),
+          carbs: Number(targetInputs.carbs.value || 0),
+          fat: Number(targetInputs.fat.value || 0),
+        };
+        localStorage.setItem(LEDGER_STATE_KEY, JSON.stringify({
+          mealPlanByDay,
+          activeDay,
+          prepDays,
+          checkedGroceries,
+          targets,
+        }));
+      }
+
+      function loadLedgerState() {
+        try {
+          const raw = localStorage.getItem(LEDGER_STATE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.mealPlanByDay && typeof state.mealPlanByDay === "object") mealPlanByDay = state.mealPlanByDay;
+          if (Number.isInteger(state.activeDay)) activeDay = state.activeDay;
+          if (Number(state.prepDays) > 0) {
+            prepDays = Number(state.prepDays);
+            prepDaysInput.value = String(prepDays);
+          }
+          if (state.checkedGroceries && typeof state.checkedGroceries === "object") checkedGroceries = state.checkedGroceries;
+          if (state.targets) {
+            targetInputs.calories.value = Number(state.targets.calories || targetInputs.calories.value);
+            targetInputs.protein.value = Number(state.targets.protein || targetInputs.protein.value);
+            targetInputs.carbs.value = Number(state.targets.carbs || targetInputs.carbs.value);
+            targetInputs.fat.value = Number(state.targets.fat || targetInputs.fat.value);
+          }
+        } catch (err) {
+          console.warn("Unable to load saved ledger state.", err);
+        }
       }
 
       function saveLedgerState() {
@@ -1011,6 +1133,13 @@
 
       function renderMealPlan() {
         const dayMeals = mealPlanByDay[activeDay] || [];
+        const monday = getCurrentMonday();
+        monday.setDate(monday.getDate() + activeDay * 7);
+        const activeMeta = getIsoWeek(monday);
+        if (String(archiveYear.value) !== String(activeMeta.year)) {
+          populateArchiveControls(activeMeta.year);
+        }
+        archiveWeek.value = String(activeMeta.week);
         selectedMealsTitle.textContent = `Selected Meals • ${workWeekLabel(activeDay)}`;
         quickWeekTitle.textContent = `${workWeekLabel(activeDay)} Picks`;
         renderDayPills();
@@ -1059,22 +1188,10 @@
         renderRings();
       }
       function workWeekLabel(index) {
-        const today = new Date();
-        const day = today.getDay();
-        const mondayOffset = day === 0 ? -6 : 1 - day;
-        const monday = new Date(today);
-        monday.setDate(today.getDate() + mondayOffset + index * 7);
+        const monday = getCurrentMonday();
+        monday.setDate(monday.getDate() + index * 7);
         const friday = new Date(monday);
         friday.setDate(monday.getDate() + 4);
-        const getIsoWeek = (date) => {
-          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-          return {
-            week: Math.ceil((((d - yearStart) / 86400000) + 1) / 7),
-            year: d.getUTCFullYear(),
-          };
-        };
         const { week, year } = getIsoWeek(monday);
         const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
         return `Work Week ${week}, ${year} • ${fmt(monday)}–${fmt(friday)}`;
@@ -1208,6 +1325,17 @@
         saveLedgerState();
         renderGrocery();
       });
+      archiveYear.addEventListener("change", () => populateArchiveControls(Number(archiveYear.value)));
+      loadArchiveWeek.addEventListener("click", () => {
+        const year = Number(archiveYear.value);
+        const week = Number(archiveWeek.value);
+        const monday = getMondayFromIsoWeek(year, week);
+        activeDay = indexForMonday(monday);
+        mealPlanByDay[activeDay] = mealPlanByDay[activeDay] || [];
+        saveLedgerState();
+        renderMealPlan();
+        renderGrocery();
+      });
       importNotionBtn.addEventListener("click", () => {
         try {
           const message = importNotionRecipes(notionInput.value);
@@ -1253,6 +1381,8 @@
       loadLedgerState();
       initCuisineOptions();
       initCategoryOptions();
+      renderMealCards();
+      populateArchiveControls(new Date().getFullYear());
       if (mealQuery && MEAL_CATEGORIES.includes(mealQuery)) {
         categoryFilter.value = mealQuery;
       }
