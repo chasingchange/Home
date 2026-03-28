@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preparing the Route | Chasing Change</title>
-    <meta name="description" content="Locked Chasing Change page for Physique Ledger access." />
+    <meta name="description" content="Locked Chasing Change page for Split Sculptor access." />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,7 +96,7 @@
           <section id="lockCard" class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
             <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Protected page</p>
             <h2 class="mt-2 text-2xl font-extrabold font-heading">Enter password</h2>
-            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access Physique Ledger.</p>
+            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access the Split Sculptor planner.</p>
 
             <form id="unlockForm" class="mt-6 flex flex-col sm:flex-row gap-3">
               <input
@@ -116,7 +116,7 @@
 
           <section id="lockedTools" class="hidden mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-4 sm:p-5">
             <div class="rounded-2xl overflow-hidden ring-1 ring-black/10">
-              <iframe id="toolFrame" title="Physique Ledger" src="../PhysiqueLedger/index.html" class="w-full h-[2200px] border-0"></iframe>
+              <iframe id="toolFrame" title="Split Sculptor Planner" src="./split-sculptor.html" class="w-full h-[2500px] border-0"></iframe>
             </div>
           </section>
         </section>
@@ -150,7 +150,7 @@
           unlockMessage.textContent = "";
           lockCard.classList.add("hidden");
           lockedTools.classList.remove("hidden");
-          toolFrame.src = "../PhysiqueLedger/index.html";
+          toolFrame.src = "./split-sculptor.html";
         } else {
           unlockMessage.textContent = "Incorrect password. Try again.";
         }
