@@ -88,10 +88,11 @@ body {
 .tile.pull-t { background: var(--teal-dim); color: var(--teal); border-color: rgba(44,154,143,.25); }
 .tile.legs-t { background: var(--coral-dim); color: var(--coral); border-color: rgba(201,111,86,.25); }
 .tile.muscle-t { background: var(--green-dim); color: var(--green); border-color: rgba(63,145,87,.25); }
-.muscle-tracker { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; min-height: 28px; }
-.m-badge { font-size: 10px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--border); color: var(--hint); background: var(--surface); transition: all .2s; }
-.m-badge.hit1 { border-color: rgba(201,147,42,.35); color: var(--amber); background: var(--amber-dim); }
-.m-badge.hit2 { border-color: rgba(63,145,87,.35); color: var(--green); background: var(--green-dim); }
+.body-diagram { margin-bottom: 6px; }
+.body-diagram svg { width: 100%; max-width: 380px; display: block; }
+.body-legend { display: flex; gap: 6px; align-items: center; font-size: 10px; color: var(--hint); margin-bottom: 10px; flex-wrap: wrap; }
+.body-legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.chip-rank { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--purple-mid); color: #fff; font-size: 9px; font-weight: 700; margin-left: 4px; vertical-align: middle; line-height: 1; }
 .week-grid { display: grid; gap: 8px; }
 .day-col { border-radius: var(--radius-lg); padding: 10px; min-height: 150px; transition: border-color .15s, background .15s; }
 .day-col.drag-over { border-color: var(--purple-mid); background: var(--purple-dim); }
@@ -141,9 +142,97 @@ body {
   <div class="screen" id="s3"><div class="step-eyebrow">STEP 03 OF 09 · SPLIT TYPE</div><div class="step-title">Choose your<br>split structure</div><div class="step-sub">Matched to your frequency — swap if you want something different.</div><div class="chips" id="split-chips"></div><div class="rule" id="split-rule"></div></div>
   <div class="screen" id="s4"><div class="step-eyebrow">STEP 04 OF 09 · ANCHOR LIFTS</div><div class="step-title">Pick your<br>anchor movements</div><div class="step-sub">1–2 per day type. These drive your progress — everything else supports them.</div><div class="chips" id="anchor-chips"></div><div class="rule">Anchor lifts are non-negotiable. Support lifts can rotate.</div></div>
   <div class="screen" id="s5"><div class="step-eyebrow">STEP 05 OF 09 · SUPPORT LIFTS</div><div class="step-title">Add your<br>support exercises</div><div class="step-sub">3–5 per session. These build around your anchor lifts — mix freely.</div><div class="chips" id="support-chips"></div></div>
-  <div class="screen" id="s6"><div class="step-eyebrow">STEP 06 OF 09 · MUSCLE TARGETS</div><div class="step-title">Which muscles<br>are you targeting?</div><div class="step-sub">Select all. Each should appear 2× weekly when possible.</div><div class="chips" id="muscle-chips"></div><div class="rule">If it's not scheduled twice per week, it probably won't grow fast.</div></div>
+  <div class="screen" id="s6"><div class="step-eyebrow">STEP 06 OF 09 · MUSCLE TARGETS</div><div class="step-title">Rank your<br>target muscles</div><div class="step-sub">Tap in priority order — #1 gets built first. Your ranking shapes how the week builder scores your split.</div><div class="chips" id="muscle-chips"></div></div>
   <div class="screen" id="s7"><div class="step-eyebrow">STEP 07 OF 09 · PROGRESSION</div><div class="step-title">How will you<br>progress each week?</div><div class="step-sub">Pick one primary rule. Stick to it for 8–12 weeks.</div><div class="prog-grid"><div class="prog-card on" data-v="weight"><div class="prog-card-title">Add weight</div><div class="prog-card-ex">Wk 1: 3×8 @ 100lb<br>Wk 2: 3×8 @ 105lb</div></div><div class="prog-card" data-v="reps"><div class="prog-card-title">Add reps</div><div class="prog-card-ex">Wk 1: 3×8<br>Wk 2: 3×9 → Wk 3: 3×10</div></div><div class="prog-card" data-v="sets"><div class="prog-card-title">Add sets</div><div class="prog-card-ex">Wk 1: 2×10<br>Wk 2: 3×10 → Wk 3: 4×10</div></div><div class="prog-card" data-v="tempo"><div class="prog-card-title">Slow tempo</div><div class="prog-card-ex">Wk 1: 2s down<br>Wk 2: 3s → Wk 3: 4s down</div></div></div></div>
-  <div class="screen" id="s8"><div class="step-eyebrow">STEP 08 OF 09 · WEEK BUILDER</div><div class="step-title">Build your<br>actual week</div><div class="step-sub">Drag tiles from the library into your day columns. Muscle tracker updates live.</div><div class="builder-layout"><div class="library"><div class="lib-section"><div class="lib-label">DAY TYPES</div><div class="tile-row" id="day-type-lib"></div></div><div class="lib-section"><div class="lib-label">PUSH</div><div class="tile-row" id="push-lib"></div></div><div class="lib-section"><div class="lib-label">PULL</div><div class="tile-row" id="pull-lib"></div></div><div class="lib-section"><div class="lib-label">LEGS</div><div class="tile-row" id="legs-lib"></div></div><div class="lib-section"><div class="lib-label">MUSCLE GROUPS</div><div class="tile-row" id="muscle-lib"></div></div></div><div class="week-right"><div class="muscle-tracker" id="muscle-tracker"></div><div class="week-grid" id="week-cols"></div></div></div></div>
+  <div class="screen" id="s8"><div class="step-eyebrow">STEP 08 OF 09 · WEEK BUILDER</div><div class="step-title">Build your<br>actual week</div><div class="step-sub">Drag tiles from the library into your day columns. The body map updates live as you add exercises.</div><div class="builder-layout"><div class="library"><div class="lib-section"><div class="lib-label">DAY TYPES</div><div class="tile-row" id="day-type-lib"></div></div><div class="lib-section"><div class="lib-label">PUSH</div><div class="tile-row" id="push-lib"></div></div><div class="lib-section"><div class="lib-label">PULL</div><div class="tile-row" id="pull-lib"></div></div><div class="lib-section"><div class="lib-label">LEGS</div><div class="tile-row" id="legs-lib"></div></div></div><div class="week-right"><div class="body-diagram" id="body-diagram">
+<svg viewBox="0 0 380 210" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+  <!-- FRONT label -->
+  <text x="92" y="206" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="Raleway,sans-serif" font-weight="700" letter-spacing=".08em">FRONT</text>
+  <!-- BACK label -->
+  <text x="286" y="206" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="Raleway,sans-serif" font-weight="700" letter-spacing=".08em">BACK</text>
+
+  <!-- ══════ FRONT BODY SILHOUETTE ══════ -->
+  <circle cx="92" cy="13" r="11" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="88" y="23" width="8" height="9" rx="2" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="74" y="30" width="36" height="98" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="57" y="31" width="13" height="50" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="114" y="31" width="13" height="50" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="59" y="80" width="10" height="38" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="115" y="80" width="10" height="38" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="72" y="128" width="19" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="93" y="128" width="19" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="73" y="186" width="16" height="16" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="95" y="186" width="16" height="16" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+
+  <!-- ══════ FRONT MUSCLE REGIONS ══════ -->
+  <!-- upper_chest -->
+  <path d="M 78,33 L 106,33 L 108,51 L 76,51 Z" rx="3" data-region="upper_chest" fill="#e2e8f0"><title>Upper Chest · 0×</title></path>
+  <!-- mid_chest -->
+  <path d="M 76,51 L 108,51 L 109,68 L 75,68 Z" data-region="mid_chest" fill="#e2e8f0"><title>Mid Chest · 0×</title></path>
+  <!-- lower_chest -->
+  <path d="M 75,68 L 109,68 L 110,78 L 74,78 Z" data-region="lower_chest" fill="#e2e8f0"><title>Lower Chest · 0×</title></path>
+  <!-- front_delt bilateral -->
+  <ellipse cx="68" cy="37" rx="11" ry="8" data-region="front_delt" fill="#e2e8f0"><title>Front Delt · 0×</title></ellipse>
+  <ellipse cx="116" cy="37" rx="11" ry="8" data-region="front_delt" fill="#e2e8f0"><title>Front Delt · 0×</title></ellipse>
+  <!-- side_delt bilateral -->
+  <ellipse cx="59" cy="45" rx="8" ry="7" data-region="side_delt" fill="#e2e8f0"><title>Side Delt · 0×</title></ellipse>
+  <ellipse cx="125" cy="45" rx="8" ry="7" data-region="side_delt" fill="#e2e8f0"><title>Side Delt · 0×</title></ellipse>
+  <!-- biceps bilateral -->
+  <rect x="59" y="46" width="10" height="26" rx="4" data-region="biceps" fill="#e2e8f0"><title>Biceps · 0×</title></rect>
+  <rect x="115" y="46" width="10" height="26" rx="4" data-region="biceps" fill="#e2e8f0"><title>Biceps · 0×</title></rect>
+  <!-- core -->
+  <rect x="77" y="78" width="30" height="46" rx="5" data-region="core" fill="#e2e8f0"><title>Core · 0×</title></rect>
+  <!-- quads bilateral -->
+  <rect x="73" y="130" width="17" height="52" rx="5" data-region="quads" fill="#e2e8f0"><title>Quads · 0×</title></rect>
+  <rect x="94" y="130" width="17" height="52" rx="5" data-region="quads" fill="#e2e8f0"><title>Quads · 0×</title></rect>
+  <!-- adductors bilateral (inner thigh strip) -->
+  <rect x="88" y="136" width="8" height="42" rx="3" data-region="adductors" fill="#e2e8f0"><title>Adductors · 0×</title></rect>
+  <!-- calves front bilateral -->
+  <rect x="74" y="188" width="14" height="14" rx="3" data-region="calves" fill="#e2e8f0"><title>Calves · 0×</title></rect>
+  <rect x="96" y="188" width="14" height="14" rx="3" data-region="calves" fill="#e2e8f0"><title>Calves · 0×</title></rect>
+
+  <!-- ══════ BACK BODY SILHOUETTE (offset +194) ══════ -->
+  <circle cx="286" cy="13" r="11" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="282" y="23" width="8" height="9" rx="2" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="268" y="30" width="36" height="98" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="251" y="31" width="13" height="50" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="308" y="31" width="13" height="50" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="253" y="80" width="10" height="38" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="309" y="80" width="10" height="38" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="266" y="128" width="19" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="287" y="128" width="19" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="267" y="186" width="16" height="16" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+  <rect x="289" y="186" width="16" height="16" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.5"/>
+
+  <!-- ══════ BACK MUSCLE REGIONS ══════ -->
+  <!-- traps -->
+  <ellipse cx="286" cy="34" rx="25" ry="10" data-region="traps" fill="#e2e8f0"><title>Traps · 0×</title></ellipse>
+  <!-- rear_delt bilateral -->
+  <ellipse cx="262" cy="39" rx="11" ry="8" data-region="rear_delt" fill="#e2e8f0"><title>Rear Delt · 0×</title></ellipse>
+  <ellipse cx="310" cy="39" rx="11" ry="8" data-region="rear_delt" fill="#e2e8f0"><title>Rear Delt · 0×</title></ellipse>
+  <!-- lats bilateral -->
+  <path d="M 263,46 L 272,46 L 278,126 L 261,126 Z" data-region="lats" fill="#e2e8f0"><title>Lats · 0×</title></path>
+  <path d="M 300,46 L 309,46 L 311,126 L 294,126 Z" data-region="lats" fill="#e2e8f0"><title>Lats · 0×</title></path>
+  <!-- mid_back (rhomboids) -->
+  <rect x="276" y="46" width="20" height="48" rx="4" data-region="mid_back" fill="#e2e8f0"><title>Mid Back · 0×</title></rect>
+  <!-- erectors bilateral columns -->
+  <rect x="278" y="94" width="4" height="28" rx="2" data-region="erectors" fill="#e2e8f0"><title>Lower Back · 0×</title></rect>
+  <rect x="290" y="94" width="4" height="28" rx="2" data-region="erectors" fill="#e2e8f0"><title>Lower Back · 0×</title></rect>
+  <!-- triceps bilateral -->
+  <rect x="253" y="46" width="10" height="26" rx="4" data-region="triceps" fill="#e2e8f0"><title>Triceps · 0×</title></rect>
+  <rect x="309" y="46" width="10" height="26" rx="4" data-region="triceps" fill="#e2e8f0"><title>Triceps · 0×</title></rect>
+  <!-- glutes bilateral -->
+  <rect x="267" y="130" width="17" height="26" rx="7" data-region="glutes" fill="#e2e8f0"><title>Glutes · 0×</title></rect>
+  <rect x="288" y="130" width="17" height="26" rx="7" data-region="glutes" fill="#e2e8f0"><title>Glutes · 0×</title></rect>
+  <!-- hamstrings bilateral -->
+  <rect x="267" y="158" width="17" height="48" rx="5" data-region="hamstrings" fill="#e2e8f0"><title>Hamstrings · 0×</title></rect>
+  <rect x="288" y="158" width="17" height="48" rx="5" data-region="hamstrings" fill="#e2e8f0"><title>Hamstrings · 0×</title></rect>
+  <!-- calves back bilateral -->
+  <rect x="268" y="188" width="14" height="14" rx="3" data-region="calves" fill="#e2e8f0"><title>Calves · 0×</title></rect>
+  <rect x="290" y="188" width="14" height="14" rx="3" data-region="calves" fill="#e2e8f0"><title>Calves · 0×</title></rect>
+</svg>
+<div class="body-legend"><div class="body-legend-swatch" style="background:#e2e8f0"></div>none<div class="body-legend-swatch" style="background:#86efac;margin-left:6px"></div>1×<div class="body-legend-swatch" style="background:#4ade80;margin-left:6px"></div>2×<div class="body-legend-swatch" style="background:#facc15;margin-left:6px"></div>3×<div class="body-legend-swatch" style="background:#fb923c;margin-left:6px"></div>4×<div class="body-legend-swatch" style="background:#f87171;margin-left:6px"></div>5+</div>
+</div><div class="week-grid" id="week-cols"></div></div></div></div>
   <div class="screen" id="s9"><div class="step-eyebrow">STEP 09 OF 09 · CONFIDENCE TEST</div><div class="step-title">Before you<br>lock it in</div><div class="step-sub">Check all four. If yes — this split works.</div><ul class="conf-list" id="conf-list"><li data-q="follow"><div class="chk"></div>I can follow this for 8 weeks straight</li><li data-q="track"><div class="chk"></div>I can track my improvements week to week</li><li data-q="recover"><div class="chk"></div>I can recover fully between sessions</li><li data-q="time"><div class="chk"></div>I can finish each session in under 75 minutes</li></ul><div id="summary-out"></div><div id="gen-btn-wrap"></div></div>
   <div class="nav"><button class="btn" id="back-btn" disabled>Back</button><button class="btn btn-p" id="next-btn">Next</button><div class="dots" id="dot-row"></div></div>
 </div>
@@ -154,19 +243,45 @@ const splitMap={2:['Full / Full','Upper / Lower'],3:['Full / Full / Full','Push 
 const anchorsByType={push:['Bench press','Incline DB press','Overhead press','Dips','Cable fly'],pull:['Pullups','Lat pulldown','Barbell row','Cable row','Face pull'],legs:['Squat','Romanian deadlift','Leg press','Bulgarian split squat','Hack squat'],upper:['Bench press','Barbell row','Overhead press','Pullups','DB shoulder press'],lower:['Squat','Romanian deadlift','Leg press','Hip thrust','Hack squat'],full:['Squat','Deadlift','Bench press','Barbell row','Overhead press']};
 const supportByType={push:['Lateral raises','Cable fly','Triceps pushdown','Skull crushers','Chest dips'],pull:['Rear delt raise','Biceps curl','Hammer curl','Straight-arm pulldown','Shrugs'],legs:['Leg curl','Leg extension','Calf raises','Hip thrust','Walking lunges'],upper:['Lateral raises','Biceps curl','Triceps pushdown','Rear delt raise','Shrugs'],lower:['Leg curl','Leg extension','Calf raises','Walking lunges','Adductor machine'],full:['Lateral raises','Leg curl','Biceps curl','Calf raises','Core work']};
 const muscleGroups=['Chest','Back','Legs','Shoulders','Biceps','Triceps','Core'];
+const exerciseMuscleMap={
+  'Bench press':['mid_chest'],'Incline DB press':['upper_chest'],'Overhead press':['front_delt','triceps'],
+  'Dips':['lower_chest','triceps'],'Cable fly':['mid_chest'],'Chest dips':['lower_chest','triceps'],
+  'Pullups':['lats','biceps'],'Lat pulldown':['lats'],'Barbell row':['mid_back','lats'],
+  'Cable row':['mid_back'],'Face pull':['rear_delt'],'Straight-arm pulldown':['lats'],
+  'Shrugs':['traps'],'Rear delt raise':['rear_delt'],'Lateral raises':['side_delt'],
+  'DB shoulder press':['front_delt','side_delt'],'Squat':['quads','glutes'],
+  'Romanian deadlift':['hamstrings','glutes'],'Leg press':['quads'],
+  'Bulgarian split squat':['quads','glutes'],'Hack squat':['quads'],
+  'Deadlift':['erectors','hamstrings','glutes'],'Hip thrust':['glutes'],
+  'Leg curl':['hamstrings'],'Leg extension':['quads'],'Calf raises':['calves'],
+  'Walking lunges':['quads','glutes'],'Adductor machine':['adductors'],
+  'Triceps pushdown':['triceps'],'Skull crushers':['triceps'],
+  'Biceps curl':['biceps'],'Hammer curl':['biceps'],'Core work':['core'],
+  'Push day':['mid_chest','front_delt','triceps'],'Pull day':['lats','mid_back','biceps'],
+  'Legs day':['quads','hamstrings','glutes'],'Upper day':['mid_chest','lats','front_delt'],
+  'Lower day':['quads','hamstrings','glutes'],'Full body':['quads','mid_chest','lats']
+};
+const muscleRegionLabels={
+  upper_chest:'Upper Chest',mid_chest:'Mid Chest',lower_chest:'Lower Chest',
+  front_delt:'Front Delt',side_delt:'Side Delt',rear_delt:'Rear Delt',
+  biceps:'Biceps',triceps:'Triceps',traps:'Traps',lats:'Lats',
+  mid_back:'Mid Back',erectors:'Lower Back',core:'Core',
+  quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',adductors:'Adductors'
+};
+function heatColor(n){if(n===0)return'#e2e8f0';if(n===1)return'#86efac';if(n===2)return'#4ade80';if(n===3)return'#facc15';if(n===4)return'#fb923c';return'#f87171';}
 let dragData=null;function getDayTypes(){return(state.split||'').split('/').map(d=>d.trim().toLowerCase());}
 function tileClass(text){const t=text.toLowerCase();const dayTypes=['push day','pull day','legs day','upper day','lower day','full body','rest'];if(dayTypes.includes(t))return'tile day-t';const pushEx=[...anchorsByType.push,...supportByType.push].map(x=>x.toLowerCase());const pullEx=[...anchorsByType.pull,...supportByType.pull].map(x=>x.toLowerCase());const legsEx=[...anchorsByType.legs,...anchorsByType.lower,...supportByType.legs,...supportByType.lower].map(x=>x.toLowerCase());const muscleEx=muscleGroups.map(m=>m.toLowerCase());if(pushEx.includes(t))return'tile push-t';if(pullEx.includes(t))return'tile pull-t';if(legsEx.includes(t))return'tile legs-t';if(muscleEx.includes(t))return'tile muscle-t';return'tile push-t';}
 function makeTile(text){const t=document.createElement('div');t.className=tileClass(text);t.textContent=text;t.draggable=true;t.addEventListener('dragstart',e=>{dragData={text};e.dataTransfer.effectAllowed='copy';});return t;}
 function makeDayItem(text,dayNum){const cls=tileClass(text);const d=document.createElement('div');d.className='day-item '+cls.replace('tile ','');d.draggable=true;const span=document.createElement('span');span.textContent=text;const rm=document.createElement('span');rm.className='rm';rm.textContent='✕';rm.addEventListener('click',e=>{e.stopPropagation();const idx=state.week[dayNum].indexOf(text);if(idx>-1)state.week[dayNum].splice(idx,1);d.remove();updateMuscleTracker();});d.appendChild(span);d.appendChild(rm);d.addEventListener('dragstart',e=>{dragData={text};e.dataTransfer.effectAllowed='move';});return d;}
 function buildDayCol(dayNum){const col=document.createElement('div');col.className='day-col';col.dataset.day=dayNum;const head=document.createElement('div');head.className='day-head';const nameEl=document.createElement('div');nameEl.className='day-name';nameEl.textContent='DAY '+dayNum;const clearEl=document.createElement('div');clearEl.className='day-clear';clearEl.textContent='clear';clearEl.addEventListener('click',()=>{state.week[dayNum]=[];itemsEl.innerHTML='';updateMuscleTracker();});head.appendChild(nameEl);head.appendChild(clearEl);col.appendChild(head);const itemsEl=document.createElement('div');itemsEl.className='day-items';(state.week[dayNum]||[]).forEach(it=>itemsEl.appendChild(makeDayItem(it,dayNum)));col.appendChild(itemsEl);const hint=document.createElement('div');hint.className='drop-hint';hint.textContent='drop tiles here';col.appendChild(hint);col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('drag-over');});col.addEventListener('dragleave',()=>col.classList.remove('drag-over'));col.addEventListener('drop',e=>{e.preventDefault();col.classList.remove('drag-over');if(!dragData)return;if(!state.week[dayNum])state.week[dayNum]=[];state.week[dayNum].push(dragData.text);itemsEl.appendChild(makeDayItem(dragData.text,dayNum));updateMuscleTracker();dragData=null;});return col;}
-function updateMuscleTracker(){const tracker=document.getElementById('muscle-tracker');if(!tracker)return;const counts={};muscleGroups.forEach(m=>counts[m]=0);Object.values(state.week).forEach(items=>{items.forEach(it=>{if(muscleGroups.includes(it))counts[it]=(counts[it]||0)+1;});});tracker.innerHTML='';muscleGroups.forEach(m=>{const n=counts[m]||0;const b=document.createElement('div');b.className='m-badge'+(n>=2?' hit2':n===1?' hit1':'');b.textContent=m+' ×'+n;tracker.appendChild(b);});}
+function updateMuscleTracker(){const counts={};Object.keys(muscleRegionLabels).forEach(r=>counts[r]=0);Object.values(state.week).forEach(items=>{items.forEach(it=>{const regions=exerciseMuscleMap[it];if(regions)regions.forEach(r=>{counts[r]=(counts[r]||0)+1;});});});Object.keys(muscleRegionLabels).forEach(r=>{const n=counts[r]||0;const color=heatColor(n);const label=muscleRegionLabels[r];document.querySelectorAll('[data-region="'+r+'"]').forEach(el=>{el.setAttribute('fill',color);const t=el.querySelector('title');if(t)t.textContent=label+' · '+n+'×';});});}
 function renderDots(){const r=document.getElementById('dot-row');r.innerHTML='';for(let i=1;i<=9;i++){const d=document.createElement('div');d.className='dot'+(i<state.step?' done':i===state.step?' cur':'');r.appendChild(d);}}
 function renderProg(){const pct=((state.step-1)/8)*89+11;document.getElementById('prog').style.width=pct+'%';}
 function buildSplitChips(){const opts=splitMap[state.freq]||splitMap[4];const el=document.getElementById('split-chips');el.innerHTML='';opts.forEach((o,i)=>{const c=document.createElement('div');c.className='chip'+(i===0?' on':'');c.dataset.v=o;c.textContent=o;el.appendChild(c);if(i===0)state.split=o;});document.getElementById('split-rule').textContent='Matched to '+state.freq+' days · swap to any structure that fits';el.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;el.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');state.split=c.dataset.v;});}
 function buildAnchorChips(){const types=[...new Set(getDayTypes())];const el=document.getElementById('anchor-chips');el.innerHTML='';const pool=[];types.forEach(t=>{const key=Object.keys(anchorsByType).find(k=>t.includes(k));if(key)anchorsByType[key].forEach(x=>{if(!pool.includes(x))pool.push(x);});});pool.forEach(a=>{const c=document.createElement('div');c.className='chip'+(state.anchors.includes(a)?' on':'');c.dataset.v=a;c.textContent=a;el.appendChild(c);});el.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.classList.toggle('on');const v=c.dataset.v,idx=state.anchors.indexOf(v);if(idx>-1)state.anchors.splice(idx,1);else state.anchors.push(v);});}
 function buildSupportChips(){const types=[...new Set(getDayTypes())];const el=document.getElementById('support-chips');el.innerHTML='';const pool=[];types.forEach(t=>{const key=Object.keys(supportByType).find(k=>t.includes(k));if(key)supportByType[key].forEach(x=>{if(!pool.includes(x))pool.push(x);});});pool.forEach(s=>{const c=document.createElement('div');c.className='chip'+(state.support.includes(s)?' on':'');c.dataset.v=s;c.textContent=s;el.appendChild(c);});el.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.classList.toggle('on');const v=c.dataset.v,idx=state.support.indexOf(v);if(idx>-1)state.support.splice(idx,1);else state.support.push(v);});}
-function buildMuscleChips(){const el=document.getElementById('muscle-chips');el.innerHTML='';muscleGroups.forEach(m=>{const c=document.createElement('div');c.className='chip'+(state.muscles.includes(m)?' on':'');c.dataset.v=m;c.textContent=m;el.appendChild(c);});el.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.classList.toggle('on');const v=c.dataset.v,idx=state.muscles.indexOf(v);if(idx>-1)state.muscles.splice(idx,1);else state.muscles.push(v);});}
-function buildWeekBuilder(){['push-lib','pull-lib','legs-lib','day-type-lib','muscle-lib'].forEach(id=>{document.getElementById(id).innerHTML='';});['Push day','Pull day','Legs day','Upper day','Lower day','Full body','Rest'].forEach(d=>document.getElementById('day-type-lib').appendChild(makeTile(d)));[...anchorsByType.push,...supportByType.push].forEach(e=>document.getElementById('push-lib').appendChild(makeTile(e)));[...anchorsByType.pull,...supportByType.pull].forEach(e=>document.getElementById('pull-lib').appendChild(makeTile(e)));[...anchorsByType.legs,...anchorsByType.lower,...supportByType.legs].filter((v,i,a)=>a.indexOf(v)===i).forEach(e=>document.getElementById('legs-lib').appendChild(makeTile(e)));muscleGroups.forEach(m=>document.getElementById('muscle-lib').appendChild(makeTile(m)));const wcols=document.getElementById('week-cols');wcols.innerHTML='';wcols.style.gridTemplateColumns='repeat('+Math.min(state.freq,4)+', minmax(0,1fr))';for(let i=1;i<=state.freq;i++){if(!state.week[i])state.week[i]=[];wcols.appendChild(buildDayCol(i));}updateMuscleTracker();}
+function buildMuscleChips(){const el=document.getElementById('muscle-chips');el.innerHTML='';function renderChips(){el.innerHTML='';muscleGroups.forEach(m=>{const rank=state.muscles.indexOf(m);const c=document.createElement('div');c.className='chip'+(rank>-1?' on':'');c.dataset.v=m;const txt=document.createTextNode(m);c.appendChild(txt);if(rank>-1){const badge=document.createElement('span');badge.className='chip-rank';badge.textContent=rank+1;c.appendChild(badge);}el.appendChild(c);});}renderChips();el.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;const v=c.dataset.v,idx=state.muscles.indexOf(v);if(idx>-1)state.muscles.splice(idx,1);else state.muscles.push(v);renderChips();});}
+function buildWeekBuilder(){['push-lib','pull-lib','legs-lib','day-type-lib'].forEach(id=>{document.getElementById(id).innerHTML='';});['Push day','Pull day','Legs day','Upper day','Lower day','Full body','Rest'].forEach(d=>document.getElementById('day-type-lib').appendChild(makeTile(d)));[...anchorsByType.push,...supportByType.push].forEach(e=>document.getElementById('push-lib').appendChild(makeTile(e)));[...anchorsByType.pull,...supportByType.pull].forEach(e=>document.getElementById('pull-lib').appendChild(makeTile(e)));[...anchorsByType.legs,...anchorsByType.lower,...supportByType.legs].filter((v,i,a)=>a.indexOf(v)===i).forEach(e=>document.getElementById('legs-lib').appendChild(makeTile(e)));const wcols=document.getElementById('week-cols');wcols.innerHTML='';wcols.style.gridTemplateColumns='repeat('+Math.min(state.freq,4)+', minmax(0,1fr))';for(let i=1;i<=state.freq;i++){if(!state.week[i])state.week[i]=[];wcols.appendChild(buildDayCol(i));}updateMuscleTracker();}
 function buildSummary(){const allChecked=Object.keys(state.conf).length===4&&Object.values(state.conf).every(Boolean);const out=document.getElementById('summary-out');const dayRows=[];for(let i=1;i<=state.freq;i++){const items=state.week[i]||[];const tags=items.map(it=>`<span class="ws-tag ${tileClass(it).replace('tile ','')}">${it}</span>`).join('');dayRows.push(`<div class="ws-col"><div class="ws-day">DAY ${i}</div><div class="ws-items">${tags||'<span style="font-size:11px;color:var(--hint)">empty</span>'}</div></div>`);}out.innerHTML=`<div class="summary-card"><div class="sum-row"><span class="sum-label">FREQUENCY</span><span class="sum-val">${state.freq} days/week</span></div><div class="sum-row"><span class="sum-label">GOAL</span><span class="sum-val">${state.goal}</span></div><div class="sum-row"><span class="sum-label">SPLIT</span><span class="sum-val">${state.split||'—'}</span></div><div class="sum-row"><span class="sum-label">PROGRESSION</span><span class="sum-val">${state.prog}</span></div><div class="sum-row"><span class="sum-label">ANCHORS</span><span class="sum-val">${state.anchors.join(', ')||'—'}</span></div></div><div class="week-summary" style="grid-template-columns:repeat(${Math.min(state.freq,4)},minmax(0,1fr))">${dayRows.join('')}</div>`;const wrap=document.getElementById('gen-btn-wrap');wrap.innerHTML=allChecked?`<button class="btn btn-p" onclick="exportSplit()" style="width:100%;padding:12px;">Export my split as text</button>`:`<div class="gen-locked">Check all four boxes above to export your final split.</div>`;}
 function exportSplit(){let out='=== MY TRAINING SPLIT ===\n\n';out+=`Goal: ${state.goal}\n`;out+=`Frequency: ${state.freq} days/week\n`;out+=`Split: ${state.split}\n`;out+=`Progression: ${state.prog}\n\n`;if(state.anchors.length)out+=`Anchor lifts: ${state.anchors.join(', ')}\n\n`;out+='--- WEEK ---\n';for(let i=1;i<=state.freq;i++){const items=state.week[i]||[];out+=`Day ${i}: ${items.join(' · ')||'empty'}\n`;}out+='\nProgression model: '+state.prog;const el=document.createElement('textarea');el.value=out;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);const btn=document.querySelector('#gen-btn-wrap .btn-p');if(btn){btn.textContent='Copied to clipboard!';setTimeout(()=>btn.textContent='Export my split as text',2000);}}
 function showStep(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('s'+n).classList.add('active');document.getElementById('back-btn').disabled=n===1;document.getElementById('next-btn').textContent=n===9?'Done':'Next';document.getElementById('step-counter').textContent='STEP '+n+' OF 9';renderDots();renderProg();if(n===3)buildSplitChips();if(n===4)buildAnchorChips();if(n===5)buildSupportChips();if(n===6)buildMuscleChips();if(n===8)buildWeekBuilder();if(n===9)buildSummary();}
