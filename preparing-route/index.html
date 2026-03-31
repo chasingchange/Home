@@ -115,8 +115,47 @@
           </section>
 
           <section id="lockedTools" class="hidden mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-4 sm:p-5">
-            <div class="rounded-2xl overflow-hidden ring-1 ring-black/10">
+            <div class="inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+              <button id="tabPlanner" type="button" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Split Sculptor</button>
+              <button id="tabTestimonials" type="button" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Add Testimonial</button>
+            </div>
+
+            <div id="plannerPanel" class="mt-4 rounded-2xl overflow-hidden ring-1 ring-black/10">
               <iframe id="toolFrame" title="Split Sculptor Planner" src="./split-sculptor.html" class="w-full h-[2500px] border-0"></iframe>
+            </div>
+
+            <div id="testimonialsPanel" class="hidden mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4 sm:p-5">
+              <h3 class="text-xl font-extrabold font-heading">Add a testimonial</h3>
+              <p class="mt-1 text-sm opacity-80">Submit a testimonial below. It will appear on the Testimonials page in this browser.</p>
+
+              <form id="testimonialForm" class="mt-4 grid gap-3">
+                <label class="grid gap-1 text-sm font-semibold">
+                  Person's name
+                  <input id="testimonialName" type="text" class="rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline" placeholder="Jane Doe" required />
+                </label>
+
+                <label class="grid gap-1 text-sm font-semibold">
+                  Cohort year
+                  <select id="testimonialYear" class="rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline" required>
+                    <option value="2024">2024</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                  </select>
+                </label>
+
+                <label class="grid gap-1 text-sm font-semibold">
+                  Testimonial paragraphs
+                  <textarea id="testimonialBody" rows="10" class="rounded-xl border border-black/10 px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-cc-outline" placeholder="Paste paragraphs separated by a blank line." required></textarea>
+                </label>
+
+                <div class="flex flex-wrap gap-2">
+                  <button type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">Save testimonial</button>
+                  <button id="clearTestimonialsBtn" type="button" class="rounded-xl bg-white px-5 py-3 text-sm font-bold ring-1 ring-black/10 hover:bg-black/[0.02] transition">Clear saved testimonials</button>
+                </div>
+                <p id="testimonialMessage" class="min-h-[1.25rem] text-sm font-semibold"></p>
+              </form>
             </div>
           </section>
         </section>
@@ -142,6 +181,17 @@
       const lockCard = document.getElementById("lockCard");
       const lockedTools = document.getElementById("lockedTools");
       const toolFrame = document.getElementById("toolFrame");
+      const tabPlanner = document.getElementById("tabPlanner");
+      const tabTestimonials = document.getElementById("tabTestimonials");
+      const plannerPanel = document.getElementById("plannerPanel");
+      const testimonialsPanel = document.getElementById("testimonialsPanel");
+      const testimonialForm = document.getElementById("testimonialForm");
+      const testimonialName = document.getElementById("testimonialName");
+      const testimonialYear = document.getElementById("testimonialYear");
+      const testimonialBody = document.getElementById("testimonialBody");
+      const testimonialMessage = document.getElementById("testimonialMessage");
+      const clearTestimonialsBtn = document.getElementById("clearTestimonialsBtn");
+      const TESTIMONIALS_KEY = "ccTestimonials";
 
       unlockForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -156,6 +206,52 @@
         }
       });
 
+      const setActiveTab = (tab) => {
+        const plannerActive = tab === "planner";
+        plannerPanel.classList.toggle("hidden", !plannerActive);
+        testimonialsPanel.classList.toggle("hidden", plannerActive);
+        tabPlanner.classList.toggle("bg-cc-outline", plannerActive);
+        tabPlanner.classList.toggle("text-cc-text", plannerActive);
+        tabTestimonials.classList.toggle("bg-cc-outline", !plannerActive);
+        tabTestimonials.classList.toggle("text-cc-text", !plannerActive);
+      };
+
+      tabPlanner?.addEventListener("click", () => setActiveTab("planner"));
+      tabTestimonials?.addEventListener("click", () => setActiveTab("testimonials"));
+
+      testimonialForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const name = testimonialName.value.trim();
+        const year = testimonialYear.value.trim();
+        const paragraphs = testimonialBody.value
+          .split(/\n\s*\n/g)
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+        if (!name || !year || paragraphs.length === 0) {
+          testimonialMessage.textContent = "Please add name, cohort year, and at least one paragraph.";
+          testimonialMessage.classList.add("text-red-600");
+          testimonialMessage.classList.remove("text-green-700");
+          return;
+        }
+
+        const existing = JSON.parse(localStorage.getItem(TESTIMONIALS_KEY) || "[]");
+        existing.push({ name, year, paragraphs });
+        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(existing));
+
+        testimonialForm.reset();
+        testimonialYear.value = "2025";
+        testimonialMessage.textContent = "Saved! It will show on the Testimonials page.";
+        testimonialMessage.classList.remove("text-red-600");
+        testimonialMessage.classList.add("text-green-700");
+      });
+
+      clearTestimonialsBtn?.addEventListener("click", () => {
+        localStorage.removeItem(TESTIMONIALS_KEY);
+        testimonialMessage.textContent = "Saved testimonials were cleared for this browser.";
+        testimonialMessage.classList.remove("text-red-600");
+        testimonialMessage.classList.add("text-green-700");
+      });
 
     </script>
   </body>

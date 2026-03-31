@@ -131,7 +131,7 @@
           <p class="mt-2 text-sm sm:text-base opacity-80">Hover over a name (or tap on mobile) to expand a shorter testimonial card.</p>
 
           <h3 class="mt-5 text-sm font-extrabold uppercase tracking-[0.16em] opacity-70">2025 Cohort</h3>
-          <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div id="testimonialGrid" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
               <h3 class="text-base sm:text-lg font-extrabold font-heading">William Guthrie <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
               <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
@@ -181,6 +181,21 @@
                 <p class="mt-3">If you’re on the fence like I was, it’s worth it.”</p>
               </div>
             </article>
+
+            <article class="testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon" tabindex="0">
+              <h3 class="text-base sm:text-lg font-extrabold font-heading">Kaleo Kauhola <span class="block text-xs font-bold uppercase tracking-wide opacity-70">2025 Cohort</span></h3>
+              <div class="testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90">
+                <p>“Before I took a leap of faith and chased change I had unexpectedly made a return to New York. Just almost a year later after I moved out of the city exclaiming, ‘my time in New York has come to an end.’</p>
+                <p class="mt-3">I found myself in a time of starting over of sorts, trying to decide if I was to return to Hawai’i or stay and figure out what would make this time around different, and why the universe brought me back. And that’s where Tyler Wade comes in; one comment led to a Dm and then a video call, ultimately leading me to taking a chance with Tyler to insure this time around would be different.</p>
+                <p class="mt-3">Whether it was dealing with Body and health, socialization, creative endeavors, and life coaching, chasing change helped me tackle consistency; something I struggled with across the board.</p>
+                <p class="mt-3">Before beginning, I hadn’t been back in the gym for months and the only steps I’d be getting would be from walking or at work. I had begun a new endeavor in slam poetry and a day before signing with Tyler, I had decided to move back to Brooklyn. Mentally, I had an idea of what I wanted to do but still scattered with all of it. Unsure of the path I was on, overthinking and avoiding conversations and truths, and just unsure if this was a chapter I was returning to or entering a new one as the same person.</p>
+                <p class="mt-3">During my time with Tyler, it was in the best way possible to have someone “on my ass” about the goals we set for myself when I decided to chase change. He did it in a way that you also had to meet him as much as you’d like to meet yourself.</p>
+                <p class="mt-3">From daily check-ins, calories tracking, weekly video calls, and getting REAL, when needed, Tyler offered structure, tools, and guidance that best suited my needs during a transitionary time. In moments where I slipped and found myself being unmotivated, Tyler on a constant basis reminded me of what the overall goal of this journey meant, whether it was a “Don’t forget to track your calories!” Text Or asking “what are some blessings and struggles of the week?” During weekly check-ins; he assessed my needs, my goals, and helped me adjust back to the course of the journey.</p>
+                <p class="mt-3">Now time has passed since completing my time with Tyler and I, to this day have been in the outcome of my leap of faith; being more consistent in the gym and having structured workouts, eating throughout the day instead of one to two meals a day, balancing time for all creative endeavors as well as time for socializing but most of all keeping myself accountable for seeing the change I wanted it in my life.</p>
+                <p class="mt-3">What surprised me the most about this experience is realizing that this opportunity to have return, reset, and follow through starts with a foundation of accountability to oneself and their goals. And reflecting on all that I’ve done in the past and all that I’ve accomplished before, it was because of how persistent I remained in seeing something through and that was the part of myself I’ve come to lose throughout the years.</p>
+                <p class="mt-3">In having the opportunity, I’d say to anyone that wants to get out of stagnancy, pushed out of their comfort zone, ready to be challenged and changed for the better; Chasing Change is a journey to commit to, not financially or with him but to yourself. To trust the process and to nudge yourself to take a leap of faith.”</p>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -198,21 +213,64 @@
         mobileMenu.classList.toggle("hidden");
       });
 
-      const testimonialCards = document.querySelectorAll(".testimonial-card");
-      testimonialCards.forEach((card) => {
-        card.addEventListener("click", () => {
-          const isOpen = card.classList.contains("is-open");
-          testimonialCards.forEach((item) => item.classList.remove("is-open"));
-          if (!isOpen) card.classList.add("is-open");
+      const TESTIMONIALS_KEY = "ccTestimonials";
+      const testimonialGrid = document.getElementById("testimonialGrid");
+
+      const createTestimonialCard = (testimonial) => {
+        const article = document.createElement("article");
+        article.className =
+          "testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon";
+        article.tabIndex = 0;
+
+        const heading = document.createElement("h3");
+        heading.className = "text-base sm:text-lg font-extrabold font-heading";
+        heading.append(document.createTextNode(testimonial.name + " "));
+        const cohort = document.createElement("span");
+        cohort.className = "block text-xs font-bold uppercase tracking-wide opacity-70";
+        cohort.textContent = `${testimonial.year} Cohort`;
+        heading.appendChild(cohort);
+
+        const content = document.createElement("div");
+        content.className = "testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90";
+
+        testimonial.paragraphs.forEach((paragraph, index) => {
+          const p = document.createElement("p");
+          p.className = index === 0 ? "" : "mt-3";
+          p.textContent = paragraph;
+          content.appendChild(p);
         });
 
-        card.addEventListener("keydown", (event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            card.click();
-          }
-        });
+        article.appendChild(heading);
+        article.appendChild(content);
+        return article;
+      };
+
+      const savedTestimonials = JSON.parse(localStorage.getItem(TESTIMONIALS_KEY) || "[]");
+      savedTestimonials.forEach((item) => {
+        if (item?.name && item?.year && Array.isArray(item?.paragraphs) && item.paragraphs.length) {
+          testimonialGrid.appendChild(createTestimonialCard(item));
+        }
       });
+
+      const bindCardInteractions = () => {
+        const testimonialCards = document.querySelectorAll(".testimonial-card");
+        testimonialCards.forEach((card) => {
+          card.addEventListener("click", () => {
+            const isOpen = card.classList.contains("is-open");
+            testimonialCards.forEach((item) => item.classList.remove("is-open"));
+            if (!isOpen) card.classList.add("is-open");
+          });
+
+          card.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              card.click();
+            }
+          });
+        });
+      };
+
+      bindCardInteractions();
     </script>
   </body>
 </html>
