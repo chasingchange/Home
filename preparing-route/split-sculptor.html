@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
-<script src="../exercise-database.js"></script>
+<script src="../exercise-matrix/data.js"></script>
 <style>
 :root {
   --bg: #f5f5f7;
@@ -162,6 +162,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     </div>
     <div class="rule" id="freq-rule"></div>
     <div class="builder-tools">
+      <a href="../exercise-matrix/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Exercise Matrix</a>
       <div class="filter-row" id="movement-filters"></div>
       <div class="filter-row" id="muscle-filters"></div>
       <div class="filter-row" id="equipment-filters"></div>
@@ -261,16 +262,22 @@ const allowedCategories = {
   'Home Gym': ['Barbell', 'Dumbbell', 'Body Weight', 'Carries']
 };
 
-const focusMap = {
-  Push: ['bench', 'incline', 'chest_press_machine', 'db_bench', 'ohp', 'db_shoulder_press', 'dip_weighted', 'triceps_pushdown'],
-  Pull: ['deadlift', 'barbell_row', 'db_row', 'lat_pulldown', 'cable_row', 'pullup_weighted', 'chinup_weighted', 'biceps_curl'],
-  Legs: ['back_squat', 'front_squat', 'trap_bar_deadlift', 'split_squat', 'rdl', 'leg_press', 'hack_squat', 'leg_extension', 'hamstring_curl', 'calf_raise'],
-  Upper: ['bench', 'barbell_row', 'ohp', 'lat_pulldown', 'db_bench', 'db_row'],
-  Lower: ['back_squat', 'deadlift', 'rdl', 'split_squat', 'leg_press', 'hamstring_curl'],
-  'Full Body': ['back_squat', 'bench', 'barbell_row', 'rdl', 'db_shoulder_press', 'lat_pulldown']
-};
-
 const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
+
+const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
+  const equipment = (exercise.equipment || '').trim();
+  let category = 'Body Weight';
+  if (equipment === 'Barbell') category = 'Barbell';
+  else if (equipment === 'Dumbbell') category = 'Dumbbell';
+  else if (equipment === 'Machine' || equipment === 'Cable' || equipment === 'Smith Machine') category = 'Machines';
+
+  return {
+    id: `${exercise.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${index + 1}`,
+    name: exercise.name,
+    category,
+    primaryMuscle: exercise.primaryMuscle || 'Full Body'
+  };
+});
 
 const movementTypeById = {
   back_squat: 'Compound', front_squat: 'Compound', deadlift: 'Compound', sumo_deadlift: 'Compound',
@@ -281,16 +288,6 @@ const movementTypeById = {
   pullup_weighted: 'Compound', dip_weighted: 'Compound', chinup_weighted: 'Compound', farmers_carry: 'Compound',
   barbell_row: 'Compound', trap_bar_deadlift: 'Compound', split_squat: 'Compound',
   leg_extension: 'Isolated', hamstring_curl: 'Isolated', calf_raise: 'Isolated', biceps_curl: 'Isolated', triceps_pushdown: 'Isolated', cable_row: 'Machine'
-};
-
-const muscleById = {
-  back_squat: 'Legs', front_squat: 'Legs', deadlift: 'Back', sumo_deadlift: 'Legs', bench: 'Chest', ohp: 'Shoulders',
-  power_clean: 'Full Body', hang_clean: 'Full Body', push_press: 'Shoulders', rdl: 'Legs', incline_bench: 'Chest',
-  pause_bench: 'Chest', hip_thrust: 'Glutes', db_bench: 'Chest', db_shoulder_press: 'Shoulders', db_row: 'Back',
-  db_rdl: 'Legs', leg_press: 'Legs', hack_squat: 'Legs', chest_press_machine: 'Chest', lat_pulldown: 'Back',
-  pullup_weighted: 'Back', dip_weighted: 'Chest', chinup_weighted: 'Back', farmers_carry: 'Full Body',
-  barbell_row: 'Back', trap_bar_deadlift: 'Legs', split_squat: 'Legs', leg_extension: 'Legs', hamstring_curl: 'Legs',
-  calf_raise: 'Calves', biceps_curl: 'Biceps', triceps_pushdown: 'Triceps', cable_row: 'Back'
 };
 
 function oneChip(groupId, key, isNum = false) {
@@ -370,18 +367,23 @@ function extractFocusName(line) {
 
 function getExercisePool(focus) {
   const allowed = allowedCategories[state.gymType];
-  const ids = focusMap[focus] || focusMap['Full Body'];
-  const pool = (window.CC_EXERCISES || []).filter((e) => ids.includes(e.id) && allowed.includes(e.category));
-  return pool.length ? pool : (window.CC_EXERCISES || []).filter((e) => allowed.includes(e.category)).slice(0, 4);
+  const focusToMuscles = {
+    Push: ['Chest', 'Shoulders', 'Triceps'],
+    Pull: ['Back', 'Biceps', 'Shoulders'],
+    Legs: ['Legs', 'Glutes'],
+    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    Lower: ['Legs', 'Glutes'],
+    'Full Body': ['Full Body', 'Legs', 'Chest', 'Back', 'Shoulders', 'Glutes']
+  };
+  const muscles = focusToMuscles[focus] || focusToMuscles['Full Body'];
+  const pool = EXERCISES.filter((e) => muscles.includes(getMuscle(e)) && allowed.includes(e.category));
+  return pool.length ? pool : EXERCISES.filter((e) => allowed.includes(e.category)).slice(0, 8);
 }
 
 function getDayPlan(focus) {
-  const priorityNeed = state.priority === 'Chest' ? ['bench', 'db_bench'] :
-    state.priority === 'Back' ? ['barbell_row', 'lat_pulldown', 'db_row'] :
-    state.priority === 'Legs' ? ['back_squat', 'split_squat', 'leg_press'] : ['ohp', 'db_shoulder_press', 'push_press'];
   const pool = getExercisePool(focus);
-  const prioritized = pool.filter((e) => priorityNeed.includes(e.id));
-  const list = [...prioritized, ...pool].slice(0, 4);
+  const prioritized = pool.filter((e) => getMuscle(e) === state.priority);
+  const list = [...prioritized, ...pool].slice(0, 6);
   return list.map((e) => e.name);
 }
 
@@ -390,12 +392,12 @@ function normalizeType(exercise) {
 }
 
 function getMuscle(exercise) {
-  return muscleById[exercise.id] || 'Full Body';
+  return exercise.primaryMuscle || 'Full Body';
 }
 
 function getFilteredExercises() {
   const allowed = allowedCategories[state.gymType];
-  return (window.CC_EXERCISES || []).filter((e) => {
+  return EXERCISES.filter((e) => {
     const movement = normalizeType(e);
     const muscle = getMuscle(e);
     const movementOk = state.filters.movement === 'All' || state.filters.movement === movement;
