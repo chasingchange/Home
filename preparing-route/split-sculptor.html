@@ -29,13 +29,13 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .progress-track { height: 3px; border-radius: 999px; background: var(--surface2); margin-bottom: 1.2rem; overflow: hidden; }
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
 .timeline { display: grid; grid-template-columns: repeat(7, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
-.t-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
+.t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
 .t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
 .t-time { font-size: .78rem; font-weight: 700; margin-top: .15rem; }
 .screen { display: none; }
 .screen.active { display: block; }
-.step-eyebrow { font-family: 'Raleway', sans-serif; font-size: 11px; letter-spacing: .1em; font-weight: 700; color: var(--muted); margin-bottom: .55rem; }
-.step-title { font-family: 'Raleway', sans-serif; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.2; margin-bottom: .45rem; }
+.step-eyebrow { font-family: 'Raleway', sans-serif; font-size: clamp(1.25rem, 3vw, 1.7rem); line-height: 1.2; font-weight: 800; letter-spacing: .02em; color: var(--text); margin-bottom: .45rem; }
+.step-title { font-family: 'Muli', sans-serif; font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.4; margin-bottom: .45rem; color: var(--muted); font-weight: 600; }
 .step-sub { color: var(--text); max-width: 780px; line-height: 1.6; margin-bottom: 1.2rem; }
 .chips { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
 .chip { border: 1px solid var(--border); border-radius: 999px; padding: .52rem .95rem; font-size: .9rem; cursor: pointer; background: var(--surface); color: var(--muted); transition: .15s; }
@@ -50,6 +50,28 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .week h3,.agent h3 { font-family: 'Raleway', sans-serif; font-size: 1rem; margin-bottom: .7rem; }
 .week ul { list-style: none; display: grid; gap: .5rem; }
 .week li { border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; font-size: .9rem; }
+.timeline .t-block { cursor: pointer; transition: .15s ease; }
+.timeline .t-block:hover { border-color: #59c352; transform: translateY(-1px); }
+.timeline .t-block.active { background: var(--accent-dim); border-color: #59c352; }
+.builder-tools { display: grid; gap: .6rem; margin: 1rem 0; }
+.filter-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.fchip { border: 1px solid var(--border); border-radius: 999px; padding: .44rem .82rem; font-size: .82rem; cursor: pointer; background: var(--surface); color: var(--muted); }
+.fchip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
+.builder-layout { display: grid; grid-template-columns: 300px 1fr; gap: .8rem; }
+.exercise-bank { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; max-height: 560px; overflow: auto; }
+.exercise-card { border: 1px solid var(--border); border-radius: 9px; padding: .52rem .6rem; margin-bottom: .45rem; background: #fff; cursor: grab; }
+.exercise-meta { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
+.day-grid { display: grid; gap: .75rem; }
+.day-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; }
+.day-card h4 { font-family: 'Raleway', sans-serif; font-size: .95rem; margin-bottom: .55rem; }
+.slot-row { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: .5rem; margin-bottom: .45rem; }
+.slot-label { font-size: .72rem; font-family: 'Raleway', sans-serif; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.slot-drop { min-height: 40px; border: 1px dashed rgba(7,31,53,.25); border-radius: 8px; padding: .38rem .55rem; background: #fff; display: flex; align-items: center; justify-content: space-between; }
+.slot-drop.dragover { border-color: #59c352; background: var(--accent-dim); }
+.slot-drop .placeholder { color: #9aa4af; font-size: .8rem; }
+.slot-drop .filled { font-size: .86rem; color: var(--text); font-weight: 600; }
+.slot-drop button { border: 0; background: transparent; color: #8f9aa6; cursor: pointer; font-size: .95rem; }
+@media (max-width: 900px) { .builder-layout { grid-template-columns: 1fr; } }
 .input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
 .ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
 .ask-out { margin-top: .8rem; font-size: .9rem; line-height: 1.5; color: var(--text); }
@@ -129,7 +151,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · MICRO + WORKOUT DAY BUILDER (1 WEEK)</div>
-    <h2 class="step-title">Build your actual workout days + ask the planner agent</h2>
+    <h2 class="step-title">Build your actual workout days + drag and drop your exercise cards</h2>
     <p class="step-sub">Pick weekly frequency and we auto-build a split with exercise recommendations based on your gym setup.</p>
     <div class="chips" id="freq-chips">
       <div class="chip" data-v="2">2 days</div>
@@ -139,7 +161,18 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="6">6 days</div>
     </div>
     <div class="rule" id="freq-rule"></div>
-    <div class="week" id="builder-out"></div>
+    <div class="builder-tools">
+      <div class="filter-row" id="movement-filters"></div>
+      <div class="filter-row" id="muscle-filters"></div>
+      <div class="filter-row" id="equipment-filters"></div>
+    </div>
+    <div class="builder-layout">
+      <div class="exercise-bank">
+        <h3>Exercise Bank</h3>
+        <div id="exercise-bank-list"></div>
+      </div>
+      <div class="day-grid" id="builder-out"></div>
+    </div>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
@@ -177,7 +210,13 @@ const state = {
   nutrition: 'Surplus',
   priority: 'Chest',
   gymType: 'Commercial Gym',
-  freq: 3
+  freq: 3,
+  filters: {
+    movement: 'All',
+    muscle: 'All',
+    equipment: 'All'
+  },
+  customDays: {}
 };
 
 const mesoByMacro = {
@@ -231,6 +270,29 @@ const focusMap = {
   'Full Body': ['back_squat', 'bench', 'barbell_row', 'rdl', 'db_shoulder_press', 'lat_pulldown']
 };
 
+const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
+
+const movementTypeById = {
+  back_squat: 'Compound', front_squat: 'Compound', deadlift: 'Compound', sumo_deadlift: 'Compound',
+  bench: 'Compound', ohp: 'Compound', power_clean: 'Compound', hang_clean: 'Compound', push_press: 'Compound',
+  rdl: 'Compound', incline_bench: 'Compound', pause_bench: 'Compound', hip_thrust: 'Compound',
+  db_bench: 'Compound', db_shoulder_press: 'Compound', db_row: 'Compound', db_rdl: 'Compound',
+  leg_press: 'Machine', hack_squat: 'Machine', chest_press_machine: 'Machine', lat_pulldown: 'Machine',
+  pullup_weighted: 'Compound', dip_weighted: 'Compound', chinup_weighted: 'Compound', farmers_carry: 'Compound',
+  barbell_row: 'Compound', trap_bar_deadlift: 'Compound', split_squat: 'Compound',
+  leg_extension: 'Isolated', hamstring_curl: 'Isolated', calf_raise: 'Isolated', biceps_curl: 'Isolated', triceps_pushdown: 'Isolated', cable_row: 'Machine'
+};
+
+const muscleById = {
+  back_squat: 'Legs', front_squat: 'Legs', deadlift: 'Back', sumo_deadlift: 'Legs', bench: 'Chest', ohp: 'Shoulders',
+  power_clean: 'Full Body', hang_clean: 'Full Body', push_press: 'Shoulders', rdl: 'Legs', incline_bench: 'Chest',
+  pause_bench: 'Chest', hip_thrust: 'Glutes', db_bench: 'Chest', db_shoulder_press: 'Shoulders', db_row: 'Back',
+  db_rdl: 'Legs', leg_press: 'Legs', hack_squat: 'Legs', chest_press_machine: 'Chest', lat_pulldown: 'Back',
+  pullup_weighted: 'Back', dip_weighted: 'Chest', chinup_weighted: 'Back', farmers_carry: 'Full Body',
+  barbell_row: 'Back', trap_bar_deadlift: 'Legs', split_squat: 'Legs', leg_extension: 'Legs', hamstring_curl: 'Legs',
+  calf_raise: 'Calves', biceps_curl: 'Biceps', triceps_pushdown: 'Triceps', cable_row: 'Back'
+};
+
 function oneChip(groupId, key, isNum = false) {
   document.getElementById(groupId).addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
@@ -253,7 +315,13 @@ function oneChip(groupId, key, isNum = false) {
 
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
-  wrap.innerHTML = STEP_TIMING.map((x, i) => `<div class="t-block"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x}</div></div>`).join('');
+  wrap.innerHTML = STEP_TIMING.map((x, i) => `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x}</div></button>`).join('');
+  wrap.addEventListener('click', (e) => {
+    const btn = e.target.closest('.t-block');
+    if (!btn) return;
+    state.step = parseInt(btn.dataset.step, 10);
+    showStep(state.step);
+  });
 }
 
 function buildMesoChips() {
@@ -317,14 +385,114 @@ function getDayPlan(focus) {
   return list.map((e) => e.name);
 }
 
-function buildWorkoutBuilder() {
-  const plan = splitByFreq[state.freq].map((line, i) => {
+function normalizeType(exercise) {
+  return movementTypeById[exercise.id] || (exercise.category === 'Machines' ? 'Machine' : 'Compound');
+}
+
+function getMuscle(exercise) {
+  return muscleById[exercise.id] || 'Full Body';
+}
+
+function getFilteredExercises() {
+  const allowed = allowedCategories[state.gymType];
+  return (window.CC_EXERCISES || []).filter((e) => {
+    const movement = normalizeType(e);
+    const muscle = getMuscle(e);
+    const movementOk = state.filters.movement === 'All' || state.filters.movement === movement;
+    const muscleOk = state.filters.muscle === 'All' || state.filters.muscle === muscle;
+    const equipmentOk = state.filters.equipment === 'All' || state.filters.equipment === e.category;
+    return allowed.includes(e.category) && movementOk && muscleOk && equipmentOk;
+  });
+}
+
+function buildFilterRow(containerId, key, options) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = options.map((option) => `<button class="fchip${state.filters[key] === option ? ' on' : ''}" data-key="${key}" data-v="${option}">${option}</button>`).join('');
+  container.onclick = (e) => {
+    const chip = e.target.closest('.fchip');
+    if (!chip) return;
+    state.filters[chip.dataset.key] = chip.dataset.v;
+    buildWorkoutBuilder();
+  };
+}
+
+function ensureDayPlan() {
+  const split = splitByFreq[state.freq];
+  if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    if (!state.customDays[state.freq][dayKey]) {
+      const focus = extractFocusName(line);
+      const seeds = getDayPlan(focus);
+      state.customDays[state.freq][dayKey] = slotPattern.map((slot, idx) => ({
+        slot,
+        name: seeds[idx] || '',
+        id: ''
+      }));
+    }
+  });
+}
+
+function renderExerciseBank() {
+  const bank = document.getElementById('exercise-bank-list');
+  const list = getFilteredExercises().slice(0, 80);
+  bank.innerHTML = list.map((e) => `<div class="exercise-card" draggable="true" data-id="${e.id}" data-name="${e.name}">
+      <div>${e.name}</div>
+      <div class="exercise-meta">${getMuscle(e)} • ${e.category} • ${normalizeType(e)}</div>
+    </div>`).join('') || '<div class="exercise-meta">No exercises match your filters.</div>';
+  bank.querySelectorAll('.exercise-card').forEach((card) => {
+    card.addEventListener('dragstart', () => {
+      window.__dragExercise = { id: card.dataset.id, name: card.dataset.name };
+    });
+  });
+}
+
+function renderDayCards() {
+  const split = splitByFreq[state.freq];
+  const dayState = state.customDays[state.freq];
+  const out = document.getElementById('builder-out');
+  out.innerHTML = split.map((line, i) => {
     const namedLine = line.replace('Priority First', `${state.priority} Priority`);
-    const focus = extractFocusName(line);
-    const exercises = getDayPlan(focus).map((x) => `<li>${x}</li>`).join('');
-    return `<li><strong>Day ${i + 1} | ${namedLine}</strong><ul>${exercises}</ul></li>`;
+    const dayKey = `d${i + 1}`;
+    const rows = dayState[dayKey].map((item, rowIndex) => `<div class="slot-row">
+      <div class="slot-label">${item.slot}</div>
+      <div class="slot-drop" data-day="${dayKey}" data-row="${rowIndex}">
+        ${item.name ? `<span class="filled">${item.name}</span><button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>` : '<span class="placeholder">Drop card here</span>'}
+      </div>
+    </div>`).join('');
+    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine}</h4>${rows}</div>`;
   }).join('');
-  document.getElementById('builder-out').innerHTML = `<h3>Auto-built days (${state.gymType})</h3><ul>${plan}</ul>`;
+  out.querySelectorAll('.slot-drop').forEach((slot) => {
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('dragover'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('dragover');
+      if (!window.__dragExercise) return;
+      const { day, row } = slot.dataset;
+      state.customDays[state.freq][day][parseInt(row, 10)].name = window.__dragExercise.name;
+      state.customDays[state.freq][day][parseInt(row, 10)].id = window.__dragExercise.id;
+      renderDayCards();
+      if (state.step === 7) buildSummary();
+    });
+  });
+  out.querySelectorAll('[data-clear]').forEach((btn) => {
+    btn.onclick = () => {
+      const [day, row] = btn.dataset.clear.split(':');
+      state.customDays[state.freq][day][parseInt(row, 10)].name = '';
+      state.customDays[state.freq][day][parseInt(row, 10)].id = '';
+      renderDayCards();
+    };
+  });
+}
+
+function buildWorkoutBuilder() {
+  buildFilterRow('movement-filters', 'movement', ['All', 'Compound', 'Machine', 'Isolated']);
+  buildFilterRow('muscle-filters', 'muscle', ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']);
+  buildFilterRow('equipment-filters', 'equipment', ['All', ...allowedCategories[state.gymType]]);
+  ensureDayPlan();
+  renderExerciseBank();
+  renderDayCards();
 }
 
 function answerAgent(question) {
@@ -347,7 +515,14 @@ function answerAgent(question) {
 }
 
 function buildSummary() {
-  const split = splitByFreq[state.freq].map((line, i) => `<li>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</li>`).join('');
+  ensureDayPlan();
+  const split = splitByFreq[state.freq].map((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const rows = state.customDays[state.freq][dayKey]
+      .map((slot) => `<li>${slot.slot}: ${slot.name || 'Not set'}</li>`)
+      .join('');
+    return `<li><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul>${rows}</ul></li>`;
+  }).join('');
   document.getElementById('summary-out').innerHTML = `
     <div class="summary-card">
       <div class="sum-row"><span class="sum-label">MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
@@ -377,6 +552,7 @@ function renderDots() {
 function showStep(step) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`s${step}`).classList.add('active');
+  document.querySelectorAll('.timeline .t-block').forEach((x, idx) => x.classList.toggle('active', idx + 1 === step));
   document.getElementById('step-counter').textContent = `STEP ${step} OF ${TOTAL_STEPS}`;
   document.getElementById('back-btn').disabled = step === 1;
   document.getElementById('next-btn').textContent = step === TOTAL_STEPS ? 'Done' : 'Next';
