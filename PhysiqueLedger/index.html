@@ -395,6 +395,12 @@
       }
 
       .muted { opacity: 0.75; }
+      .export-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin: 0.6rem 0 0.35rem;
+      }
 
       .admin-panel {
         margin-top: 1rem;
@@ -445,6 +451,29 @@
         .controls { grid-template-columns: 1fr; }
         .rings { grid-template-columns: 1fr; }
       }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+        body * {
+          visibility: hidden;
+        }
+        #planExportArea,
+        #planExportArea * {
+          visibility: visible;
+        }
+        #planExportArea {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          padding: 1rem;
+          background: #fff;
+        }
+        #planExportArea .no-print {
+          display: none !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -491,45 +520,51 @@
         </section>
 
         <section class="panel tab-panel" data-panel="plan">
-          <div class="panel-head center-head">
-            <h2>Meal Plan</h2>
-            <p class="muted">Add recipes and adjust servings. Rings show progress toward your targets.</p>
-          </div>
-
-          <div class="plan-wrap">
-            <div class="row" style="align-items:center; margin-bottom:.45rem;">
-              <h3>Daily Targets</h3>
-              <button id="importMacroTargets" type="button" class="alt">Import Macro Targets</button>
+          <div id="planExportArea">
+            <div class="panel-head center-head">
+              <h2>Meal Plan</h2>
+              <p class="muted">Add recipes and adjust servings. Rings show progress toward your targets.</p>
             </div>
-            <details class="meal-group" style="margin-top:0;">
-              <summary>Work Week Archive</summary>
-              <div class="meal-group-body" style="padding-top:.7rem;">
-                <div class="controls" style="padding:0; grid-template-columns: 1fr 1fr auto;">
-                  <select id="archiveYear"></select>
-                  <select id="archiveWeek"></select>
-                  <button id="loadArchiveWeek" type="button">Load</button>
-                </div>
+
+            <div class="plan-wrap">
+              <div class="export-actions no-print">
+                <button id="printPlan" type="button" class="alt">Print</button>
+                <button id="savePlanPng" type="button" class="alt">Save PNG</button>
               </div>
-            </details>
-            <div class="day-pills" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
-            <p id="importStatus" class="muted" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
-            <div class="targets">
-              <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
-              <label>Protein (g)<input id="targetProtein" type="number" min="0" value="180" /></label>
-              <label>Carbs (g)<input id="targetCarbs" type="number" min="0" value="220" /></label>
-              <label>Fat (g)<input id="targetFat" type="number" min="0" value="70" /></label>
-            </div>
+              <div class="row" style="align-items:center; margin-bottom:.45rem;">
+                <h3>Daily Targets</h3>
+                <button id="importMacroTargets" type="button" class="alt no-print">Import Macro Targets</button>
+              </div>
+              <details class="meal-group no-print" style="margin-top:0;">
+                <summary>Work Week Archive</summary>
+                <div class="meal-group-body" style="padding-top:.7rem;">
+                  <div class="controls" style="padding:0; grid-template-columns: 1fr 1fr auto;">
+                    <select id="archiveYear"></select>
+                    <select id="archiveWeek"></select>
+                    <button id="loadArchiveWeek" type="button">Load</button>
+                  </div>
+                </div>
+              </details>
+              <div class="day-pills no-print" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
+              <p id="importStatus" class="muted no-print" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
+              <div class="targets">
+                <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
+                <label>Protein (g)<input id="targetProtein" type="number" min="0" value="180" /></label>
+                <label>Carbs (g)<input id="targetCarbs" type="number" min="0" value="220" /></label>
+                <label>Fat (g)<input id="targetFat" type="number" min="0" value="70" /></label>
+              </div>
 
-            <div id="rings" class="rings"></div>
+              <div id="rings" class="rings"></div>
 
-            <h3 id="selectedMealsTitle" style="text-align:center; margin-top:1rem;">Selected Meals</h3>
-            <div class="row" style="margin-top:.45rem; justify-content:flex-end;">
-              <button id="clearDay" class="alt" type="button">Clear day</button>
+              <h3 id="selectedMealsTitle" style="text-align:center; margin-top:1rem;">Selected Meals</h3>
+              <div class="row no-print" style="margin-top:.45rem; justify-content:flex-end;">
+                <button id="clearDay" class="alt" type="button">Clear day</button>
+              </div>
+              <div id="mealItems" class="meal-items"></div>
             </div>
-            <div id="mealItems" class="meal-items"></div>
           </div>
 
-          <div style="padding:0 1.1rem 1.1rem;">
+          <div class="no-print" style="padding:0 1.1rem 1.1rem;">
             <a href="../apply-for-coaching/index.html" style="display:inline-flex; border-radius:12px; background:var(--accent); color:var(--text); text-decoration:none; font-weight:800; padding:0.65rem 0.9rem;">Want this dialed in? Apply for coaching →</a>
           </div>
         </section>
@@ -634,6 +669,9 @@
       const dayPills = document.getElementById("dayPills");
       const selectedMealsTitle = document.getElementById("selectedMealsTitle");
       const importMacroTargetsBtn = document.getElementById("importMacroTargets");
+      const printPlanBtn = document.getElementById("printPlan");
+      const savePlanPngBtn = document.getElementById("savePlanPng");
+      const planExportArea = document.getElementById("planExportArea");
       const importStatus = document.getElementById("importStatus");
       const prepDaysInput = document.getElementById("prepDays");
       const grocerySummary = document.getElementById("grocerySummary");
@@ -1269,6 +1307,71 @@
         });
       }
 
+      function cloneNodeWithComputedStyles(node) {
+        const clone = node.cloneNode(false);
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const sourceStyle = window.getComputedStyle(node);
+          const targetStyle = Array.from(sourceStyle).reduce((styleText, property) => (
+            `${styleText}${property}:${sourceStyle.getPropertyValue(property)};`
+          ), "");
+          clone.setAttribute("style", targetStyle);
+        }
+        node.childNodes.forEach((child) => {
+          clone.appendChild(cloneNodeWithComputedStyles(child));
+        });
+        return clone;
+      }
+
+      async function savePlanAsPng() {
+        try {
+          const exportClone = cloneNodeWithComputedStyles(planExportArea);
+          exportClone.querySelectorAll(".no-print").forEach((element) => element.remove());
+          const rect = planExportArea.getBoundingClientRect();
+          const width = Math.max(1, Math.ceil(rect.width));
+          const height = Math.max(1, Math.ceil(planExportArea.scrollHeight));
+          const serializer = new XMLSerializer();
+          const xhtml = serializer.serializeToString(exportClone);
+          const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+              <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="background:#ffffff; width:${width}px; min-height:${height}px;">
+                  ${xhtml}
+                </div>
+              </foreignObject>
+            </svg>
+          `;
+
+          const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const image = new Image();
+          image.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, width, height);
+            context.drawImage(image, 0, 0);
+            URL.revokeObjectURL(url);
+            canvas.toBlob((pngBlob) => {
+              if (!pngBlob) return;
+              const pngUrl = URL.createObjectURL(pngBlob);
+              const link = document.createElement("a");
+              link.href = pngUrl;
+              link.download = `physique-ledger-${new Date().toISOString().slice(0, 10)}.png`;
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              URL.revokeObjectURL(pngUrl);
+            }, "image/png");
+          };
+          image.src = url;
+        } catch (error) {
+          alert("Could not save PNG on this device/browser. Try Print instead.");
+          console.error("PNG export failed", error);
+        }
+      }
+
       searchInput.addEventListener("input", renderRecipes);
       categoryFilter.addEventListener("change", renderRecipes);
       cuisineFilter.addEventListener("change", renderRecipes);
@@ -1279,6 +1382,14 @@
         renderGrocery();
       });
       importMacroTargetsBtn.addEventListener("click", importMacroTargets);
+      printPlanBtn.addEventListener("click", () => {
+        setTab("plan");
+        window.print();
+      });
+      savePlanPngBtn.addEventListener("click", async () => {
+        setTab("plan");
+        await savePlanAsPng();
+      });
       goToPlanBtn.addEventListener("click", () => setTab("plan"));
       prepDaysInput.addEventListener("change", () => {
         prepDays = Number(prepDaysInput.value || 1);
