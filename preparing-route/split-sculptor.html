@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+<script src="../exercise-database.js"></script>
 <style>
 :root {
   --bg: #f5f5f7;
@@ -20,38 +21,38 @@
   --radius: 12px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Muli', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 2.5rem 1.25rem 3rem;
-}
-.app { max-width: 940px; margin: 0 auto; }
+body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1.25rem 3rem; }
+.app { max-width: 980px; margin: 0 auto; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
 .logo { font-family: 'Museo Moderno', cursive; font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; }
 .step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; }
-.progress-track { height: 3px; border-radius: 999px; background: var(--surface2); margin-bottom: 2rem; overflow: hidden; }
-.progress-fill { height: 100%; width: 16%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
+.progress-track { height: 3px; border-radius: 999px; background: var(--surface2); margin-bottom: 1.2rem; overflow: hidden; }
+.progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
+.timeline { display: grid; grid-template-columns: repeat(7, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
+.t-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
+.t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.t-time { font-size: .78rem; font-weight: 700; margin-top: .15rem; }
 .screen { display: none; }
 .screen.active { display: block; }
 .step-eyebrow { font-family: 'Raleway', sans-serif; font-size: 11px; letter-spacing: .1em; font-weight: 700; color: var(--muted); margin-bottom: .55rem; }
-.step-title { font-family: 'Raleway', sans-serif; font-size: clamp(1.75rem, 4vw, 2.25rem); line-height: 1.2; margin-bottom: .45rem; }
-.step-sub { color: var(--text); max-width: 680px; line-height: 1.7; margin-bottom: 1.2rem; }
+.step-title { font-family: 'Raleway', sans-serif; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.2; margin-bottom: .45rem; }
+.step-sub { color: var(--text); max-width: 780px; line-height: 1.6; margin-bottom: 1.2rem; }
 .chips { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
 .chip { border: 1px solid var(--border); border-radius: 999px; padding: .52rem .95rem; font-size: .9rem; cursor: pointer; background: var(--surface); color: var(--muted); transition: .15s; }
 .chip:hover { border-color: #59c352; color: var(--text); }
 .chip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
 .rule { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid #59c352; border-radius: 0 var(--radius) var(--radius) 0; padding: .75rem .9rem; color: var(--muted); font-size: .86rem; line-height: 1.6; margin-bottom: 1rem; }
-.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; margin-bottom: .9rem; }
+.summary-card,.week,.agent { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; margin-bottom: .9rem; }
 .sum-row { display: flex; justify-content: space-between; gap: 1rem; padding: .58rem 0; border-bottom: 1px solid rgba(7,31,53,0.08); font-size: .92rem; }
 .sum-row:last-child { border-bottom: 0; }
 .sum-label { font-family: 'Raleway', sans-serif; font-size: .7rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
 .sum-val { font-weight: 700; text-align: right; }
-.week { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; }
-.week h3 { font-family: 'Raleway', sans-serif; font-size: 1rem; margin-bottom: .7rem; }
+.week h3,.agent h3 { font-family: 'Raleway', sans-serif; font-size: 1rem; margin-bottom: .7rem; }
 .week ul { list-style: none; display: grid; gap: .5rem; }
 .week li { border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; font-size: .9rem; }
+.input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
+.ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
+.ask-out { margin-top: .8rem; font-size: .9rem; line-height: 1.5; color: var(--text); }
 .nav { display: flex; align-items: center; gap: .55rem; margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid rgba(7,31,53,0.1); }
 .btn { font-family: 'Muli', sans-serif; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); padding: .55rem 1rem; cursor: pointer; color: var(--muted); }
 .btn:disabled { opacity: .35; pointer-events: none; }
@@ -60,16 +61,19 @@ body {
 .dot { width: 6px; height: 6px; border-radius: 50%; background: #9ea8b1; }
 .dot.cur { width: 18px; border-radius: 999px; background: var(--accent); }
 .dot.done { background: #59c352; }
-@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .sum-row { flex-direction: column; } }
+@media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="logo">The Split Sculptor</div>
-    <div class="step-counter" id="step-counter">STEP 1 OF 6</div>
+    <div class="logo">Split Sculptor</div>
+    <div class="step-counter" id="step-counter">STEP 1 OF 7</div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+
+  <div class="timeline" id="timeline"></div>
 
   <div class="screen active" id="s1">
     <div class="step-eyebrow">STEP 1 · MACROCYCLE (3 MONTHS)</div>
@@ -102,7 +106,7 @@ body {
   <div class="screen" id="s4">
     <div class="step-eyebrow">STEP 4 · PRIORITY MUSCLE (1 MONTH)</div>
     <h2 class="step-title">Which muscle group is your visual priority?</h2>
-    <p class="step-sub">Your chosen area should appear first each week, or up to two times weekly if you train 4+ days.</p>
+    <p class="step-sub">Your chosen area appears first each week.</p>
     <div class="chips" id="priority-chips">
       <div class="chip on" data-v="Chest">Chest</div>
       <div class="chip" data-v="Back">Back</div>
@@ -112,9 +116,21 @@ body {
   </div>
 
   <div class="screen" id="s5">
-    <div class="step-eyebrow">STEP 5 · MICROCYCLE (1 WEEK)</div>
-    <h2 class="step-title">How many days can you realistically train?</h2>
-    <p class="step-sub">Be honest here: realistic consistency beats perfect plans.</p>
+    <div class="step-eyebrow">STEP 5 · TRAINING ENVIRONMENT (NOW)</div>
+    <h2 class="step-title">Where are you training most often?</h2>
+    <p class="step-sub">This helps us infer equipment and tailor your day builder.</p>
+    <div class="chips" id="gym-chips">
+      <div class="chip on" data-v="Commercial Gym">Commercial Gym</div>
+      <div class="chip" data-v="Apartment Gym">Apartment Gym</div>
+      <div class="chip" data-v="Home Gym">Home Gym</div>
+    </div>
+    <div class="rule" id="gym-rule"></div>
+  </div>
+
+  <div class="screen" id="s6">
+    <div class="step-eyebrow">STEP 6 · MICRO + WORKOUT DAY BUILDER (1 WEEK)</div>
+    <h2 class="step-title">Build your actual workout days + ask the planner agent</h2>
+    <p class="step-sub">Pick weekly frequency and we auto-build a split with exercise recommendations based on your gym setup.</p>
     <div class="chips" id="freq-chips">
       <div class="chip" data-v="2">2 days</div>
       <div class="chip on" data-v="3">3 days</div>
@@ -123,11 +139,20 @@ body {
       <div class="chip" data-v="6">6 days</div>
     </div>
     <div class="rule" id="freq-rule"></div>
+    <div class="week" id="builder-out"></div>
+    <div class="agent">
+      <h3>Split Sculptor Agent</h3>
+      <div class="input-grid">
+        <input id="agent-q" class="ask" type="text" placeholder="Ask: Can you swap a machine move? What if I only have 30 minutes?" />
+        <button class="btn btn-p" id="agent-btn">Ask</button>
+      </div>
+      <div class="ask-out" id="agent-out">Ask a question and I’ll suggest swaps, progressions, and time-efficient adjustments.</div>
+    </div>
   </div>
 
-  <div class="screen" id="s6">
-    <div class="step-eyebrow">STEP 6 · SPLIT SCULPTOR OUTPUT</div>
-    <h2 class="step-title">Your macro + meso + nutrition + priority + micro plan</h2>
+  <div class="screen" id="s7">
+    <div class="step-eyebrow">STEP 7 · SPLIT SCULPTOR SUMMARY</div>
+    <h2 class="step-title">Split Sculptor</h2>
     <p class="step-sub">Use this as your current 4-week execution block, then reassess and repeat.</p>
     <div id="summary-out"></div>
   </div>
@@ -140,13 +165,18 @@ body {
 </div>
 
 <script>
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
+const STEP_TIMING = [
+  'Macro · 3 months', 'Meso · 4 weeks', 'Nutrition · 3 months', 'Priority · 1 month',
+  'Environment · now', 'Micro + day build · 1 week', 'Summary · current block'
+];
 const state = {
   step: 1,
   macro: 'Build Visible Muscle',
   meso: 'Hypertrophy',
   nutrition: 'Surplus',
   priority: 'Chest',
+  gymType: 'Commercial Gym',
   freq: 3
 };
 
@@ -165,7 +195,7 @@ const nutritionByMacro = {
 };
 
 const splitByFreq = {
-  2: ['Full Body', 'Full Body'],
+  2: ['Full Body (Priority First)', 'Full Body'],
   3: ['Push (Priority First)', 'Pull', 'Legs'],
   4: ['Upper (Priority First)', 'Lower', 'Upper', 'Lower'],
   5: ['Push (Priority First)', 'Pull', 'Legs', 'Upper', 'Lower'],
@@ -173,11 +203,32 @@ const splitByFreq = {
 };
 
 const freqRule = {
-  2: '2 days → Full Body',
-  3: '3 days → Push / Pull / Legs',
-  4: '4 days → Upper / Lower / Upper / Lower',
-  5: '5 days → Push / Pull / Legs / Upper / Lower',
-  6: '6 days → Push / Pull / Legs / Push / Pull / Legs'
+  2: '2 days → Full Body x2.',
+  3: '3 days → Push / Pull / Legs.',
+  4: '4 days → Upper / Lower / Upper / Lower.',
+  5: '5 days → Push / Pull / Legs / Upper / Lower.',
+  6: '6 days → Push / Pull / Legs repeated.'
+};
+
+const gymRules = {
+  'Commercial Gym': 'Commercial gym assumes broad access (barbell, dumbbell, machines, cables).',
+  'Apartment Gym': 'Apartment gym prioritizes dumbbells, cables/basic machines, and bodyweight movements.',
+  'Home Gym': 'Home gym prioritizes dumbbell + barbell + bodyweight with minimal machine dependence.'
+};
+
+const allowedCategories = {
+  'Commercial Gym': ['Barbell', 'Dumbbell', 'Machines', 'Body Weight', 'Carries'],
+  'Apartment Gym': ['Dumbbell', 'Machines', 'Body Weight', 'Carries'],
+  'Home Gym': ['Barbell', 'Dumbbell', 'Body Weight', 'Carries']
+};
+
+const focusMap = {
+  Push: ['bench', 'incline', 'chest_press_machine', 'db_bench', 'ohp', 'db_shoulder_press', 'dip_weighted', 'triceps_pushdown'],
+  Pull: ['deadlift', 'barbell_row', 'db_row', 'lat_pulldown', 'cable_row', 'pullup_weighted', 'chinup_weighted', 'biceps_curl'],
+  Legs: ['back_squat', 'front_squat', 'trap_bar_deadlift', 'split_squat', 'rdl', 'leg_press', 'hack_squat', 'leg_extension', 'hamstring_curl', 'calf_raise'],
+  Upper: ['bench', 'barbell_row', 'ohp', 'lat_pulldown', 'db_bench', 'db_row'],
+  Lower: ['back_squat', 'deadlift', 'rdl', 'split_squat', 'leg_press', 'hamstring_curl'],
+  'Full Body': ['back_squat', 'bench', 'barbell_row', 'rdl', 'db_shoulder_press', 'lat_pulldown']
 };
 
 function oneChip(groupId, key, isNum = false) {
@@ -194,8 +245,15 @@ function oneChip(groupId, key, isNum = false) {
       buildNutritionChips();
     }
     if (key === 'freq') buildFrequencyRule();
-    if (state.step === 6) buildSummary();
+    if (key === 'gymType') buildGymRule();
+    if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
+    if (state.step === 7) buildSummary();
   });
+}
+
+function buildTimeline() {
+  const wrap = document.getElementById('timeline');
+  wrap.innerHTML = STEP_TIMING.map((x, i) => `<div class="t-block"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x}</div></div>`).join('');
 }
 
 function buildMesoChips() {
@@ -221,7 +279,7 @@ function buildNutritionChips() {
     chip.textContent = option;
     wrap.appendChild(chip);
   });
-  const perfNote = state.nutrition === 'Maintenance' ? ' Increase carbs before lifting/training.' : '';
+  const perfNote = state.nutrition === 'Maintenance' ? ' Increase carbs before training.' : '';
   document.getElementById('nutrition-rule').textContent = `${state.macro} → recommended nutrition: ${nutritionByMacro[state.macro]}.${perfNote}`;
 }
 
@@ -229,19 +287,79 @@ function buildFrequencyRule() {
   document.getElementById('freq-rule').textContent = freqRule[state.freq];
 }
 
+function buildGymRule() {
+  document.getElementById('gym-rule').textContent = gymRules[state.gymType];
+}
+
+function extractFocusName(line) {
+  if (line.startsWith('Push')) return 'Push';
+  if (line.startsWith('Pull')) return 'Pull';
+  if (line.startsWith('Legs')) return 'Legs';
+  if (line.startsWith('Upper')) return 'Upper';
+  if (line.startsWith('Lower')) return 'Lower';
+  return 'Full Body';
+}
+
+function getExercisePool(focus) {
+  const allowed = allowedCategories[state.gymType];
+  const ids = focusMap[focus] || focusMap['Full Body'];
+  const pool = (window.CC_EXERCISES || []).filter((e) => ids.includes(e.id) && allowed.includes(e.category));
+  return pool.length ? pool : (window.CC_EXERCISES || []).filter((e) => allowed.includes(e.category)).slice(0, 4);
+}
+
+function getDayPlan(focus) {
+  const priorityNeed = state.priority === 'Chest' ? ['bench', 'db_bench'] :
+    state.priority === 'Back' ? ['barbell_row', 'lat_pulldown', 'db_row'] :
+    state.priority === 'Legs' ? ['back_squat', 'split_squat', 'leg_press'] : ['ohp', 'db_shoulder_press', 'push_press'];
+  const pool = getExercisePool(focus);
+  const prioritized = pool.filter((e) => priorityNeed.includes(e.id));
+  const list = [...prioritized, ...pool].slice(0, 4);
+  return list.map((e) => e.name);
+}
+
+function buildWorkoutBuilder() {
+  const plan = splitByFreq[state.freq].map((line, i) => {
+    const namedLine = line.replace('Priority First', `${state.priority} Priority`);
+    const focus = extractFocusName(line);
+    const exercises = getDayPlan(focus).map((x) => `<li>${x}</li>`).join('');
+    return `<li><strong>Day ${i + 1} | ${namedLine}</strong><ul>${exercises}</ul></li>`;
+  }).join('');
+  document.getElementById('builder-out').innerHTML = `<h3>Auto-built days (${state.gymType})</h3><ul>${plan}</ul>`;
+}
+
+function answerAgent(question) {
+  const q = question.toLowerCase();
+  if (!q.trim()) return 'Try asking: "Can I swap machine lifts for home gym options?"';
+  const firstDay = getDayPlan(extractFocusName(splitByFreq[state.freq][0]));
+  if (q.includes('swap') || q.includes('machine') || q.includes('home')) {
+    return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
+  }
+  if (q.includes('30') || q.includes('time') || q.includes('quick')) {
+    return 'Run 3 lifts per day: 1 priority movement, 1 secondary compound, 1 isolation finisher. Keep rests 60–90s for accessory work.';
+  }
+  if (q.includes('progress') || q.includes('overload') || q.includes('heavier')) {
+    return 'Progression target: add 1 rep per set weekly until top of range, then increase load 2.5–5% and repeat.';
+  }
+  if (q.includes('beginner') || q.includes('new')) {
+    return 'Start with 2 working sets per lift and keep 2 reps in reserve. Add a 3rd set after week 2 if recovery is solid.';
+  }
+  return `Recommendation: stay with the ${state.freq}-day plan, keep ${state.priority} first, and choose from ${state.gymType} options in your builder.`;
+}
+
 function buildSummary() {
-  const plan = splitByFreq[state.freq].map((line, i) => `<li>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</li>`).join('');
+  const split = splitByFreq[state.freq].map((line, i) => `<li>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</li>`).join('');
   document.getElementById('summary-out').innerHTML = `
     <div class="summary-card">
-      <div class="sum-row"><span class="sum-label">MACROCYCLE</span><span class="sum-val">${state.macro}</span></div>
-      <div class="sum-row"><span class="sum-label">MESOCYCLE</span><span class="sum-val">${state.meso}</span></div>
-      <div class="sum-row"><span class="sum-label">NUTRITION</span><span class="sum-val">${state.nutrition}</span></div>
-      <div class="sum-row"><span class="sum-label">PRIORITY</span><span class="sum-val">${state.priority}</span></div>
-      <div class="sum-row"><span class="sum-label">MICROCYCLE</span><span class="sum-val">${state.freq} training days / week</span></div>
+      <div class="sum-row"><span class="sum-label">MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
+      <div class="sum-row"><span class="sum-label">MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
+      <div class="sum-row"><span class="sum-label">NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
+      <div class="sum-row"><span class="sum-label">PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
+      <div class="sum-row"><span class="sum-label">GYM TYPE</span><span class="sum-val">${state.gymType}</span></div>
+      <div class="sum-row"><span class="sum-label">MICROCYCLE (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
     </div>
     <div class="week">
       <h3>Split</h3>
-      <ul>${plan}</ul>
+      <ul>${split}</ul>
     </div>
   `;
 }
@@ -262,21 +380,34 @@ function showStep(step) {
   document.getElementById('step-counter').textContent = `STEP ${step} OF ${TOTAL_STEPS}`;
   document.getElementById('back-btn').disabled = step === 1;
   document.getElementById('next-btn').textContent = step === TOTAL_STEPS ? 'Done' : 'Next';
-  document.getElementById('prog').style.width = `${16 + ((step - 1) / (TOTAL_STEPS - 1)) * 84}%`;
+  document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
-  if (step === 6) buildSummary();
+  if (step === 7) buildSummary();
 }
 
 oneChip('macro-chips', 'macro');
 oneChip('meso-chips', 'meso');
 oneChip('nutrition-chips', 'nutrition');
 oneChip('priority-chips', 'priority');
+oneChip('gym-chips', 'gymType');
 oneChip('freq-chips', 'freq', true);
 
+buildTimeline();
 buildMesoChips();
 buildNutritionChips();
 buildFrequencyRule();
+buildGymRule();
+buildWorkoutBuilder();
 
+document.getElementById('agent-btn').addEventListener('click', () => {
+  document.getElementById('agent-out').textContent = answerAgent(document.getElementById('agent-q').value);
+});
+document.getElementById('agent-q').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('agent-btn').click();
+  }
+});
 
 document.getElementById('next-btn').addEventListener('click', () => {
   if (state.step < TOTAL_STEPS) {
