@@ -300,8 +300,10 @@ h3 {
 .cc-title-subline {
   margin-top: 0.65rem;
   font-family: var(--cc-heading-font);
-  font-size: clamp(1.05rem, 2.4vw, 1.5rem);
-  font-weight: 700;
+  font-size: clamp(0.92rem, 1.8vw, 1.1rem);
+  font-style: italic;
+  font-weight: 600;
+  opacity: 0.88;
 }
 
 .cc-page-title {
@@ -309,6 +311,20 @@ h3 {
   text-align: center;
   font-family: var(--cc-heading-font);
   font-size: clamp(1.4rem, 3.1vw, 2rem);
+  font-weight: 800;
+}
+
+.cc-page-login-tile {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(245, 245, 247, 0.14);
+  border: 1px solid rgba(245, 245, 247, 0.34);
+  color: #f5f5f7;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 

@@ -10,6 +10,7 @@
 <script src="../exercise-matrix/data.js"></script>
 <script src="../shared-admin.js" defer></script>
 <script src="../shared-title-block.js" defer></script>
+<script src="../shared-session.js"></script>
 <link rel="stylesheet" href="../shared.css" />
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -121,18 +122,21 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 <div class="page-shell" data-admin-edit-root>
   <header class="cc-title-block">
     <div class="cc-title-block-inner">
+      <p id="pageLoginStatus" class="cc-page-login-tile">Not Logged In</p>
       <div class="cc-title-block-top">
         <div class="cc-title-brand">
           <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
           <h1 class="cc-title-name">Chasing Change</h1>
         </div>
+      </div>
+      <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
+      <div class="cc-page-title">Split Sculptor</div>
+      <div style="margin-top:.75rem;text-align:center;">
         <a href="../index.html" class="cc-title-home" aria-label="Go to Start Line home">
           <span class="cc-title-home-label">Start Line</span>
           <span class="cc-title-home-sub">(Home)</span>
         </a>
       </div>
-      <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
-      <div class="cc-page-title">Split Sculptor</div>
       <div style="text-align:center;">
         <a href="https://tally.so/r/w5JXKE" data-coaching-popup-url="https://tally.so/r/w5JXKE" class="cc-title-coaching">
           Want this dialed in? Apply for coaching
@@ -741,6 +745,12 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
 });
 
 showStep(1);
+
+const pageLoginStatus = document.getElementById('pageLoginStatus');
+if (pageLoginStatus && window.ChasingChangeSession?.getSessionDisplayName) {
+  const name = window.ChasingChangeSession.getSessionDisplayName();
+  pageLoginStatus.textContent = name ? `Welcome Back To The Race, ${name}` : 'Not Logged In';
+}
 </script>
 </body>
 </html>
