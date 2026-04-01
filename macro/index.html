@@ -75,8 +75,7 @@
           <!-- Header -->
           <header class="mb-4 sm:mb-6 cc-title-block">
             <div class="cc-title-block-inner">
-              <p id="pageLoginStatus" class="cc-page-login-tile">Not Logged In</p>
-              <div class="relative">
+                            <div class="relative">
                 <div class="cc-title-block-top">
                   <div class="cc-title-brand">
                   <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
@@ -87,8 +86,7 @@
                 <p class="cc-page-title">Macro Calculator</p>
                 <div class="mt-3 flex items-center justify-center">
                   <a href="../index.html" class="cc-title-home">
-                    <span class="cc-title-home-label">Start Line</span>
-                    <span class="cc-title-home-sub">(Home)</span>
+                    <span class="cc-title-home-label">Start Line, Chasing Change Home</span>
                   </a>
                 </div>
                 <div class="mt-3 flex items-center justify-center">
@@ -800,6 +798,7 @@
       }
 
       function refreshAccountNotice() {
+        if (!pageLoginStatus) return;
         const displayName = sessionApi?.getCurrentDisplayName?.() || "";
         pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
       }

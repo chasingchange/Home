@@ -1,6 +1,7 @@
 (() => {
   const ACCOUNTS_KEY = "ccAccounts";
   const SESSION_KEY = "ccSession";
+  const ACCOUNT_SYNC_CONFIG_KEY = "ccAccountSyncConfig";
   const OPFS_SUPPORTED = typeof navigator !== "undefined" && !!navigator.storage?.getDirectory;
   const DATA_FOLDER = "chasing-change-secure-data";
   const DATA_FILE = "accounts.json";
@@ -34,6 +35,73 @@
 
   const writeLocalAccounts = (accounts) => {
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  };
+
+  const readSyncConfig = () => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ACCOUNT_SYNC_CONFIG_KEY) || "{}");
+      return {
+        endpoint: String(parsed?.endpoint || "").trim(),
+        token: String(parsed?.token || "").trim(),
+      };
+    } catch {
+      return { endpoint: "", token: "" };
+    }
+  };
+
+  const saveSyncConfig = (config) => {
+    const next = {
+      endpoint: String(config?.endpoint || "").trim(),
+      token: String(config?.token || "").trim(),
+    };
+
+    if (!next.endpoint && !next.token) {
+      localStorage.removeItem(ACCOUNT_SYNC_CONFIG_KEY);
+      return;
+    }
+
+    localStorage.setItem(ACCOUNT_SYNC_CONFIG_KEY, JSON.stringify(next));
+  };
+
+  const getSyncHeaders = (token) => ({
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+
+  const readRemoteAccounts = async () => {
+    const { endpoint, token } = readSyncConfig();
+    if (!endpoint) return null;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: getSyncHeaders(token),
+      });
+      if (!response.ok) throw new Error(`GET ${response.status}`);
+      const body = await response.json();
+      return body && typeof body === "object" ? normalizeAccounts(body) : {};
+    } catch (error) {
+      console.warn("Unable to read account sync endpoint. Falling back to local browser storage.", error);
+      return null;
+    }
+  };
+
+  const writeRemoteAccounts = async (accounts) => {
+    const { endpoint, token } = readSyncConfig();
+    if (!endpoint) return false;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: getSyncHeaders(token),
+        body: JSON.stringify(accounts),
+      });
+      if (!response.ok) throw new Error(`PUT ${response.status}`);
+      return true;
+    } catch (error) {
+      console.warn("Unable to sync accounts to remote endpoint.", error);
+      return false;
+    }
   };
 
   const readOpfsAccounts = async () => {
@@ -74,13 +142,19 @@
     accountsCache = cloneAccounts(normalized);
     writeLocalAccounts(normalized);
     await writeOpfsAccounts(normalized);
+    await writeRemoteAccounts(normalized);
     return cloneAccounts(normalized);
   };
 
   const ready = (async () => {
+    const remoteAccounts = await readRemoteAccounts();
     const opfsAccounts = await readOpfsAccounts();
     const localAccounts = readLocalAccounts();
-    const initialAccounts = Object.keys(opfsAccounts || {}).length ? opfsAccounts : localAccounts;
+    const initialAccounts = Object.keys(remoteAccounts || {}).length
+      ? remoteAccounts
+      : Object.keys(opfsAccounts || {}).length
+        ? opfsAccounts
+        : localAccounts;
     await syncAccountsToAllStores(initialAccounts);
     return cloneAccounts(accountsCache);
   })();
@@ -243,6 +317,9 @@
     saveCalculatorData,
     getCalculatorData,
     sendCredentialReminder,
+    getSyncConfig: readSyncConfig,
+    setSyncConfig: saveSyncConfig,
+    syncNow: () => pendingWrite.then(() => syncAccountsToAllStores(accountsCache || {})),
   };
 
   const renderPersistentAccountCard = () => {
