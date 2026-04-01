@@ -37,8 +37,8 @@
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-accent/20 blur-3xl"></div>
           <p id="pageLoginStatus" class="cc-page-login-tile">Not Logged In</p>
           <div class="relative">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-start justify-center gap-4">
+              <div class="flex items-center justify-center gap-3">
               <img src="../Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
               <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
               </div>
@@ -54,9 +54,8 @@
               </a>
             </div>
             <div class="mt-4 flex items-center justify-center">
-              <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noreferrer" class="inline-flex rounded-xl bg-cc-accent px-4 py-2 text-sm font-bold hover:brightness-95">Want this dialed in?</a>
+              <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noreferrer" class="cc-title-coaching">Want this dialed in?</a>
             </div>
-            <p class="mt-3 max-w-3xl text-sm sm:text-base opacity-80">Search and filter your exercise library by <strong>primary muscle</strong> and <strong>equipment</strong>.</p>
           </div>
         </div>
       </header>
@@ -158,8 +157,8 @@
       }
 
       hydrateFilters();
-      if (pageLoginStatus && window.ChasingChangeSession?.getSessionDisplayName) {
-        const displayName = window.ChasingChangeSession.getSessionDisplayName();
+      if (pageLoginStatus && window.ChasingChangeSession?.getCurrentDisplayName) {
+        const displayName = window.ChasingChangeSession.getCurrentDisplayName();
         pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
       }
       render();

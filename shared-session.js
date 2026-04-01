@@ -244,4 +244,74 @@
     getCalculatorData,
     sendCredentialReminder,
   };
+
+  const renderPersistentAccountCard = () => {
+    if (document.getElementById("ccPersistentAccountCard")) return;
+
+    const card = document.createElement("section");
+    card.id = "ccPersistentAccountCard";
+    card.className = "cc-account-card";
+    card.innerHTML = `
+      <p class="cc-account-title">Account</p>
+      <p id="ccAccountStatus" class="cc-account-status">Not Logged In</p>
+      <div class="cc-account-actions">
+        <button id="ccLoginBtn" type="button" class="cc-account-login-btn">Log In</button>
+        <button id="ccCreateBtn" type="button" class="cc-account-create-btn">Create Account</button>
+        <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
+      </div>
+    `;
+    document.body.appendChild(card);
+
+    const statusEl = card.querySelector("#ccAccountStatus");
+    const loginBtn = card.querySelector("#ccLoginBtn");
+    const createBtn = card.querySelector("#ccCreateBtn");
+    const logoutBtn = card.querySelector("#ccLogoutBtn");
+
+    const syncCard = () => {
+      const name = getCurrentDisplayName();
+      statusEl.textContent = name ? `Welcome Back To The Race, ${name}` : "Not Logged In";
+      loginBtn.hidden = !!name;
+      createBtn.hidden = !!name;
+      logoutBtn.hidden = !name;
+      const pageLoginStatus = document.getElementById("pageLoginStatus");
+      if (pageLoginStatus) pageLoginStatus.textContent = statusEl.textContent;
+    };
+
+    loginBtn?.addEventListener("click", async () => {
+      const email = window.prompt("Email:");
+      if (!email) return;
+      const password = window.prompt("Password:");
+      if (!password) return;
+      const result = await login(email, password);
+      if (!result.ok) window.alert(result.error || "Login failed.");
+      syncCard();
+    });
+
+    createBtn?.addEventListener("click", async () => {
+      const name = window.prompt("Name:");
+      if (!name) return;
+      const email = window.prompt("Email:");
+      if (!email) return;
+      const password = window.prompt("Password:");
+      if (!password) return;
+      const result = await createAccount({ name, email, password });
+      if (!result.ok) window.alert(result.error || "Unable to create account.");
+      syncCard();
+    });
+
+    logoutBtn?.addEventListener("click", () => {
+      logout();
+      syncCard();
+    });
+
+    syncCard();
+  };
+
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", renderPersistentAccountCard, { once: true });
+    } else {
+      renderPersistentAccountCard();
+    }
+  }
 })();

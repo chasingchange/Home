@@ -227,9 +227,9 @@ h3 {
 .cc-title-block {
   border-radius: 1.5rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
-  background: #071f35;
-  color: #f5f5f7;
-  box-shadow: 0 24px 80px rgba(7, 31, 53, 0.3);
+  background: #ffffff;
+  color: var(--cc-text);
+  box-shadow: 0 24px 80px rgba(119, 215, 112, 0.2);
   overflow: hidden;
 }
 
@@ -241,7 +241,7 @@ h3 {
 .cc-title-block-top {
   display: flex;
   align-items: stretch;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.9rem;
 }
@@ -249,6 +249,7 @@ h3 {
 .cc-title-brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.7rem;
 }
 
@@ -256,14 +257,14 @@ h3 {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  border: 1px solid rgba(245, 245, 247, 0.28);
-  background: rgba(245, 245, 247, 0.12);
+  border: 1px solid rgba(7, 31, 53, 0.16);
+  background: rgba(7, 31, 53, 0.04);
   padding: 0.2rem;
 }
 
 .cc-title-name {
   margin: 0;
-  color: #f5f5f7;
+  color: var(--cc-text);
   font-family: var(--cc-brand-font);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
@@ -274,10 +275,14 @@ h3 {
   min-width: 220px;
   text-decoration: none;
   border-radius: 1rem;
-  border: 1px solid rgba(245, 245, 247, 0.34);
-  color: #f5f5f7;
-  background: rgba(245, 245, 247, 0.08);
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  color: var(--cc-text);
+  background: rgba(119, 215, 112, 0.2);
   padding: 0.95rem 1rem;
+  text-align: center;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .cc-title-home-label {
@@ -293,12 +298,13 @@ h3 {
   display: block;
   margin-top: 0.2rem;
   font-size: 0.85rem;
-  opacity: 0.85;
+  opacity: 0.78;
   font-weight: 700;
 }
 
 .cc-title-subline {
   margin-top: 0.65rem;
+  text-align: center;
   font-family: var(--cc-heading-font);
   font-size: clamp(0.92rem, 1.8vw, 1.1rem);
   font-style: italic;
@@ -320,9 +326,9 @@ h3 {
   top: 1rem;
   margin: 0;
   border-radius: 999px;
-  background: rgba(245, 245, 247, 0.14);
-  border: 1px solid rgba(245, 245, 247, 0.34);
-  color: #f5f5f7;
+  background: rgba(7, 31, 53, 0.05);
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  color: var(--cc-text);
   padding: 0.4rem 0.7rem;
   font-size: 0.68rem;
   font-weight: 800;
@@ -332,13 +338,71 @@ h3 {
   margin: 0.7rem auto 0;
   display: inline-flex;
   border-radius: 0.9rem;
-  border: 1px solid rgba(245, 245, 247, 0.32);
-  background: rgba(245, 245, 247, 0.14);
+  border: 1px solid rgba(7, 31, 53, 0.2);
+  background: var(--cc-text);
   color: #f5f5f7;
   font-family: var(--cc-heading-font);
   font-weight: 800;
   text-decoration: none;
-  padding: 0.55rem 0.9rem;
+  font-size: 0.78rem;
+  padding: 0.42rem 0.72rem;
+}
+
+.cc-account-card {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  width: min(90vw, 300px);
+  border-radius: 1.05rem;
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  background: #e6e6e6;
+  box-shadow: 0 12px 30px rgba(7, 31, 53, 0.14);
+  padding: 0.9rem;
+}
+
+.cc-account-title {
+  margin: 0;
+  font-family: var(--cc-heading-font);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.cc-account-status {
+  margin: 0.35rem 0 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.cc-account-actions {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.cc-account-actions button {
+  flex: 1 1 auto;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  padding: 0.52rem 0.6rem;
+  font-size: 0.83rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cc-account-login-btn {
+  background: var(--cc-accent);
+  color: var(--cc-text);
+}
+
+.cc-account-create-btn,
+.cc-account-logout-btn {
+  background: #ffffff;
+  color: var(--cc-text);
 }
 
 .cc-modal {
