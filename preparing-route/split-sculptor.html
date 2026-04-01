@@ -24,14 +24,15 @@
 body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1.25rem 3rem; }
 .app { max-width: 980px; margin: 0 auto; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
-.logo { font-family: 'Museo Moderno', cursive; font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; }
+.logo { font-family: 'Museo Moderno', sans-serif; font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; }
 .step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; }
 .progress-track { height: 3px; border-radius: 999px; background: var(--surface2); margin-bottom: 1.2rem; overflow: hidden; }
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
-.timeline { display: grid; grid-template-columns: repeat(7, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
+.timeline { display: grid; grid-template-columns: repeat(8, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
 .t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
 .t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
 .t-time { font-size: .78rem; font-weight: 700; margin-top: .15rem; }
+.t-duration { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
 .screen { display: none; }
 .screen.active { display: block; }
 .step-eyebrow { font-family: 'Raleway', sans-serif; font-size: clamp(1.25rem, 3vw, 1.7rem); line-height: 1.2; font-weight: 800; letter-spacing: .02em; color: var(--text); margin-bottom: .45rem; }
@@ -91,18 +92,19 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 <div class="app">
   <div class="header">
     <div class="logo">Split Sculptor</div>
-    <div class="step-counter" id="step-counter">STEP 1 OF 7</div>
+    <div class="step-counter" id="step-counter">STEP 1 OF 8</div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
 
   <div class="timeline" id="timeline"></div>
 
   <div class="screen active" id="s1">
-    <div class="step-eyebrow">STEP 1 · MACROCYCLE (3 MONTHS)</div>
+    <div class="step-eyebrow">STEP 1 · MACROCYCLE</div>
     <h1 class="step-title">What do you want to improve this quarter?</h1>
     <p class="step-sub">Choose one primary outcome so every other decision supports a clear target.</p>
     <div class="chips" id="macro-chips">
       <div class="chip on" data-v="Build Visible Muscle">Build Visible Muscle</div>
+      <div class="chip" data-v="Slim Down">Slim Down</div>
       <div class="chip" data-v="Fat Loss">Fat Loss</div>
       <div class="chip" data-v="Increase Strength">Increase Strength</div>
       <div class="chip" data-v="Performance">Performance</div>
@@ -110,7 +112,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s2">
-    <div class="step-eyebrow">STEP 2 · MESOCYCLE (4 WEEKS)</div>
+    <div class="step-eyebrow">STEP 2 · MESO CYCLE</div>
     <h2 class="step-title">What strategy are you running this month?</h2>
     <p class="step-sub">Use the strategy that best matches your macrocycle goal.</p>
     <div class="chips" id="meso-chips"></div>
@@ -118,7 +120,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s3">
-    <div class="step-eyebrow">STEP 3 · NUTRITION (3 MONTHS)</div>
+    <div class="step-eyebrow">STEP 3 · NUTRITION</div>
     <h2 class="step-title">What do you need to eat to support your goal?</h2>
     <p class="step-sub">Select the calorie direction that fits your goal. Protein anchor: ~0.9–1.0g per lb bodyweight.</p>
     <div class="chips" id="nutrition-chips"></div>
@@ -126,7 +128,19 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s4">
-    <div class="step-eyebrow">STEP 4 · PRIORITY MUSCLE (1 MONTH)</div>
+    <div class="step-eyebrow">STEP 4 · MACRO CALCULATOR</div>
+    <h2 class="step-title">Calculate your macros before you build your split.</h2>
+    <p class="step-sub">Use the macro calculator, then choose how you want to store your macro plan.</p>
+    <div class="chips" id="macro-calc-chips">
+      <div class="chip on" data-v="Use Macro Calculator">Use Macro Calculator</div>
+      <div class="chip" data-v="Manual Macro Targets">Manual Macro Targets</div>
+    </div>
+    <a href="../macro/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Macro Calculator</a>
+    <div class="rule" id="macro-calc-rule"></div>
+  </div>
+
+  <div class="screen" id="s5">
+    <div class="step-eyebrow">STEP 5 · PRIORITY MUSCLE</div>
     <h2 class="step-title">Which muscle group is your visual priority?</h2>
     <p class="step-sub">Your chosen area appears first each week.</p>
     <div class="chips" id="priority-chips">
@@ -137,8 +151,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     </div>
   </div>
 
-  <div class="screen" id="s5">
-    <div class="step-eyebrow">STEP 5 · TRAINING ENVIRONMENT (NOW)</div>
+  <div class="screen" id="s6">
+    <div class="step-eyebrow">STEP 6 · TRAINING ENVIRONMENT</div>
     <h2 class="step-title">Where are you training most often?</h2>
     <p class="step-sub">This helps us infer equipment and tailor your day builder.</p>
     <div class="chips" id="gym-chips">
@@ -149,8 +163,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="rule" id="gym-rule"></div>
   </div>
 
-  <div class="screen" id="s6">
-    <div class="step-eyebrow">STEP 6 · MICRO + WORKOUT DAY BUILDER (1 WEEK)</div>
+  <div class="screen" id="s7">
+    <div class="step-eyebrow">STEP 7 · MICROCYCLE + WORKOUT DAY BUILDER</div>
     <h2 class="step-title">Build your actual workout days + drag and drop your exercise cards</h2>
     <p class="step-sub">Pick weekly frequency and we auto-build a split with exercise recommendations based on your gym setup.</p>
     <div class="chips" id="freq-chips">
@@ -184,10 +198,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     </div>
   </div>
 
-  <div class="screen" id="s7">
-    <div class="step-eyebrow">STEP 7 · SPLIT SCULPTOR SUMMARY</div>
+  <div class="screen" id="s8">
+    <div class="step-eyebrow">STEP 8 · SPLIT SCULPTOR SUMMARY</div>
     <h2 class="step-title">Split Sculptor</h2>
-    <p class="step-sub">Use this as your current 4-week execution block, then reassess and repeat.</p>
+    <p class="step-sub">Use this as your execution plan, then reassess and repeat.</p>
     <div id="summary-out"></div>
   </div>
 
@@ -199,16 +213,23 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </div>
 
 <script>
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 const STEP_TIMING = [
-  'Macro · 3 months', 'Meso · 4 weeks', 'Nutrition · 3 months', 'Priority · 1 month',
-  'Environment · now', 'Micro + day build · 1 week', 'Summary · current block'
+  { name: 'Macrocycle', duration: '3 months' },
+  { name: 'Meso Cycle', duration: '4 weeks' },
+  { name: 'Nutrition', duration: '3 months' },
+  { name: 'Macros', duration: 'Now' },
+  { name: 'Priority', duration: '1 month' },
+  { name: 'Environment', duration: 'Now' },
+  { name: 'Microcycle', duration: '1 week' },
+  { name: 'Summary', duration: '' }
 ];
 const state = {
   step: 1,
   macro: 'Build Visible Muscle',
   meso: 'Hypertrophy',
   nutrition: 'Surplus',
+  macroPlan: 'Use Macro Calculator',
   priority: 'Chest',
   gymType: 'Commercial Gym',
   freq: 3,
@@ -222,13 +243,15 @@ const state = {
 
 const mesoByMacro = {
   'Build Visible Muscle': 'Hypertrophy',
-  'Fat Loss': 'Hypertrophy',
+  'Slim Down': 'Fat Loss / Conditioning',
+  'Fat Loss': 'Fat Loss / Conditioning',
   'Increase Strength': 'Progressive Overload / Strength Training',
   'Performance': 'Performance'
 };
 
 const nutritionByMacro = {
   'Build Visible Muscle': 'Surplus',
+  'Slim Down': 'Deficit',
   'Fat Loss': 'Deficit',
   'Increase Strength': 'Small Surplus',
   'Performance': 'Maintenance'
@@ -303,16 +326,17 @@ function oneChip(groupId, key, isNum = false) {
       buildMesoChips();
       buildNutritionChips();
     }
+    if (key === 'macroPlan') buildMacroRule();
     if (key === 'freq') buildFrequencyRule();
     if (key === 'gymType') buildGymRule();
     if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
-    if (state.step === 7) buildSummary();
+    if (state.step === 8) buildSummary();
   });
 }
 
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
-  wrap.innerHTML = STEP_TIMING.map((x, i) => `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x}</div></button>`).join('');
+  wrap.innerHTML = STEP_TIMING.map((x, i) => `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`).join('');
   wrap.addEventListener('click', (e) => {
     const btn = e.target.closest('.t-block');
     if (!btn) return;
@@ -324,7 +348,7 @@ function buildTimeline() {
 function buildMesoChips() {
   const wrap = document.getElementById('meso-chips');
   wrap.innerHTML = '';
-  ['Hypertrophy', 'Progressive Overload / Strength Training', 'Performance'].forEach(option => {
+  ['Hypertrophy', 'Fat Loss / Conditioning', 'Progressive Overload / Strength Training', 'Performance'].forEach(option => {
     const chip = document.createElement('div');
     chip.className = `chip${state.meso === option ? ' on' : ''}`;
     chip.dataset.v = option;
@@ -354,6 +378,12 @@ function buildFrequencyRule() {
 
 function buildGymRule() {
   document.getElementById('gym-rule').textContent = gymRules[state.gymType];
+}
+
+function buildMacroRule() {
+  document.getElementById('macro-calc-rule').textContent = state.macroPlan === 'Use Macro Calculator'
+    ? 'Open the calculator and save your targets there before moving to your split.'
+    : 'You can skip the calculator and use your own macro targets.';
 }
 
 function extractFocusName(line) {
@@ -475,7 +505,7 @@ function renderDayCards() {
       state.customDays[state.freq][day][parseInt(row, 10)].name = window.__dragExercise.name;
       state.customDays[state.freq][day][parseInt(row, 10)].id = window.__dragExercise.id;
       renderDayCards();
-      if (state.step === 7) buildSummary();
+      if (state.step === 8) buildSummary();
     });
   });
   out.querySelectorAll('[data-clear]').forEach((btn) => {
@@ -530,6 +560,7 @@ function buildSummary() {
       <div class="sum-row"><span class="sum-label">MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
       <div class="sum-row"><span class="sum-label">MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
       <div class="sum-row"><span class="sum-label">NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
+      <div class="sum-row"><span class="sum-label">MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
       <div class="sum-row"><span class="sum-label">PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
       <div class="sum-row"><span class="sum-label">GYM TYPE</span><span class="sum-val">${state.gymType}</span></div>
       <div class="sum-row"><span class="sum-label">MICROCYCLE (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
@@ -560,12 +591,13 @@ function showStep(step) {
   document.getElementById('next-btn').textContent = step === TOTAL_STEPS ? 'Done' : 'Next';
   document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
-  if (step === 7) buildSummary();
+  if (step === 8) buildSummary();
 }
 
 oneChip('macro-chips', 'macro');
 oneChip('meso-chips', 'meso');
 oneChip('nutrition-chips', 'nutrition');
+oneChip('macro-calc-chips', 'macroPlan');
 oneChip('priority-chips', 'priority');
 oneChip('gym-chips', 'gymType');
 oneChip('freq-chips', 'freq', true);
@@ -573,6 +605,7 @@ oneChip('freq-chips', 'freq', true);
 buildTimeline();
 buildMesoChips();
 buildNutritionChips();
+buildMacroRule();
 buildFrequencyRule();
 buildGymRule();
 buildWorkoutBuilder();
