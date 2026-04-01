@@ -146,13 +146,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="cc-page-title">Split Sculptor</div>
       <div style="margin-top:.75rem;text-align:center;">
         <a href="../index.html" class="cc-title-home" aria-label="Go to Start Line home">
-          <span class="cc-title-home-label">Start Line</span>
-          <span class="cc-title-home-sub">(Home)</span>
+          <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
         </a>
       </div>
       <div style="text-align:center;">
         <a href="https://tally.so/r/w5JXKE" data-coaching-popup-url="https://tally.so/r/w5JXKE" class="cc-title-coaching">
-          Want this dialed in? Apply for coaching
+          Want this dialed in? Apply for coaching →
         </a>
       </div>
     </div>
@@ -244,9 +243,6 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="6">6 days</div>
     </div>
     <div class="rule" id="freq-rule"></div>
-    <div class="builder-layout">
-      <div class="day-grid" id="builder-out"></div>
-    </div>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
@@ -254,6 +250,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
         <button class="btn btn-p" id="agent-btn">Ask</button>
       </div>
       <div class="ask-out" id="agent-out">Ask a question and I’ll suggest swaps, progressions, and time-efficient adjustments.</div>
+    </div>
+    <div class="builder-layout">
+      <div class="day-grid" id="builder-out"></div>
     </div>
   </div>
 
@@ -538,20 +537,18 @@ function ensureDayPlan() {
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
   split.forEach((line, i) => {
     const dayKey = `d${i + 1}`;
+    const dayPriority = getPriorityTargetForDay(i);
+    const prioritySlotIndexes = [0, 2, 4];
     if (!state.customDays[state.freq][dayKey]) {
-      const focus = extractFocusName(line);
-      const seeds = getDayPlan(focus);
-      const dayPriority = getPriorityTargetForDay(i);
       state.customDays[state.freq][dayKey] = slotPattern.map((slot, idx) => ({
         slot,
-        name: seeds[idx]?.name || '',
-        id: seeds[idx]?.id || '',
-        targetMuscle: idx === 0 ? dayPriority : getMuscle(seeds[idx] || { primaryMuscle: dayPriority })
+        name: '',
+        id: '',
+        targetMuscle: prioritySlotIndexes.includes(idx) ? dayPriority : ''
       }));
     } else {
       state.customDays[state.freq][dayKey].forEach((item, idx) => {
-        if (idx === 0) item.targetMuscle = getPriorityTargetForDay(i);
-        else if (!item.targetMuscle) item.targetMuscle = state.priority;
+        if (prioritySlotIndexes.includes(idx)) item.targetMuscle = dayPriority;
       });
     }
   });
@@ -562,22 +559,25 @@ function renderDayCards() {
   const dayState = state.customDays[state.freq];
   const out = document.getElementById('builder-out');
   out.innerHTML = split.map((line, i) => {
-    const namedLine = line.replace('Priority First', `${state.priority} Priority`);
+    const namedLine = line.replace(' (Priority First)', '');
     const dayTarget = getPriorityTargetForDay(i);
     const dayKey = `d${i + 1}`;
     const rows = dayState[dayKey].map((item, rowIndex) => {
-      const slotOptions = getExercisesForSlot(item.slot);
+      const slotOptions = getExercisesForSlot(item.slot).filter((option) => !item.targetMuscle || getMuscle(option) === item.targetMuscle);
       const exercise = EXERCISES.find((x) => x.id === item.id);
-      const matches = !!exercise && normalizeType(exercise) === item.slot && getMuscle(exercise) === item.targetMuscle;
-      const muscleOptions = ['Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']
-        .map((muscle) => `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
+      const matches = !!exercise && normalizeType(exercise) === item.slot && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
+      const muscleOptions = ['','Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']
+        .map((muscle) => {
+          const label = muscle || 'Select Muscle';
+          return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
+        }).join('');
       const movementOptions = [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
         const selected = item.id === option.id ? ' selected' : '';
         return `<option value="${option.id}"${selected}>${option.name} (${getMuscle(option)})</option>`;
       })].join('');
       return `<div class="slot-row ${matches ? 'match' : 'mismatch'}">
       <div class="slot-meta">
-        <div class="slot-label">${item.slot} | ${item.targetMuscle}</div>
+        <div class="slot-label">${item.slot} | ${item.targetMuscle || 'Select Muscle'}</div>
         <span class="slot-status-light" title="${matches ? 'Match' : 'No match'}"></span>
       </div>
       <div class="slot-controls">
