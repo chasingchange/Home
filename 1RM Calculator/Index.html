@@ -72,7 +72,7 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body">
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div data-admin-edit-root class="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div class="absolute inset-0 -z-10 pointer-events-none">
         <div class="absolute -top-16 right-8 h-72 w-72 rounded-full bg-cc-outline/30 blur-3xl"></div>
         <div class="absolute top-40 -left-12 h-72 w-72 rounded-full bg-cc-text/15 blur-3xl"></div>
@@ -93,41 +93,35 @@
                 <span class="mt-1 block text-sm font-bold text-cc-text/75">(Home)</span>
               </a>
             </div>
-            <div class="mt-3 flex flex-wrap items-center gap-3">
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-center">
               <p class="text-xl sm:text-2xl font-bold font-heading">Pursuing Peace, Pursuing Purpose</p>
             </div>
-            <div class="mt-5 inline-flex items-center rounded-2xl bg-cc-text/5 px-4 py-3 ring-1 ring-black/10">
-              <p class="text-lg sm:text-xl font-extrabold font-heading">1 Rep Max Calculator</p>
+            <div class="mt-5 flex items-center justify-center">
+              <p class="text-2xl sm:text-3xl font-extrabold font-heading text-center">1 Rep Max Calculator</p>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="https://tally.so/r/w5JXKE"
+                target="_blank"
+                rel="noreferrer"
+                class="inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-bold hover:brightness-95"
+              >
+                Want this dialed in?
+              </a>
+              <button
+                id="resetBtn"
+                class="inline-flex rounded-xl bg-white px-4 py-2 text-sm font-bold ring-1 ring-black/10 hover:bg-black/5"
+              >
+                Reset
+              </button>
             </div>
             <p class="mt-3 text-sm opacity-80">Stop guessing. Pick a lift, see your target numbers, and train with a plan that moves the needle.</p>
+            <p id="accountNotice1rm" class="mt-3 text-xs font-bold text-center opacity-75">Log in from the home page to carry your saved data across calculators.</p>
           </div>
         </div>
       </header>
 
-      <div class="no-print cc-cta-block mb-4">
-        <p class="cc-cta-eyebrow">Quick actions</p>
-        <div class="cc-cta-grid">
-          <a
-            href="https://tally.so/r/w5JXKE"
-            target="_blank"
-            rel="noreferrer"
-            class="cc-cta-coaching"
-          >
-            Want this dialed in? Apply for coaching →
-          </a>
-          <div class="cc-cta-row">
-            <button
-              id="resetBtn"
-              class="cc-cta-reset"
-            >
-              Reset
-            </button>
-          </div>
-          <p id="accountNotice1rm" class="text-xs font-bold opacity-75">Log in from the home page to carry your saved data across calculators.</p>
-        </div>
-      </div>
-
-      <main data-admin-edit-root class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden p-4 sm:p-6">
+      <main class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden p-4 sm:p-6">
         <section class="grid lg:grid-cols-12 gap-4">
         <!-- Inputs -->
         <div class="lg:col-span-5 rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">

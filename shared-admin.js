@@ -110,6 +110,7 @@
     let editing = false;
     let moving = false;
     let selected = null;
+    let dragSource = null;
 
     const bar = document.createElement("div");
     bar.style.cssText = "position:fixed;bottom:14px;right:14px;z-index:9999;display:flex;gap:8px;align-items:center;background:#071f35;color:#fff;padding:10px 12px;border-radius:12px;font:700 12px Muli, sans-serif;box-shadow:0 10px 30px rgba(7,31,53,.25);";
@@ -138,10 +139,33 @@
       bar.append(input, unlockBtn);
     };
 
+    const clearHighlight = () => {
+      if (!selected) return;
+      selected.style.outline = "";
+      selected.style.opacity = "";
+    };
+
     const setSelected = (node) => {
-      if (selected) selected.style.outline = "";
+      clearHighlight();
       selected = node;
       if (selected && moving) selected.style.outline = "2px dashed #77d770";
+    };
+
+    const getSortableTarget = (node) => {
+      if (!node || node === root) return null;
+      if (!root.contains(node)) return null;
+      return node.closest("section, article, a, div, li, h1, h2, h3, p");
+    };
+
+    const enableNodeDrag = (node) => {
+      if (!node || node === root) return;
+      node.draggable = moving;
+      if (moving) node.style.cursor = "move";
+      else node.style.cursor = "";
+    };
+
+    const setNodeDraggables = () => {
+      root.querySelectorAll("section, article, a, div, li, h1, h2, h3, p").forEach(enableNodeDrag);
     };
 
     const moveSelection = (direction) => {
@@ -196,12 +220,16 @@
       moveBtn.addEventListener("click", () => {
         moving = !moving;
         moveBtn.textContent = moving ? "Stop move" : "Move blocks";
-        if (!moving) setSelected(null);
+        setNodeDraggables();
+        if (!moving) {
+          setSelected(null);
+          dragSource = null;
+        }
       });
 
       root.addEventListener("click", (event) => {
         if (!moving) return;
-        const target = event.target.closest("section, article, a, div, li, h1, h2, h3, p");
+        const target = getSortableTarget(event.target);
         if (!target || !root.contains(target) || target === root) return;
         event.preventDefault();
         event.stopPropagation();
@@ -234,6 +262,7 @@
         root.contentEditable = "false";
         root.style.outline = "";
         setSelected(null);
+        setNodeDraggables();
         buildLockedView();
       });
 
