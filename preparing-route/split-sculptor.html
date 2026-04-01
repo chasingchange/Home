@@ -239,12 +239,18 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s5">
-    <div class="step-eyebrow">STEP 5 · PRIORITY MUSCLE</div>
-    <h2 class="step-title">How Do You Rank The Priority Of Each Muscle Group?</h2>
-    <p class="step-sub">Rank 1 drives your first microcycle target, rank 2 drives the next target, and so on.</p>
-    <div class="priority-rank-list" id="priority-rank-list">
+    <div class="step-eyebrow">STEP 5 · TRAINING DAYS</div>
+    <h2 class="step-title">How many days can you train each week?</h2>
+    <p class="step-sub">Set your weekly frequency first, then we'll guide your priority selection so it divides your week appropriately.</p>
+    <div class="chips" id="freq-chips">
+      <div class="chip" data-v="2">2 days</div>
+      <div class="chip on" data-v="3">3 days</div>
+      <div class="chip" data-v="4">4 days</div>
+      <div class="chip" data-v="5">5 days</div>
+      <div class="chip" data-v="6">6 days</div>
     </div>
-    <div class="rank-help" id="priority-rank-help"></div>
+    <div class="rule" id="freq-rule"></div>
+    <div class="rank-help" id="freq-priority-guide"></div>
   </div>
 
   <div class="screen" id="s6">
@@ -260,17 +266,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s7">
-    <div class="step-eyebrow">STEP 7 · MICROCYCLE + WORKOUT DAY BUILDER</div>
-    <h2 class="step-title">What Does Each Workout Day Look Like?</h2>
-    <p class="step-sub">Pick weekly frequency, choose each slot's target muscle, then select a movement from the dropdown. A green light means the exercise matches slot type + target muscle.</p>
-    <div class="chips" id="freq-chips">
-      <div class="chip" data-v="2">2 days</div>
-      <div class="chip on" data-v="3">3 days</div>
-      <div class="chip" data-v="4">4 days</div>
-      <div class="chip" data-v="5">5 days</div>
-      <div class="chip" data-v="6">6 days</div>
+    <div class="step-eyebrow">STEP 7 · PRIORITY + WORKOUT DAY BUILDER</div>
+    <h2 class="step-title">How should we prioritize your week?</h2>
+    <p class="step-sub">Now rank your muscle priorities, then choose each slot's target muscle and movement. A green light means the exercise matches slot type + target muscle.</p>
+    <div class="priority-rank-list" id="priority-rank-list">
     </div>
-    <div class="rule" id="freq-rule"></div>
+    <div class="rank-help" id="priority-rank-help"></div>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
@@ -310,9 +311,9 @@ const STEP_TIMING = [
   { name: 'Meso Cycle', duration: '4 weeks' },
   { name: 'Nutrition', duration: '3 months' },
   { name: 'Macros', duration: 'Now' },
-  { name: 'Priority', duration: '1 month' },
+  { name: 'Training Days', duration: '1 week' },
   { name: 'Environment', duration: 'Now' },
-  { name: 'Microcycle', duration: '1 week' },
+  { name: 'Priority + Builder', duration: '1 week' },
   { name: 'Summary', duration: '' }
 ];
 const state = {
@@ -476,7 +477,11 @@ function oneChip(groupId, key, isNum = false) {
       buildNutritionChips();
     }
     if (key === 'macroPlan') buildMacroRule();
-    if (key === 'freq') buildFrequencyRule();
+    if (key === 'freq') {
+      applyPriorityProfileForFrequency();
+      buildFrequencyRule();
+      buildPriorityRanker();
+    }
     if (key === 'gymType') buildGymRule();
     if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
     if (state.step === 8) buildSummary();
@@ -485,6 +490,28 @@ function oneChip(groupId, key, isNum = false) {
 
 function getPriorityMuscles() {
   return ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
+}
+
+function muscleBucket(muscle) {
+  if (['Chest', 'Shoulders', 'Triceps'].includes(muscle)) return 'Push';
+  if (['Back', 'Biceps'].includes(muscle)) return 'Pull';
+  return 'Legs';
+}
+
+function applyPriorityProfileForFrequency() {
+  const current = [...state.priorities];
+  const firstByBucket = (bucket) => current.find((muscle) => muscleBucket(muscle) === bucket);
+  if (state.freq === 2) {
+    const upper = firstByBucket('Pull') || firstByBucket('Push') || 'Back';
+    const lower = firstByBucket('Legs') || 'Quads';
+    state.priorities = [upper, lower, ...current.filter((muscle) => muscle !== upper && muscle !== lower)];
+  } else if (state.freq === 3) {
+    const push = firstByBucket('Push') || 'Chest';
+    const pull = firstByBucket('Pull') || 'Back';
+    const legs = firstByBucket('Legs') || 'Quads';
+    state.priorities = [push, pull, legs, ...current.filter((muscle) => ![push, pull, legs].includes(muscle))];
+  }
+  state.priority = state.priorities[0];
 }
 
 function buildPriorityRanker() {
@@ -558,6 +585,15 @@ function buildNutritionChips() {
 
 function buildFrequencyRule() {
   document.getElementById('freq-rule').textContent = freqRule[state.freq];
+  const guide = document.getElementById('freq-priority-guide');
+  if (!guide) return;
+  if (state.freq === 2) {
+    guide.textContent = 'Priority guidance: choose 2 muscles — one upper-body focus and one lower-body focus.';
+  } else if (state.freq === 3) {
+    guide.textContent = 'Priority guidance: choose 3 muscles — one push, one pull, and one legs focus.';
+  } else {
+    guide.textContent = 'Priority guidance: rank all muscles. Your top entries are pushed to the front of the week.';
+  }
 }
 
 function buildGymRule() {
@@ -741,7 +777,14 @@ function renderDayCards() {
   out.querySelectorAll('[data-muscle]').forEach((select) => {
     select.onchange = () => {
       const { day, row } = select.dataset;
-      state.customDays[state.freq][day][parseInt(row, 10)].targetMuscle = select.value;
+      const rowIndex = parseInt(row, 10);
+      const dayRows = state.customDays[state.freq][day];
+      dayRows[rowIndex].targetMuscle = select.value;
+      if (dayRows[rowIndex].slot === 'Isolated' && select.value === 'Back') {
+        dayRows.forEach((entry, idx) => {
+          if (idx !== rowIndex && entry.slot === 'Isolated') entry.targetMuscle = '';
+        });
+      }
       renderDayCards();
       if (state.step === 8) buildSummary();
     };
@@ -907,6 +950,7 @@ buildTimeline();
 buildMesoChips();
 buildNutritionChips();
 buildMacroRule();
+applyPriorityProfileForFrequency();
 buildPriorityRanker();
 buildFrequencyRule();
 buildGymRule();
