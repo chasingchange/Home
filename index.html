@@ -51,27 +51,27 @@
         <div class="relative p-6 sm:p-10">
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
 
-          <div class="relative flex flex-col gap-5 sm:pr-[18rem]">
+          <div class="relative flex flex-col items-center gap-5 text-center">
+            <img src="./Logo.png" alt="Chasing Change logo" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_10px_20px_rgba(7,31,53,0.25)]" />
             <div>
-              <div class="flex items-center justify-center gap-3">
-                <img src="./Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
-                <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
-              </div>
+              <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
               <p class="mt-3 text-center text-xl sm:text-2xl font-semibold italic font-heading">Pursuing Peace, Pursuing Purpose</p>
-            </div>
-
-            <div class="w-full rounded-2xl bg-white/90 px-4 py-4 shadow-soft ring-1 ring-black/10 backdrop-blur-sm sm:absolute sm:right-0 sm:top-0 sm:w-[17rem] sm:px-4 sm:py-3">
-              <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cc-text/55">Account</p>
-              <p id="homeLoginStatus" class="mt-2 text-sm font-extrabold text-cc-text">Not Logged In</p>
-              <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-                <button id="homeLoginBtn" type="button" class="w-full rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95 sm:w-auto">Log In</button>
-                <button id="homeCreateAccountBtn" type="button" class="w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Create Account</button>
-                <button id="homeLogoutBtn" type="button" class="hidden w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Log Out</button>
-              </div>
             </div>
           </div>
         </div>
       </header>
+
+      <section class="mb-6 flex justify-start">
+        <div class="w-full max-w-sm rounded-2xl bg-white px-4 py-4 shadow-soft ring-1 ring-black/10 backdrop-blur-sm">
+          <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cc-text/55">Account</p>
+          <p id="homeLoginStatus" class="mt-2 text-sm font-extrabold text-cc-text">Not Logged In</p>
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button id="homeLoginBtn" type="button" class="w-full rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95 sm:w-auto">Log In</button>
+            <button id="homeCreateAccountBtn" type="button" class="w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Create Account</button>
+            <button id="homeLogoutBtn" type="button" class="hidden w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Log Out</button>
+          </div>
+        </div>
+      </section>
 
       <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4 backdrop-blur-sm">
         <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/10">
@@ -229,7 +229,7 @@
 
             <a href="./exercise-matrix/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h2>
-              <p class="mt-2 text-sm opacity-80">Browse exercises with filters for primary muscle and equipment.</p>
+              <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
             </a>
           </div>
