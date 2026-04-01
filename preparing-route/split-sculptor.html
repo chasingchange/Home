@@ -48,7 +48,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .top-glow { position: absolute; top: -100px; right: -100px; width: 280px; height: 280px; border-radius: 999px; background: rgba(119,215,112,0.2); filter: blur(36px); }
 .app { max-width: 980px; margin: 0 auto; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
-.logo { font-family: 'Museo Moderno', sans-serif; font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; }
+.header-spacer { flex: 1; }
 .step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; }
 .progress-track { height: 3px; border-radius: 999px; background: var(--surface2); margin-bottom: 1.2rem; overflow: hidden; }
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
@@ -123,6 +123,15 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .dot.done { background: #59c352; }
 .macro-embed { margin-top: .95rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
 .macro-embed iframe { width: 100%; min-height: 720px; border: 0; background: #fff; }
+.manual-macro-wrap { margin-top: .95rem; display: none; }
+.manual-macro-wrap.show { display: block; }
+.manual-macro-grid { display: grid; gap: .7rem; grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+.manual-field { border: 2px solid #60ce59; border-radius: 12px; padding: .8rem .9rem; background: #fff; }
+.manual-field.soft-green { background: #c8dbc9; }
+.manual-field.soft-tan { background: #dcd5ce; }
+.manual-field.soft-pink { background: #e8c8d1; }
+.manual-field label { display: block; font-family: 'Raleway', sans-serif; font-size: .75rem; letter-spacing: .06em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .35rem; }
+.manual-field input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .48rem .55rem; font-family: 'Muli', sans-serif; font-size: 1rem; color: var(--text); background: #fff; }
 .target-grid { display: grid; gap: .6rem; margin-top: .75rem; }
 .target-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: #fff; }
 .target-label { font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
@@ -138,7 +147,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .cc-title-home-label { font-size: .88rem; letter-spacing: .02em; }
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
-@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } }
 </style>
 </head>
 <body>
@@ -168,7 +177,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
 <div class="app">
   <div class="header">
-    <div class="logo">Split Sculptor</div>
+    <div class="header-spacer"></div>
     <div class="step-counter" id="step-counter">STEP 1 OF 8</div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
@@ -213,8 +222,18 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="Manual Macro Targets">Manual Macro Targets</div>
     </div>
     <a href="../macro/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Macro Calculator in New Tab</a>
-    <div class="macro-embed" aria-label="Embedded macro calculator">
+    <div class="macro-embed" id="macro-embed" aria-label="Embedded macro calculator">
       <iframe src="../macro/index.html" title="Chasing Change Macro Calculator" loading="lazy"></iframe>
+    </div>
+    <div class="manual-macro-wrap" id="manual-macro-wrap">
+      <div class="manual-macro-grid">
+        <div class="manual-field"><label for="manual-calories">Daily Target Calories</label><input id="manual-calories" type="number" min="0" placeholder="e.g. 2172" /></div>
+        <div class="manual-field"><label for="manual-bmr">BMR (Resting)</label><input id="manual-bmr" type="number" min="0" placeholder="e.g. 1724" /></div>
+        <div class="manual-field"><label for="manual-tdee">TDEE (Activity)</label><input id="manual-tdee" type="number" min="0" placeholder="e.g. 2672" /></div>
+        <div class="manual-field soft-green"><label for="manual-protein">Protein (g)</label><input id="manual-protein" type="number" min="0" placeholder="e.g. 180" /></div>
+        <div class="manual-field soft-tan"><label for="manual-carbs">Carbs (g)</label><input id="manual-carbs" type="number" min="0" placeholder="e.g. 227" /></div>
+        <div class="manual-field soft-pink"><label for="manual-fat">Fat (g)</label><input id="manual-fat" type="number" min="0" placeholder="e.g. 60" /></div>
+      </div>
     </div>
     <div class="rule" id="macro-calc-rule"></div>
   </div>
@@ -302,8 +321,9 @@ const state = {
   meso: 'Hypertrophy',
   nutrition: 'Surplus',
   macroPlan: 'Use Macro Calculator',
-  priority: 'Back',
-  priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
+  manualTargets: { calories: '', bmr: '', tdee: '', protein: '', carbs: '', fat: '' },
+  priority: 'Chest',
+  priorities: ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'],
   gymType: 'Commercial Gym',
   freq: 3,
   customDays: {}
@@ -517,9 +537,12 @@ function buildGymRule() {
 }
 
 function buildMacroRule() {
+  const usingCalculator = state.macroPlan === 'Use Macro Calculator';
+  document.getElementById('macro-embed').style.display = usingCalculator ? 'block' : 'none';
+  document.getElementById('manual-macro-wrap').classList.toggle('show', !usingCalculator);
   document.getElementById('macro-calc-rule').textContent = state.macroPlan === 'Use Macro Calculator'
     ? 'Open the calculator and save your targets there before moving to your split.'
-    : 'You can skip the calculator and use your own macro targets.';
+    : 'Skip the calculator and enter your own macro targets below. These values will appear in your summary.';
 }
 
 function extractFocusName(line) {
@@ -712,15 +735,27 @@ function formatSavedAt(value) {
 function buildSummary() {
   ensureDayPlan();
   const macroTargets = readMacroTargets();
-  const targetMarkup = macroTargets
-    ? `<div class="target-grid">
-        <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
-        <div class="target-card"><div class="target-label">Protein</div><div class="target-value protein">${macroTargets.protein} g/day</div></div>
-        <div class="target-card"><div class="target-label">Carbs</div><div class="target-value carbs">${macroTargets.carbs} g/day</div></div>
-        <div class="target-card"><div class="target-label">Fat</div><div class="target-value fat">${macroTargets.fat} g/day</div></div>
-        <div class="target-card"><div class="target-label">Last Calculated</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
-      </div>`
-    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
+  const hasManualTargets = Object.values(state.manualTargets).some((value) => String(value).trim() !== '');
+  const targetMarkup = state.macroPlan === 'Manual Macro Targets'
+    ? (hasManualTargets
+      ? `<div class="target-grid">
+          <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${state.manualTargets.calories || '—'} kcal/day</div></div>
+          <div class="target-card"><div class="target-label">BMR</div><div class="target-value">${state.manualTargets.bmr || '—'} kcal/day</div></div>
+          <div class="target-card"><div class="target-label">TDEE</div><div class="target-value">${state.manualTargets.tdee || '—'} kcal/day</div></div>
+          <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${state.manualTargets.protein || '—'} g/day</div></div>
+          <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${state.manualTargets.carbs || '—'} g/day</div></div>
+          <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${state.manualTargets.fat || '—'} g/day</div></div>
+        </div>`
+      : '<p>No manual macro targets entered yet. Go to Step 4 and add your numbers.</p>')
+    : (macroTargets
+      ? `<div class="target-grid">
+          <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
+          <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
+          <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
+          <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
+          <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
+        </div>`
+      : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>');
   const split = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
@@ -844,6 +879,14 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
   link.download = filename;
   link.href = dataUrl;
   link.click();
+});
+
+['calories', 'bmr', 'tdee', 'protein', 'carbs', 'fat'].forEach((key) => {
+  const input = document.getElementById(`manual-${key}`);
+  input.addEventListener('input', () => {
+    state.manualTargets[key] = input.value;
+    if (state.step === 8) buildSummary();
+  });
 });
 
 showStep(1);
