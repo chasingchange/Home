@@ -134,14 +134,14 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .manual-field input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .48rem .55rem; font-family: 'Muli', sans-serif; font-size: 1rem; color: var(--text); background: #fff; }
 .target-grid { display: grid; gap: .6rem; margin-top: .75rem; }
 .target-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: #fff; }
+.target-card.target-protein { background: rgba(119, 215, 112, 0.2); border-color: rgba(89, 195, 82, 0.5); }
+.target-card.target-carbs { background: rgba(255, 209, 102, 0.26); border-color: rgba(243, 176, 63, 0.45); }
+.target-card.target-fat { background: rgba(255, 138, 138, 0.2); border-color: rgba(230, 106, 106, 0.45); }
 .target-label { font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
 .target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
-.target-value.protein { color: #3f8efc; }
-.target-value.carbs { color: #f4a340; }
-.target-value.fat { color: #d86ad8; }
 .week li strong { display: block; margin-bottom: .6rem; }
 .week li ul { margin-top: .3rem; padding-left: 1.1rem; }
-.cc-title-logo { width: 154px; height: 154px; }
+.cc-title-logo { width: 182px; height: 182px; }
 .cc-title-brand { gap: .08rem; }
 .cc-title-home { padding: .6rem .85rem; border-radius: .85rem; min-width: 0; }
 .cc-title-home-label { font-size: .88rem; letter-spacing: .02em; }
@@ -321,9 +321,8 @@ const state = {
   meso: 'Hypertrophy',
   nutrition: 'Surplus',
   macroPlan: 'Use Macro Calculator',
-  manualTargets: { calories: '', bmr: '', tdee: '', protein: '', carbs: '', fat: '' },
-  priority: 'Chest',
-  priorities: ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'],
+  priority: 'Back',
+  priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
   gymType: 'Commercial Gym',
   freq: 3,
   customDays: {}
@@ -423,15 +422,44 @@ function getSplitForFreq() {
   return baseSplit;
 }
 
-const movementTypeById = {
-  back_squat: 'Compound', front_squat: 'Compound', deadlift: 'Compound', sumo_deadlift: 'Compound',
-  bench: 'Compound', ohp: 'Compound', power_clean: 'Compound', hang_clean: 'Compound', push_press: 'Compound',
-  rdl: 'Compound', incline_bench: 'Compound', pause_bench: 'Compound', hip_thrust: 'Compound',
-  db_bench: 'Compound', db_shoulder_press: 'Compound', db_row: 'Compound', db_rdl: 'Compound',
-  leg_press: 'Machine', hack_squat: 'Machine', chest_press_machine: 'Machine', lat_pulldown: 'Machine',
-  pullup_weighted: 'Compound', dip_weighted: 'Compound', chinup_weighted: 'Compound', farmers_carry: 'Compound',
-  barbell_row: 'Compound', trap_bar_deadlift: 'Compound', split_squat: 'Compound',
-  leg_extension: 'Isolated', hamstring_curl: 'Isolated', calf_raise: 'Isolated', biceps_curl: 'Isolated', triceps_pushdown: 'Isolated', cable_row: 'Machine'
+const explicitMovementTypeByName = {
+  'Chest Fly': 'Isolated',
+  'Incline Chest Fly': 'Isolated',
+  'Decline Cable Fly': 'Isolated',
+  'Incline Cable Fly': 'Isolated',
+  'Cable Crossover': 'Isolated',
+  'Lateral Raise': 'Isolated',
+  'Front Raise': 'Isolated',
+  'Reverse Fly': 'Isolated',
+  'Face Pull': 'Isolated',
+  'Bicep Curl': 'Isolated',
+  'Hammer Curl': 'Isolated',
+  'Preacher Curl': 'Isolated',
+  'Skullcrusher': 'Isolated',
+  'Tricep Extension': 'Isolated',
+  'Tricep Pushdown': 'Isolated',
+  'Leg Extension': 'Isolated',
+  'Lying Leg Curl': 'Isolated',
+  'Seated Leg Curl': 'Isolated',
+  'Calf Press': 'Isolated',
+  'Standing Calf Raise': 'Isolated',
+  'Hip Abductors': 'Isolated',
+  'Hip Adductors': 'Isolated',
+  'Pec Deck': 'Isolated',
+  'Rear Delt Fly': 'Isolated',
+  'Goblet Squat': 'Compound',
+  'Lunges': 'Compound',
+  'Bulgarian Split Squat': 'Compound',
+  'Romanian Deadlift': 'Compound',
+  'Pull Up': 'Compound',
+  'Chin Up': 'Compound',
+  'Lat Pulldown': 'Compound',
+  'Seated Row': 'Compound',
+  'T Bar Row': 'Compound',
+  'Barbell Row': 'Compound',
+  'Chest Press': 'Compound',
+  'Incline Chest Press': 'Compound',
+  'Shoulder Press': 'Compound'
 };
 
 function oneChip(groupId, key, isNum = false) {
@@ -577,8 +605,16 @@ function getDayPlan(focus) {
 }
 
 function normalizeType(exercise) {
-  const baseId = exercise.id.replace(/_\d+$/, '');
-  return movementTypeById[baseId] || (exercise.category === 'Machines' ? 'Machine' : 'Compound');
+  const byName = explicitMovementTypeByName[exercise.name];
+  if (byName) return byName;
+  const name = exercise.name.toLowerCase();
+  const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
+  const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
+  if (isolationKeywords.some((keyword) => name.includes(keyword))) return 'Isolated';
+  if (exercise.category === 'Machines' && !compoundKeywords.some((keyword) => name.includes(keyword))) return 'Machine';
+  if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
+  if (exercise.category === 'Machines') return 'Machine';
+  return 'Compound';
 }
 
 function getMuscle(exercise) {
@@ -735,27 +771,15 @@ function formatSavedAt(value) {
 function buildSummary() {
   ensureDayPlan();
   const macroTargets = readMacroTargets();
-  const hasManualTargets = Object.values(state.manualTargets).some((value) => String(value).trim() !== '');
-  const targetMarkup = state.macroPlan === 'Manual Macro Targets'
-    ? (hasManualTargets
-      ? `<div class="target-grid">
-          <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${state.manualTargets.calories || '—'} kcal/day</div></div>
-          <div class="target-card"><div class="target-label">BMR</div><div class="target-value">${state.manualTargets.bmr || '—'} kcal/day</div></div>
-          <div class="target-card"><div class="target-label">TDEE</div><div class="target-value">${state.manualTargets.tdee || '—'} kcal/day</div></div>
-          <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${state.manualTargets.protein || '—'} g/day</div></div>
-          <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${state.manualTargets.carbs || '—'} g/day</div></div>
-          <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${state.manualTargets.fat || '—'} g/day</div></div>
-        </div>`
-      : '<p>No manual macro targets entered yet. Go to Step 4 and add your numbers.</p>')
-    : (macroTargets
-      ? `<div class="target-grid">
-          <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
-          <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
-          <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
-          <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
-          <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
-        </div>`
-      : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>');
+  const targetMarkup = macroTargets
+    ? `<div class="target-grid">
+        <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
+        <div class="target-card target-protein"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
+        <div class="target-card target-carbs"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
+        <div class="target-card target-fat"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
+        <div class="target-card"><div class="target-label">Last Calculated</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
+      </div>`
+    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
   const split = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
