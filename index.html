@@ -86,51 +86,9 @@
               placeholder="Email"
               class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
             />
-            <label class="relative block">
-              <input
-                id="authPassword"
-                type="password"
-                placeholder="Password"
-                class="w-full rounded-xl bg-white px-4 py-3 pr-16 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-              />
-              <button
-                id="authPasswordToggle"
-                type="button"
-                class="absolute inset-y-2 right-2 rounded-xl bg-white px-3 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5"
-                aria-label="Show password"
-                aria-pressed="false"
-              >
-                Show
-              </button>
-            </label>
-            <button
-              id="authRecoveryToggle"
-              type="button"
-              class="justify-self-start text-sm font-extrabold text-cc-text underline decoration-2 underline-offset-4 decoration-cc-outline transition hover:text-cc-outline"
-            >
-              Forgot Password or Email?
-            </button>
-            <div id="authRecoveryPanel" class="hidden rounded-2xl bg-cc-bg px-4 py-4 ring-1 ring-black/10">
-              <p class="text-sm font-extrabold font-heading text-cc-text">Recover your login details</p>
-              <p class="mt-1 text-sm text-cc-text/80">Enter the email on file to get your password, or enter your name to have the email on file reminded.</p>
-              <div class="mt-3 grid gap-3">
-                <input
-                  id="authRecoveryName"
-                  type="text"
-                  placeholder="Your name"
-                  class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-                />
-                <input
-                  id="authRecoveryEmail"
-                  type="email"
-                  inputmode="email"
-                  placeholder="Email on file"
-                  class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-                />
-                <button id="authRecoverySubmit" type="button" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Send Reminder</button>
-                <p id="authRecoveryMessage" class="hidden rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-black/10"></p>
-              </div>
-            </div>
+            <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
+              Email-only login is enabled right now.
+            </p>
 
             <div class="mt-1 flex flex-wrap gap-2">
               <button id="authModalSubmit" type="submit" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Continue</button>
@@ -279,14 +237,6 @@
       const authForm = document.getElementById("authForm");
       const authName = document.getElementById("authName");
       const authEmail = document.getElementById("authEmail");
-      const authPassword = document.getElementById("authPassword");
-      const authPasswordToggle = document.getElementById("authPasswordToggle");
-      const authRecoveryToggle = document.getElementById("authRecoveryToggle");
-      const authRecoveryPanel = document.getElementById("authRecoveryPanel");
-      const authRecoveryName = document.getElementById("authRecoveryName");
-      const authRecoveryEmail = document.getElementById("authRecoveryEmail");
-      const authRecoverySubmit = document.getElementById("authRecoverySubmit");
-      const authRecoveryMessage = document.getElementById("authRecoveryMessage");
       let authMode = "login";
 
       const refreshHomeAuthUI = () => {
@@ -301,21 +251,6 @@
         if (welcomeRaceName) welcomeRaceName.textContent = displayName || "Athlete";
       };
 
-      const resetRecoveryUI = () => {
-        authRecoveryPanel.classList.add("hidden");
-        authRecoveryName.value = "";
-        authRecoveryEmail.value = "";
-        authRecoveryMessage.classList.add("hidden");
-        authRecoveryMessage.textContent = "";
-      };
-
-      const setPasswordVisibility = (showPassword) => {
-        authPassword.type = showPassword ? "text" : "password";
-        authPasswordToggle.textContent = showPassword ? "Hide" : "Show";
-        authPasswordToggle.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
-        authPasswordToggle.setAttribute("aria-pressed", String(showPassword));
-      };
-
       const openAuthModal = (mode) => {
         authMode = mode;
         authModalTitle.textContent = mode === "create" ? "Create Account" : "Log In";
@@ -323,9 +258,6 @@
         authName.classList.toggle("hidden", mode !== "create");
         authName.value = "";
         authEmail.value = "";
-        authPassword.value = "";
-        setPasswordVisibility(false);
-        resetRecoveryUI();
         authModal.classList.remove("hidden");
         authModal.classList.add("flex");
         (mode === "create" ? authName : authEmail).focus();
@@ -334,8 +266,6 @@
       const closeAuthModal = () => {
         authModal.classList.add("hidden");
         authModal.classList.remove("flex");
-        resetRecoveryUI();
-        setPasswordVisibility(false);
       };
 
       homeLoginBtn?.addEventListener("click", () => openAuthModal("login"));
@@ -356,9 +286,8 @@
           ? await sessionApi.createAccount({
               name: authName.value,
               email: authEmail.value,
-              password: authPassword.value,
             })
-          : await sessionApi.login(authEmail.value, authPassword.value);
+          : await sessionApi.login(authEmail.value);
 
         authModalSubmit.disabled = false;
         authModalSubmit.classList.remove("opacity-70", "cursor-not-allowed");
@@ -370,36 +299,6 @@
 
         closeAuthModal();
         refreshHomeAuthUI();
-      });
-
-      authPasswordToggle?.addEventListener("click", () => {
-        setPasswordVisibility(authPassword.type === "password");
-      });
-
-      authRecoveryToggle?.addEventListener("click", () => {
-        const isHidden = authRecoveryPanel.classList.contains("hidden");
-        authRecoveryPanel.classList.toggle("hidden", !isHidden);
-        authRecoveryMessage.classList.add("hidden");
-        authRecoveryMessage.textContent = "";
-        if (isHidden) {
-          authRecoveryEmail.focus();
-        }
-      });
-
-      authRecoverySubmit?.addEventListener("click", async () => {
-        const result = await sessionApi.sendCredentialReminder({
-          name: authRecoveryName.value,
-          email: authRecoveryEmail.value,
-        });
-
-        authRecoveryMessage.classList.remove("hidden");
-        authRecoveryMessage.textContent = result.message;
-        authRecoveryMessage.classList.toggle("text-red-700", !result.ok);
-        authRecoveryMessage.classList.toggle("text-cc-text", result.ok);
-        authRecoveryMessage.classList.toggle("ring-red-200", !result.ok);
-        authRecoveryMessage.classList.toggle("bg-red-50", !result.ok);
-        authRecoveryMessage.classList.toggle("ring-black/10", result.ok);
-        authRecoveryMessage.classList.toggle("bg-white", result.ok);
       });
 
       authModalClose?.addEventListener("click", closeAuthModal);

@@ -137,10 +137,9 @@
                   class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
                 <input id="acEmail" type="email" inputmode="email" placeholder="Email Address"
                   class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-                <label class="relative block">
-                  <input id="acPassword" type="text" placeholder="Password"
-                    class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-                </label>
+                <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
+                  Account login is email-only for now.
+                </p>
               </div>
             </section>
 
@@ -406,6 +405,7 @@
 
         list.innerHTML = entries.map(([email, account]) => {
           const profile = account.calculators?.profile || {};
+          const macroTargets = profile.macroTargets || null;
           const cores   = (profile.cores || []).map((c) =>
             `<span style="background:${CORE_COLORS[c]}20;border:1px solid ${CORE_COLORS[c]}80;color:${CORE_COLORS[c] === '#ffbd59' || CORE_COLORS[c] === '#77d770' ? '#071f35' : '#071f35'}"
               class="inline-flex rounded-full px-2.5 py-0.5 text-[0.65rem] font-extrabold">${c.charAt(0).toUpperCase() + c.slice(1)}</span>`
@@ -423,11 +423,6 @@
                   class="login-as-btn rounded-xl bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95"
                   data-email="${email}" data-name="${account.name || email}">
                   Login As
-                </button>
-                <button type="button"
-                  class="show-pw-btn rounded-xl bg-cc-bg px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5"
-                  data-pw="${account.password || ""}">
-                  Show Password
                 </button>
               </div>
             </div>
@@ -452,6 +447,14 @@
             </dl>
 
             ${cores ? `<div class="mt-3 flex flex-wrap gap-1.5">${cores}</div>` : ""}
+            <div class="mt-3 rounded-xl bg-cc-bg px-3 py-2">
+              <p class="text-[0.65rem] font-bold uppercase tracking-wide opacity-50">Current Macro Targets</p>
+              <p class="mt-1 text-xs font-extrabold">
+                ${macroTargets
+                  ? `${macroTargets.calories || "0"} cal · P ${macroTargets.protein || "0"}g · C ${macroTargets.carbs || "0"}g · F ${macroTargets.fat || "0"}g`
+                  : "No macro targets saved yet"}
+              </p>
+            </div>
 
             <p class="mt-3 text-xs opacity-40">Created ${formatDate(account.createdAt)}</p>
           </article>`;
@@ -468,25 +471,6 @@
           });
         });
 
-        // Show Password buttons
-        list.querySelectorAll(".show-pw-btn").forEach((btn) => {
-          btn.addEventListener("click", function () {
-            if (this.dataset.showing === "1") {
-              this.textContent = "Show Password";
-              this.dataset.showing = "0";
-            } else {
-              const pw = this.dataset.pw || "(no password saved)";
-              this.textContent = pw;
-              this.dataset.showing = "1";
-              setTimeout(() => {
-                if (this.dataset.showing === "1") {
-                  this.textContent = "Show Password";
-                  this.dataset.showing = "0";
-                }
-              }, 8000);
-            }
-          });
-        });
       }
 
       document.getElementById("refreshAccountsBtn")?.addEventListener("click", renderAccounts);
@@ -560,7 +544,6 @@
 
         const name     = document.getElementById("acName").value.trim();
         const email    = document.getElementById("acEmail").value.trim();
-        const password = document.getElementById("acPassword").value.trim();
         const age      = document.getElementById("acAge").value;
         const weight   = document.getElementById("acWeight").value;
 
@@ -573,8 +556,8 @@
         formError.classList.add("hidden");
         formSuccess.classList.add("hidden");
 
-        if (!name || !email || !password) {
-          formError.textContent = "Name, email, and password are required.";
+        if (!name || !email) {
+          formError.textContent = "Name and email are required.";
           formError.classList.remove("hidden");
           return;
         }
@@ -586,7 +569,7 @@
         // Save the current session so we can restore it after creating the account
         const previousSession = localStorage.getItem("ccSession");
 
-        const result = await sessionApi.createAccount({ name, email, password });
+        const result = await sessionApi.createAccount({ name, email });
 
         if (!result.ok) {
           formError.textContent = result.error;

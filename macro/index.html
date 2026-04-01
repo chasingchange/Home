@@ -330,6 +330,10 @@
                       Uses an ideal baseline with age adjustment, then maps lean (−5%), athletic (baseline), and muscular (+7%) physique ranges.
                     </p>
                   </div>
+                  <div id="changeSummaryBox" class="hidden rounded-2xl p-4 ring-1 ring-black/10 bg-cc-bg">
+                    <p class="text-xs uppercase tracking-wide opacity-60 font-bold">Change From Last Saved Targets</p>
+                    <p id="changeSummaryText" class="mt-1 text-sm font-extrabold">No previous targets on file yet.</p>
+                  </div>
 
 
                 <!-- Goal -->
@@ -700,10 +704,13 @@
       const carbsShareOut = document.getElementById("carbsShareOut");
       const fatShareOut = document.getElementById("fatShareOut");
       const ledgerSyncStatus = document.getElementById("ledgerSyncStatus");
+      const changeSummaryBox = document.getElementById("changeSummaryBox");
+      const changeSummaryText = document.getElementById("changeSummaryText");
 
       const sessionApi = window.ChasingChangeSession;
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
       const MACRO_STORAGE_KEY = "macroCalculator";
+      let lastSavedOutputs = null;
 
       const activityFactors = {
         sedentary: 1.2,
@@ -780,6 +787,12 @@
         }
 
         if (outputs.calories) {
+          lastSavedOutputs = {
+            calories: Number(outputs.calories || 0),
+            protein: Number(outputs.protein || 0),
+            carbs: Number(outputs.carbs || 0),
+            fat: Number(outputs.fat || 0),
+          };
           caloriesOut.textContent = outputs.calories || "0";
           bmrOut.textContent = outputs.bmr || "0";
           tdeeOut.textContent = outputs.tdee || "0";
@@ -795,6 +808,22 @@
 
         updateWeeklyByTargets();
         updateIdealBodyWeightPreview();
+      }
+
+      function renderChangeSummary(currentOutputs) {
+        if (!lastSavedOutputs || !currentOutputs) {
+          hide(changeSummaryBox);
+          return;
+        }
+
+        const delta = (value, previous) => {
+          const diff = Number(value || 0) - Number(previous || 0);
+          const sign = diff > 0 ? "+" : "";
+          return `${sign}${diff}`;
+        };
+
+        changeSummaryText.textContent = `Calories ${delta(currentOutputs.calories, lastSavedOutputs.calories)} · Protein ${delta(currentOutputs.protein, lastSavedOutputs.protein)}g · Carbs ${delta(currentOutputs.carbs, lastSavedOutputs.carbs)}g · Fat ${delta(currentOutputs.fat, lastSavedOutputs.fat)}g`;
+        show(changeSummaryBox);
       }
 
       function refreshAccountNotice() {
@@ -1240,6 +1269,12 @@ const proteinPerLb =
         proteinOut.textContent = proteinR;
         carbsOut.textContent = carbsR;
         fatOut.textContent = fatR;
+        renderChangeSummary({
+          calories: caloriesR,
+          protein: proteinR,
+          carbs: carbsR,
+          fat: fatR,
+        });
 
         // Shares
         const proteinPct = Math.round((protein * 4 / targetCalories) * 100);
@@ -1261,6 +1296,7 @@ const proteinPerLb =
 
         show(resultsEl);
         sessionApi?.saveCalculatorData?.(MACRO_STORAGE_KEY, collectStoredMacroData());
+        lastSavedOutputs = { calories: caloriesR, protein: proteinR, carbs: carbsR, fat: fatR };
       }
 
       function saveTargetsToLedger() {

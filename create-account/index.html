@@ -102,13 +102,9 @@
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-              <label class="relative block">
-                <input id="caPassword" type="password" placeholder="Password" autocomplete="new-password"
-                  class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-16 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-                <button id="caPasswordToggle" type="button"
-                  class="absolute inset-y-2 right-2 rounded-xl bg-white px-3 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5"
-                  aria-label="Show password" aria-pressed="false">Show</button>
-              </label>
+              <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
+                Email-only login is enabled right now. No password needed.
+              </p>
             </div>
           </section>
 
@@ -242,15 +238,6 @@
         document.getElementById("alreadyLoggedIn").classList.add("hidden");
       });
 
-      // ── Password toggle ────────────────────────────────────────────
-      const caPassword = document.getElementById("caPassword");
-      document.getElementById("caPasswordToggle")?.addEventListener("click", function () {
-        const show = caPassword.type === "password";
-        caPassword.type = show ? "text" : "password";
-        this.textContent = show ? "Hide" : "Show";
-        this.setAttribute("aria-pressed", String(show));
-      });
-
       // ── Height unit toggle ─────────────────────────────────────────
       const htImperialBtn = document.getElementById("htImperialBtn");
       const htMetricBtn = document.getElementById("htMetricBtn");
@@ -326,7 +313,6 @@
 
         const name     = document.getElementById("caName").value.trim();
         const email    = document.getElementById("caEmail").value.trim();
-        const password = document.getElementById("caPassword").value;
         const age      = document.getElementById("caAge").value;
         const weight   = document.getElementById("caWeight").value;
 
@@ -338,8 +324,8 @@
         const formError = document.getElementById("formError");
         formError.classList.add("hidden");
 
-        if (!name || !email || !password) {
-          formError.textContent = "Please fill in your name, email, and password.";
+        if (!name || !email) {
+          formError.textContent = "Please fill in your name and email.";
           formError.classList.remove("hidden");
           return;
         }
@@ -355,7 +341,7 @@
         submitBtn.textContent = "Creating…";
 
         // Create account (also sets session to this user)
-        const result = await sessionApi.createAccount({ name, email, password });
+        const result = await sessionApi.createAccount({ name, email });
 
         if (!result.ok) {
           formError.textContent = result.error;
