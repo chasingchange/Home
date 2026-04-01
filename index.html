@@ -67,7 +67,7 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-xs font-bold uppercase tracking-wide opacity-70">Account</p>
-              <h2 id="authModalTitle" class="mt-2 text-2xl font-extrabold font-heading">Log In</h2>
+              <h2 id="authModalTitle" class="mt-2 text-2xl font-extrabold font-heading">Chasing Change Account</h2>
             </div>
             <button id="authModalClose" type="button" class="rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Close</button>
           </div>
@@ -92,6 +92,7 @@
 
             <div class="mt-1 flex flex-wrap gap-2">
               <button id="authModalSubmit" type="submit" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Continue</button>
+              <button id="authContinueGuest" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Continue as Guest</button>
               <button id="authModalCancel" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Cancel</button>
             </div>
           </form>
@@ -232,10 +233,12 @@
       const authModalTitle = document.getElementById("authModalTitle");
       const authModalClose = document.getElementById("authModalClose");
       const authModalCancel = document.getElementById("authModalCancel");
+      const authContinueGuest = document.getElementById("authContinueGuest");
       const authModalSubmit = document.getElementById("authModalSubmit");
       const authForm = document.getElementById("authForm");
       const authName = document.getElementById("authName");
       const authEmail = document.getElementById("authEmail");
+      const homeGuestPromptSeenKey = "ccHomeGuestPromptSeen";
       let authMode = "login";
 
       const refreshHomeAuthUI = () => {
@@ -252,7 +255,7 @@
 
       const openAuthModal = (mode) => {
         authMode = mode;
-        authModalTitle.textContent = mode === "create" ? "Create Account" : "Log In";
+        authModalTitle.textContent = "Chasing Change Account";
         authModalSubmit.textContent = mode === "create" ? "Create Account" : "Log In";
         authName.classList.toggle("hidden", mode !== "create");
         authName.value = "";
@@ -302,6 +305,10 @@
 
       authModalClose?.addEventListener("click", closeAuthModal);
       authModalCancel?.addEventListener("click", closeAuthModal);
+      authContinueGuest?.addEventListener("click", () => {
+        localStorage.setItem(homeGuestPromptSeenKey, "true");
+        closeAuthModal();
+      });
       authModal?.addEventListener("click", (event) => {
         if (event.target === authModal) closeAuthModal();
       });
@@ -310,7 +317,14 @@
       });
 
       setCoreFilter("body");
-      sessionApi?.whenReady?.().finally(refreshHomeAuthUI);
+      sessionApi?.whenReady?.().finally(() => {
+        refreshHomeAuthUI();
+        const hasAccount = Boolean(sessionApi?.getCurrentDisplayName?.());
+        const hasSeenGuestPrompt = localStorage.getItem(homeGuestPromptSeenKey) === "true";
+        if (!hasAccount && !hasSeenGuestPrompt) {
+          openAuthModal("login");
+        }
+      });
     </script>
   </body>
 </html>
