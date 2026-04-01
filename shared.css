@@ -357,45 +357,56 @@ h3 {
   right: 1rem;
   bottom: 1rem;
   z-index: 9999;
-  width: min(90vw, 300px);
-  border-radius: 1.05rem;
-  border: 1px solid rgba(7, 31, 53, 0.14);
-  background: #e6e6e6;
-  box-shadow: 0 12px 30px rgba(7, 31, 53, 0.14);
-  padding: 0.9rem;
+  width: min(92vw, 340px);
+  border-radius: 1.2rem;
+  border: 1px solid rgba(7, 31, 53, 0.12);
+  background: linear-gradient(165deg, #ffffff 0%, #f8fbf8 100%);
+  box-shadow: 0 16px 40px rgba(7, 31, 53, 0.18);
+  padding: 0.95rem;
 }
 
 .cc-account-title {
   margin: 0;
-  font-family: var(--cc-heading-font);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
+  font-family: var(--cc-brand-font);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.72;
+  opacity: 0.78;
 }
 
 .cc-account-status {
-  margin: 0.35rem 0 0;
-  font-size: 0.74rem;
-  font-weight: 700;
-  opacity: 0.85;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.cc-account-copy {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  opacity: 0.75;
 }
 
 .cc-account-actions {
-  margin-top: 0.6rem;
-  display: flex;
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
 }
 
-.cc-account-actions button {
-  flex: 1 1 auto;
-  border-radius: 0.65rem;
+.cc-account-actions button,
+.cc-account-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
-  padding: 0.52rem 0.6rem;
-  font-size: 0.83rem;
+  padding: 0.54rem 0.62rem;
+  font-size: 0.8rem;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .cc-account-login-btn {
@@ -407,6 +418,77 @@ h3 {
 .cc-account-logout-btn {
   background: #ffffff;
   color: var(--cc-text);
+}
+
+.cc-auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(7, 31, 53, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.cc-auth-modal__panel {
+  width: min(100%, 430px);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  border: 1px solid rgba(7, 31, 53, 0.1);
+  box-shadow: 0 20px 50px rgba(7, 31, 53, 0.22);
+  padding: 1rem;
+}
+
+.cc-auth-modal__eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 800;
+  opacity: 0.65;
+}
+
+.cc-auth-modal__title {
+  margin: 0.3rem 0 0;
+  font-family: var(--cc-heading-font);
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.cc-auth-form {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.cc-auth-form input {
+  width: 100%;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  background: #f8fafc;
+  color: var(--cc-text);
+  padding: 0.72rem 0.8rem;
+  font-family: var(--cc-body-font);
+  font-size: 0.93rem;
+}
+
+.cc-auth-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  opacity: 0.75;
+}
+
+.cc-auth-actions {
+  margin-top: 0.35rem;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.cc-auth-actions .cc-account-login-btn,
+.cc-auth-actions .cc-account-logout-btn {
+  flex: 1 1 auto;
 }
 
 .cc-modal {
