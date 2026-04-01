@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account — Chasing Change</title>
+    <meta name="description" content="Create your Chasing Change account to track your journey across every core." />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+    <script src="../shared-session.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              neon: "0 24px 80px rgba(119,215,112,0.30)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="relative max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+      <!-- Background blobs -->
+      <div class="absolute inset-0 -z-10 pointer-events-none">
+        <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
+        <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
+      </div>
+
+      <!-- Header -->
+      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
+        <div class="relative p-6 sm:p-8">
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+          <div class="relative flex items-center gap-3">
+            <a href="../index.html">
+              <img src="../Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
+            </a>
+            <div>
+              <a href="../index.html" class="text-2xl sm:text-3xl font-extrabold font-brand leading-tight hover:text-cc-outline transition">Chasing Change</a>
+              <p class="text-sm font-bold font-heading opacity-60">Create Your Account</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Already logged in banner -->
+      <div id="alreadyLoggedIn" class="hidden mb-6 rounded-2xl bg-cc-outline/15 ring-1 ring-cc-outline/40 p-5">
+        <p class="font-extrabold font-heading">You're already logged in!</p>
+        <p id="alreadyLoggedInName" class="mt-1 text-sm opacity-70"></p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a href="../index.html" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Go Home</a>
+          <button id="logoutAndCreateBtn" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Log Out &amp; Create New Account</button>
+        </div>
+      </div>
+
+      <!-- Success state -->
+      <div id="successState" class="hidden mb-6 overflow-hidden rounded-[2rem] bg-white ring-1 ring-black/5 shadow-soft">
+        <div class="race-card-track p-6 sm:p-8">
+          <div class="race-card-overlay"></div>
+          <div class="relative z-10 max-w-lg">
+            <p class="race-card-kicker">Chasing Change</p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to the Race, <span id="successName">Athlete</span>!</h2>
+            <p class="mt-3 text-sm sm:text-base font-semibold text-white/90">Your account is ready. Let's get to work.</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Go to Dashboard</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form section -->
+      <main id="formSection">
+        <form id="createAccountForm" class="grid gap-5" novalidate>
+
+          <!-- Section: Basic Info -->
+          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+            <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
+            <h2 class="text-lg font-extrabold font-heading">Basic Info</h2>
+            <p class="mt-1 text-sm opacity-60">Your login credentials.</p>
+            <div class="mt-5 grid gap-3">
+              <input id="caName" type="text" placeholder="Full Name" autocomplete="name"
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <label class="relative block">
+                <input id="caPassword" type="password" placeholder="Password" autocomplete="new-password"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-16 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                <button id="caPasswordToggle" type="button"
+                  class="absolute inset-y-2 right-2 rounded-xl bg-white px-3 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5"
+                  aria-label="Show password" aria-pressed="false">Show</button>
+              </label>
+            </div>
+          </section>
+
+          <!-- Section: About You -->
+          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+            <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
+            <h2 class="text-lg font-extrabold font-heading">About You</h2>
+            <p class="mt-1 text-sm opacity-60">Personalizes your tools and recommendations.</p>
+            <div class="mt-5 grid gap-5">
+
+              <!-- Age -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wide opacity-60 mb-1.5" for="caAge">Age</label>
+                <input id="caAge" type="number" min="13" max="120" placeholder="e.g. 27"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              </div>
+
+              <!-- Height -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-bold uppercase tracking-wide opacity-60">Height</label>
+                  <div class="flex gap-1 rounded-xl bg-cc-bg ring-1 ring-black/10 p-1">
+                    <button type="button" id="htImperialBtn" class="rounded-lg px-3 py-1 text-xs font-extrabold bg-cc-outline text-cc-text transition" aria-pressed="true">ft / in</button>
+                    <button type="button" id="htMetricBtn" class="rounded-lg px-3 py-1 text-xs font-extrabold text-cc-text/50 hover:bg-white transition" aria-pressed="false">cm</button>
+                  </div>
+                </div>
+                <div id="htImperialInputs" class="flex gap-2">
+                  <div class="flex-1 relative">
+                    <input id="caHeightFt" type="number" min="3" max="8" placeholder="5"
+                      class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-10 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold opacity-40 pointer-events-none">ft</span>
+                  </div>
+                  <div class="flex-1 relative">
+                    <input id="caHeightIn" type="number" min="0" max="11" placeholder="10"
+                      class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-10 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold opacity-40 pointer-events-none">in</span>
+                  </div>
+                </div>
+                <div id="htMetricInputs" class="hidden relative">
+                  <input id="caHeightCm" type="number" min="91" max="280" placeholder="178"
+                    class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-12 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold opacity-40 pointer-events-none">cm</span>
+                </div>
+              </div>
+
+              <!-- Sex -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wide opacity-60 mb-1.5">Sex</label>
+                <div id="sexSelector" class="flex flex-wrap gap-2">
+                  <button type="button" class="sex-opt rounded-xl px-4 py-2.5 text-sm font-extrabold bg-cc-bg ring-1 ring-black/10 transition hover:bg-black/5" data-value="male">Male</button>
+                  <button type="button" class="sex-opt rounded-xl px-4 py-2.5 text-sm font-extrabold bg-cc-bg ring-1 ring-black/10 transition hover:bg-black/5" data-value="female">Female</button>
+                  <button type="button" class="sex-opt rounded-xl px-4 py-2.5 text-sm font-extrabold bg-cc-bg ring-1 ring-black/10 transition hover:bg-black/5" data-value="prefer-not-to-say">Prefer not to say</button>
+                </div>
+              </div>
+
+              <!-- Weight -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-bold uppercase tracking-wide opacity-60">Current Weight</label>
+                  <div class="flex gap-1 rounded-xl bg-cc-bg ring-1 ring-black/10 p-1">
+                    <button type="button" id="wtLbsBtn" class="rounded-lg px-3 py-1 text-xs font-extrabold bg-cc-outline text-cc-text transition" aria-pressed="true">lbs</button>
+                    <button type="button" id="wtKgBtn" class="rounded-lg px-3 py-1 text-xs font-extrabold text-cc-text/50 hover:bg-white transition" aria-pressed="false">kg</button>
+                  </div>
+                </div>
+                <div class="relative">
+                  <input id="caWeight" type="number" min="1" max="999" step="0.1" placeholder="175"
+                    class="w-full rounded-xl bg-cc-bg px-4 py-3 pr-14 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                  <span id="wtUnitLabel" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold opacity-40 pointer-events-none">lbs</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- Section: Your Cores -->
+          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+            <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
+            <h2 class="text-lg font-extrabold font-heading">Your Cores</h2>
+            <p class="mt-1 text-sm opacity-60">Select every area of life you want to grow in. You can update these anytime.</p>
+            <div id="coreSelector" class="mt-4 flex flex-wrap gap-2">
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="body" style="--chip-color: #77d770" aria-pressed="false">Body</button>
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="art" style="--chip-color: #ffbd59" aria-pressed="false">Art</button>
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="mind" style="--chip-color: #2a9df0" aria-pressed="false">Mind</button>
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="soul" style="--chip-color: #aa70d7" aria-pressed="false">Soul</button>
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="career" style="--chip-color: #f02348" aria-pressed="false">Career</button>
+              <button type="button" class="core-toggle category-chip text-sm px-4 py-2" data-core="life" style="--chip-color: #e46702" aria-pressed="false">Life</button>
+            </div>
+            <p id="coreError" class="hidden mt-2 text-sm font-semibold text-red-600">Please select at least one core.</p>
+          </section>
+
+          <!-- Form error -->
+          <div id="formError" class="hidden rounded-xl bg-red-50 ring-1 ring-red-200 px-4 py-3 text-sm font-semibold text-red-700"></div>
+
+          <!-- Submit -->
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="caSubmitBtn" type="submit"
+              class="rounded-xl bg-cc-outline px-6 py-3 text-sm font-extrabold text-cc-text transition hover:brightness-95 disabled:opacity-60 disabled:cursor-not-allowed">
+              Create My Account
+            </button>
+            <a href="../index.html" class="rounded-xl bg-white px-6 py-3 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Cancel</a>
+          </div>
+
+          <p class="text-xs opacity-60">Already have an account? <a href="../index.html" class="underline decoration-cc-outline font-bold hover:text-cc-outline transition">Log in from the home page.</a></p>
+
+        </form>
+      </main>
+
+      <p class="mt-10 text-center text-xs opacity-50">© 2026 Chasing Change — 1% better every day.</p>
+    </div>
+
+    <script>
+      const sessionApi = window.ChasingChangeSession;
+      let heightUnit = "imperial";
+      let weightUnit = "lbs";
+      let selectedSex = null;
+      const selectedCores = new Set();
+
+      // ── Check if already logged in ─────────────────────────────────
+      sessionApi?.whenReady?.().then(() => {
+        const session = sessionApi.getCurrentAccount();
+        if (session) {
+          const banner = document.getElementById("alreadyLoggedIn");
+          banner.classList.remove("hidden");
+          document.getElementById("alreadyLoggedInName").textContent =
+            `Logged in as ${session.account.name || session.email}.`;
+        }
+      });
+
+      document.getElementById("logoutAndCreateBtn")?.addEventListener("click", () => {
+        sessionApi.logout();
+        document.getElementById("alreadyLoggedIn").classList.add("hidden");
+      });
+
+      // ── Password toggle ────────────────────────────────────────────
+      const caPassword = document.getElementById("caPassword");
+      document.getElementById("caPasswordToggle")?.addEventListener("click", function () {
+        const show = caPassword.type === "password";
+        caPassword.type = show ? "text" : "password";
+        this.textContent = show ? "Hide" : "Show";
+        this.setAttribute("aria-pressed", String(show));
+      });
+
+      // ── Height unit toggle ─────────────────────────────────────────
+      const htImperialBtn = document.getElementById("htImperialBtn");
+      const htMetricBtn = document.getElementById("htMetricBtn");
+      const htImperialInputs = document.getElementById("htImperialInputs");
+      const htMetricInputs = document.getElementById("htMetricInputs");
+
+      function setHeightUnit(unit) {
+        heightUnit = unit;
+        const imperial = unit === "imperial";
+        htImperialInputs.classList.toggle("hidden", !imperial);
+        htMetricInputs.classList.toggle("hidden", imperial);
+        htImperialBtn.classList.toggle("bg-cc-outline", imperial);
+        htImperialBtn.classList.toggle("text-cc-text/50", !imperial);
+        htMetricBtn.classList.toggle("bg-cc-outline", !imperial);
+        htMetricBtn.classList.toggle("text-cc-text/50", imperial);
+        htImperialBtn.setAttribute("aria-pressed", String(imperial));
+        htMetricBtn.setAttribute("aria-pressed", String(!imperial));
+      }
+
+      htImperialBtn?.addEventListener("click", () => setHeightUnit("imperial"));
+      htMetricBtn?.addEventListener("click", () => setHeightUnit("metric"));
+
+      // ── Weight unit toggle ─────────────────────────────────────────
+      function setWeightUnit(unit) {
+        weightUnit = unit;
+        const lbs = unit === "lbs";
+        document.getElementById("wtUnitLabel").textContent = unit;
+        document.getElementById("wtLbsBtn").classList.toggle("bg-cc-outline", lbs);
+        document.getElementById("wtLbsBtn").classList.toggle("text-cc-text/50", !lbs);
+        document.getElementById("wtKgBtn").classList.toggle("bg-cc-outline", !lbs);
+        document.getElementById("wtKgBtn").classList.toggle("text-cc-text/50", lbs);
+        document.getElementById("wtLbsBtn").setAttribute("aria-pressed", String(lbs));
+        document.getElementById("wtKgBtn").setAttribute("aria-pressed", String(!lbs));
+      }
+
+      document.getElementById("wtLbsBtn")?.addEventListener("click", () => setWeightUnit("lbs"));
+      document.getElementById("wtKgBtn")?.addEventListener("click", () => setWeightUnit("kg"));
+
+      // ── Sex selector ───────────────────────────────────────────────
+      document.getElementById("sexSelector")?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".sex-opt");
+        if (!btn) return;
+        selectedSex = btn.dataset.value;
+        document.querySelectorAll(".sex-opt").forEach((b) => {
+          const active = b.dataset.value === selectedSex;
+          b.classList.toggle("bg-cc-outline", active);
+          b.classList.toggle("ring-cc-outline", active);
+          b.classList.toggle("bg-cc-bg", !active);
+          b.classList.toggle("ring-black/10", !active);
+        });
+      });
+
+      // ── Core selector ──────────────────────────────────────────────
+      document.getElementById("coreSelector")?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".core-toggle");
+        if (!btn) return;
+        const core = btn.dataset.core;
+        if (selectedCores.has(core)) {
+          selectedCores.delete(core);
+          btn.classList.remove("is-active");
+          btn.setAttribute("aria-pressed", "false");
+        } else {
+          selectedCores.add(core);
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-pressed", "true");
+        }
+        document.getElementById("coreError").classList.add("hidden");
+      });
+
+      // ── Form submit ────────────────────────────────────────────────
+      document.getElementById("createAccountForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name     = document.getElementById("caName").value.trim();
+        const email    = document.getElementById("caEmail").value.trim();
+        const password = document.getElementById("caPassword").value;
+        const age      = document.getElementById("caAge").value;
+        const weight   = document.getElementById("caWeight").value;
+
+        const height = heightUnit === "imperial"
+          ? { unit: "imperial", ft: Number(document.getElementById("caHeightFt").value) || null, in: Number(document.getElementById("caHeightIn").value) || null }
+          : { unit: "metric",   cm: Number(document.getElementById("caHeightCm").value) || null };
+
+        // Validate
+        const formError = document.getElementById("formError");
+        formError.classList.add("hidden");
+
+        if (!name || !email || !password) {
+          formError.textContent = "Please fill in your name, email, and password.";
+          formError.classList.remove("hidden");
+          return;
+        }
+
+        if (selectedCores.size === 0) {
+          document.getElementById("coreError").classList.remove("hidden");
+          document.getElementById("coreSelector").scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+
+        const submitBtn = document.getElementById("caSubmitBtn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Creating…";
+
+        // Create account (also sets session to this user)
+        const result = await sessionApi.createAccount({ name, email, password });
+
+        if (!result.ok) {
+          formError.textContent = result.error;
+          formError.classList.remove("hidden");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create My Account";
+          return;
+        }
+
+        // Save extended profile data
+        await sessionApi.saveCalculatorData("profile", {
+          age:    age    ? Number(age)    : null,
+          height,
+          sex:    selectedSex,
+          weight: weight ? { value: Number(weight), unit: weightUnit } : null,
+          cores:  Array.from(selectedCores),
+        });
+
+        // Show success
+        document.getElementById("formSection").classList.add("hidden");
+        document.getElementById("alreadyLoggedIn").classList.add("hidden");
+        document.getElementById("successName").textContent = name;
+        document.getElementById("successState").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>
