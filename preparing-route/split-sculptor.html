@@ -113,6 +113,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
 .ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
 .ask-out { margin-top: .8rem; font-size: .9rem; line-height: 1.5; color: var(--text); }
+.quick-link-row { margin-top: .7rem; }
+.quick-link-row .btn { text-decoration: none; display: inline-block; }
 .nav { display: flex; align-items: center; gap: .55rem; margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid rgba(7,31,53,0.1); }
 .btn { font-family: 'Muli', sans-serif; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); padding: .55rem 1rem; cursor: pointer; color: var(--muted); }
 .btn:disabled { opacity: .35; pointer-events: none; }
@@ -285,6 +287,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
         <button class="btn btn-p" id="agent-btn">Ask</button>
       </div>
       <div class="ask-out" id="agent-out">Ask a question and I’ll suggest swaps, progressions, and time-efficient adjustments.</div>
+      <div class="quick-link-row">
+        <a class="btn" href="../1RM Calculator/Index.html" target="_blank" rel="noopener noreferrer">Open 1RM Calculator for Working Weights</a>
+      </div>
     </div>
     <div class="builder-layout">
       <div class="day-grid" id="builder-out"></div>
@@ -890,6 +895,9 @@ function answerAgent(question) {
   }
   if (q.includes('progress') || q.includes('overload') || q.includes('heavier')) {
     return 'Progression target: add 1 rep per set weekly until top of range, then increase load 2.5–5% and repeat.';
+  }
+  if (q.includes('hypertophy') || q.includes('hypertrophy') || q.includes('meso') || q.includes('performance') || q.includes('rep target')) {
+    return 'Mesocycle guide (4 weeks): Hypertrophy = mostly 6–12 reps for compounds and 10–20 reps for isolations, with ~10–20 hard sets per muscle each week. Progressive overload = keep 1–3 reps in reserve, add reps first week to week, then increase load 2.5–5% when you hit the top of the rep range. Performance mesocycle = bias strength/speed with compounds in the 3–6 rep range at higher intent, accessories at 6–10 reps, and keep total volume slightly lower so output stays high. For working weights, use your estimated 1RM and run sets around 60–75% (hypertrophy) or 75–88% (performance-strength bias).';
   }
   if (q.includes('beginner') || q.includes('new')) {
     return 'Start with 2 working sets per lift and keep 2 reps in reserve. Add a 3rd set after week 2 if recovery is solid.';
