@@ -7,6 +7,7 @@
     <meta name="description" content="Calculate your next move with Chasing Change tools." />
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./shared-admin.js" defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -162,7 +163,7 @@
         </div>
       </section>
 
-      <main>
+      <main data-admin-edit-root>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
           <nav>
             <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
@@ -172,7 +173,6 @@
               <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
               <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Contact</a>
               <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Preparing the Route</a>
-              <a href="./exercise-matrix/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Exercise Matrix</a>
             </div>
 
             <div class="md:hidden">
@@ -188,8 +188,7 @@
                   <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
                   <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Contact</a>
                   <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Preparing the Route</a>
-                  <a href="./exercise-matrix/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Exercise Matrix</a>
-                </div>
+                    </div>
               </div>
             </div>
           </nav>
@@ -199,7 +198,7 @@
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
           </div>
 
-          <p class="mt-4 text-sm opacity-80">Tap a core below to filter tools by focus. Example: selecting <strong>Body</strong> shows only Body tools.</p>
+          <p class="mt-4 text-sm opacity-80">Tap a core below to filter tools by focus.</p>
           <div id="coreFilters" class="mt-3 flex flex-wrap gap-2">
             <button type="button" class="category-chip is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">Body</button>
             <button type="button" class="category-chip" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">Art</button>
