@@ -2,20 +2,95 @@
   const ADMIN_UNLOCKED_KEY = "ccAdminUnlocked";
   const PAGE_HTML_OVERRIDES_KEY = "ccPageHtmlOverrides";
   const ADMIN_PASSWORD = "Chasing1228!";
+  const ADMIN_SYNC_CONFIG_KEY = "ccAdminSyncConfig";
   const pageKey = `${location.pathname}`;
+
+
+  const readSyncConfig = () => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ADMIN_SYNC_CONFIG_KEY) || "{}");
+      return {
+        endpoint: String(parsed?.endpoint || "").trim(),
+        token: String(parsed?.token || "").trim(),
+      };
+    } catch {
+      return { endpoint: "", token: "" };
+    }
+  };
+
+  const saveSyncConfig = (config) => {
+    const next = {
+      endpoint: String(config?.endpoint || "").trim(),
+      token: String(config?.token || "").trim(),
+    };
+
+    if (!next.endpoint && !next.token) {
+      localStorage.removeItem(ADMIN_SYNC_CONFIG_KEY);
+      return;
+    }
+
+    localStorage.setItem(ADMIN_SYNC_CONFIG_KEY, JSON.stringify(next));
+  };
+
+  const getSyncHeaders = (token) => ({
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+
+  const loadRemoteOverrides = async () => {
+    const { endpoint, token } = readSyncConfig();
+    if (!endpoint) return null;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: getSyncHeaders(token),
+      });
+      if (!response.ok) throw new Error(`GET ${response.status}`);
+      const body = await response.json();
+      return body && typeof body === "object" ? body : {};
+    } catch (error) {
+      console.warn("Unable to load remote admin overrides. Falling back to local browser storage.", error);
+      return null;
+    }
+  };
+
+  const saveRemoteOverrides = async (overrides) => {
+    const { endpoint, token } = readSyncConfig();
+    if (!endpoint) return false;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: getSyncHeaders(token),
+        body: JSON.stringify(overrides),
+      });
+      if (!response.ok) throw new Error(`PUT ${response.status}`);
+      return true;
+    } catch (error) {
+      console.warn("Unable to sync admin overrides to remote storage.", error);
+      return false;
+    }
+  };
 
   const readOverrides = () => {
     try { return JSON.parse(localStorage.getItem(PAGE_HTML_OVERRIDES_KEY) || "{}"); }
     catch { return {}; }
   };
 
-  const saveOverride = (root) => {
+  const saveOverride = async (root) => {
     const overrides = readOverrides();
     overrides[pageKey] = root.innerHTML;
     localStorage.setItem(PAGE_HTML_OVERRIDES_KEY, JSON.stringify(overrides));
+    await saveRemoteOverrides(overrides);
   };
 
-  const applySavedPage = () => {
+  const applySavedPage = async () => {
+    const remoteOverrides = await loadRemoteOverrides();
+    if (remoteOverrides) {
+      localStorage.setItem(PAGE_HTML_OVERRIDES_KEY, JSON.stringify(remoteOverrides));
+    }
+
     const saved = readOverrides()[pageKey];
     const root = document.querySelector("[data-admin-edit-root]");
     if (saved && root) root.innerHTML = saved;
@@ -103,6 +178,10 @@
       saveBtn.textContent = "Save";
       saveBtn.style.cssText = "border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;background:transparent;color:#fff;font-weight:800;cursor:pointer;";
 
+      const syncBtn = document.createElement("button");
+      syncBtn.textContent = "Sync setup";
+      syncBtn.style.cssText = "border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;background:transparent;color:#fff;font-weight:800;cursor:pointer;";
+
       const lockBtn = document.createElement("button");
       lockBtn.textContent = "Lock";
       lockBtn.style.cssText = "border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;background:transparent;color:#fff;font-weight:800;cursor:pointer;";
@@ -129,10 +208,23 @@
         setSelected(target);
       });
 
-      saveBtn.addEventListener("click", () => {
-        saveOverride(root);
+      saveBtn.addEventListener("click", async () => {
+        await saveOverride(root);
         saveBtn.textContent = "Saved";
         setTimeout(() => (saveBtn.textContent = "Save"), 900);
+      });
+
+      syncBtn.addEventListener("click", () => {
+        const current = readSyncConfig();
+        const endpoint = prompt("Sync endpoint URL (expects GET/PUT JSON)", current.endpoint || "");
+        if (endpoint === null) return;
+
+        const token = prompt("Bearer token (optional)", current.token || "");
+        if (token === null) return;
+
+        saveSyncConfig({ endpoint, token });
+        syncBtn.textContent = endpoint ? "Sync on" : "Sync off";
+        setTimeout(() => (syncBtn.textContent = "Sync setup"), 1000);
       });
 
       lockBtn.addEventListener("click", () => {
@@ -145,15 +237,15 @@
         buildLockedView();
       });
 
-      bar.append(editBtn, moveBtn, upBtn, downBtn, saveBtn, lockBtn);
+      bar.append(editBtn, moveBtn, upBtn, downBtn, saveBtn, syncBtn, lockBtn);
     };
 
     isUnlocked() ? buildUnlockedView() : buildLockedView();
     document.body.appendChild(bar);
   };
 
-  document.addEventListener("DOMContentLoaded", () => {
-    applySavedPage();
+  document.addEventListener("DOMContentLoaded", async () => {
+    await applySavedPage();
     mountAdminBar();
   });
 })();
