@@ -712,11 +712,16 @@ function getPriorityTargetForDay(dayIndex) {
   return order[dayIndex % order.length];
 }
 
-function getAutoTargetMuscle(slotType, slotIndex, dayPriority) {
-  if (dayPriority !== 'Back') return '';
-  if (slotType === 'Compound' && slotIndex === 0) return 'Back';
-  if (slotType === 'Machine' && slotIndex === 2) return 'Back';
-  if (slotType === 'Isolated' && slotIndex === 4) return 'Back';
+function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
+  const primarySlotIndex = slotPattern.indexOf(slotType);
+  if (primarySlotIndex < 0) return '';
+  const isPrimarySlot = slotIndex === primarySlotIndex;
+  const normalizedPriority = (dayPriority || '').toLowerCase();
+  const secondaryOptions = getDayFocusMuscles(dayFocus).filter((muscle) => muscle !== dayPriority);
+
+  if (isPrimarySlot) return dayPriority || '';
+  if (normalizedPriority === 'chest' && secondaryOptions.length === 1) return secondaryOptions[0];
+  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(normalizedPriority)) return '';
   return '';
 }
 
@@ -728,8 +733,9 @@ function applyPriorityTargetsToBaseRows() {
     const dayRows = state.customDays[state.freq][dayKey];
     if (!dayRows) return;
     const dayPriority = getPriorityTargetForDay(i);
+    const dayFocus = extractFocusName(line);
     for (let rowIndex = 0; rowIndex < Math.min(slotPattern.length, dayRows.length); rowIndex += 1) {
-      dayRows[rowIndex].targetMuscle = getAutoTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority);
+      dayRows[rowIndex].targetMuscle = getAutoTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority, dayFocus);
     }
   });
 }
@@ -746,11 +752,11 @@ function ensureDayPlan() {
         slot,
         name: '',
         id: '',
-        targetMuscle: getAutoTargetMuscle(slot, idx, dayPriority)
+        targetMuscle: getAutoTargetMuscle(slot, idx, dayPriority, dayFocus)
       }));
     } else {
       state.customDays[state.freq][dayKey].forEach((item, idx) => {
-        if (idx < slotPattern.length && !item.targetMuscle) item.targetMuscle = getAutoTargetMuscle(item.slot, idx, dayPriority);
+        if (idx < slotPattern.length && !item.targetMuscle) item.targetMuscle = getAutoTargetMuscle(item.slot, idx, dayPriority, dayFocus);
       });
     }
   });
