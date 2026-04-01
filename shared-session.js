@@ -190,8 +190,8 @@
     const password = typeof input === "object" ? input?.password : maybePassword;
     const normalizedEmail = normalizeEmail(email);
 
-    if (!name || !normalizedEmail || !password) {
-      return { ok: false, error: "Enter your name, email, and password to create an account." };
+    if (!name || !normalizedEmail) {
+      return { ok: false, error: "Enter your name and email to create an account." };
     }
 
     if (accountsCache[normalizedEmail]) {
@@ -200,7 +200,7 @@
 
     accountsCache[normalizedEmail] = ensureAccountShape({
       name,
-      password,
+      password: String(password || ""),
       calculators: {
         profile: {
           macroTargets: null,
@@ -224,13 +224,13 @@
     await ready;
 
     const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail || !password) {
-      return { ok: false, error: "Enter email + password." };
+    if (!normalizedEmail) {
+      return { ok: false, error: "Enter a valid email." };
     }
 
     const account = accountsCache[normalizedEmail];
-    if (!account || account.password !== password) {
-      return { ok: false, error: "Login failed. Check your email/password." };
+    if (!account) {
+      return { ok: false, error: "No account found for that email yet." };
     }
 
     localStorage.setItem(SESSION_KEY, normalizedEmail);
@@ -357,9 +357,7 @@
     loginBtn?.addEventListener("click", async () => {
       const email = window.prompt("Email:");
       if (!email) return;
-      const password = window.prompt("Password:");
-      if (!password) return;
-      const result = await login(email, password);
+      const result = await login(email);
       if (!result.ok) window.alert(result.error || "Login failed.");
       syncCard();
     });
@@ -369,9 +367,7 @@
       if (!name) return;
       const email = window.prompt("Email:");
       if (!email) return;
-      const password = window.prompt("Password:");
-      if (!password) return;
-      const result = await createAccount({ name, email, password });
+      const result = await createAccount({ name, email });
       if (!result.ok) window.alert(result.error || "Unable to create account.");
       syncCard();
     });
