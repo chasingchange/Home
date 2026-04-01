@@ -323,6 +323,7 @@
   };
 
   const renderPersistentAccountCard = () => {
+    if (window.self !== window.top) return;
     if (document.getElementById("ccPersistentAccountCard")) return;
 
     const card = document.createElement("section");
