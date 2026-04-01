@@ -329,46 +329,103 @@
     card.id = "ccPersistentAccountCard";
     card.className = "cc-account-card";
     card.innerHTML = `
-      <p class="cc-account-title">Account</p>
-      <p id="ccAccountStatus" class="cc-account-status">Not Logged In</p>
+      <p class="cc-account-title">Chasing Change Account</p>
+      <p id="ccAccountStatus" class="cc-account-status">Checking session…</p>
+      <p class="cc-account-copy">Use the same details for login + create. Name helps personalize your dashboard.</p>
       <div class="cc-account-actions">
-        <button id="ccLoginBtn" type="button" class="cc-account-login-btn">Log In</button>
-        <button id="ccCreateBtn" type="button" class="cc-account-create-btn">Create Account</button>
+        <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In / Create</button>
+        <a id="ccMacrosBtn" href="/macro/index.html" class="cc-account-create-btn" hidden>Update Macros</a>
         <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
       </div>
     `;
     document.body.appendChild(card);
 
+    const modal = document.createElement("div");
+    modal.className = "cc-auth-modal hidden";
+    modal.innerHTML = `
+      <div class="cc-auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ccAuthHeading">
+        <div class="cc-auth-modal__head">
+          <p class="cc-auth-modal__eyebrow">Account</p>
+          <h2 id="ccAuthHeading" class="cc-auth-modal__title">Log In or Create Account</h2>
+        </div>
+        <form id="ccAuthForm" class="cc-auth-form">
+          <input id="ccAuthName" type="text" placeholder="Full Name" autocomplete="name" />
+          <input id="ccAuthEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email" required />
+          <p class="cc-auth-hint">Enter both fields once. We’ll log you in if the account exists, or create it instantly.</p>
+          <div class="cc-auth-actions">
+            <button id="ccAuthSubmit" type="submit" class="cc-account-login-btn">Continue</button>
+            <button id="ccAuthCancel" type="button" class="cc-account-logout-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
     const statusEl = card.querySelector("#ccAccountStatus");
-    const loginBtn = card.querySelector("#ccLoginBtn");
-    const createBtn = card.querySelector("#ccCreateBtn");
+    const openAuthBtn = card.querySelector("#ccOpenAuthBtn");
+    const macrosBtn = card.querySelector("#ccMacrosBtn");
     const logoutBtn = card.querySelector("#ccLogoutBtn");
+    const authForm = modal.querySelector("#ccAuthForm");
+    const authName = modal.querySelector("#ccAuthName");
+    const authEmail = modal.querySelector("#ccAuthEmail");
+    const authSubmit = modal.querySelector("#ccAuthSubmit");
+    const authCancel = modal.querySelector("#ccAuthCancel");
 
     const syncCard = () => {
       const name = getCurrentDisplayName();
-      statusEl.textContent = name ? `Welcome Back To The Race, ${name}` : "Not Logged In";
-      loginBtn.hidden = !!name;
-      createBtn.hidden = !!name;
+      const message = name ? `Welcome Back To The Race, ${name}` : "Not Logged In";
+      statusEl.textContent = message;
+      openAuthBtn.hidden = !!name;
+      macrosBtn.hidden = !name;
       logoutBtn.hidden = !name;
       const pageLoginStatus = document.getElementById("pageLoginStatus");
-      if (pageLoginStatus) pageLoginStatus.textContent = statusEl.textContent;
+      if (pageLoginStatus) pageLoginStatus.textContent = message;
     };
 
-    loginBtn?.addEventListener("click", async () => {
-      const email = window.prompt("Email:");
-      if (!email) return;
-      const result = await login(email);
-      if (!result.ok) window.alert(result.error || "Login failed.");
-      syncCard();
+    const openModal = () => {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      authName.value = "";
+      authEmail.value = "";
+      authName.focus();
+    };
+
+    const closeModal = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    openAuthBtn?.addEventListener("click", openModal);
+    authCancel?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (event) => {
+      if (event.target === modal) closeModal();
     });
 
-    createBtn?.addEventListener("click", async () => {
-      const name = window.prompt("Name:");
-      if (!name) return;
-      const email = window.prompt("Email:");
-      if (!email) return;
-      const result = await createAccount({ name, email });
-      if (!result.ok) window.alert(result.error || "Unable to create account.");
+    authForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const name = String(authName.value || "").trim();
+      const email = String(authEmail.value || "").trim();
+
+      if (!email) {
+        window.alert("Enter your email to continue.");
+        return;
+      }
+
+      authSubmit.disabled = true;
+
+      let result = await login(email);
+      if (!result.ok && name) {
+        result = await createAccount({ name, email });
+      }
+
+      authSubmit.disabled = false;
+
+      if (!result.ok) {
+        window.alert(result.error || "Unable to continue. Add your name to create a new account.");
+        return;
+      }
+
+      closeModal();
       syncCard();
     });
 
@@ -377,7 +434,7 @@
       syncCard();
     });
 
-    syncCard();
+    whenReady().finally(syncCard);
   };
 
   if (typeof document !== "undefined") {
