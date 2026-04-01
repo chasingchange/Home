@@ -51,8 +51,8 @@
         <div class="relative p-6 sm:p-10">
           <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
 
-          <div class="relative flex flex-col items-center gap-5 text-center">
-            <img src="./Logo.png" alt="Chasing Change logo" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_10px_20px_rgba(7,31,53,0.25)]" />
+          <div class="relative flex flex-col items-center gap-2 text-center">
+            <img src="./Logo.png" alt="Chasing Change logo" class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-[0_10px_20px_rgba(7,31,53,0.25)]" />
             <div>
               <h1 class="text-4xl sm:text-5xl font-extrabold font-brand leading-tight">Chasing Change</h1>
               <p class="mt-3 text-center text-xl sm:text-2xl font-semibold italic font-heading">Pursuing Peace, Pursuing Purpose</p>
@@ -60,18 +60,6 @@
           </div>
         </div>
       </header>
-
-      <section class="mb-6 flex justify-start">
-        <div class="w-full max-w-sm rounded-2xl bg-white px-4 py-4 shadow-soft ring-1 ring-black/10 backdrop-blur-sm">
-          <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-cc-text/55">Account</p>
-          <p id="homeLoginStatus" class="mt-2 text-sm font-extrabold text-cc-text">Not Logged In</p>
-          <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <button id="homeLoginBtn" type="button" class="w-full rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95 sm:w-auto">Log In</button>
-            <button id="homeCreateAccountBtn" type="button" class="w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Create Account</button>
-            <button id="homeLogoutBtn" type="button" class="hidden w-full rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5 sm:w-auto">Log Out</button>
-          </div>
-        </div>
-      </section>
 
       <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4 backdrop-blur-sm">
         <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/10">
@@ -303,7 +291,9 @@
 
       const refreshHomeAuthUI = () => {
         const displayName = sessionApi?.getCurrentDisplayName?.() || "";
-        homeLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
+        if (homeLoginStatus) {
+          homeLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
+        }
         homeLoginBtn?.classList.toggle("hidden", !!displayName);
         homeCreateAccountBtn?.classList.toggle("hidden", !!displayName);
         homeLogoutBtn?.classList.toggle("hidden", !displayName);

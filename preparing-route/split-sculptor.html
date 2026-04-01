@@ -356,10 +356,43 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
   return {
     id: `${exercise.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${index + 1}`,
     name: exercise.name,
+    equipment: equipment || 'Bodyweight',
     category,
     primaryMuscle: exercise.primaryMuscle || 'Full Body'
   };
 });
+
+function rotateSplitToFirstFocus(split, desiredFocus) {
+  if (!desiredFocus) return split;
+  const index = split.findIndex((line) => extractFocusName(line) === desiredFocus);
+  if (index <= 0) return split;
+  const rotated = [...split.slice(index), ...split.slice(0, index)];
+  rotated[0] = `${desiredFocus} (Priority First)`;
+  return rotated.map((line, lineIndex) => {
+    if (lineIndex !== 0) return line.replace(' (Priority First)', '');
+    return line;
+  });
+}
+
+function getPriorityFocus() {
+  const priority = (state.priority || '').toLowerCase();
+  if (priority === 'legs' || priority === 'glutes') return ['Legs', 'Lower'];
+  if (priority === 'chest') return ['Push', 'Upper'];
+  if (priority === 'back') return ['Pull', 'Upper'];
+  if (priority === 'shoulders' || priority === 'biceps' || priority === 'triceps' || priority === 'arms') return ['Pull', 'Upper', 'Push'];
+  return ['Push', 'Upper', 'Legs', 'Lower', 'Pull', 'Full Body'];
+}
+
+function getSplitForFreq() {
+  const baseSplit = splitByFreq[state.freq] ? [...splitByFreq[state.freq]] : [...splitByFreq[3]];
+  const preferred = getPriorityFocus();
+  for (const focus of preferred) {
+    if (baseSplit.some((line) => extractFocusName(line) === focus)) {
+      return rotateSplitToFirstFocus(baseSplit, focus);
+    }
+  }
+  return baseSplit;
+}
 
 const movementTypeById = {
   back_squat: 'Compound', front_squat: 'Compound', deadlift: 'Compound', sumo_deadlift: 'Compound',
@@ -494,10 +527,10 @@ function getExercisePool(focus) {
   const focusToMuscles = {
     Push: ['Chest', 'Shoulders', 'Triceps'],
     Pull: ['Back', 'Biceps', 'Shoulders'],
-    Legs: ['Legs', 'Glutes'],
+    Legs: ['Legs', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain'],
     Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
-    Lower: ['Legs', 'Glutes'],
-    'Full Body': ['Full Body', 'Legs', 'Chest', 'Back', 'Shoulders', 'Glutes']
+    Lower: ['Legs', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain'],
+    'Full Body': ['Full Body', 'Legs', 'Chest', 'Back', 'Shoulders', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain']
   };
   const muscles = focusToMuscles[focus] || focusToMuscles['Full Body'];
   const pool = EXERCISES.filter((e) => muscles.includes(getMuscle(e)) && allowed.includes(e.category));
@@ -516,14 +549,23 @@ function normalizeType(exercise) {
 }
 
 function getMuscle(exercise) {
-  return exercise.primaryMuscle || 'Full Body';
+  const muscle = (exercise.primaryMuscle || 'Full Body').trim();
+  if (['Quads', 'Hamstrings', 'Calves', 'Posterior Chain'].includes(muscle)) return 'Legs';
+  if (muscle === 'Rear Delts') return 'Shoulders';
+  if (muscle === 'Lower Back') return 'Back';
+  return muscle;
 }
 
 function getExercisesForSlot(slotType) {
   const allowed = allowedCategories[state.gymType];
+  const seen = new Set();
   return EXERCISES.filter((exercise) => {
     if (!allowed.includes(exercise.category)) return false;
-    return normalizeType(exercise) === slotType;
+    if (normalizeType(exercise) !== slotType) return false;
+    const dedupeKey = `${exercise.name}|${getMuscle(exercise)}|${exercise.equipment}`;
+    if (seen.has(dedupeKey)) return false;
+    seen.add(dedupeKey);
+    return true;
   }).slice(0, 120);
 }
 
@@ -533,7 +575,7 @@ function getPriorityTargetForDay(dayIndex) {
 }
 
 function ensureDayPlan() {
-  const split = splitByFreq[state.freq];
+  const split = getSplitForFreq();
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
   split.forEach((line, i) => {
     const dayKey = `d${i + 1}`;
@@ -555,7 +597,7 @@ function ensureDayPlan() {
 }
 
 function renderDayCards() {
-  const split = splitByFreq[state.freq];
+  const split = getSplitForFreq();
   const dayState = state.customDays[state.freq];
   const out = document.getElementById('builder-out');
   out.innerHTML = split.map((line, i) => {
@@ -573,7 +615,7 @@ function renderDayCards() {
         }).join('');
       const movementOptions = [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
         const selected = item.id === option.id ? ' selected' : '';
-        return `<option value="${option.id}"${selected}>${option.name} (${getMuscle(option)})</option>`;
+        return `<option value="${option.id}"${selected}>${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
       })].join('');
       return `<div class="slot-row ${matches ? 'match' : 'mismatch'}">
       <div class="slot-meta">
@@ -625,7 +667,8 @@ function buildWorkoutBuilder() {
 function answerAgent(question) {
   const q = question.toLowerCase();
   if (!q.trim()) return 'Try asking: "Can I swap machine lifts for home gym options?"';
-  const firstDay = getDayPlan(extractFocusName(splitByFreq[state.freq][0]));
+  const split = getSplitForFreq();
+  const firstDay = getDayPlan(extractFocusName(split[0]));
   if (q.includes('swap') || q.includes('machine') || q.includes('home')) {
     return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).map((x) => x.name).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
   }
@@ -669,7 +712,7 @@ function buildSummary() {
         <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
       </div>`
     : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
-  const split = splitByFreq[state.freq].map((line, i) => {
+  const split = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
       .map((slot) => `<li>${slot.slot}: ${slot.name || 'Not set'}</li>`)

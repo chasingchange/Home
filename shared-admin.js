@@ -138,7 +138,7 @@
     let dragSource = null;
 
     const bar = document.createElement("div");
-    bar.style.cssText = "position:fixed;bottom:14px;right:14px;z-index:9999;display:flex;gap:8px;align-items:center;background:#071f35;color:#fff;padding:10px 12px;border-radius:12px;font:700 12px Muli, sans-serif;box-shadow:0 10px 30px rgba(7,31,53,.25);";
+    bar.style.cssText = "position:fixed;bottom:14px;left:14px;z-index:9999;display:flex;gap:8px;align-items:center;background:#071f35;color:#fff;padding:10px 12px;border-radius:12px;font:700 12px Muli, sans-serif;box-shadow:0 10px 30px rgba(7,31,53,.25);";
 
     const buildLockedView = () => {
       bar.innerHTML = "<span>Admin</span>";
