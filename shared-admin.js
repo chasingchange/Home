@@ -129,6 +129,8 @@
   const isUnlocked = () => localStorage.getItem(ADMIN_UNLOCKED_KEY) === "true";
 
   const mountAdminBar = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
     const root = document.querySelector("[data-admin-edit-root]");
     if (!root) return;
 
