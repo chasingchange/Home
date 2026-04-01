@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
 <script src="../exercise-matrix/data.js"></script>
+<link rel="stylesheet" href="../shared.css" />
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root {
   --bg: #f5f5f7;
@@ -21,7 +23,16 @@
   --radius: 12px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1.25rem 3rem; }
+body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem 1.25rem 3rem; }
+.page-shell { max-width: 980px; margin: 0 auto; }
+.brand-header { margin-bottom: 1.25rem; border-radius: 24px; overflow: hidden; border: 1px solid rgba(7,31,53,0.08); background: #fff; box-shadow: 0 24px 80px rgba(119,215,112,0.2); }
+.brand-header-inner { position: relative; padding: 1.5rem 1.5rem 1.25rem; }
+.brand-row { display: flex; align-items: center; gap: .7rem; }
+.brand-logo { width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(7,31,53,0.12); background: rgba(255,255,255,0.7); padding: .2rem; }
+.brand-title { font-family: 'Museo Moderno', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; }
+.brand-subrow { margin-top: .55rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.page-pill { margin-top: .85rem; display: inline-flex; align-items: center; border-radius: 14px; background: rgba(7,31,53,.05); border: 1px solid rgba(7,31,53,0.12); padding: .55rem .85rem; font-family: 'Raleway', sans-serif; font-weight: 800; }
+.top-glow { position: absolute; top: -100px; right: -100px; width: 280px; height: 280px; border-radius: 999px; background: rgba(119,215,112,0.2); filter: blur(36px); }
 .app { max-width: 980px; margin: 0 auto; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
 .logo { font-family: 'Museo Moderno', sans-serif; font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; }
@@ -95,6 +106,28 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </style>
 </head>
 <body>
+<div class="page-shell">
+  <header class="brand-header">
+    <div class="brand-header-inner">
+      <div class="top-glow" aria-hidden="true"></div>
+      <div class="brand-row">
+        <img src="../Logo.png" alt="Chasing Change logo" class="brand-logo" />
+        <h1 class="brand-title">Chasing Change</h1>
+      </div>
+      <div class="brand-subrow">
+        <p style="font-family: Raleway, sans-serif; font-size: clamp(1.1rem,2.4vw,1.5rem); font-weight: 700;">Pursuing Peace, Pursuing Purpose</p>
+        <a href="../index.html" class="cc-home-icon-link" aria-label="Go to home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 10.5 12 3l9 7.5" />
+            <path d="M5 9.5V21h14V9.5" />
+            <path d="M10 21v-6h4v6" />
+          </svg>
+        </a>
+      </div>
+      <div class="page-pill">Split Sculptor</div>
+    </div>
+  </header>
+
 <div class="app">
   <div class="header">
     <div class="logo">Split Sculptor</div>
@@ -212,6 +245,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <h2 class="step-title">Split Sculptor</h2>
     <p class="step-sub">Use this as your execution plan, then reassess and repeat.</p>
     <div id="summary-out"></div>
+    <div class="nav" style="border-top:0;padding-top:.2rem;">
+      <button class="btn" id="print-summary-btn" type="button">Print</button>
+      <button class="btn btn-p" id="save-png-btn" type="button">Save as PNG</button>
+    </div>
   </div>
 
   <div class="nav">
@@ -219,6 +256,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <button class="btn btn-p" id="next-btn">Next</button>
     <div class="dots" id="dot-row"></div>
   </div>
+</div>
 </div>
 
 <script>
@@ -582,7 +620,7 @@ function buildSummary() {
         <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
         <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
       </div>`
-    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Physique Ledger.</p>';
+    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
   const split = splitByFreq[state.freq].map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
@@ -627,7 +665,8 @@ function showStep(step) {
   document.querySelectorAll('.timeline .t-block').forEach((x, idx) => x.classList.toggle('active', idx + 1 === step));
   document.getElementById('step-counter').textContent = `STEP ${step} OF ${TOTAL_STEPS}`;
   document.getElementById('back-btn').disabled = step === 1;
-  document.getElementById('next-btn').textContent = step === TOTAL_STEPS ? 'Done' : 'Next';
+  document.getElementById('next-btn').textContent = 'Next';
+  document.getElementById('next-btn').disabled = step === TOTAL_STEPS;
   document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
   if (step === 8) buildSummary();
@@ -671,6 +710,21 @@ document.getElementById('back-btn').addEventListener('click', () => {
     state.step -= 1;
     showStep(state.step);
   }
+});
+
+
+document.getElementById('print-summary-btn').addEventListener('click', () => {
+  window.print();
+});
+
+document.getElementById('save-png-btn').addEventListener('click', async () => {
+  const summary = document.getElementById('summary-out');
+  if (!summary || typeof window.html2canvas !== 'function') return;
+  const canvas = await window.html2canvas(summary, { backgroundColor: '#f5f5f7', scale: 2 });
+  const link = document.createElement('a');
+  link.download = 'split-sculptor-summary.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 });
 
 showStep(1);
