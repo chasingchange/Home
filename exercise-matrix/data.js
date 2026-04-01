@@ -126,3 +126,20 @@ window.EXERCISE_MATRIX = [
   { name: "Romanian Deadlift", equipment: "Barbell", primaryMuscle: "Hamstrings" },
   { name: "Hip Adductors", equipment: "Machine", primaryMuscle: "Glutes" }
 ];
+
+const ISOLATED_KEYWORDS = ["fly", "raise", "curl", "extension", "pushdown", "kickback", "shrug", "abductor", "adductor", "calf", "deck"];
+const COMPOUND_KEYWORDS = ["press", "squat", "deadlift", "row", "pull up", "pull-up", "chin up", "chin-up", "dip", "lunge", "thrust", "clean", "snatch"];
+
+function getMovementType(exercise) {
+  const equipment = (exercise.equipment || "").toLowerCase();
+  const name = (exercise.name || "").toLowerCase();
+  if (equipment.includes("machine") || equipment === "cable") return "Machine";
+  if (ISOLATED_KEYWORDS.some((keyword) => name.includes(keyword))) return "Isolated";
+  if (COMPOUND_KEYWORDS.some((keyword) => name.includes(keyword))) return "Compound";
+  return "Compound";
+}
+
+window.EXERCISE_MATRIX = window.EXERCISE_MATRIX.map((exercise) => ({
+  ...exercise,
+  movementType: exercise.movementType || getMovementType(exercise)
+}));
