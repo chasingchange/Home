@@ -434,6 +434,15 @@
       syncCard();
     });
 
+    window.addEventListener("storage", (event) => {
+      if (!event.key || event.key === SESSION_KEY || event.key === ACCOUNTS_KEY) {
+        whenReady().finally(syncCard);
+      }
+    });
+    window.addEventListener("focus", () => {
+      whenReady().finally(syncCard);
+    });
+
     whenReady().finally(syncCard);
   };
 

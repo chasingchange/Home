@@ -706,6 +706,7 @@
       const ledgerSyncStatus = document.getElementById("ledgerSyncStatus");
       const changeSummaryBox = document.getElementById("changeSummaryBox");
       const changeSummaryText = document.getElementById("changeSummaryText");
+      const calcBtn = document.getElementById("calcBtn");
 
       const sessionApi = window.ChasingChangeSession;
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
@@ -816,14 +817,14 @@
           return;
         }
 
-        const delta = (value, previous) => {
-          const diff = Number(value || 0) - Number(previous || 0);
-          const sign = diff > 0 ? "+" : "";
-          return `${sign}${diff}`;
-        };
-
-        changeSummaryText.textContent = `Calories ${delta(currentOutputs.calories, lastSavedOutputs.calories)} · Protein ${delta(currentOutputs.protein, lastSavedOutputs.protein)}g · Carbs ${delta(currentOutputs.carbs, lastSavedOutputs.carbs)}g · Fat ${delta(currentOutputs.fat, lastSavedOutputs.fat)}g`;
+        const flow = (previous, value, unit = "") => `${Number(previous || 0)}${unit} -> ${Number(value || 0)}${unit}`;
+        changeSummaryText.textContent = `Calories ${flow(lastSavedOutputs.calories, currentOutputs.calories)} · Protein ${flow(lastSavedOutputs.protein, currentOutputs.protein, "g")} · Carbs ${flow(lastSavedOutputs.carbs, currentOutputs.carbs, "g")} · Fat ${flow(lastSavedOutputs.fat, currentOutputs.fat, "g")}`;
         show(changeSummaryBox);
+      }
+
+      function updateCalcButtonLabel() {
+        if (!calcBtn) return;
+        calcBtn.textContent = lastSavedOutputs ? "Recalculate Macros" : "Calculate Macros";
       }
 
       function refreshAccountNotice() {
@@ -836,7 +837,16 @@
         await sessionApi?.whenReady?.();
         refreshAccountNotice();
         const stored = sessionApi?.getCalculatorData?.(MACRO_STORAGE_KEY);
-        if (stored) applyStoredMacroData(stored);
+        if (stored) {
+          applyStoredMacroData(stored);
+          lastSavedOutputs = {
+            calories: Number(stored?.outputs?.calories || 0),
+            protein: Number(stored?.outputs?.protein || 0),
+            carbs: Number(stored?.outputs?.carbs || 0),
+            fat: Number(stored?.outputs?.fat || 0),
+          };
+        }
+        updateCalcButtonLabel();
       }
 
       function setUnit(next) {
@@ -1297,6 +1307,7 @@ const proteinPerLb =
         show(resultsEl);
         sessionApi?.saveCalculatorData?.(MACRO_STORAGE_KEY, collectStoredMacroData());
         lastSavedOutputs = { calories: caloriesR, protein: proteinR, carbs: carbsR, fat: fatR };
+        updateCalcButtonLabel();
       }
 
       function saveTargetsToLedger() {
@@ -1349,7 +1360,7 @@ const proteinPerLb =
         el.addEventListener("change", updateIdealBodyWeightPreview);
       });
 
-      document.getElementById("calcBtn").addEventListener("click", calculate);
+      calcBtn.addEventListener("click", calculate);
       document.getElementById("saveToLedgerBtn").addEventListener("click", saveTargetsToLedger);
       restoreSessionData();
       updateIdealBodyWeightPreview();
