@@ -125,8 +125,8 @@
             </div>
 
             <div id="testimonialsPanel" class="hidden mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4 sm:p-5">
-              <h3 class="text-xl font-extrabold font-heading">Add a testimonial</h3>
-              <p class="mt-1 text-sm opacity-80">Submit a testimonial below. It will appear on the Testimonials page in this browser.</p>
+              <h3 class="text-xl font-extrabold font-heading">Manage testimonials</h3>
+              <p class="mt-1 text-sm opacity-80">Add, edit, or delete testimonials below. Changes will appear on the Testimonials page in this browser.</p>
 
               <form id="testimonialForm" class="mt-4 grid gap-3">
                 <label class="grid gap-1 text-sm font-semibold">
@@ -151,11 +151,17 @@
                 </label>
 
                 <div class="flex flex-wrap gap-2">
-                  <button type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">Save testimonial</button>
+                  <button id="saveTestimonialBtn" type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">Save testimonial</button>
+                  <button id="cancelEditBtn" type="button" class="hidden rounded-xl bg-white px-5 py-3 text-sm font-bold ring-1 ring-black/10 hover:bg-black/[0.02] transition">Cancel edit</button>
                   <button id="clearTestimonialsBtn" type="button" class="rounded-xl bg-white px-5 py-3 text-sm font-bold ring-1 ring-black/10 hover:bg-black/[0.02] transition">Clear saved testimonials</button>
                 </div>
                 <p id="testimonialMessage" class="min-h-[1.25rem] text-sm font-semibold"></p>
               </form>
+
+              <div class="mt-6">
+                <h4 class="text-sm font-extrabold uppercase tracking-[0.16em] opacity-70">Saved in this browser</h4>
+                <div id="savedTestimonialsList" class="mt-3 grid gap-2"></div>
+              </div>
             </div>
           </section>
         </section>
@@ -190,8 +196,12 @@
       const testimonialYear = document.getElementById("testimonialYear");
       const testimonialBody = document.getElementById("testimonialBody");
       const testimonialMessage = document.getElementById("testimonialMessage");
+      const saveTestimonialBtn = document.getElementById("saveTestimonialBtn");
+      const cancelEditBtn = document.getElementById("cancelEditBtn");
       const clearTestimonialsBtn = document.getElementById("clearTestimonialsBtn");
+      const savedTestimonialsList = document.getElementById("savedTestimonialsList");
       const TESTIMONIALS_KEY = "ccTestimonials";
+      let editIndex = null;
 
       unlockForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -217,7 +227,91 @@
       };
 
       tabPlanner?.addEventListener("click", () => setActiveTab("planner"));
-      tabTestimonials?.addEventListener("click", () => setActiveTab("testimonials"));
+      tabTestimonials?.addEventListener("click", () => {
+        setActiveTab("testimonials");
+        renderSavedTestimonials();
+      });
+
+      const loadTestimonials = () => JSON.parse(localStorage.getItem(TESTIMONIALS_KEY) || "[]");
+
+      const setTestimonialMessage = (text, type = "success") => {
+        testimonialMessage.textContent = text;
+        testimonialMessage.classList.toggle("text-red-600", type === "error");
+        testimonialMessage.classList.toggle("text-green-700", type !== "error");
+      };
+
+      const resetFormToCreate = () => {
+        testimonialForm.reset();
+        testimonialYear.value = "2025";
+        editIndex = null;
+        saveTestimonialBtn.textContent = "Save testimonial";
+        cancelEditBtn.classList.add("hidden");
+      };
+
+      const beginEditTestimonial = (index) => {
+        const testimonials = loadTestimonials();
+        const testimonial = testimonials[index];
+        if (!testimonial) return;
+        editIndex = index;
+        testimonialName.value = testimonial.name;
+        testimonialYear.value = testimonial.year;
+        testimonialBody.value = testimonial.paragraphs.join("\n\n");
+        saveTestimonialBtn.textContent = "Update testimonial";
+        cancelEditBtn.classList.remove("hidden");
+        setTestimonialMessage("Editing testimonial. Click update when finished.");
+      };
+
+      const deleteTestimonial = (index) => {
+        const testimonials = loadTestimonials();
+        testimonials.splice(index, 1);
+        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(testimonials));
+        if (editIndex === index) resetFormToCreate();
+        if (editIndex !== null && index < editIndex) editIndex -= 1;
+        renderSavedTestimonials();
+        setTestimonialMessage("Testimonial deleted.");
+      };
+
+      const renderSavedTestimonials = () => {
+        const testimonials = loadTestimonials();
+        savedTestimonialsList.innerHTML = "";
+
+        if (!testimonials.length) {
+          savedTestimonialsList.innerHTML =
+            '<p class="rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-black/10">No saved testimonials yet.</p>';
+          return;
+        }
+
+        testimonials.forEach((item, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className =
+            "rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 flex flex-wrap items-center justify-between gap-3";
+
+          const meta = document.createElement("p");
+          meta.className = "text-sm font-semibold";
+          meta.textContent = `${item.name} (${item.year})`;
+
+          const actions = document.createElement("div");
+          actions.className = "flex flex-wrap gap-2";
+
+          const editBtn = document.createElement("button");
+          editBtn.type = "button";
+          editBtn.className = "rounded-lg bg-cc-outline px-3 py-2 text-xs font-bold text-cc-text";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => beginEditTestimonial(index));
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "rounded-lg bg-white px-3 py-2 text-xs font-bold ring-1 ring-black/15";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () => deleteTestimonial(index));
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+          wrapper.appendChild(meta);
+          wrapper.appendChild(actions);
+          savedTestimonialsList.appendChild(wrapper);
+        });
+      };
 
       testimonialForm?.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -229,29 +323,37 @@
           .filter(Boolean);
 
         if (!name || !year || paragraphs.length === 0) {
-          testimonialMessage.textContent = "Please add name, cohort year, and at least one paragraph.";
-          testimonialMessage.classList.add("text-red-600");
-          testimonialMessage.classList.remove("text-green-700");
+          setTestimonialMessage("Please add name, cohort year, and at least one paragraph.", "error");
           return;
         }
 
-        const existing = JSON.parse(localStorage.getItem(TESTIMONIALS_KEY) || "[]");
-        existing.push({ name, year, paragraphs });
-        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(existing));
+        const existing = loadTestimonials();
+        if (editIndex === null) {
+          existing.push({ name, year, paragraphs });
+          setTestimonialMessage("Saved! It will show on the Testimonials page.");
+        } else {
+          existing[editIndex] = { name, year, paragraphs };
+          setTestimonialMessage("Updated! Changes will show on the Testimonials page.");
+        }
 
-        testimonialForm.reset();
-        testimonialYear.value = "2025";
-        testimonialMessage.textContent = "Saved! It will show on the Testimonials page.";
-        testimonialMessage.classList.remove("text-red-600");
-        testimonialMessage.classList.add("text-green-700");
+        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(existing));
+        resetFormToCreate();
+        renderSavedTestimonials();
       });
 
       clearTestimonialsBtn?.addEventListener("click", () => {
         localStorage.removeItem(TESTIMONIALS_KEY);
-        testimonialMessage.textContent = "Saved testimonials were cleared for this browser.";
-        testimonialMessage.classList.remove("text-red-600");
-        testimonialMessage.classList.add("text-green-700");
+        resetFormToCreate();
+        renderSavedTestimonials();
+        setTestimonialMessage("Saved testimonials were cleared for this browser.");
       });
+
+      cancelEditBtn?.addEventListener("click", () => {
+        resetFormToCreate();
+        setTestimonialMessage("Edit canceled.");
+      });
+
+      renderSavedTestimonials();
 
     </script>
   </body>
