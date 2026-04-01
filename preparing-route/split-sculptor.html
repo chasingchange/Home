@@ -84,6 +84,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .dot { width: 6px; height: 6px; border-radius: 50%; background: #9ea8b1; }
 .dot.cur { width: 18px; border-radius: 999px; background: var(--accent); }
 .dot.done { background: #59c352; }
+.macro-embed { margin-top: .95rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.macro-embed iframe { width: 100%; min-height: 720px; border: 0; background: #fff; }
+.target-grid { display: grid; gap: .6rem; margin-top: .75rem; }
+.target-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: #fff; }
+.target-label { font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+.target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
 @media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } }
 </style>
@@ -135,7 +141,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip on" data-v="Use Macro Calculator">Use Macro Calculator</div>
       <div class="chip" data-v="Manual Macro Targets">Manual Macro Targets</div>
     </div>
-    <a href="../macro/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Macro Calculator</a>
+    <a href="../macro/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Macro Calculator in New Tab</a>
+    <div class="macro-embed" aria-label="Embedded macro calculator">
+      <iframe src="../macro/index.html" title="Chasing Change Macro Calculator" loading="lazy"></iframe>
+    </div>
     <div class="rule" id="macro-calc-rule"></div>
   </div>
 
@@ -251,9 +260,9 @@ const mesoByMacro = {
 
 const nutritionByMacro = {
   'Build Visible Muscle': 'Surplus',
-  'Slim Down': 'Deficit',
+  'Slim Down': 'Slight Deficit',
   'Fat Loss': 'Deficit',
-  'Increase Strength': 'Small Surplus',
+  'Increase Strength': 'Slight Surplus',
   'Performance': 'Maintenance'
 };
 
@@ -361,7 +370,7 @@ function buildMesoChips() {
 function buildNutritionChips() {
   const wrap = document.getElementById('nutrition-chips');
   wrap.innerHTML = '';
-  ['Surplus', 'Deficit', 'Small Surplus', 'Maintenance'].forEach(option => {
+  ['Surplus', 'Slight Surplus', 'Maintenance', 'Slight Deficit', 'Deficit'].forEach(option => {
     const chip = document.createElement('div');
     chip.className = `chip${state.nutrition === option ? ' on' : ''}`;
     chip.dataset.v = option;
@@ -546,8 +555,34 @@ function answerAgent(question) {
   return `Recommendation: stay with the ${state.freq}-day plan, keep ${state.priority} first, and choose from ${state.gymType} options in your builder.`;
 }
 
+
+function readMacroTargets() {
+  try {
+    return JSON.parse(localStorage.getItem('physiqueLedgerTargets') || 'null');
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatSavedAt(value) {
+  if (!value) return 'Not saved yet';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Not saved yet';
+  return date.toLocaleString();
+}
+
 function buildSummary() {
   ensureDayPlan();
+  const macroTargets = readMacroTargets();
+  const targetMarkup = macroTargets
+    ? `<div class="target-grid">
+        <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
+        <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
+        <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
+        <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
+        <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
+      </div>`
+    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Physique Ledger.</p>';
   const split = splitByFreq[state.freq].map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
@@ -568,6 +603,10 @@ function buildSummary() {
     <div class="week">
       <h3>Split</h3>
       <ul>${split}</ul>
+    </div>
+    <div class="week">
+      <h3>Calorie + Macro Targets</h3>
+      ${targetMarkup}
     </div>
   `;
 }
