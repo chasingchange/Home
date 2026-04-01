@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
 <script src="../exercise-matrix/data.js"></script>
+<script src="../shared-admin.js" defer></script>
 <link rel="stylesheet" href="../shared.css" />
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -41,7 +42,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .start-line-card:hover { transform: translateY(-3px) scale(1.01); border-color: rgba(255,255,255,.78); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 22px 40px rgba(7,31,53,.2); }
 .start-line-card:hover::after { opacity: 1; transform: translateX(12%) translateY(-5%) rotate(6deg); animation: waterFlow 1.8s linear infinite; }
 @keyframes waterFlow { 0% { background-position: 0 0; } 100% { background-position: 160px 0; } }
-.page-pill { margin-top: .85rem; display: inline-flex; align-items: center; border-radius: 14px; background: rgba(7,31,53,.05); border: 1px solid rgba(7,31,53,0.12); padding: .55rem .85rem; font-family: 'Raleway', sans-serif; font-weight: 800; }
+.brand-tool-title { margin-top: .85rem; text-align: center; font-family: 'Raleway', sans-serif; font-size: clamp(1.4rem, 3.1vw, 2rem); font-weight: 800; }
 .top-glow { position: absolute; top: -100px; right: -100px; width: 280px; height: 280px; border-radius: 999px; background: rgba(119,215,112,0.2); filter: blur(36px); }
 .app { max-width: 980px; margin: 0 auto; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
@@ -116,7 +117,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </style>
 </head>
 <body>
-<div class="page-shell">
+<div class="page-shell" data-admin-edit-root>
   <header class="brand-header">
     <div class="brand-header-inner">
       <div class="top-glow" aria-hidden="true"></div>
@@ -133,10 +134,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="brand-subrow">
         <p style="font-family: Raleway, sans-serif; font-size: clamp(1.1rem,2.4vw,1.5rem); font-weight: 700;">Pursuing Peace, Pursuing Purpose</p>
       </div>
-      <div class="rule" style="margin:.75rem 0 0;">
-        <strong style="font-family:Raleway,sans-serif;">Want to dial this in?</strong> Start at the <strong>Start Line (Home)</strong> card, then come back and run your full Split Sculptor plan.
+      <div class="rule" style="margin:.75rem 0 0; text-align:center;">
+        <strong style="font-family:Raleway,sans-serif;">Want this dialed in?</strong>
       </div>
-      <div class="page-pill">Split Sculptor</div>
+      <div class="brand-tool-title">Split Sculptor</div>
     </div>
   </header>
 
