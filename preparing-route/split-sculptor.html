@@ -135,8 +135,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 <div class="page-shell" data-admin-edit-root>
   <header class="cc-title-block">
     <div class="cc-title-block-inner">
-      <p id="pageLoginStatus" class="cc-page-login-tile">Not Logged In</p>
-      <div class="cc-title-block-top">
+            <div class="cc-title-block-top">
         <div class="cc-title-brand">
           <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
           <h1 class="cc-title-name">Chasing Change</h1>
@@ -146,7 +145,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="cc-page-title">Split Sculptor</div>
       <div style="margin-top:.75rem;text-align:center;">
         <a href="../index.html" class="cc-title-home" aria-label="Go to Start Line home">
-          <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
+          <span class="cc-title-home-label">Start Line, Chasing Change Home</span>
         </a>
       </div>
       <div style="text-align:center;">
@@ -294,7 +293,7 @@ const state = {
   nutrition: 'Surplus',
   macroPlan: 'Use Macro Calculator',
   priority: 'Chest',
-  priorities: ['Chest', 'Back', 'Legs', 'Shoulders'],
+  priorities: ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'],
   gymType: 'Commercial Gym',
   freq: 3,
   customDays: {}
@@ -376,7 +375,7 @@ function rotateSplitToFirstFocus(split, desiredFocus) {
 
 function getPriorityFocus() {
   const priority = (state.priority || '').toLowerCase();
-  if (priority === 'legs' || priority === 'glutes') return ['Legs', 'Lower'];
+  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(priority)) return ['Legs', 'Lower'];
   if (priority === 'chest') return ['Push', 'Upper'];
   if (priority === 'back') return ['Pull', 'Upper'];
   if (priority === 'shoulders' || priority === 'biceps' || priority === 'triceps' || priority === 'arms') return ['Pull', 'Upper', 'Push'];
@@ -427,13 +426,13 @@ function oneChip(groupId, key, isNum = false) {
 }
 
 function getPriorityMuscles() {
-  return ['Chest', 'Back', 'Legs', 'Shoulders'];
+  return ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'];
 }
 
 function buildPriorityRanker() {
   const ranked = state.priorities;
   const list = document.getElementById('priority-rank-list');
-  const options = [1, 2, 3, 4];
+  const options = Array.from({ length: getPriorityMuscles().length }, (_, i) => i + 1);
   list.innerHTML = getPriorityMuscles().map((muscle) => {
     const currentRank = ranked.indexOf(muscle) + 1;
     const opts = options.map((rank) => `<option value="${rank}"${rank === currentRank ? ' selected' : ''}>Rank ${rank}</option>`).join('');
@@ -550,7 +549,6 @@ function normalizeType(exercise) {
 
 function getMuscle(exercise) {
   const muscle = (exercise.primaryMuscle || 'Full Body').trim();
-  if (['Quads', 'Hamstrings', 'Calves', 'Posterior Chain'].includes(muscle)) return 'Legs';
   if (muscle === 'Rear Delts') return 'Shoulders';
   if (muscle === 'Lower Back') return 'Back';
   return muscle;
@@ -608,7 +606,7 @@ function renderDayCards() {
       const slotOptions = getExercisesForSlot(item.slot).filter((option) => !item.targetMuscle || getMuscle(option) === item.targetMuscle);
       const exercise = EXERCISES.find((x) => x.id === item.id);
       const matches = !!exercise && normalizeType(exercise) === item.slot && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
-      const muscleOptions = ['','Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']
+      const muscleOptions = ['', 'Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Legs', 'Full Body']
         .map((muscle) => {
           const label = muscle || 'Select Muscle';
           return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
@@ -821,11 +819,6 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
 
 showStep(1);
 
-const pageLoginStatus = document.getElementById('pageLoginStatus');
-if (pageLoginStatus && window.ChasingChangeSession?.getSessionDisplayName) {
-  const name = window.ChasingChangeSession.getSessionDisplayName();
-  pageLoginStatus.textContent = name ? `Welcome Back To The Race, ${name}` : 'Not Logged In';
-}
 </script>
 </body>
 </html>
