@@ -353,16 +353,18 @@ h3 {
 }
 
 .cc-account-card {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
-  z-index: 9999;
-  width: min(92vw, 340px);
-  border-radius: 1.2rem;
+  width: min(100%, 980px);
+  margin: 0.7rem auto 1rem;
+  border-radius: 1rem;
   border: 1px solid rgba(7, 31, 53, 0.12);
   background: linear-gradient(165deg, #ffffff 0%, #f8fbf8 100%);
-  box-shadow: 0 16px 40px rgba(7, 31, 53, 0.18);
-  padding: 0.95rem;
+  box-shadow: 0 10px 24px rgba(7, 31, 53, 0.1);
+  padding: 0.85rem 0.95rem;
+}
+
+.cc-account-card-inline {
+  position: relative;
+  z-index: 2;
 }
 
 .cc-account-title {
@@ -393,6 +395,11 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
+}
+
+.cc-account-actions-inline {
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-content: flex-start;
 }
 
 .cc-account-actions button,

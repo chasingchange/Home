@@ -327,18 +327,22 @@
 
     const card = document.createElement("section");
     card.id = "ccPersistentAccountCard";
-    card.className = "cc-account-card";
+    card.className = "cc-account-card cc-account-card-inline";
     card.innerHTML = `
       <p class="cc-account-title">Chasing Change Account</p>
       <p id="ccAccountStatus" class="cc-account-status">Checking session…</p>
-      <p class="cc-account-copy">Use the same details for login + create. Name helps personalize your dashboard.</p>
-      <div class="cc-account-actions">
+      <div class="cc-account-actions cc-account-actions-inline">
         <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In / Create</button>
-        <a id="ccMacrosBtn" href="/macro/index.html" class="cc-account-create-btn" hidden>Update Macros</a>
         <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
       </div>
     `;
-    document.body.appendChild(card);
+
+    const titleBlock = document.querySelector(".cc-title-block");
+    if (titleBlock?.parentNode) {
+      titleBlock.insertAdjacentElement("afterend", card);
+    } else {
+      document.body.prepend(card);
+    }
 
     const modal = document.createElement("div");
     modal.className = "cc-auth-modal hidden";
@@ -363,7 +367,6 @@
 
     const statusEl = card.querySelector("#ccAccountStatus");
     const openAuthBtn = card.querySelector("#ccOpenAuthBtn");
-    const macrosBtn = card.querySelector("#ccMacrosBtn");
     const logoutBtn = card.querySelector("#ccLogoutBtn");
     const authForm = modal.querySelector("#ccAuthForm");
     const authName = modal.querySelector("#ccAuthName");
@@ -376,7 +379,6 @@
       const message = name ? `Welcome Back To The Race, ${name}` : "Not Logged In";
       statusEl.textContent = message;
       openAuthBtn.hidden = !!name;
-      macrosBtn.hidden = !name;
       logoutBtn.hidden = !name;
       const pageLoginStatus = document.getElementById("pageLoginStatus");
       if (pageLoginStatus) pageLoginStatus.textContent = message;
