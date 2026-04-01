@@ -304,6 +304,7 @@ h3 {
 
 .cc-title-subline {
   margin-top: 0.65rem;
+  text-align: center;
   font-family: var(--cc-heading-font);
   font-size: clamp(0.92rem, 1.8vw, 1.1rem);
   font-style: italic;
@@ -351,20 +352,23 @@ h3 {
   position: fixed;
   right: 1rem;
   bottom: 1rem;
-  z-index: 50;
+  z-index: 9999;
   width: min(90vw, 300px);
-  border-radius: 1rem;
+  border-radius: 1.05rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
-  background: rgba(255, 255, 255, 0.96);
+  background: #e6e6e6;
   box-shadow: 0 12px 30px rgba(7, 31, 53, 0.14);
-  padding: 0.8rem;
+  padding: 0.9rem;
 }
 
 .cc-account-title {
   margin: 0;
   font-family: var(--cc-heading-font);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
 }
 
 .cc-account-status {
@@ -381,11 +385,11 @@ h3 {
 }
 
 .cc-account-actions button {
-  flex: 1;
+  flex: 1 1 auto;
   border-radius: 0.65rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
-  padding: 0.42rem 0.5rem;
-  font-size: 0.72rem;
+  padding: 0.52rem 0.6rem;
+  font-size: 0.83rem;
   font-weight: 800;
   cursor: pointer;
 }

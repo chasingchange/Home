@@ -256,7 +256,7 @@
       <p id="ccAccountStatus" class="cc-account-status">Not Logged In</p>
       <div class="cc-account-actions">
         <button id="ccLoginBtn" type="button" class="cc-account-login-btn">Log In</button>
-        <button id="ccCreateBtn" type="button" class="cc-account-create-btn">Create</button>
+        <button id="ccCreateBtn" type="button" class="cc-account-create-btn">Create Account</button>
         <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
       </div>
     `;
