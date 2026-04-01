@@ -11,6 +11,7 @@
 
     <!-- Tailwind via CDN (embed-friendly) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared-admin.js" defer></script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -113,7 +114,7 @@
 
         <!-- App Card -->
         <div class="flex justify-center">
-          <main class="w-full max-w-xl rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+          <main data-admin-edit-root class="w-full max-w-xl rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
             <div class="p-5 sm:p-8">
               <div class="flex items-start gap-3 mb-6">
                 <div class="w-10 h-10 rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 flex items-center justify-center">

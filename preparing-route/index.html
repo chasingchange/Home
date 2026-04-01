@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preparing the Route | Chasing Change</title>
-    <meta name="description" content="Locked Chasing Change page for Split Sculptor access." />
+    <meta name="description" content="Preparing the Route info and admin access guidance for Chasing Change." />
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared-admin.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -58,7 +59,7 @@
         </div>
       </header>
 
-      <main>
+      <main data-admin-edit-root>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
           <nav>
             <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
@@ -93,79 +94,12 @@
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
           </div>
 
-          <section id="lockCard" class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
-            <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Protected page</p>
-            <h2 class="mt-2 text-2xl font-extrabold font-heading">Enter password</h2>
-            <p class="mt-2 text-sm opacity-80">This tab is locked. Enter the password to access the Split Sculptor planner.</p>
-
-            <form id="unlockForm" class="mt-6 flex flex-col sm:flex-row gap-3">
-              <input
-                id="passwordInput"
-                type="password"
-                autocomplete="current-password"
-                placeholder="Password"
-                class="flex-1 rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline"
-                required
-              />
-              <button type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">
-                Unlock
-              </button>
-            </form>
-            <p id="unlockMessage" class="mt-3 min-h-[1.25rem] text-sm text-red-600"></p>
-          </section>
-
-          <section id="lockedTools" class="hidden mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-4 sm:p-5">
-            <div class="inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-              <button id="tabPlanner" type="button" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Split Sculptor</button>
-              <button id="tabTestimonials" type="button" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Add Testimonial</button>
-            </div>
-
-            <div id="plannerPanel" class="mt-4 rounded-2xl overflow-hidden ring-1 ring-black/10">
-              <iframe id="toolFrame" title="Split Sculptor Planner" src="./split-sculptor.html" class="w-full h-[2500px] border-0"></iframe>
-            </div>
-
-            <div id="testimonialsPanel" class="hidden mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4 sm:p-5">
-              <h3 class="text-xl font-extrabold font-heading">Manage testimonials</h3>
-              <p class="mt-1 text-sm opacity-80">Add, edit, or delete testimonials below. Changes will appear on the Testimonials page in this browser.</p>
-
-              <form id="testimonialForm" class="mt-4 grid gap-3">
-                <label class="grid gap-1 text-sm font-semibold">
-                  Person's name
-                  <input id="testimonialName" type="text" class="rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline" placeholder="Jane Doe" required />
-                </label>
-
-                <label class="grid gap-1 text-sm font-semibold">
-                  Cohort year
-                  <select id="testimonialYear" class="rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline" required>
-                    <option value="2024">2024</option>
-                    <option value="2025" selected>2025</option>
-                    <option value="2026">2026</option>
-                    <option value="2027">2027</option>
-                    <option value="2028">2028</option>
-                  </select>
-                </label>
-
-                <label class="grid gap-1 text-sm font-semibold">
-                  Testimonial paragraphs
-                  <textarea id="testimonialBody" rows="10" class="rounded-xl border border-black/10 px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-cc-outline" placeholder="Paste paragraphs separated by a blank line." required></textarea>
-                </label>
-
-                <div class="flex flex-wrap gap-2">
-                  <button id="saveTestimonialBtn" type="submit" class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">Save testimonial</button>
-                  <button id="cancelEditBtn" type="button" class="hidden rounded-xl bg-white px-5 py-3 text-sm font-bold ring-1 ring-black/10 hover:bg-black/[0.02] transition">Cancel edit</button>
-                  <button id="clearTestimonialsBtn" type="button" class="rounded-xl bg-white px-5 py-3 text-sm font-bold ring-1 ring-black/10 hover:bg-black/[0.02] transition">Clear saved testimonials</button>
-                </div>
-                <p id="testimonialMessage" class="min-h-[1.25rem] text-sm font-semibold"></p>
-              </form>
-
-              <div class="mt-6">
-                <h4 class="text-sm font-extrabold uppercase tracking-[0.16em] opacity-70">Saved in this browser</h4>
-                <div id="savedTestimonialsList" class="mt-3 grid gap-2"></div>
-              </div>
-            </div>
+          <section class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+            <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Admin moved</p>
+            <h2 class="mt-2 text-2xl font-extrabold font-heading">Preparing the Route</h2>
+            <p class="mt-2 text-sm opacity-80">Split Sculptor has been removed from this page. Use the homepage tools. To edit this page or any page, use the password box in the lower-right Admin control.</p>
           </section>
         </section>
-
       <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
 
       </main>
@@ -179,182 +113,6 @@
         menuToggle.setAttribute("aria-expanded", String(!expanded));
         mobileMenu.classList.toggle("hidden");
       });
-
-      const PASSWORD = "Chasing1228!";
-      const unlockForm = document.getElementById("unlockForm");
-      const passwordInput = document.getElementById("passwordInput");
-      const unlockMessage = document.getElementById("unlockMessage");
-      const lockCard = document.getElementById("lockCard");
-      const lockedTools = document.getElementById("lockedTools");
-      const toolFrame = document.getElementById("toolFrame");
-      const tabPlanner = document.getElementById("tabPlanner");
-      const tabTestimonials = document.getElementById("tabTestimonials");
-      const plannerPanel = document.getElementById("plannerPanel");
-      const testimonialsPanel = document.getElementById("testimonialsPanel");
-      const testimonialForm = document.getElementById("testimonialForm");
-      const testimonialName = document.getElementById("testimonialName");
-      const testimonialYear = document.getElementById("testimonialYear");
-      const testimonialBody = document.getElementById("testimonialBody");
-      const testimonialMessage = document.getElementById("testimonialMessage");
-      const saveTestimonialBtn = document.getElementById("saveTestimonialBtn");
-      const cancelEditBtn = document.getElementById("cancelEditBtn");
-      const clearTestimonialsBtn = document.getElementById("clearTestimonialsBtn");
-      const savedTestimonialsList = document.getElementById("savedTestimonialsList");
-      const TESTIMONIALS_KEY = "ccTestimonials";
-      let editIndex = null;
-
-      unlockForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        if (passwordInput.value === PASSWORD) {
-          unlockMessage.textContent = "";
-          lockCard.classList.add("hidden");
-          lockedTools.classList.remove("hidden");
-          toolFrame.src = "./split-sculptor.html";
-        } else {
-          unlockMessage.textContent = "Incorrect password. Try again.";
-        }
-      });
-
-      const setActiveTab = (tab) => {
-        const plannerActive = tab === "planner";
-        plannerPanel.classList.toggle("hidden", !plannerActive);
-        testimonialsPanel.classList.toggle("hidden", plannerActive);
-        tabPlanner.classList.toggle("bg-cc-outline", plannerActive);
-        tabPlanner.classList.toggle("text-cc-text", plannerActive);
-        tabTestimonials.classList.toggle("bg-cc-outline", !plannerActive);
-        tabTestimonials.classList.toggle("text-cc-text", !plannerActive);
-      };
-
-      tabPlanner?.addEventListener("click", () => setActiveTab("planner"));
-      tabTestimonials?.addEventListener("click", () => {
-        setActiveTab("testimonials");
-        renderSavedTestimonials();
-      });
-
-      const loadTestimonials = () => JSON.parse(localStorage.getItem(TESTIMONIALS_KEY) || "[]");
-
-      const setTestimonialMessage = (text, type = "success") => {
-        testimonialMessage.textContent = text;
-        testimonialMessage.classList.toggle("text-red-600", type === "error");
-        testimonialMessage.classList.toggle("text-green-700", type !== "error");
-      };
-
-      const resetFormToCreate = () => {
-        testimonialForm.reset();
-        testimonialYear.value = "2025";
-        editIndex = null;
-        saveTestimonialBtn.textContent = "Save testimonial";
-        cancelEditBtn.classList.add("hidden");
-      };
-
-      const beginEditTestimonial = (index) => {
-        const testimonials = loadTestimonials();
-        const testimonial = testimonials[index];
-        if (!testimonial) return;
-        editIndex = index;
-        testimonialName.value = testimonial.name;
-        testimonialYear.value = testimonial.year;
-        testimonialBody.value = testimonial.paragraphs.join("\n\n");
-        saveTestimonialBtn.textContent = "Update testimonial";
-        cancelEditBtn.classList.remove("hidden");
-        setTestimonialMessage("Editing testimonial. Click update when finished.");
-      };
-
-      const deleteTestimonial = (index) => {
-        const testimonials = loadTestimonials();
-        testimonials.splice(index, 1);
-        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(testimonials));
-        if (editIndex === index) resetFormToCreate();
-        if (editIndex !== null && index < editIndex) editIndex -= 1;
-        renderSavedTestimonials();
-        setTestimonialMessage("Testimonial deleted.");
-      };
-
-      const renderSavedTestimonials = () => {
-        const testimonials = loadTestimonials();
-        savedTestimonialsList.innerHTML = "";
-
-        if (!testimonials.length) {
-          savedTestimonialsList.innerHTML =
-            '<p class="rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-black/10">No saved testimonials yet.</p>';
-          return;
-        }
-
-        testimonials.forEach((item, index) => {
-          const wrapper = document.createElement("div");
-          wrapper.className =
-            "rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 flex flex-wrap items-center justify-between gap-3";
-
-          const meta = document.createElement("p");
-          meta.className = "text-sm font-semibold";
-          meta.textContent = `${item.name} (${item.year})`;
-
-          const actions = document.createElement("div");
-          actions.className = "flex flex-wrap gap-2";
-
-          const editBtn = document.createElement("button");
-          editBtn.type = "button";
-          editBtn.className = "rounded-lg bg-cc-outline px-3 py-2 text-xs font-bold text-cc-text";
-          editBtn.textContent = "Edit";
-          editBtn.addEventListener("click", () => beginEditTestimonial(index));
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.type = "button";
-          deleteBtn.className = "rounded-lg bg-white px-3 py-2 text-xs font-bold ring-1 ring-black/15";
-          deleteBtn.textContent = "Delete";
-          deleteBtn.addEventListener("click", () => deleteTestimonial(index));
-
-          actions.appendChild(editBtn);
-          actions.appendChild(deleteBtn);
-          wrapper.appendChild(meta);
-          wrapper.appendChild(actions);
-          savedTestimonialsList.appendChild(wrapper);
-        });
-      };
-
-      testimonialForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const name = testimonialName.value.trim();
-        const year = testimonialYear.value.trim();
-        const paragraphs = testimonialBody.value
-          .split(/\n\s*\n/g)
-          .map((item) => item.trim())
-          .filter(Boolean);
-
-        if (!name || !year || paragraphs.length === 0) {
-          setTestimonialMessage("Please add name, cohort year, and at least one paragraph.", "error");
-          return;
-        }
-
-        const existing = loadTestimonials();
-        if (editIndex === null) {
-          existing.push({ name, year, paragraphs });
-          setTestimonialMessage("Saved! It will show on the Testimonials page.");
-        } else {
-          existing[editIndex] = { name, year, paragraphs };
-          setTestimonialMessage("Updated! Changes will show on the Testimonials page.");
-        }
-
-        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(existing));
-        resetFormToCreate();
-        renderSavedTestimonials();
-      });
-
-      clearTestimonialsBtn?.addEventListener("click", () => {
-        localStorage.removeItem(TESTIMONIALS_KEY);
-        resetFormToCreate();
-        renderSavedTestimonials();
-        setTestimonialMessage("Saved testimonials were cleared for this browser.");
-      });
-
-      cancelEditBtn?.addEventListener("click", () => {
-        resetFormToCreate();
-        setTestimonialMessage("Edit canceled.");
-      });
-
-      renderSavedTestimonials();
-
     </script>
   </body>
 </html>
