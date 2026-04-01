@@ -198,23 +198,32 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s2">
-    <div class="step-eyebrow">STEP 2 · MESO CYCLE</div>
+    <div class="step-eyebrow">STEP 2 · PRIORITIZE MUSCLES</div>
+    <h2 class="step-title">How should we prioritize your week?</h2>
+    <p class="step-sub">Rank your muscle priorities first. If Back is your top priority, the first Compound, Machine, and Isolated slots auto-target Back in the builder.</p>
+    <div class="priority-rank-list" id="priority-rank-list">
+    </div>
+    <div class="rank-help" id="priority-rank-help"></div>
+  </div>
+
+  <div class="screen" id="s3">
+    <div class="step-eyebrow">STEP 3 · MESO CYCLE</div>
     <h2 class="step-title">What strategy are you running this month?</h2>
     <p class="step-sub">Use the strategy that best matches your macrocycle goal.</p>
     <div class="chips" id="meso-chips"></div>
     <div class="rule" id="meso-rule"></div>
   </div>
 
-  <div class="screen" id="s3">
-    <div class="step-eyebrow">STEP 3 · NUTRITION</div>
+  <div class="screen" id="s4">
+    <div class="step-eyebrow">STEP 4 · NUTRITION</div>
     <h2 class="step-title">What do you need to eat to support your goal?</h2>
     <p class="step-sub">Select the calorie direction that fits your goal. Protein anchor: ~0.9–1.0g per lb bodyweight.</p>
     <div class="chips" id="nutrition-chips"></div>
     <div class="rule" id="nutrition-rule"></div>
   </div>
 
-  <div class="screen" id="s4">
-    <div class="step-eyebrow">STEP 4 · MACRO CALCULATOR</div>
+  <div class="screen" id="s5">
+    <div class="step-eyebrow">STEP 5 · MACRO CALCULATOR</div>
     <h2 class="step-title">What Are Your Macro Targets?</h2>
     <p class="step-sub">Use the macro calculator, then choose how you want to store your macro plan.</p>
     <div class="chips" id="macro-calc-chips">
@@ -238,8 +247,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="rule" id="macro-calc-rule"></div>
   </div>
 
-  <div class="screen" id="s5">
-    <div class="step-eyebrow">STEP 5 · TRAINING DAYS</div>
+  <div class="screen" id="s6">
+    <div class="step-eyebrow">STEP 6 · MICROCYCLE (TRAINING DAYS)</div>
     <h2 class="step-title">How many days can you train each week?</h2>
     <p class="step-sub">Set your weekly frequency first, then we'll guide your priority selection so it divides your week appropriately.</p>
     <div class="chips" id="freq-chips">
@@ -253,8 +262,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="rank-help" id="freq-priority-guide"></div>
   </div>
 
-  <div class="screen" id="s6">
-    <div class="step-eyebrow">STEP 6 · TRAINING ENVIRONMENT</div>
+  <div class="screen" id="s7">
+    <div class="step-eyebrow">STEP 7 · TRAINING ENVIRONMENT</div>
     <h2 class="step-title">Where are you training most often?</h2>
     <p class="step-sub">This helps us infer equipment and tailor your day builder.</p>
     <div class="chips" id="gym-chips">
@@ -265,13 +274,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="rule" id="gym-rule"></div>
   </div>
 
-  <div class="screen" id="s7">
-    <div class="step-eyebrow">STEP 7 · PRIORITY + WORKOUT DAY BUILDER</div>
-    <h2 class="step-title">How should we prioritize your week?</h2>
-    <p class="step-sub">Now rank your muscle priorities, then choose each slot's target muscle and movement. A green light means the exercise matches slot type + target muscle.</p>
-    <div class="priority-rank-list" id="priority-rank-list">
-    </div>
-    <div class="rank-help" id="priority-rank-help"></div>
+  <div class="screen" id="s8">
+    <div class="step-eyebrow">STEP 8 · WORKOUT DAY BUILDER</div>
+    <h2 class="step-title">Build each training day</h2>
+    <p class="step-sub">Choose each slot’s target muscle and movement. A green light means the exercise matches slot type + target muscle.</p>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
@@ -285,8 +291,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     </div>
   </div>
 
-  <div class="screen" id="s8">
-    <div class="step-eyebrow">STEP 8 · SPLIT SCULPTOR SUMMARY</div>
+  <div class="screen" id="s9">
+    <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
     <h2 class="step-title">Split Sculptor</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
     <div id="summary-out"></div>
@@ -305,15 +311,16 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </div>
 
 <script>
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 const STEP_TIMING = [
   { name: 'Macrocycle', duration: '3 months' },
+  { name: 'Prioritize Muscles', duration: 'Now' },
   { name: 'Meso Cycle', duration: '4 weeks' },
   { name: 'Nutrition', duration: '3 months' },
   { name: 'Macros', duration: 'Now' },
-  { name: 'Training Days', duration: '1 week' },
+  { name: 'Microcycle', duration: '1 week' },
   { name: 'Environment', duration: 'Now' },
-  { name: 'Priority + Builder', duration: '1 week' },
+  { name: 'Builder', duration: '1 week' },
   { name: 'Summary', duration: '' }
 ];
 const state = {
@@ -480,11 +487,12 @@ function oneChip(groupId, key, isNum = false) {
     if (key === 'freq') {
       applyPriorityProfileForFrequency();
       buildFrequencyRule();
+      applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
     }
     if (key === 'gymType') buildGymRule();
     if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
-    if (state.step === 8) buildSummary();
+    if (state.step === 9) buildSummary();
   });
 }
 
@@ -537,9 +545,10 @@ function buildPriorityRanker() {
       current.splice(newRank, 0, muscle);
       state.priorities = current;
       state.priority = current[0];
+      applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
       buildWorkoutBuilder();
-      if (state.step === 8) buildSummary();
+      if (state.step === 9) buildSummary();
     };
   });
   document.getElementById('priority-rank-help').textContent = `Current order: ${state.priorities.join(' → ')}.`;
@@ -702,6 +711,28 @@ function getPriorityTargetForDay(dayIndex) {
   return order[dayIndex % order.length];
 }
 
+function getAutoTargetMuscle(slotType, slotIndex, dayPriority) {
+  if (dayPriority !== 'Back') return '';
+  if (slotType === 'Compound' && slotIndex === 0) return 'Back';
+  if (slotType === 'Machine' && slotIndex === 2) return 'Back';
+  if (slotType === 'Isolated' && slotIndex === 4) return 'Back';
+  return '';
+}
+
+function applyPriorityTargetsToBaseRows() {
+  const split = getSplitForFreq();
+  if (!state.customDays[state.freq]) return;
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const dayRows = state.customDays[state.freq][dayKey];
+    if (!dayRows) return;
+    const dayPriority = getPriorityTargetForDay(i);
+    for (let rowIndex = 0; rowIndex < Math.min(slotPattern.length, dayRows.length); rowIndex += 1) {
+      dayRows[rowIndex].targetMuscle = getAutoTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority);
+    }
+  });
+}
+
 function ensureDayPlan() {
   const split = getSplitForFreq();
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
@@ -714,11 +745,11 @@ function ensureDayPlan() {
         slot,
         name: '',
         id: '',
-        targetMuscle: getDefaultTargetForSlot(slot, dayFocus, dayPriority)
+        targetMuscle: getAutoTargetMuscle(slot, idx, dayPriority)
       }));
     } else {
-      state.customDays[state.freq][dayKey].forEach((item) => {
-        if (!item.targetMuscle) item.targetMuscle = getDefaultTargetForSlot(item.slot, dayFocus, dayPriority);
+      state.customDays[state.freq][dayKey].forEach((item, idx) => {
+        if (idx < slotPattern.length && !item.targetMuscle) item.targetMuscle = getAutoTargetMuscle(item.slot, idx, dayPriority);
       });
     }
   });
@@ -786,7 +817,7 @@ function renderDayCards() {
         });
       }
       renderDayCards();
-      if (state.step === 8) buildSummary();
+      if (state.step === 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-select-ex]').forEach((select) => {
@@ -796,7 +827,7 @@ function renderDayCards() {
       state.customDays[state.freq][day][parseInt(row, 10)].id = chosen?.id || '';
       state.customDays[state.freq][day][parseInt(row, 10)].name = chosen?.name || '';
       renderDayCards();
-      if (state.step === 8) buildSummary();
+      if (state.step === 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-clear]').forEach((btn) => {
@@ -812,7 +843,7 @@ function renderDayCards() {
       const [day, row] = btn.dataset.removeRow.split(':');
       state.customDays[state.freq][day].splice(parseInt(row, 10), 1);
       renderDayCards();
-      if (state.step === 8) buildSummary();
+      if (state.step === 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-add-slot]').forEach((btn) => {
@@ -829,7 +860,7 @@ function renderDayCards() {
         targetMuscle: getDefaultTargetForSlot(addType, focus, dayPriority)
       });
       renderDayCards();
-      if (state.step === 8) buildSummary();
+      if (state.step === 9) buildSummary();
     };
   });
 }
@@ -936,7 +967,7 @@ function showStep(step) {
   document.getElementById('next-btn').disabled = step === TOTAL_STEPS;
   document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
-  if (step === 8) buildSummary();
+  if (step === 9) buildSummary();
 }
 
 oneChip('macro-chips', 'macro');
@@ -1017,7 +1048,7 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
   const input = document.getElementById(`manual-${key}`);
   input.addEventListener('input', () => {
     state.manualTargets[key] = input.value;
-    if (state.step === 8) buildSummary();
+    if (state.step === 9) buildSummary();
   });
 });
 
