@@ -11,6 +11,9 @@ window.EXERCISE_MATRIX = [
   { name: "Chest Fly", equipment: "Dumbbell", primaryMuscle: "Chest" },
   { name: "Chest Fly", equipment: "Machine", primaryMuscle: "Chest" },
   { name: "Chest Press", equipment: "Machine", primaryMuscle: "Chest" },
+  { name: "Flat Bench Press", equipment: "Barbell", primaryMuscle: "Chest" },
+  { name: "Weighted Chest Dip", equipment: "Bodyweight", primaryMuscle: "Chest" },
+  { name: "Pec Deck", equipment: "Machine", primaryMuscle: "Chest" },
   { name: "Push Up", equipment: "Bodyweight", primaryMuscle: "Chest" },
   { name: "Chest Dip", equipment: "Bodyweight", primaryMuscle: "Chest" },
   { name: "Decline Bench Press", equipment: "Dumbbell", primaryMuscle: "Chest" },
@@ -96,6 +99,10 @@ window.EXERCISE_MATRIX = [
   { name: "Seated Row", equipment: "Cable", primaryMuscle: "Back" },
   { name: "Seated Row", equipment: "Machine", primaryMuscle: "Back" },
   { name: "T Bar Row", equipment: "Barbell", primaryMuscle: "Back" },
+  { name: "Barbell Row", equipment: "Barbell", primaryMuscle: "Back" },
+  { name: "Chest Supported Row", equipment: "Dumbbell", primaryMuscle: "Back" },
+  { name: "Chin Up", equipment: "Bodyweight", primaryMuscle: "Back" },
+  { name: "Straight Arm Pulldown", equipment: "Cable", primaryMuscle: "Back" },
 
   { name: "Arnold Press", equipment: "Dumbbell", primaryMuscle: "Shoulders" },
   { name: "Front Raise", equipment: "Barbell", primaryMuscle: "Shoulders" },
@@ -113,5 +120,9 @@ window.EXERCISE_MATRIX = [
   { name: "Reverse Fly", equipment: "Machine", primaryMuscle: "Rear Delts" },
   { name: "Lateral Raise", equipment: "Cable", primaryMuscle: "Shoulders" },
   { name: "Lateral Raise", equipment: "Dumbbell", primaryMuscle: "Shoulders" },
-  { name: "Lateral Raise", equipment: "Machine", primaryMuscle: "Shoulders" }
+  { name: "Lateral Raise", equipment: "Machine", primaryMuscle: "Shoulders" },
+  { name: "Rear Delt Fly", equipment: "Machine", primaryMuscle: "Rear Delts" },
+  { name: "Bulgarian Split Squat", equipment: "Dumbbell", primaryMuscle: "Quads" },
+  { name: "Romanian Deadlift", equipment: "Barbell", primaryMuscle: "Hamstrings" },
+  { name: "Hip Adductors", equipment: "Machine", primaryMuscle: "Glutes" }
 ];

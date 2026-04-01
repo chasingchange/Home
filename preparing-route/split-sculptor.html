@@ -125,8 +125,18 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .macro-embed iframe { width: 100%; min-height: 720px; border: 0; background: #fff; }
 .target-grid { display: grid; gap: .6rem; margin-top: .75rem; }
 .target-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: #fff; }
+.target-card.target-protein { background: rgba(119, 215, 112, 0.2); border-color: rgba(89, 195, 82, 0.5); }
+.target-card.target-carbs { background: rgba(255, 209, 102, 0.26); border-color: rgba(243, 176, 63, 0.45); }
+.target-card.target-fat { background: rgba(255, 138, 138, 0.2); border-color: rgba(230, 106, 106, 0.45); }
 .target-label { font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
 .target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
+.week li strong { display: block; margin-bottom: .6rem; }
+.week li ul { margin-top: .3rem; padding-left: 1.1rem; }
+.cc-title-logo { width: 182px; height: 182px; }
+.cc-title-brand { gap: .08rem; }
+.cc-title-home { padding: .6rem .85rem; border-radius: .85rem; min-width: 0; }
+.cc-title-home-label { font-size: .88rem; letter-spacing: .02em; }
+.cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
 @media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } }
 </style>
@@ -145,7 +155,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="cc-page-title">Split Sculptor</div>
       <div style="margin-top:.75rem;text-align:center;">
         <a href="../index.html" class="cc-title-home" aria-label="Go to Start Line home">
-          <span class="cc-title-home-label">Start Line, Chasing Change Home</span>
+          <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
         </a>
       </div>
       <div style="text-align:center;">
@@ -196,7 +206,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s4">
     <div class="step-eyebrow">STEP 4 · MACRO CALCULATOR</div>
-    <h2 class="step-title">Calculate your macros before you build your split.</h2>
+    <h2 class="step-title">What Are Your Macro Targets?</h2>
     <p class="step-sub">Use the macro calculator, then choose how you want to store your macro plan.</p>
     <div class="chips" id="macro-calc-chips">
       <div class="chip on" data-v="Use Macro Calculator">Use Macro Calculator</div>
@@ -211,7 +221,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s5">
     <div class="step-eyebrow">STEP 5 · PRIORITY MUSCLE</div>
-    <h2 class="step-title">Rank your body-part priorities for this month.</h2>
+    <h2 class="step-title">How Do You Rank The Priority Of Each Muscle Group?</h2>
     <p class="step-sub">Rank 1 drives your first microcycle target, rank 2 drives the next target, and so on.</p>
     <div class="priority-rank-list" id="priority-rank-list">
     </div>
@@ -232,7 +242,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s7">
     <div class="step-eyebrow">STEP 7 · MICROCYCLE + WORKOUT DAY BUILDER</div>
-    <h2 class="step-title">Build your workout days with smart movement matching</h2>
+    <h2 class="step-title">What Does Each Workout Day Look Like?</h2>
     <p class="step-sub">Pick weekly frequency, choose each slot's target muscle, then select a movement from the dropdown. A green light means the exercise matches slot type + target muscle.</p>
     <div class="chips" id="freq-chips">
       <div class="chip" data-v="2">2 days</div>
@@ -258,11 +268,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s8">
     <div class="step-eyebrow">STEP 8 · SPLIT SCULPTOR SUMMARY</div>
     <h2 class="step-title">Split Sculptor</h2>
-    <p class="step-sub">Use this as your execution plan, then reassess and repeat.</p>
+    <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
     <div id="summary-out"></div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
-      <button class="btn btn-p" id="save-png-btn" type="button">Save as PNG</button>
+      <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
     </div>
   </div>
 
@@ -292,8 +302,8 @@ const state = {
   meso: 'Hypertrophy',
   nutrition: 'Surplus',
   macroPlan: 'Use Macro Calculator',
-  priority: 'Chest',
-  priorities: ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'],
+  priority: 'Back',
+  priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
   gymType: 'Commercial Gym',
   freq: 3,
   customDays: {}
@@ -393,15 +403,44 @@ function getSplitForFreq() {
   return baseSplit;
 }
 
-const movementTypeById = {
-  back_squat: 'Compound', front_squat: 'Compound', deadlift: 'Compound', sumo_deadlift: 'Compound',
-  bench: 'Compound', ohp: 'Compound', power_clean: 'Compound', hang_clean: 'Compound', push_press: 'Compound',
-  rdl: 'Compound', incline_bench: 'Compound', pause_bench: 'Compound', hip_thrust: 'Compound',
-  db_bench: 'Compound', db_shoulder_press: 'Compound', db_row: 'Compound', db_rdl: 'Compound',
-  leg_press: 'Machine', hack_squat: 'Machine', chest_press_machine: 'Machine', lat_pulldown: 'Machine',
-  pullup_weighted: 'Compound', dip_weighted: 'Compound', chinup_weighted: 'Compound', farmers_carry: 'Compound',
-  barbell_row: 'Compound', trap_bar_deadlift: 'Compound', split_squat: 'Compound',
-  leg_extension: 'Isolated', hamstring_curl: 'Isolated', calf_raise: 'Isolated', biceps_curl: 'Isolated', triceps_pushdown: 'Isolated', cable_row: 'Machine'
+const explicitMovementTypeByName = {
+  'Chest Fly': 'Isolated',
+  'Incline Chest Fly': 'Isolated',
+  'Decline Cable Fly': 'Isolated',
+  'Incline Cable Fly': 'Isolated',
+  'Cable Crossover': 'Isolated',
+  'Lateral Raise': 'Isolated',
+  'Front Raise': 'Isolated',
+  'Reverse Fly': 'Isolated',
+  'Face Pull': 'Isolated',
+  'Bicep Curl': 'Isolated',
+  'Hammer Curl': 'Isolated',
+  'Preacher Curl': 'Isolated',
+  'Skullcrusher': 'Isolated',
+  'Tricep Extension': 'Isolated',
+  'Tricep Pushdown': 'Isolated',
+  'Leg Extension': 'Isolated',
+  'Lying Leg Curl': 'Isolated',
+  'Seated Leg Curl': 'Isolated',
+  'Calf Press': 'Isolated',
+  'Standing Calf Raise': 'Isolated',
+  'Hip Abductors': 'Isolated',
+  'Hip Adductors': 'Isolated',
+  'Pec Deck': 'Isolated',
+  'Rear Delt Fly': 'Isolated',
+  'Goblet Squat': 'Compound',
+  'Lunges': 'Compound',
+  'Bulgarian Split Squat': 'Compound',
+  'Romanian Deadlift': 'Compound',
+  'Pull Up': 'Compound',
+  'Chin Up': 'Compound',
+  'Lat Pulldown': 'Compound',
+  'Seated Row': 'Compound',
+  'T Bar Row': 'Compound',
+  'Barbell Row': 'Compound',
+  'Chest Press': 'Compound',
+  'Incline Chest Press': 'Compound',
+  'Shoulder Press': 'Compound'
 };
 
 function oneChip(groupId, key, isNum = false) {
@@ -426,7 +465,7 @@ function oneChip(groupId, key, isNum = false) {
 }
 
 function getPriorityMuscles() {
-  return ['Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Biceps', 'Triceps', 'Shoulders'];
+  return ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
 }
 
 function buildPriorityRanker() {
@@ -544,7 +583,16 @@ function getDayPlan(focus) {
 }
 
 function normalizeType(exercise) {
-  return movementTypeById[exercise.id] || (exercise.category === 'Machines' ? 'Machine' : 'Compound');
+  const byName = explicitMovementTypeByName[exercise.name];
+  if (byName) return byName;
+  const name = exercise.name.toLowerCase();
+  const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
+  const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
+  if (isolationKeywords.some((keyword) => name.includes(keyword))) return 'Isolated';
+  if (exercise.category === 'Machines' && !compoundKeywords.some((keyword) => name.includes(keyword))) return 'Machine';
+  if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
+  if (exercise.category === 'Machines') return 'Machine';
+  return 'Compound';
 }
 
 function getMuscle(exercise) {
@@ -704,10 +752,10 @@ function buildSummary() {
   const targetMarkup = macroTargets
     ? `<div class="target-grid">
         <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
-        <div class="target-card"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
-        <div class="target-card"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
-        <div class="target-card"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
-        <div class="target-card"><div class="target-label">Last Saved</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
+        <div class="target-card target-protein"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
+        <div class="target-card target-carbs"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
+        <div class="target-card target-fat"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
+        <div class="target-card"><div class="target-label">Last Calculated</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
       </div>`
     : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
   const split = getSplitForFreq().map((line, i) => {
@@ -811,9 +859,27 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
   const summary = document.getElementById('summary-out');
   if (!summary || typeof window.html2canvas !== 'function') return;
   const canvas = await window.html2canvas(summary, { backgroundColor: '#f5f5f7', scale: 2 });
+  const filename = 'split-sculptor-summary.png';
+  const dataUrl = canvas.toDataURL('image/png');
+
+  if (navigator.canShare && navigator.share) {
+    try {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (blob) {
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Split Sculptor Summary' });
+          return;
+        }
+      }
+    } catch (error) {
+      // Fallback to download when share sheet isn't available or is canceled.
+    }
+  }
+
   const link = document.createElement('a');
-  link.download = 'split-sculptor-summary.png';
-  link.href = canvas.toDataURL('image/png');
+  link.download = filename;
+  link.href = dataUrl;
   link.click();
 });
 
