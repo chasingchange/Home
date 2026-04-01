@@ -54,7 +54,7 @@
       </header>
 
       <section class="mt-6 rounded-3xl bg-white p-5 sm:p-6 ring-1 ring-black/10 shadow-lg">
-        <div class="grid gap-3 sm:grid-cols-3">
+        <div class="grid gap-3 sm:grid-cols-4">
           <label class="grid gap-1 text-sm font-semibold">
             Search exercise
             <input id="searchInput" type="text" placeholder="e.g. bench, row, curl" class="rounded-xl border border-black/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cc-accent" />
@@ -71,6 +71,12 @@
               <option value="all">All equipment</option>
             </select>
           </label>
+          <label class="grid gap-1 text-sm font-semibold">
+            Movement type
+            <select id="movementTypeFilter" class="rounded-xl border border-black/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cc-accent">
+              <option value="all">All types</option>
+            </select>
+          </label>
         </div>
         <p id="resultCount" class="mt-4 text-sm font-semibold opacity-75"></p>
 
@@ -80,6 +86,7 @@
               <tr>
                 <th class="px-4 py-3">Exercise</th>
                 <th class="px-4 py-3">Primary Muscle</th>
+                <th class="px-4 py-3">Movement Type</th>
                 <th class="px-4 py-3">Equipment</th>
               </tr>
             </thead>
@@ -94,6 +101,7 @@
       const searchInput = document.getElementById("searchInput");
       const muscleFilter = document.getElementById("muscleFilter");
       const equipmentFilter = document.getElementById("equipmentFilter");
+      const movementTypeFilter = document.getElementById("movementTypeFilter");
       const matrixBody = document.getElementById("matrixBody");
       const resultCount = document.getElementById("resultCount");
       const pageLoginStatus = document.getElementById("pageLoginStatus");
@@ -116,18 +124,27 @@
           option.textContent = value;
           equipmentFilter.appendChild(option);
         });
+
+        uniqueValues("movementType").forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          movementTypeFilter.appendChild(option);
+        });
       }
 
       function render() {
         const search = searchInput.value.trim().toLowerCase();
         const muscle = muscleFilter.value;
         const equipment = equipmentFilter.value;
+        const movementType = movementTypeFilter.value;
 
         const filtered = DATA.filter((row) => {
           const matchSearch = !search || row.name.toLowerCase().includes(search);
           const matchMuscle = muscle === "all" || row.primaryMuscle === muscle;
           const matchEquipment = equipment === "all" || row.equipment === equipment;
-          return matchSearch && matchMuscle && matchEquipment;
+          const matchMovementType = movementType === "all" || row.movementType === movementType;
+          return matchSearch && matchMuscle && matchEquipment && matchMovementType;
         });
 
         resultCount.textContent = `${filtered.length} exercise${filtered.length === 1 ? "" : "s"} shown`;
@@ -138,6 +155,7 @@
               <tr class="border-t border-black/10 odd:bg-[#f9fafb]">
                 <td class="px-4 py-3 font-semibold">${row.name}</td>
                 <td class="px-4 py-3">${row.primaryMuscle}</td>
+                <td class="px-4 py-3">${row.movementType}</td>
                 <td class="px-4 py-3">${row.equipment}</td>
               </tr>
             `
@@ -145,7 +163,7 @@
           .join("");
 
         if (!filtered.length) {
-          matrixBody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-sm opacity-70">No exercises match your current filters.</td></tr>';
+          matrixBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-sm opacity-70">No exercises match your current filters.</td></tr>';
         }
       }
 
@@ -155,7 +173,7 @@
         pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
       }
       render();
-      [searchInput, muscleFilter, equipmentFilter].forEach((el) => el.addEventListener("input", render));
+      [searchInput, muscleFilter, equipmentFilter, movementTypeFilter].forEach((el) => el.addEventListener("input", render));
     </script>
   </body>
 </html>
