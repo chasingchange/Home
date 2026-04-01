@@ -79,6 +79,22 @@
   };
 
   const saveOverride = async (root) => {
+    root.querySelectorAll("[style]").forEach((node) => {
+      const outlineValue = node.style.outline || "";
+      if (outlineValue.includes("dashed")) {
+        node.style.outline = "";
+      }
+      if (node.style.cursor === "move") {
+        node.style.cursor = "";
+      }
+      if (node.style.opacity === "0.65") {
+        node.style.opacity = "";
+      }
+      if (!node.getAttribute("style")?.trim()) {
+        node.removeAttribute("style");
+      }
+    });
+
     const overrides = readOverrides();
     overrides[pageKey] = root.innerHTML;
     localStorage.setItem(PAGE_HTML_OVERRIDES_KEY, JSON.stringify(overrides));
@@ -93,7 +109,16 @@
 
     const saved = readOverrides()[pageKey];
     const root = document.querySelector("[data-admin-edit-root]");
-    if (saved && root) root.innerHTML = saved;
+    if (saved && root) {
+      root.innerHTML = saved;
+      root.querySelectorAll("[style]").forEach((node) => {
+        const outlineValue = node.style.outline || "";
+        if (outlineValue.includes("dashed")) node.style.outline = "";
+        if (node.style.cursor === "move") node.style.cursor = "";
+        if (node.style.opacity === "0.65") node.style.opacity = "";
+        if (!node.getAttribute("style")?.trim()) node.removeAttribute("style");
+      });
+    }
   };
 
   const setUnlocked = (value) => {
@@ -244,7 +269,7 @@
 
       syncBtn.addEventListener("click", () => {
         const current = readSyncConfig();
-        const endpoint = prompt("Sync endpoint URL (expects GET/PUT JSON)", current.endpoint || "");
+        const endpoint = prompt("Sync endpoint URL (a URL that returns JSON on GET and accepts JSON on PUT)", current.endpoint || "");
         if (endpoint === null) return;
 
         const token = prompt("Bearer token (optional)", current.token || "");
