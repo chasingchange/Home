@@ -96,6 +96,19 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-drop .placeholder { color: #9aa4af; font-size: .8rem; }
 .slot-drop .filled { font-size: .86rem; color: var(--text); font-weight: 600; }
 .slot-drop button { border: 0; background: transparent; color: #8f9aa6; cursor: pointer; font-size: .95rem; }
+.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 580px; }
+.priority-rank-item { display: grid; grid-template-columns: 1fr 140px; gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
+.priority-rank-label { font-family: 'Raleway', sans-serif; font-weight: 700; }
+.priority-rank-select, .slot-select, .slot-muscle-select { font-family: 'Muli', sans-serif; border: 1px solid var(--border); border-radius: 8px; padding: .42rem .5rem; background: #fff; color: var(--text); }
+.rank-help { margin-top: .75rem; font-size: .85rem; color: var(--muted); }
+.slot-row { border: 1px solid rgba(7,31,53,.1); border-radius: 10px; padding: .55rem; grid-template-columns: 1fr; gap: .5rem; }
+.slot-controls { display: grid; grid-template-columns: 140px 1fr 26px; gap: .45rem; align-items: center; }
+.slot-meta { display: flex; align-items: center; justify-content: space-between; }
+.slot-status-light { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(7,31,53,.2); display: inline-block; margin-left: .5rem; }
+.slot-row.match { border-color: rgba(89,195,82,.45); background: rgba(119,215,112,.14); }
+.slot-row.match .slot-status-light { background: #77d770; border-color: #59c352; }
+.slot-row.mismatch { border-color: rgba(204,60,60,.45); background: rgba(204,60,60,.08); }
+.slot-row.mismatch .slot-status-light { background: #e96a6a; border-color: #cc3c3c; }
 @media (max-width: 900px) { .builder-layout { grid-template-columns: 1fr; } }
 .input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
 .ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
@@ -200,14 +213,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s5">
     <div class="step-eyebrow">STEP 5 · PRIORITY MUSCLE</div>
-    <h2 class="step-title">Which muscle group is your visual priority?</h2>
-    <p class="step-sub">Your chosen area appears first each week.</p>
-    <div class="chips" id="priority-chips">
-      <div class="chip on" data-v="Chest">Chest</div>
-      <div class="chip" data-v="Back">Back</div>
-      <div class="chip" data-v="Legs">Legs</div>
-      <div class="chip" data-v="Shoulders">Shoulders</div>
+    <h2 class="step-title">Rank your body-part priorities for this month.</h2>
+    <p class="step-sub">Rank 1 drives your first microcycle target, rank 2 drives the next target, and so on.</p>
+    <div class="priority-rank-list" id="priority-rank-list">
     </div>
+    <div class="rank-help" id="priority-rank-help"></div>
   </div>
 
   <div class="screen" id="s6">
@@ -224,8 +234,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s7">
     <div class="step-eyebrow">STEP 7 · MICROCYCLE + WORKOUT DAY BUILDER</div>
-    <h2 class="step-title">Build your actual workout days + drag and drop your exercise cards</h2>
-    <p class="step-sub">Pick weekly frequency and we auto-build a split with exercise recommendations based on your gym setup.</p>
+    <h2 class="step-title">Build your workout days with smart movement matching</h2>
+    <p class="step-sub">Pick weekly frequency, choose each slot's target muscle, then select a movement from the dropdown. A green light means the exercise matches slot type + target muscle.</p>
     <div class="chips" id="freq-chips">
       <div class="chip" data-v="2">2 days</div>
       <div class="chip on" data-v="3">3 days</div>
@@ -234,17 +244,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="6">6 days</div>
     </div>
     <div class="rule" id="freq-rule"></div>
-    <div class="builder-tools">
-      <a href="../exercise-matrix/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Exercise Matrix</a>
-      <div class="filter-row" id="movement-filters"></div>
-      <div class="filter-row" id="muscle-filters"></div>
-      <div class="filter-row" id="equipment-filters"></div>
-    </div>
     <div class="builder-layout">
-      <div class="exercise-bank">
-        <h3>Exercise Bank</h3>
-        <div id="exercise-bank-list"></div>
-      </div>
       <div class="day-grid" id="builder-out"></div>
     </div>
     <div class="agent">
@@ -295,13 +295,9 @@ const state = {
   nutrition: 'Surplus',
   macroPlan: 'Use Macro Calculator',
   priority: 'Chest',
+  priorities: ['Chest', 'Back', 'Legs', 'Shoulders'],
   gymType: 'Commercial Gym',
   freq: 3,
-  filters: {
-    movement: 'All',
-    muscle: 'All',
-    equipment: 'All'
-  },
   customDays: {}
 };
 
@@ -398,6 +394,41 @@ function oneChip(groupId, key, isNum = false) {
   });
 }
 
+function getPriorityMuscles() {
+  return ['Chest', 'Back', 'Legs', 'Shoulders'];
+}
+
+function buildPriorityRanker() {
+  const ranked = state.priorities;
+  const list = document.getElementById('priority-rank-list');
+  const options = [1, 2, 3, 4];
+  list.innerHTML = getPriorityMuscles().map((muscle) => {
+    const currentRank = ranked.indexOf(muscle) + 1;
+    const opts = options.map((rank) => `<option value="${rank}"${rank === currentRank ? ' selected' : ''}>Rank ${rank}</option>`).join('');
+    return `<div class="priority-rank-item">
+      <div class="priority-rank-label">${muscle}</div>
+      <select class="priority-rank-select" data-muscle="${muscle}">${opts}</select>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.priority-rank-select').forEach((select) => {
+    select.onchange = () => {
+      const muscle = select.dataset.muscle;
+      const newRank = parseInt(select.value, 10) - 1;
+      const current = [...state.priorities];
+      const oldRank = current.indexOf(muscle);
+      if (oldRank === newRank) return;
+      current.splice(oldRank, 1);
+      current.splice(newRank, 0, muscle);
+      state.priorities = current;
+      state.priority = current[0];
+      buildPriorityRanker();
+      buildWorkoutBuilder();
+      if (state.step === 8) buildSummary();
+    };
+  });
+  document.getElementById('priority-rank-help').textContent = `Current order: ${state.priorities.join(' → ')}.`;
+}
+
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
   wrap.innerHTML = STEP_TIMING.map((x, i) => `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`).join('');
@@ -478,7 +509,7 @@ function getDayPlan(focus) {
   const pool = getExercisePool(focus);
   const prioritized = pool.filter((e) => getMuscle(e) === state.priority);
   const list = [...prioritized, ...pool].slice(0, 6);
-  return list.map((e) => e.name);
+  return list;
 }
 
 function normalizeType(exercise) {
@@ -489,27 +520,17 @@ function getMuscle(exercise) {
   return exercise.primaryMuscle || 'Full Body';
 }
 
-function getFilteredExercises() {
+function getExercisesForSlot(slotType) {
   const allowed = allowedCategories[state.gymType];
-  return EXERCISES.filter((e) => {
-    const movement = normalizeType(e);
-    const muscle = getMuscle(e);
-    const movementOk = state.filters.movement === 'All' || state.filters.movement === movement;
-    const muscleOk = state.filters.muscle === 'All' || state.filters.muscle === muscle;
-    const equipmentOk = state.filters.equipment === 'All' || state.filters.equipment === e.category;
-    return allowed.includes(e.category) && movementOk && muscleOk && equipmentOk;
-  });
+  return EXERCISES.filter((exercise) => {
+    if (!allowed.includes(exercise.category)) return false;
+    return normalizeType(exercise) === slotType;
+  }).slice(0, 120);
 }
 
-function buildFilterRow(containerId, key, options) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = options.map((option) => `<button class="fchip${state.filters[key] === option ? ' on' : ''}" data-key="${key}" data-v="${option}">${option}</button>`).join('');
-  container.onclick = (e) => {
-    const chip = e.target.closest('.fchip');
-    if (!chip) return;
-    state.filters[chip.dataset.key] = chip.dataset.v;
-    buildWorkoutBuilder();
-  };
+function getPriorityTargetForDay(dayIndex) {
+  const order = state.priorities.length ? state.priorities : getPriorityMuscles();
+  return order[dayIndex % order.length];
 }
 
 function ensureDayPlan() {
@@ -520,26 +541,19 @@ function ensureDayPlan() {
     if (!state.customDays[state.freq][dayKey]) {
       const focus = extractFocusName(line);
       const seeds = getDayPlan(focus);
+      const dayPriority = getPriorityTargetForDay(i);
       state.customDays[state.freq][dayKey] = slotPattern.map((slot, idx) => ({
         slot,
-        name: seeds[idx] || '',
-        id: ''
+        name: seeds[idx]?.name || '',
+        id: seeds[idx]?.id || '',
+        targetMuscle: idx === 0 ? dayPriority : getMuscle(seeds[idx] || { primaryMuscle: dayPriority })
       }));
+    } else {
+      state.customDays[state.freq][dayKey].forEach((item, idx) => {
+        if (idx === 0) item.targetMuscle = getPriorityTargetForDay(i);
+        else if (!item.targetMuscle) item.targetMuscle = state.priority;
+      });
     }
-  });
-}
-
-function renderExerciseBank() {
-  const bank = document.getElementById('exercise-bank-list');
-  const list = getFilteredExercises().slice(0, 80);
-  bank.innerHTML = list.map((e) => `<div class="exercise-card" draggable="true" data-id="${e.id}" data-name="${e.name}">
-      <div>${e.name}</div>
-      <div class="exercise-meta">${getMuscle(e)} • ${e.category} • ${normalizeType(e)}</div>
-    </div>`).join('') || '<div class="exercise-meta">No exercises match your filters.</div>';
-  bank.querySelectorAll('.exercise-card').forEach((card) => {
-    card.addEventListener('dragstart', () => {
-      window.__dragExercise = { id: card.dataset.id, name: card.dataset.name };
-    });
   });
 }
 
@@ -549,28 +563,49 @@ function renderDayCards() {
   const out = document.getElementById('builder-out');
   out.innerHTML = split.map((line, i) => {
     const namedLine = line.replace('Priority First', `${state.priority} Priority`);
+    const dayTarget = getPriorityTargetForDay(i);
     const dayKey = `d${i + 1}`;
-    const rows = dayState[dayKey].map((item, rowIndex) => `<div class="slot-row">
-      <div class="slot-label">${item.slot}</div>
-      <div class="slot-drop" data-day="${dayKey}" data-row="${rowIndex}">
-        ${item.name ? `<span class="filled">${item.name}</span><button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>` : '<span class="placeholder">Drop card here</span>'}
+    const rows = dayState[dayKey].map((item, rowIndex) => {
+      const slotOptions = getExercisesForSlot(item.slot);
+      const exercise = EXERCISES.find((x) => x.id === item.id);
+      const matches = !!exercise && normalizeType(exercise) === item.slot && getMuscle(exercise) === item.targetMuscle;
+      const muscleOptions = ['Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']
+        .map((muscle) => `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
+      const movementOptions = [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
+        const selected = item.id === option.id ? ' selected' : '';
+        return `<option value="${option.id}"${selected}>${option.name} (${getMuscle(option)})</option>`;
+      })].join('');
+      return `<div class="slot-row ${matches ? 'match' : 'mismatch'}">
+      <div class="slot-meta">
+        <div class="slot-label">${item.slot} | ${item.targetMuscle}</div>
+        <span class="slot-status-light" title="${matches ? 'Match' : 'No match'}"></span>
       </div>
-    </div>`).join('');
-    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine}</h4>${rows}</div>`;
+      <div class="slot-controls">
+        <select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>
+        <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
+        <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
+      </div>
+    </div>`;
+    }).join('');
+    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}</div>`;
   }).join('');
-  out.querySelectorAll('.slot-drop').forEach((slot) => {
-    slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('dragover'); });
-    slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
-    slot.addEventListener('drop', (e) => {
-      e.preventDefault();
-      slot.classList.remove('dragover');
-      if (!window.__dragExercise) return;
-      const { day, row } = slot.dataset;
-      state.customDays[state.freq][day][parseInt(row, 10)].name = window.__dragExercise.name;
-      state.customDays[state.freq][day][parseInt(row, 10)].id = window.__dragExercise.id;
+  out.querySelectorAll('[data-muscle]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      state.customDays[state.freq][day][parseInt(row, 10)].targetMuscle = select.value;
       renderDayCards();
       if (state.step === 8) buildSummary();
-    });
+    };
+  });
+  out.querySelectorAll('[data-select-ex]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      const chosen = EXERCISES.find((x) => x.id === select.value);
+      state.customDays[state.freq][day][parseInt(row, 10)].id = chosen?.id || '';
+      state.customDays[state.freq][day][parseInt(row, 10)].name = chosen?.name || '';
+      renderDayCards();
+      if (state.step === 8) buildSummary();
+    };
   });
   out.querySelectorAll('[data-clear]').forEach((btn) => {
     btn.onclick = () => {
@@ -583,11 +618,7 @@ function renderDayCards() {
 }
 
 function buildWorkoutBuilder() {
-  buildFilterRow('movement-filters', 'movement', ['All', 'Compound', 'Machine', 'Isolated']);
-  buildFilterRow('muscle-filters', 'muscle', ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Full Body']);
-  buildFilterRow('equipment-filters', 'equipment', ['All', ...allowedCategories[state.gymType]]);
   ensureDayPlan();
-  renderExerciseBank();
   renderDayCards();
 }
 
@@ -596,7 +627,7 @@ function answerAgent(question) {
   if (!q.trim()) return 'Try asking: "Can I swap machine lifts for home gym options?"';
   const firstDay = getDayPlan(extractFocusName(splitByFreq[state.freq][0]));
   if (q.includes('swap') || q.includes('machine') || q.includes('home')) {
-    return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
+    return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).map((x) => x.name).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
   }
   if (q.includes('30') || q.includes('time') || q.includes('quick')) {
     return 'Run 3 lifts per day: 1 priority movement, 1 secondary compound, 1 isolation finisher. Keep rests 60–90s for accessory work.';
@@ -652,6 +683,7 @@ function buildSummary() {
       <div class="sum-row"><span class="sum-label">NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
       <div class="sum-row"><span class="sum-label">MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
       <div class="sum-row"><span class="sum-label">PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
+      <div class="sum-row"><span class="sum-label">RANK ORDER</span><span class="sum-val">${state.priorities.join(' → ')}</span></div>
       <div class="sum-row"><span class="sum-label">GYM TYPE</span><span class="sum-val">${state.gymType}</span></div>
       <div class="sum-row"><span class="sum-label">MICROCYCLE (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
     </div>
@@ -693,7 +725,6 @@ oneChip('macro-chips', 'macro');
 oneChip('meso-chips', 'meso');
 oneChip('nutrition-chips', 'nutrition');
 oneChip('macro-calc-chips', 'macroPlan');
-oneChip('priority-chips', 'priority');
 oneChip('gym-chips', 'gymType');
 oneChip('freq-chips', 'freq', true);
 
@@ -701,6 +732,7 @@ buildTimeline();
 buildMesoChips();
 buildNutritionChips();
 buildMacroRule();
+buildPriorityRanker();
 buildFrequencyRule();
 buildGymRule();
 buildWorkoutBuilder();
