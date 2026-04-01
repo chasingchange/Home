@@ -582,6 +582,26 @@ function extractFocusName(line) {
   return 'Full Body';
 }
 
+function getDayFocusMuscles(focus) {
+  const map = {
+    Push: ['Chest', 'Shoulders'],
+    Pull: ['Back', 'Biceps'],
+    Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    Lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    'Full Body': ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Calves']
+  };
+  return map[focus] || map['Full Body'];
+}
+
+function getDefaultTargetForSlot(slotType, focus, dayPriority) {
+  const focusMuscles = getDayFocusMuscles(focus);
+  if (focusMuscles.includes(dayPriority)) return dayPriority;
+  if (slotType === 'Isolated') return focusMuscles[focusMuscles.length - 1] || focusMuscles[0] || '';
+  if (slotType === 'Machine') return focusMuscles[1] || focusMuscles[0] || '';
+  return focusMuscles[0] || '';
+}
+
 function getExercisePool(focus) {
   const allowed = allowedCategories[state.gymType];
   const focusToMuscles = {
@@ -611,9 +631,8 @@ function normalizeType(exercise) {
   const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
   const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
   if (isolationKeywords.some((keyword) => name.includes(keyword))) return 'Isolated';
-  if (exercise.category === 'Machines' && !compoundKeywords.some((keyword) => name.includes(keyword))) return 'Machine';
-  if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
   if (exercise.category === 'Machines') return 'Machine';
+  if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
   return 'Compound';
 }
 
@@ -647,18 +666,18 @@ function ensureDayPlan() {
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
   split.forEach((line, i) => {
     const dayKey = `d${i + 1}`;
+    const dayFocus = extractFocusName(line);
     const dayPriority = getPriorityTargetForDay(i);
-    const prioritySlotIndexes = [0, 2, 4];
     if (!state.customDays[state.freq][dayKey]) {
       state.customDays[state.freq][dayKey] = slotPattern.map((slot, idx) => ({
         slot,
         name: '',
         id: '',
-        targetMuscle: prioritySlotIndexes.includes(idx) ? dayPriority : ''
+        targetMuscle: getDefaultTargetForSlot(slot, dayFocus, dayPriority)
       }));
     } else {
-      state.customDays[state.freq][dayKey].forEach((item, idx) => {
-        if (prioritySlotIndexes.includes(idx)) item.targetMuscle = dayPriority;
+      state.customDays[state.freq][dayKey].forEach((item) => {
+        if (!item.targetMuscle) item.targetMuscle = getDefaultTargetForSlot(item.slot, dayFocus, dayPriority);
       });
     }
   });
@@ -670,13 +689,15 @@ function renderDayCards() {
   const out = document.getElementById('builder-out');
   out.innerHTML = split.map((line, i) => {
     const namedLine = line.replace(' (Priority First)', '');
+    const dayFocus = extractFocusName(namedLine);
     const dayTarget = getPriorityTargetForDay(i);
     const dayKey = `d${i + 1}`;
+    const dayMuscles = getDayFocusMuscles(dayFocus);
     const rows = dayState[dayKey].map((item, rowIndex) => {
       const slotOptions = getExercisesForSlot(item.slot).filter((option) => !item.targetMuscle || getMuscle(option) === item.targetMuscle);
       const exercise = EXERCISES.find((x) => x.id === item.id);
       const matches = !!exercise && normalizeType(exercise) === item.slot && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
-      const muscleOptions = ['', 'Chest', 'Back', 'Quads', 'Hamstrings', 'Calves', 'Shoulders', 'Glutes', 'Biceps', 'Triceps', 'Legs', 'Full Body']
+      const muscleOptions = ['', ...dayMuscles]
         .map((muscle) => {
           const label = muscle || 'Select Muscle';
           return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
@@ -697,7 +718,16 @@ function renderDayCards() {
       </div>
     </div>`;
     }).join('');
-    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}</div>`;
+    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
+      <div class="slot-controls" style="grid-template-columns:1fr 170px;">
+        <button type="button" class="btn" data-add-slot="${dayKey}">＋ Add movement</button>
+        <select class="slot-select" data-add-type="${dayKey}">
+          <option value="Compound">Compound</option>
+          <option value="Machine">Machine</option>
+          <option value="Isolated" selected>Isolated</option>
+        </select>
+      </div>
+    </div>`;
   }).join('');
   out.querySelectorAll('[data-muscle]').forEach((select) => {
     select.onchange = () => {
@@ -723,6 +753,23 @@ function renderDayCards() {
       state.customDays[state.freq][day][parseInt(row, 10)].name = '';
       state.customDays[state.freq][day][parseInt(row, 10)].id = '';
       renderDayCards();
+    };
+  });
+  out.querySelectorAll('[data-add-slot]').forEach((btn) => {
+    btn.onclick = () => {
+      const dayKey = btn.dataset.addSlot;
+      const dayIndex = parseInt(dayKey.replace('d', ''), 10) - 1;
+      const focus = extractFocusName(getSplitForFreq()[dayIndex].replace(' (Priority First)', ''));
+      const dayPriority = getPriorityTargetForDay(dayIndex);
+      const addType = out.querySelector(`[data-add-type="${dayKey}"]`)?.value || 'Isolated';
+      state.customDays[state.freq][dayKey].push({
+        slot: addType,
+        name: '',
+        id: '',
+        targetMuscle: getDefaultTargetForSlot(addType, focus, dayPriority)
+      });
+      renderDayCards();
+      if (state.step === 8) buildSummary();
     };
   });
 }
