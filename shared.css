@@ -308,7 +308,7 @@ h3 {
 .cc-title-subline {
   margin-top: 0.35rem;
   text-align: center;
-  font-family: var(--cc-heading-font);
+  font-family: var(--cc-brand-font);
   font-size: clamp(0.92rem, 1.8vw, 1.1rem);
   font-style: italic;
   font-weight: 600;
@@ -353,7 +353,7 @@ h3 {
 }
 
 .cc-account-card {
-  width: min(100%, 980px);
+  width: min(calc(100% - 2rem), 1152px);
   margin: 0.85rem auto 1rem;
   border-radius: 2rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
@@ -367,6 +367,18 @@ h3 {
 .cc-account-card-inline {
   position: relative;
   z-index: 2;
+  padding-bottom: 2.6rem;
+}
+
+.cc-account-start-line {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  text-decoration: none;
+}
+
+.cc-account-start-line .cc-title-home-label {
+  font-size: 0.72rem;
 }
 
 .cc-account-status {
@@ -627,4 +639,17 @@ h3 {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #ffffff;
+}
+
+
+@media (max-width: 640px) {
+  .cc-account-start-line {
+    position: static;
+    margin-top: 0.7rem;
+    display: inline-flex;
+  }
+
+  .cc-account-card-inline {
+    padding-bottom: 0;
+  }
 }
