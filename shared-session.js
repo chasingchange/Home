@@ -378,18 +378,21 @@
     const authSubmit = modal.querySelector("#ccAuthSubmit");
     const authCancel = modal.querySelector("#ccAuthCancel");
 
+    const normalizeUrl = (url) => String(url || "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+
     const syncCard = () => {
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
       const segments = normalizedPath.split("/").filter(Boolean);
       const fileName = segments[segments.length - 1] || "";
-      const isHomePage = normalizedPath === "/" || (segments.length <= 1 && fileName === "index.html");
 
       if (accountStartLine) {
         const depth = fileName.includes(".") ? Math.max(0, segments.length - 1) : segments.length;
         const prefix = depth ? "../".repeat(depth) : "./";
         accountStartLine.setAttribute("href", `${prefix}index.html`);
-        accountStartLine.hidden = isHomePage;
+        const currentPage = normalizeUrl(window.location.href);
+        const startLineTarget = normalizeUrl(accountStartLine.href);
+        accountStartLine.hidden = currentPage === startLineTarget;
       }
 
       const name = getCurrentDisplayName();
