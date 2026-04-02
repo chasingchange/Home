@@ -226,7 +226,6 @@
       const authForm = document.getElementById("authForm");
       const authName = document.getElementById("authName");
       const authEmail = document.getElementById("authEmail");
-      const homeGuestPromptSeenKey = "ccHomeGuestPromptSeen";
       let authMode = "login";
 
       const refreshHomeAuthUI = () => {
@@ -292,7 +291,6 @@
       authModalClose?.addEventListener("click", closeAuthModal);
       authModalCancel?.addEventListener("click", closeAuthModal);
       authContinueGuest?.addEventListener("click", () => {
-        localStorage.setItem(homeGuestPromptSeenKey, "true");
         closeAuthModal();
       });
       authModal?.addEventListener("click", (event) => {
@@ -305,11 +303,6 @@
       setCoreFilter("body");
       sessionApi?.whenReady?.().finally(() => {
         refreshHomeAuthUI();
-        const hasAccount = Boolean(sessionApi?.getCurrentDisplayName?.());
-        const hasSeenGuestPrompt = localStorage.getItem(homeGuestPromptSeenKey) === "true";
-        if (!hasAccount && !hasSeenGuestPrompt) {
-          openAuthModal("login");
-        }
       });
     </script>
   </body>

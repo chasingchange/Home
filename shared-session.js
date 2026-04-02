@@ -335,6 +335,9 @@
         <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In</button>
         <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
       </div>
+      <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
+        <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
+      </a>
     `;
 
     const titleBlock = document.querySelector(".cc-title-block");
@@ -369,14 +372,28 @@
     const openAuthBtn = card.querySelector("#ccOpenAuthBtn");
     const logoutBtn = card.querySelector("#ccLogoutBtn");
     const authForm = modal.querySelector("#ccAuthForm");
+    const accountStartLine = card.querySelector("#ccAccountStartLine");
     const authName = modal.querySelector("#ccAuthName");
     const authEmail = modal.querySelector("#ccAuthEmail");
     const authSubmit = modal.querySelector("#ccAuthSubmit");
     const authCancel = modal.querySelector("#ccAuthCancel");
 
     const syncCard = () => {
+      const pathname = window.location.pathname || "/";
+      const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+      const segments = normalizedPath.split("/").filter(Boolean);
+      const fileName = segments[segments.length - 1] || "";
+      const isHomePage = normalizedPath === "/" || (segments.length <= 1 && fileName === "index.html");
+
+      if (accountStartLine) {
+        const depth = fileName.includes(".") ? Math.max(0, segments.length - 1) : segments.length;
+        const prefix = depth ? "../".repeat(depth) : "./";
+        accountStartLine.setAttribute("href", `${prefix}index.html`);
+        accountStartLine.hidden = isHomePage;
+      }
+
       const name = getCurrentDisplayName();
-      const message = name ? `Welcome To Your Race, ${name}` : "Chasing Change Account";
+      const message = name ? `Welcome to your race, ${name}` : "Chasing Change Account";
       statusEl.textContent = message;
       card.classList.toggle("is-logged-in", !!name);
       openAuthBtn.hidden = !!name;
