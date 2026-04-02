@@ -353,13 +353,15 @@ h3 {
 }
 
 .cc-account-card {
-  width: min(100%, 520px);
-  margin: 0.7rem auto 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(7, 31, 53, 0.12);
-  background: linear-gradient(165deg, #ffffff 0%, #f8fbf8 100%);
-  box-shadow: 0 10px 24px rgba(7, 31, 53, 0.1);
-  padding: 0.85rem 0.95rem;
+  width: min(100%, 980px);
+  margin: 0.85rem auto 1rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(7, 31, 53, 0.14);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(7, 31, 53, 0.12);
+  padding: 1.5rem 1.35rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .cc-account-card-inline {
@@ -367,20 +369,14 @@ h3 {
   z-index: 2;
 }
 
-.cc-account-title {
+.cc-account-status {
   margin: 0;
   font-family: var(--cc-brand-font);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.78;
-}
-
-.cc-account-status {
-  margin: 0.4rem 0 0;
-  font-size: 0.85rem;
+  font-size: clamp(1.45rem, 2.8vw, 2rem);
   font-weight: 800;
+  color: var(--cc-text);
+  position: relative;
+  z-index: 1;
 }
 
 .cc-account-copy {
@@ -391,10 +387,12 @@ h3 {
 }
 
 .cc-account-actions {
-  margin-top: 0.7rem;
+  margin-top: 0.85rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
+  position: relative;
+  z-index: 1;
 }
 
 .cc-account-actions-inline {
@@ -407,13 +405,34 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.75rem;
+  border-radius: 0.95rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
   padding: 0.54rem 0.62rem;
   font-size: 0.8rem;
   font-weight: 800;
   cursor: pointer;
   text-decoration: none;
+}
+
+.cc-account-card.is-logged-in {
+  background:
+    linear-gradient(180deg, rgba(7, 31, 53, 0.12), rgba(7, 31, 53, 0.45)),
+    radial-gradient(circle at top right, rgba(119, 215, 112, 0.3), transparent 35%),
+    repeating-linear-gradient(
+      -12deg,
+      #991b1b 0,
+      #991b1b 38px,
+      #f9d2d2 38px,
+      #f9d2d2 42px,
+      #b91c1c 42px,
+      #b91c1c 82px,
+      #f9d2d2 82px,
+      #f9d2d2 86px
+    );
+}
+
+.cc-account-card.is-logged-in .cc-account-status {
+  color: #ffffff;
 }
 
 .cc-account-login-btn {

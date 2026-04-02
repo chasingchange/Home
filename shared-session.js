@@ -330,10 +330,9 @@
     card.id = "ccPersistentAccountCard";
     card.className = "cc-account-card cc-account-card-inline";
     card.innerHTML = `
-      <p class="cc-account-title">Chasing Change Account</p>
-      <p id="ccAccountStatus" class="cc-account-status">Checking session…</p>
+      <p id="ccAccountStatus" class="cc-account-status">Chasing Change Account</p>
       <div class="cc-account-actions cc-account-actions-inline">
-        <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In / Create</button>
+        <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In</button>
         <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
       </div>
     `;
@@ -377,8 +376,9 @@
 
     const syncCard = () => {
       const name = getCurrentDisplayName();
-      const message = name ? `Welcome Back To The Race, ${name}` : "Not Logged In";
+      const message = name ? `Welcome To Your Race, ${name}` : "Chasing Change Account";
       statusEl.textContent = message;
+      card.classList.toggle("is-logged-in", !!name);
       openAuthBtn.hidden = !!name;
       logoutBtn.hidden = !name;
       const pageLoginStatus = document.getElementById("pageLoginStatus");
