@@ -61,44 +61,6 @@
         </div>
       </header>
 
-      <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#071f35]/45 px-4 backdrop-blur-sm">
-        <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/10">
-          <div class="mb-5 h-1.5 w-20 rounded-full bg-cc-outline/70"></div>
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wide opacity-70">Account</p>
-              <h2 id="authModalTitle" class="mt-2 text-2xl font-extrabold font-heading">Chasing Change Account</h2>
-            </div>
-            <button id="authModalClose" type="button" class="rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Close</button>
-          </div>
-
-          <form id="authForm" class="mt-4 grid gap-3">
-            <input
-              id="authName"
-              type="text"
-              placeholder="Your Name"
-              class="hidden w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-            />
-            <input
-              id="authEmail"
-              type="email"
-              inputmode="email"
-              placeholder="Email"
-              class="w-full rounded-xl bg-white px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"
-            />
-            <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
-              Email-only login is enabled right now.
-            </p>
-
-            <div class="mt-1 flex flex-wrap gap-2">
-              <button id="authModalSubmit" type="submit" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Continue</button>
-              <button id="authContinueGuest" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Continue as Guest</button>
-              <button id="authModalCancel" type="button" class="rounded-xl bg-white px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <main data-admin-edit-root>
         <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
           <nav>
@@ -213,97 +175,8 @@
         setCoreFilter(button.dataset.core);
       });
 
-      const homeLoginBtn = document.getElementById("homeLoginBtn");
-      const homeCreateAccountBtn = document.getElementById("homeCreateAccountBtn");
-      const homeLogoutBtn = document.getElementById("homeLogoutBtn");
-      const homeLoginStatus = document.getElementById("homeLoginStatus");
-      const authModal = document.getElementById("authModal");
-      const authModalTitle = document.getElementById("authModalTitle");
-      const authModalClose = document.getElementById("authModalClose");
-      const authModalCancel = document.getElementById("authModalCancel");
-      const authContinueGuest = document.getElementById("authContinueGuest");
-      const authModalSubmit = document.getElementById("authModalSubmit");
-      const authForm = document.getElementById("authForm");
-      const authName = document.getElementById("authName");
-      const authEmail = document.getElementById("authEmail");
-      let authMode = "login";
-
-      const refreshHomeAuthUI = () => {
-        const displayName = sessionApi?.getCurrentDisplayName?.() || "";
-        if (homeLoginStatus) {
-          homeLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
-        }
-        homeLoginBtn?.classList.toggle("hidden", !!displayName);
-        homeCreateAccountBtn?.classList.toggle("hidden", !!displayName);
-        homeLogoutBtn?.classList.toggle("hidden", !displayName);
-      };
-
-      const openAuthModal = (mode) => {
-        authMode = mode;
-        authModalTitle.textContent = "Chasing Change Account";
-        authModalSubmit.textContent = mode === "create" ? "Create Account" : "Log In";
-        authName.classList.toggle("hidden", mode !== "create");
-        authName.value = "";
-        authEmail.value = "";
-        authModal.classList.remove("hidden");
-        authModal.classList.add("flex");
-        (mode === "create" ? authName : authEmail).focus();
-      };
-
-      const closeAuthModal = () => {
-        authModal.classList.add("hidden");
-        authModal.classList.remove("flex");
-      };
-
-      homeLoginBtn?.addEventListener("click", () => openAuthModal("login"));
-      homeCreateAccountBtn?.addEventListener("click", () => openAuthModal("create"));
-
-      homeLogoutBtn?.addEventListener("click", () => {
-        sessionApi.logout();
-        refreshHomeAuthUI();
-      });
-
-      authForm?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        authModalSubmit.disabled = true;
-        authModalSubmit.classList.add("opacity-70", "cursor-not-allowed");
-
-        const result = authMode === "create"
-          ? await sessionApi.createAccount({
-              name: authName.value,
-              email: authEmail.value,
-            })
-          : await sessionApi.login(authEmail.value);
-
-        authModalSubmit.disabled = false;
-        authModalSubmit.classList.remove("opacity-70", "cursor-not-allowed");
-
-        if (!result.ok) {
-          window.alert(result.error);
-          return;
-        }
-
-        closeAuthModal();
-        refreshHomeAuthUI();
-      });
-
-      authModalClose?.addEventListener("click", closeAuthModal);
-      authModalCancel?.addEventListener("click", closeAuthModal);
-      authContinueGuest?.addEventListener("click", () => {
-        closeAuthModal();
-      });
-      authModal?.addEventListener("click", (event) => {
-        if (event.target === authModal) closeAuthModal();
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && authModal.classList.contains("flex")) closeAuthModal();
-      });
-
       setCoreFilter("body");
-      sessionApi?.whenReady?.().finally(() => {
-        refreshHomeAuthUI();
-      });
+      sessionApi?.whenReady?.();
     </script>
   </body>
 </html>

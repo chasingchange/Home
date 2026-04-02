@@ -375,6 +375,9 @@ h3 {
   right: 0;
   bottom: 0;
   text-decoration: none;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
 }
 
 .cc-account-start-line .cc-title-home-label {

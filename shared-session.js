@@ -331,10 +331,6 @@
     card.className = "cc-account-card cc-account-card-inline";
     card.innerHTML = `
       <p id="ccAccountStatus" class="cc-account-status">Chasing Change Account</p>
-      <div class="cc-account-actions cc-account-actions-inline">
-        <button id="ccOpenAuthBtn" type="button" class="cc-account-login-btn">Log In</button>
-        <button id="ccLogoutBtn" type="button" class="cc-account-logout-btn" hidden>Log Out</button>
-      </div>
       <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
         <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
       </a>
@@ -347,49 +343,17 @@
       document.body.prepend(card);
     }
 
-    const modal = document.createElement("div");
-    modal.className = "cc-auth-modal hidden";
-    modal.innerHTML = `
-      <div class="cc-auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ccAuthHeading">
-        <div class="cc-auth-modal__head">
-          <p class="cc-auth-modal__eyebrow">Account</p>
-          <h2 id="ccAuthHeading" class="cc-auth-modal__title">Log In or Create Account</h2>
-        </div>
-        <form id="ccAuthForm" class="cc-auth-form">
-          <input id="ccAuthName" type="text" placeholder="Full Name" autocomplete="name" />
-          <input id="ccAuthEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email" required />
-          <p class="cc-auth-hint">Enter both fields once. We’ll log you in if the account exists, or create it instantly.</p>
-          <div class="cc-auth-actions">
-            <button id="ccAuthSubmit" type="submit" class="cc-account-login-btn">Continue</button>
-            <button id="ccAuthCancel" type="button" class="cc-account-logout-btn">Cancel</button>
-          </div>
-        </form>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
     const statusEl = card.querySelector("#ccAccountStatus");
-    const openAuthBtn = card.querySelector("#ccOpenAuthBtn");
-    const logoutBtn = card.querySelector("#ccLogoutBtn");
-    const authForm = modal.querySelector("#ccAuthForm");
     const accountStartLine = card.querySelector("#ccAccountStartLine");
-    const authName = modal.querySelector("#ccAuthName");
-    const authEmail = modal.querySelector("#ccAuthEmail");
-    const authSubmit = modal.querySelector("#ccAuthSubmit");
-    const authCancel = modal.querySelector("#ccAuthCancel");
 
     const normalizeUrl = (url) => String(url || "").replace(/[?#].*$/, "").replace(/\/+$/, "");
 
     const syncCard = () => {
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
-      const segments = normalizedPath.split("/").filter(Boolean);
-      const fileName = segments[segments.length - 1] || "";
 
       if (accountStartLine) {
-        const depth = fileName.includes(".") ? Math.max(0, segments.length - 1) : segments.length;
-        const prefix = depth ? "../".repeat(depth) : "./";
-        accountStartLine.setAttribute("href", `${prefix}index.html`);
+        accountStartLine.setAttribute("href", "https://chasingchange.github.io/Home/index.html");
         const currentPage = normalizeUrl(window.location.href);
         const startLineTarget = normalizeUrl(accountStartLine.href);
         accountStartLine.hidden = currentPage === startLineTarget;
@@ -399,63 +363,9 @@
       const message = name ? `Welcome to your race, ${name}` : "Chasing Change Account";
       statusEl.textContent = message;
       card.classList.toggle("is-logged-in", !!name);
-      openAuthBtn.hidden = !!name;
-      logoutBtn.hidden = !name;
       const pageLoginStatus = document.getElementById("pageLoginStatus");
       if (pageLoginStatus) pageLoginStatus.textContent = message;
     };
-
-    const openModal = () => {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-      authName.value = "";
-      authEmail.value = "";
-      authName.focus();
-    };
-
-    const closeModal = () => {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    };
-
-    openAuthBtn?.addEventListener("click", openModal);
-    authCancel?.addEventListener("click", closeModal);
-    modal?.addEventListener("click", (event) => {
-      if (event.target === modal) closeModal();
-    });
-
-    authForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const name = String(authName.value || "").trim();
-      const email = String(authEmail.value || "").trim();
-
-      if (!email) {
-        window.alert("Enter your email to continue.");
-        return;
-      }
-
-      authSubmit.disabled = true;
-
-      let result = await login(email);
-      if (!result.ok && name) {
-        result = await createAccount({ name, email });
-      }
-
-      authSubmit.disabled = false;
-
-      if (!result.ok) {
-        window.alert(result.error || "Unable to continue. Add your name to create a new account.");
-        return;
-      }
-
-      closeModal();
-      syncCard();
-    });
-
-    logoutBtn?.addEventListener("click", () => {
-      logout();
-      syncCard();
-    });
 
     window.addEventListener("storage", (event) => {
       if (!event.key || event.key === SESSION_KEY || event.key === ACCOUNTS_KEY) {
