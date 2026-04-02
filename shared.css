@@ -290,7 +290,7 @@ h3 {
 
 .cc-title-home-label {
   display: block;
-  font-family: var(--cc-heading-font);
+  font-family: var(--cc-brand-font);
   font-size: 0.88rem;
   letter-spacing: 0.02em;
   text-transform: none;
