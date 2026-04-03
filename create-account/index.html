@@ -102,6 +102,10 @@
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text">
+                We already know this name. Switched to <span class="font-extrabold">Log In</span> mode.
+                <p id="nameMatchEmail" class="mt-1 text-xs opacity-70"></p>
+              </div>
               <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
                 Email-only login is enabled right now. No password needed.
               </p>
@@ -221,6 +225,8 @@
       let weightUnit = "lbs";
       let selectedSex = null;
       const selectedCores = new Set();
+      let matchedAccountByName = null;
+      let nameLookupTimeout = null;
 
       // ── Check if already logged in ─────────────────────────────────
       sessionApi?.whenReady?.().then(() => {
@@ -307,6 +313,41 @@
         document.getElementById("coreError").classList.add("hidden");
       });
 
+      const nameInput = document.getElementById("caName");
+      const emailInput = document.getElementById("caEmail");
+      const submitBtn = document.getElementById("caSubmitBtn");
+      const nameMatchNotice = document.getElementById("nameMatchNotice");
+      const nameMatchEmail = document.getElementById("nameMatchEmail");
+
+      const setAuthMode = (mode, matchedEmail = "") => {
+        const isLogin = mode === "login";
+        submitBtn.textContent = isLogin ? "Log In" : "Create My Account";
+        nameMatchNotice.classList.toggle("hidden", !isLogin);
+        if (isLogin) {
+          nameMatchEmail.textContent = matchedEmail ? `Account email on file: ${matchedEmail}` : "";
+        }
+      };
+
+      const refreshAuthModeFromName = () => {
+        if (!sessionApi?.findAccountByName) return;
+        const lookupName = nameInput.value.trim();
+        const matched = sessionApi.findAccountByName(lookupName);
+        matchedAccountByName = matched;
+
+        if (matched) {
+          setAuthMode("login", matched.email);
+          if (!emailInput.value.trim()) emailInput.value = matched.email;
+          return;
+        }
+
+        setAuthMode("create");
+      };
+
+      nameInput?.addEventListener("input", () => {
+        clearTimeout(nameLookupTimeout);
+        nameLookupTimeout = setTimeout(refreshAuthModeFromName, 120);
+      });
+
       // ── Form submit ────────────────────────────────────────────────
       document.getElementById("createAccountForm")?.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -336,9 +377,27 @@
           return;
         }
 
-        const submitBtn = document.getElementById("caSubmitBtn");
         submitBtn.disabled = true;
-        submitBtn.textContent = "Creating…";
+        submitBtn.textContent = matchedAccountByName ? "Logging in…" : "Creating…";
+
+        if (matchedAccountByName) {
+          const loginEmail = email || matchedAccountByName.email;
+          const loginResult = await sessionApi.login(loginEmail);
+          if (!loginResult.ok) {
+            formError.textContent = loginResult.error;
+            formError.classList.remove("hidden");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Log In";
+            return;
+          }
+
+          document.getElementById("formSection").classList.add("hidden");
+          document.getElementById("alreadyLoggedIn").classList.add("hidden");
+          document.getElementById("successName").textContent = name || matchedAccountByName.account?.name || "Athlete";
+          document.getElementById("successState").classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
 
         // Create account (also sets session to this user)
         const result = await sessionApi.createAccount({ name, email });
@@ -367,6 +426,8 @@
         document.getElementById("successState").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
+
+      sessionApi?.whenReady?.().then(refreshAuthModeFromName);
     </script>
   </body>
 </html>
