@@ -105,6 +105,9 @@
               <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text">
                 We already know this name. Switched to <span class="font-extrabold">Log In</span> mode.
                 <p id="nameMatchEmail" class="mt-1 text-xs opacity-70"></p>
+                <button id="quickLoginBtn" type="submit" class="mt-2 inline-flex rounded-lg bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95">
+                  Log In Now
+                </button>
               </div>
               <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
                 Email-only login is enabled right now. No password needed.
@@ -113,7 +116,7 @@
           </section>
 
           <!-- Section: About You -->
-          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+          <section id="aboutYouSection" class="hidden rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
             <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
             <h2 class="text-lg font-extrabold font-heading">About You</h2>
             <p class="mt-1 text-sm opacity-60">Personalizes your tools and recommendations.</p>
@@ -184,7 +187,7 @@
           </section>
 
           <!-- Section: Your Cores -->
-          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+          <section id="coreSection" class="hidden rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
             <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
             <h2 class="text-lg font-extrabold font-heading">Your Cores</h2>
             <p class="mt-1 text-sm opacity-60">Select every area of life you want to grow in. You can update these anytime.</p>
@@ -318,6 +321,8 @@
       const submitBtn = document.getElementById("caSubmitBtn");
       const nameMatchNotice = document.getElementById("nameMatchNotice");
       const nameMatchEmail = document.getElementById("nameMatchEmail");
+      const aboutYouSection = document.getElementById("aboutYouSection");
+      const coreSection = document.getElementById("coreSection");
 
       const setAuthMode = (mode, matchedEmail = "") => {
         const isLogin = mode === "login";
@@ -328,22 +333,39 @@
         }
       };
 
+      const setProfileQuestionsVisible = (visible) => {
+        aboutYouSection.classList.toggle("hidden", !visible);
+        coreSection.classList.toggle("hidden", !visible);
+      };
+
       const refreshAuthModeFromName = () => {
-        if (!sessionApi?.findAccountByName) return;
+        if (!sessionApi?.findAccountByName || !sessionApi?.findAccountByEmail) return;
         const lookupName = nameInput.value.trim();
-        const matched = sessionApi.findAccountByName(lookupName);
+        const lookupEmail = emailInput.value.trim();
+        const matchedByName = sessionApi.findAccountByName(lookupName);
+        const matchedByEmail = sessionApi.findAccountByEmail(lookupEmail);
+        const matched = matchedByEmail || matchedByName;
         matchedAccountByName = matched;
+        const hasIdentityInput = !!lookupName || !!lookupEmail;
 
         if (matched) {
           setAuthMode("login", matched.email);
+          setProfileQuestionsVisible(false);
+          document.getElementById("coreError").classList.add("hidden");
           if (!emailInput.value.trim()) emailInput.value = matched.email;
+          if (!nameInput.value.trim()) nameInput.value = matched.account?.name || "";
           return;
         }
 
         setAuthMode("create");
+        setProfileQuestionsVisible(hasIdentityInput);
       };
 
       nameInput?.addEventListener("input", () => {
+        clearTimeout(nameLookupTimeout);
+        nameLookupTimeout = setTimeout(refreshAuthModeFromName, 120);
+      });
+      emailInput?.addEventListener("input", () => {
         clearTimeout(nameLookupTimeout);
         nameLookupTimeout = setTimeout(refreshAuthModeFromName, 120);
       });
@@ -365,18 +387,6 @@
         const formError = document.getElementById("formError");
         formError.classList.add("hidden");
 
-        if (!name || !email) {
-          formError.textContent = "Please fill in your name and email.";
-          formError.classList.remove("hidden");
-          return;
-        }
-
-        if (selectedCores.size === 0) {
-          document.getElementById("coreError").classList.remove("hidden");
-          document.getElementById("coreSelector").scrollIntoView({ behavior: "smooth", block: "center" });
-          return;
-        }
-
         submitBtn.disabled = true;
         submitBtn.textContent = matchedAccountByName ? "Logging in…" : "Creating…";
 
@@ -396,6 +406,22 @@
           document.getElementById("successName").textContent = name || matchedAccountByName.account?.name || "Athlete";
           document.getElementById("successState").classList.remove("hidden");
           window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+
+        if (!name || !email) {
+          formError.textContent = "Please fill in your name and email.";
+          formError.classList.remove("hidden");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create My Account";
+          return;
+        }
+
+        if (selectedCores.size === 0) {
+          document.getElementById("coreError").classList.remove("hidden");
+          document.getElementById("coreSelector").scrollIntoView({ behavior: "smooth", block: "center" });
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create My Account";
           return;
         }
 

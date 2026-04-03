@@ -320,6 +320,11 @@
       const [email, account] = match;
       return { email, account: cloneAccounts(account) };
     },
+    findAccountByEmail: (email) => {
+      const normalizedEmail = normalizeEmail(email);
+      if (!normalizedEmail || !accountsCache?.[normalizedEmail]) return null;
+      return { email: normalizedEmail, account: cloneAccounts(accountsCache[normalizedEmail]) };
+    },
     saveCalculatorData,
     getCalculatorData,
     sendCredentialReminder,
