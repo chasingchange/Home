@@ -195,6 +195,11 @@
     }
 
     if (accountsCache[normalizedEmail]) {
+      const existingName = String(accountsCache[normalizedEmail]?.name || "").trim();
+      const enteredName = String(name || "").trim();
+      if (existingName && enteredName && existingName.toLowerCase() !== enteredName.toLowerCase()) {
+        return { ok: false, error: `That email is already linked to ${existingName}. Please log in with the matching name.` };
+      }
       return { ok: false, error: "Account already exists. Log in instead." };
     }
 
@@ -211,6 +216,7 @@
     pendingWrite = pendingWrite.then(() => syncAccountsToAllStores(accountsCache));
     await pendingWrite;
     localStorage.setItem(SESSION_KEY, normalizedEmail);
+    window.dispatchEvent(new CustomEvent("cc-session-changed"));
 
     return {
       ok: true,
@@ -220,7 +226,7 @@
     };
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, expectedName) => {
     await ready;
 
     const normalizedEmail = normalizeEmail(email);
@@ -233,12 +239,26 @@
       return { ok: false, error: "No account found for that email yet." };
     }
 
+    const trimmedExpectedName = String(expectedName || "").trim();
+    const storedName = String(account?.name || "").trim();
+    if (trimmedExpectedName && storedName && trimmedExpectedName.toLowerCase() !== storedName.toLowerCase()) {
+      return { ok: false, error: `That email belongs to ${storedName}. Please use the matching name.` };
+    }
+
+    const normalizedPassword = String(password || "");
+    const storedPassword = String(account?.password || "");
+    if (storedPassword && normalizedPassword !== storedPassword) {
+      return { ok: false, error: "Incorrect password. Try again or request a password hint." };
+    }
+
     localStorage.setItem(SESSION_KEY, normalizedEmail);
+    window.dispatchEvent(new CustomEvent("cc-session-changed"));
     return { ok: true, email: normalizedEmail };
   };
 
   const logout = () => {
     localStorage.removeItem(SESSION_KEY);
+    window.dispatchEvent(new CustomEvent("cc-session-changed"));
   };
 
   const sendCredentialReminder = async ({ name, email } = {}) => {
@@ -256,8 +276,12 @@
     const [matchedEmail, account] = match;
     const reminderParts = [];
 
+    const storedPassword = String(account?.password || "");
     if (normalizedEmail) {
-      reminderParts.push(`Password reminder sent to ${matchedEmail}. Password: ${account.password}`);
+      const hint = storedPassword
+        ? `Password hint: starts with "${storedPassword.charAt(0)}" and is ${storedPassword.length} characters long.`
+        : "No password is set on this account yet.";
+      reminderParts.push(`Password reminder sent to ${matchedEmail}. ${hint}`);
     } else {
       reminderParts.push(`Email reminder sent to ${matchedEmail}.`);
     }
@@ -268,7 +292,7 @@
       ok: true,
       message: reminderParts.join(" "),
       email: matchedEmail,
-      password: account.password,
+      passwordHint: storedPassword ? `${storedPassword.charAt(0)}•••` : "",
     };
   };
 
@@ -407,6 +431,9 @@
       }
     });
     window.addEventListener("focus", () => {
+      whenReady().finally(syncCard);
+    });
+    window.addEventListener("cc-session-changed", () => {
       whenReady().finally(syncCard);
     });
 

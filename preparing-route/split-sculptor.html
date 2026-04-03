@@ -55,6 +55,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .timeline { display: grid; grid-template-columns: repeat(8, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
 .t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
 .t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.t-group { display: block; margin-bottom: .35rem; font-family: 'Raleway', sans-serif; font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; color: rgba(7,31,53,.58); white-space: normal; word-break: break-word; line-height: 1.25; }
 .t-time { font-size: .78rem; font-weight: 700; margin-top: .15rem; }
 .t-duration { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
 .screen { display: none; }
@@ -153,10 +154,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
 .past-split-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .85rem; }
 .past-split-msg { margin-top: .75rem; font-size: .85rem; color: var(--muted); min-height: 1.2rem; }
-.group-pill { display: inline-flex; align-items: center; gap: .3rem; border-radius: 999px; border: 1px solid rgba(7,31,53,.16); font-family: 'Raleway', sans-serif; letter-spacing: .06em; font-size: .62rem; padding: .2rem .5rem; margin-left: .35rem; color: var(--muted); background: #fff; }
-.group-pill.vision { border-color: rgba(119,215,112,.5); color: #2f5b2f; background: rgba(119,215,112,.17); }
-.group-pill.diet { border-color: rgba(255,186,80,.55); color: #7d5313; background: rgba(255,225,171,.45); }
-.group-pill.fitness { border-color: rgba(113,164,226,.55); color: #204a7a; background: rgba(184,216,255,.4); }
+.group-pill { display: block; margin-bottom: .35rem; font-family: 'Raleway', sans-serif; letter-spacing: .2em; font-size: .58rem; color: rgba(7,31,53,.58); text-transform: uppercase; font-weight: 800; white-space: normal; word-break: break-word; line-height: 1.25; }
+.group-pill.vision { color: #2f5b2f; }
+.group-pill.diet { color: #7d5313; }
+.group-pill.fitness { color: #204a7a; }
 .cc-title-logo { width: 182px; height: 182px; }
 .cc-title-brand { gap: .08rem; }
 .cc-title-coaching { margin: .35rem auto 0; }
@@ -640,10 +641,7 @@ function buildPriorityRanker() {
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
   wrap.innerHTML = STEP_TIMING.map((x, i) => {
-    const group = x.group
-      ? `<span class="group-pill ${x.group.toLowerCase()}">${x.group}</span>`
-      : '';
-    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}${group}</div><div class="t-duration">${x.duration}</div></button>`;
+    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div>${x.group ? `<div class="t-group group-pill ${x.group.toLowerCase()}">${x.group}</div>` : ''}<div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`;
   }).join('');
   wrap.addEventListener('click', (e) => {
     const btn = e.target.closest('.t-block');
