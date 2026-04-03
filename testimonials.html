@@ -29,14 +29,14 @@
         overflow: hidden;
         opacity: 0;
         transform: translateY(-0.25rem);
-        transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.25s ease;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0 solid transparent;
+        transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.25s ease, margin-top 0.25s ease, padding-top 0.25s ease;
       }
 
-      .testimonial-card:hover .testimonial-content,
-      .testimonial-card:focus-within .testimonial-content,
       .testimonial-card.is-open .testimonial-content {
-        max-height: 32rem;
-        overflow-y: auto;
+        max-height: 80rem;
         opacity: 0.95;
         transform: translateY(0);
         margin-top: 0.75rem;
@@ -44,8 +44,6 @@
         border-top: 1px solid rgba(7, 31, 53, 0.12);
       }
 
-      .testimonial-card:hover,
-      .testimonial-card:focus-within,
       .testimonial-card.is-open {
         background: #ffffff;
         transform: translateY(-2px);
@@ -201,11 +199,24 @@
 
       const bindCardInteractions = () => {
         const testimonialCards = document.querySelectorAll(".testimonial-card");
+        const syncCardHeights = () => {
+          testimonialCards.forEach((card) => {
+            const content = card.querySelector(".testimonial-content");
+            if (!content) return;
+            if (card.classList.contains("is-open")) {
+              content.style.maxHeight = `${content.scrollHeight}px`;
+            } else {
+              content.style.maxHeight = "0px";
+            }
+          });
+        };
+
         testimonialCards.forEach((card) => {
           card.addEventListener("click", () => {
             const isOpen = card.classList.contains("is-open");
             testimonialCards.forEach((item) => item.classList.remove("is-open"));
             if (!isOpen) card.classList.add("is-open");
+            syncCardHeights();
           });
 
           card.addEventListener("keydown", (event) => {
@@ -215,6 +226,8 @@
             }
           });
         });
+        window.addEventListener("resize", syncCardHeights);
+        syncCardHeights();
       };
 
 
