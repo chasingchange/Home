@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Physique Roadmap | Chasing Change</title>
+    <meta
+      name="description"
+      content="Track body composition, PRs, running milestones, and split performance in your Physique Roadmap dashboard."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="../shared-session.js"></script>
+
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --text: #071f35;
+        --accent: #77d770;
+        --card: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      .container {
+        width: min(1160px, 94vw);
+        margin: 0 auto;
+        padding: 1.25rem 0 3rem;
+      }
+
+      .title {
+        font-family: "Museo Moderno", "Raleway", sans-serif;
+        font-size: clamp(1.65rem, 2.8vw, 2.6rem);
+        margin: 0;
+      }
+
+      h2, h3 {
+        margin: 0;
+        font-family: "Raleway", system-ui, sans-serif;
+      }
+
+      .muted { opacity: 0.72; }
+
+      .card {
+        background: var(--card);
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(7, 31, 53, 0.08);
+      }
+
+      .hero {
+        margin-top: 1rem;
+        padding: 1.15rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .chip {
+        display: inline-block;
+        border-radius: 999px;
+        background: rgba(119, 215, 112, 0.22);
+        color: var(--text);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 0.22rem 0.65rem;
+      }
+
+      .grid {
+        margin-top: 1rem;
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 0.8rem;
+      }
+
+      .metric { grid-column: span 3; padding: 1rem; }
+      .half { grid-column: span 6; padding: 1rem; }
+
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        font-family: "Raleway", sans-serif;
+        margin-top: 0.45rem;
+      }
+
+      .delta.up { color: #1f8a37; }
+      .delta.down { color: #d65757; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.65rem;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 0.55rem 0.35rem;
+        border-bottom: 1px solid rgba(7, 31, 53, 0.08);
+        font-size: 0.93rem;
+      }
+
+      .bar-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(7, 31, 53, 0.1);
+        overflow: hidden;
+      }
+
+      .bar {
+        height: 100%;
+        background: linear-gradient(90deg, #77d770, #52bc9f);
+      }
+
+      .login-lock {
+        margin-top: 1rem;
+        padding: 1rem;
+      }
+
+      a.cta {
+        display: inline-block;
+        margin-top: 0.75rem;
+        text-decoration: none;
+        background: var(--text);
+        color: #f5f5f7;
+        border-radius: 12px;
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        padding: 0.58rem 0.88rem;
+      }
+
+      @media (max-width: 950px) {
+        .metric, .half { grid-column: span 12; }
+        .hero { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <p class="chip">Logged-In Athlete View</p>
+        <h1 class="title">Physique Roadmap</h1>
+        <p id="welcomeName" class="muted">Track exactly how your body and performance evolve week to week.</p>
+      </header>
+
+      <section id="lockedState" class="card login-lock" hidden>
+        <h2>Log in to unlock your Physique Roadmap.</h2>
+        <p class="muted">This dashboard tab is only visible for active Chasing Change accounts.</p>
+        <a class="cta" href="../create-account/index.html">Log In / Create Account</a>
+      </section>
+
+      <main id="roadmapContent" hidden>
+        <section class="card hero">
+          <div>
+            <h2>Current Phase: Lean Rebuild</h2>
+            <p class="muted">Build strength while reducing body fat and improving running speed endurance.</p>
+          </div>
+          <div>
+            <strong>Next Check-In:</strong>
+            <div>Monday</div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <article class="card metric">
+            <h3>Body Weight</h3>
+            <p class="metric-value">181.2 lb</p>
+            <p class="delta down">↓ 6.8 lb over 12 weeks</p>
+          </article>
+          <article class="card metric">
+            <h3>Body Fat</h3>
+            <p class="metric-value">16.7%</p>
+            <p class="delta down">↓ 4.1% since January</p>
+          </article>
+          <article class="card metric">
+            <h3>BMI</h3>
+            <p class="metric-value">26.0</p>
+            <p class="delta down">↓ 1.0 points</p>
+          </article>
+          <article class="card metric">
+            <h3>Resting Heart Rate</h3>
+            <p class="metric-value">58 bpm</p>
+            <p class="delta up">Cardio readiness improving</p>
+          </article>
+
+          <article class="card half">
+            <h2>1RM Leaderboard</h2>
+            <table>
+              <thead>
+                <tr><th>Lift</th><th>Current</th><th>Best</th><th>Trend</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Back Squat</td><td>315 lb</td><td>325 lb</td><td class="delta up">+20 lb</td></tr>
+                <tr><td>Bench Press</td><td>245 lb</td><td>250 lb</td><td class="delta up">+15 lb</td></tr>
+                <tr><td>Deadlift</td><td>385 lb</td><td>405 lb</td><td class="delta up">+25 lb</td></tr>
+                <tr><td>Overhead Press</td><td>155 lb</td><td>160 lb</td><td class="delta up">+10 lb</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card half">
+            <h2>Personal Records</h2>
+            <table>
+              <thead>
+                <tr><th>Category</th><th>Record</th><th>Date</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>5K Run</td><td>24:18</td><td>Mar 24</td><td class="delta up">New PR</td></tr>
+                <tr><td>1 Mile Run</td><td>6:48</td><td>Mar 10</td><td class="delta up">New PR</td></tr>
+                <tr><td>10K Run</td><td>52:34</td><td>Feb 28</td><td>Holding</td></tr>
+                <tr><td>Pull-Ups</td><td>18 reps</td><td>Mar 17</td><td class="delta up">+4 reps</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card half">
+            <h2>Split Performance Comparison</h2>
+            <p class="muted">Average completion and performance quality by training split.</p>
+            <table>
+              <thead>
+                <tr><th>Split</th><th>Adherence</th><th>Recovery</th><th>Strength Gain</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Push / Pull / Legs</td>
+                  <td><div class="bar-track"><div class="bar" style="width:88%"></div></div></td>
+                  <td>8.4 / 10</td>
+                  <td class="delta up">High</td>
+                </tr>
+                <tr>
+                  <td>Upper / Lower</td>
+                  <td><div class="bar-track"><div class="bar" style="width:80%"></div></div></td>
+                  <td>8.8 / 10</td>
+                  <td class="delta up">Med-High</td>
+                </tr>
+                <tr>
+                  <td>Full Body x3</td>
+                  <td><div class="bar-track"><div class="bar" style="width:72%"></div></div></td>
+                  <td>9.1 / 10</td>
+                  <td>Medium</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card half">
+            <h2>Body Composition Trend</h2>
+            <p class="muted">12-week trend summary. Keep this moving down for cut phases and stable for recomposition.</p>
+            <table>
+              <thead>
+                <tr><th>Metric</th><th>Start</th><th>Current</th><th>Net Change</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Body Weight</td><td>188.0 lb</td><td>181.2 lb</td><td class="delta down">-6.8 lb</td></tr>
+                <tr><td>Body Fat %</td><td>20.8%</td><td>16.7%</td><td class="delta down">-4.1%</td></tr>
+                <tr><td>Lean Mass</td><td>149.0 lb</td><td>150.9 lb</td><td class="delta up">+1.9 lb</td></tr>
+                <tr><td>BMI</td><td>27.0</td><td>26.0</td><td class="delta down">-1.0</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const sessionApi = window.ChasingChangeSession;
+      const roadmapContent = document.getElementById("roadmapContent");
+      const lockedState = document.getElementById("lockedState");
+      const welcomeName = document.getElementById("welcomeName");
+
+      sessionApi?.whenReady?.().finally(() => {
+        const session = sessionApi?.getCurrentAccount?.();
+        const isLoggedIn = !!session;
+
+        roadmapContent.hidden = !isLoggedIn;
+        lockedState.hidden = isLoggedIn;
+
+        if (isLoggedIn) {
+          const name = session.account?.name || session.email?.split("@")[0] || "Athlete";
+          welcomeName.textContent = `${name}, here is your performance dashboard and trend roadmap.`;
+        }
+      });
+    </script>
+  </body>
+</html>
