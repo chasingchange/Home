@@ -314,6 +314,12 @@
     getCurrentUserEmail,
     getCurrentDisplayName,
     getCurrentAccount,
+    findAccountByName: (name) => {
+      const match = findAccountByName(name);
+      if (!match) return null;
+      const [email, account] = match;
+      return { email, account: cloneAccounts(account) };
+    },
     saveCalculatorData,
     getCalculatorData,
     sendCredentialReminder,
