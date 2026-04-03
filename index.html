@@ -66,6 +66,7 @@
           <nav>
             <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
               <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Tools</a>
+              <a id="roadmapNavDesktop" href="./physique-roadmap/index.html" class="hidden px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Physique Roadmap</a>
               <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
               <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">About</a>
               <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
@@ -81,6 +82,7 @@
               <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
                 <div class="grid gap-1">
                   <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Tools</a>
+                  <a id="roadmapNavMobile" href="./physique-roadmap/index.html" class="hidden px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Physique Roadmap</a>
                   <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Testimonials</a>
                   <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">About</a>
                   <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
@@ -130,6 +132,12 @@
               <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
             </a>
+
+            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+              <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
+              <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
+              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
+            </a>
           </div>
                     <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
         </section>
@@ -152,6 +160,9 @@
       const coreFilters = document.getElementById("coreFilters");
       const coreCards = Array.from(document.querySelectorAll(".core-card"));
       const noToolsMessage = document.getElementById("noToolsMessage");
+      const roadmapNavDesktop = document.getElementById("roadmapNavDesktop");
+      const roadmapNavMobile = document.getElementById("roadmapNavMobile");
+      const roadmapToolCard = document.getElementById("roadmapToolCard");
 
       const setCoreFilter = (core) => {
         const visibleCount = coreCards.reduce((count, card) => {
@@ -176,7 +187,13 @@
       });
 
       setCoreFilter("body");
-      sessionApi?.whenReady?.();
+      sessionApi?.whenReady?.().finally(() => {
+        const isLoggedIn = !!sessionApi?.getCurrentAccount?.();
+        roadmapNavDesktop?.classList.toggle("hidden", !isLoggedIn);
+        roadmapNavMobile?.classList.toggle("hidden", !isLoggedIn);
+        roadmapToolCard?.classList.toggle("hidden", !isLoggedIn);
+        setCoreFilter("body");
+      });
     </script>
   </body>
 </html>
