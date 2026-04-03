@@ -143,11 +143,25 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
 .week li strong { display: block; margin-bottom: .6rem; }
 .week li ul { margin-top: .3rem; padding-left: 1.1rem; }
+.summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
+.summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
+.summary-panel { display: none; }
+.summary-panel.active { display: block; }
+.past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(140px, 1fr)); align-items: end; margin-top: .8rem; }
+.past-split-controls label { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .3rem; }
+.past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.past-split-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .85rem; }
+.past-split-msg { margin-top: .75rem; font-size: .85rem; color: var(--muted); min-height: 1.2rem; }
+.group-pill { display: inline-flex; align-items: center; gap: .3rem; border-radius: 999px; border: 1px solid rgba(7,31,53,.16); font-family: 'Raleway', sans-serif; letter-spacing: .06em; font-size: .62rem; padding: .2rem .5rem; margin-left: .35rem; color: var(--muted); background: #fff; }
+.group-pill.vision { border-color: rgba(119,215,112,.5); color: #2f5b2f; background: rgba(119,215,112,.17); }
+.group-pill.diet { border-color: rgba(255,186,80,.55); color: #7d5313; background: rgba(255,225,171,.45); }
+.group-pill.fitness { border-color: rgba(113,164,226,.55); color: #204a7a; background: rgba(184,216,255,.4); }
 .cc-title-logo { width: 182px; height: 182px; }
 .cc-title-brand { gap: .08rem; }
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
-@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -193,7 +207,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s2">
-    <div class="step-eyebrow">STEP 2 · MESO CYCLE</div>
+    <div class="step-eyebrow">STEP 2 · MESOCYCLE</div>
     <h2 class="step-title">What strategy are you running this month?</h2>
     <p class="step-sub">Use the strategy that best matches your macrocycle goal.</p>
     <div class="chips" id="meso-chips"></div>
@@ -293,7 +307,49 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
     <h2 class="step-title">Split Sculptor</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
-    <div id="summary-out"></div>
+    <div class="summary-tabs">
+      <button type="button" class="summary-tab on" data-summary-tab="current">Current Summary</button>
+      <button type="button" class="summary-tab" data-summary-tab="past">Past Splits</button>
+    </div>
+    <div class="summary-panel active" id="current-summary-panel">
+      <div id="summary-out"></div>
+    </div>
+    <div class="summary-panel" id="past-summary-panel">
+      <div class="week">
+        <h3>Past Splits</h3>
+        <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+        <div id="past-split-controls-wrap" style="display:none;">
+          <div class="past-split-controls">
+            <div>
+              <label for="split-year-select">Year</label>
+              <select id="split-year-select"></select>
+            </div>
+            <div>
+              <label for="split-quarter-select">Quarter</label>
+              <select id="split-quarter-select">
+                <option value="1">Q1 (Jan–Mar)</option>
+                <option value="2">Q2 (Apr–Jun)</option>
+                <option value="3">Q3 (Jul–Sep)</option>
+                <option value="4">Q4 (Oct–Dec)</option>
+              </select>
+            </div>
+            <div>
+              <label for="save-year-select">Save Year</label>
+              <select id="save-year-select"></select>
+            </div>
+            <div>
+              <label for="save-quarter-select">Save Quarter</label>
+              <select id="save-quarter-select"></select>
+            </div>
+          </div>
+          <div class="past-split-actions">
+            <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
+            <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
+          </div>
+          <div class="past-split-msg" id="past-split-msg"></div>
+        </div>
+      </div>
+    </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
       <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
@@ -311,14 +367,14 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 <script>
 const TOTAL_STEPS = 9;
 const STEP_TIMING = [
-  { name: 'Macrocycle', duration: '3 months' },
-  { name: 'Meso Cycle', duration: '4 weeks' },
-  { name: 'Nutrition', duration: '3 months' },
-  { name: 'Macros', duration: 'Now' },
-  { name: 'Training Days', duration: '1 week' },
-  { name: 'Priority', duration: 'Now' },
-  { name: 'Environment', duration: 'Now' },
-  { name: 'Microcycle Builder', duration: '1 week' },
+  { name: 'Macrocycle', duration: '3 months', group: 'VISION' },
+  { name: 'Mesocycle', duration: '4 weeks', group: 'VISION' },
+  { name: 'Nutrition', duration: '3 months', group: 'DIET' },
+  { name: 'Macros', duration: 'Now', group: 'DIET' },
+  { name: 'Training Days', duration: '1 week', group: 'FITNESS' },
+  { name: 'Priority', duration: 'Now', group: 'FITNESS' },
+  { name: 'Environment', duration: 'Now', group: 'FITNESS' },
+  { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
   { name: 'Summary', duration: '' }
 ];
 const state = {
@@ -331,8 +387,37 @@ const state = {
   priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
   gymType: 'Commercial Gym',
   freq: 3,
-  customDays: {}
+  customDays: {},
+  manualTargets: {}
 };
+let splitArchive = {};
+
+function quarterKey(year, quarter) {
+  return `${year}-Q${quarter}`;
+}
+
+function getQuarterFromDate(date = new Date()) {
+  const month = date.getUTCMonth();
+  return Math.floor(month / 3) + 1;
+}
+
+function getCurrentQuarterInfo() {
+  const now = new Date();
+  return {
+    year: now.getUTCFullYear(),
+    quarter: getQuarterFromDate(now)
+  };
+}
+
+function canSaveToQuarter(year, quarter) {
+  const current = getCurrentQuarterInfo();
+  const targetYear = Number(year);
+  const targetQuarter = Number(quarter);
+  if (!targetYear || !targetQuarter) return false;
+  if (targetYear > current.year) return true;
+  if (targetYear < current.year) return false;
+  return targetQuarter >= current.quarter;
+}
 
 const mesoByMacro = {
   'Build Visible Muscle': 'Hypertrophy',
@@ -554,7 +639,12 @@ function buildPriorityRanker() {
 
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
-  wrap.innerHTML = STEP_TIMING.map((x, i) => `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`).join('');
+  wrap.innerHTML = STEP_TIMING.map((x, i) => {
+    const group = x.group
+      ? `<span class="group-pill ${x.group.toLowerCase()}">${x.group}</span>`
+      : '';
+    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}${group}</div><div class="t-duration">${x.duration}</div></button>`;
+  }).join('');
   wrap.addEventListener('click', (e) => {
     const btn = e.target.closest('.t-block');
     if (!btn) return;
@@ -935,14 +1025,14 @@ function buildSummary() {
   }).join('');
   document.getElementById('summary-out').innerHTML = `
     <div class="summary-card">
-      <div class="sum-row"><span class="sum-label">MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
-      <div class="sum-row"><span class="sum-label">MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
-      <div class="sum-row"><span class="sum-label">NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
-      <div class="sum-row"><span class="sum-label">MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
-      <div class="sum-row"><span class="sum-label">PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
-      <div class="sum-row"><span class="sum-label">RANK ORDER</span><span class="sum-val">${state.priorities.join(' → ')}</span></div>
-      <div class="sum-row"><span class="sum-label">GYM TYPE</span><span class="sum-val">${state.gymType}</span></div>
-      <div class="sum-row"><span class="sum-label">TRAINING DAYS (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
+      <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
+      <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
+      <div class="sum-row"><span class="sum-label">DIET · NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
+      <div class="sum-row"><span class="sum-label">DIET · MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · TRAINING DAYS (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · RANK ORDER</span><span class="sum-val">${state.priorities.join(' → ')}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · ENVIRONMENT</span><span class="sum-val">${state.gymType}</span></div>
     </div>
     <div class="week">
       <h3>Split</h3>
@@ -953,6 +1043,116 @@ function buildSummary() {
       ${targetMarkup}
     </div>
   `;
+}
+
+function getSerializableState() {
+  return {
+    macro: state.macro,
+    meso: state.meso,
+    nutrition: state.nutrition,
+    macroPlan: state.macroPlan,
+    priority: state.priority,
+    priorities: [...state.priorities],
+    gymType: state.gymType,
+    freq: state.freq,
+    customDays: JSON.parse(JSON.stringify(state.customDays)),
+    manualTargets: { ...state.manualTargets },
+    savedAt: new Date().toISOString()
+  };
+}
+
+function restoreState(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  state.macro = payload.macro || state.macro;
+  state.meso = payload.meso || state.meso;
+  state.nutrition = payload.nutrition || state.nutrition;
+  state.macroPlan = payload.macroPlan || state.macroPlan;
+  state.priority = payload.priority || state.priority;
+  state.priorities = Array.isArray(payload.priorities) && payload.priorities.length ? payload.priorities : state.priorities;
+  state.gymType = payload.gymType || state.gymType;
+  state.freq = Number(payload.freq) || state.freq;
+  state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
+  state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
+  refreshSelectionsFromState();
+  buildMesoChips();
+  buildNutritionChips();
+  buildMacroRule();
+  buildFrequencyRule();
+  buildGymRule();
+  buildPriorityRanker();
+  buildWorkoutBuilder();
+  if (state.step === 9) buildSummary();
+  return true;
+}
+
+function refreshSelectionsFromState() {
+  const syncChip = (groupId, value) => {
+    document.querySelectorAll(`#${groupId} .chip`).forEach((chip) => {
+      chip.classList.toggle('on', chip.dataset.v === String(value));
+    });
+  };
+  syncChip('macro-chips', state.macro);
+  syncChip('nutrition-chips', state.nutrition);
+  syncChip('macro-calc-chips', state.macroPlan);
+  syncChip('gym-chips', state.gymType);
+  syncChip('freq-chips', state.freq);
+}
+
+function getArchiveControls() {
+  return {
+    loginPrompt: document.getElementById('past-split-login-prompt'),
+    controlsWrap: document.getElementById('past-split-controls-wrap'),
+    splitYear: document.getElementById('split-year-select'),
+    splitQuarter: document.getElementById('split-quarter-select'),
+    saveYear: document.getElementById('save-year-select'),
+    saveQuarter: document.getElementById('save-quarter-select'),
+    msg: document.getElementById('past-split-msg')
+  };
+}
+
+function renderPastSplitSelectors() {
+  const controls = getArchiveControls();
+  const current = getCurrentQuarterInfo();
+  const startYear = current.year - 1;
+  const endYear = current.year + 1;
+  const yearOptions = Array.from({ length: (endYear - startYear) + 1 }, (_, i) => startYear + i);
+  const selectedReadYear = Number(controls.splitYear.value) || current.year;
+  const selectedSaveYear = Number(controls.saveYear.value) || current.year;
+  controls.splitYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedReadYear ? ' selected' : ''}>${year}</option>`).join('');
+  controls.saveYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedSaveYear ? ' selected' : ''}>${year}</option>`).join('');
+
+  const saveQuarterOptions = [1, 2, 3, 4]
+    .filter((quarter) => canSaveToQuarter(Number(controls.saveYear.value), quarter))
+    .map((quarter) => `<option value="${quarter}">Q${quarter}</option>`)
+    .join('');
+  controls.saveQuarter.innerHTML = saveQuarterOptions || `<option value="${current.quarter}">Q${current.quarter}</option>`;
+}
+
+async function loadSplitArchive() {
+  const sessionApi = window.ChasingChangeSession;
+  if (!sessionApi?.whenReady) return;
+  await sessionApi.whenReady();
+  const data = sessionApi.getCalculatorData('splitSculptor') || {};
+  splitArchive = data.quarterlySplits || {};
+}
+
+async function persistSplitArchive() {
+  const sessionApi = window.ChasingChangeSession;
+  if (!sessionApi?.saveCalculatorData) return false;
+  return sessionApi.saveCalculatorData('splitSculptor', { quarterlySplits: splitArchive });
+}
+
+function syncPastSplitsPanel() {
+  const controls = getArchiveControls();
+  const user = window.ChasingChangeSession?.getCurrentUserEmail?.();
+  const isLoggedIn = !!user;
+  controls.loginPrompt.style.display = isLoggedIn ? 'none' : 'block';
+  controls.loginPrompt.textContent = isLoggedIn
+    ? ''
+    : 'Log in to view and manage your past splits. Go to the account section to sign in.';
+  controls.controlsWrap.style.display = isLoggedIn ? 'block' : 'none';
+  controls.msg.textContent = '';
+  if (isLoggedIn) renderPastSplitSelectors();
 }
 
 function renderDots() {
@@ -994,6 +1194,51 @@ buildPriorityRanker();
 buildFrequencyRule();
 buildGymRule();
 buildWorkoutBuilder();
+loadSplitArchive().finally(syncPastSplitsPanel);
+
+document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-summary-tab]').forEach((node) => node.classList.remove('on'));
+    btn.classList.add('on');
+    const showPast = btn.dataset.summaryTab === 'past';
+    document.getElementById('current-summary-panel').classList.toggle('active', !showPast);
+    document.getElementById('past-summary-panel').classList.toggle('active', showPast);
+    if (showPast) syncPastSplitsPanel();
+  });
+});
+
+document.getElementById('save-year-select').addEventListener('change', renderPastSplitSelectors);
+
+document.getElementById('load-selected-split-btn').addEventListener('click', () => {
+  const controls = getArchiveControls();
+  const key = quarterKey(controls.splitYear.value, controls.splitQuarter.value);
+  const found = splitArchive[key];
+  if (!found) {
+    controls.msg.textContent = `No saved split found for ${key}.`;
+    return;
+  }
+  restoreState(found.state);
+  controls.msg.textContent = `Loaded split from ${key} (saved ${formatSavedAt(found.savedAt)}).`;
+});
+
+document.getElementById('save-selected-split-btn').addEventListener('click', async () => {
+  const controls = getArchiveControls();
+  const year = Number(controls.saveYear.value);
+  const quarter = Number(controls.saveQuarter.value);
+  if (!canSaveToQuarter(year, quarter)) {
+    controls.msg.textContent = 'You can only save to the current quarter or an upcoming quarter.';
+    return;
+  }
+  const key = quarterKey(year, quarter);
+  splitArchive[key] = {
+    savedAt: new Date().toISOString(),
+    state: getSerializableState()
+  };
+  const saved = await persistSplitArchive();
+  controls.msg.textContent = saved
+    ? `Saved current summary to ${key}. Existing data was overwritten for that quarter.`
+    : 'Could not save right now. Please make sure you are logged in and try again.';
+});
 
 document.getElementById('agent-btn').addEventListener('click', () => {
   document.getElementById('agent-out').textContent = answerAgent(document.getElementById('agent-q').value);
