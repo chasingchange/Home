@@ -362,18 +362,17 @@ h3 {
   padding: 1.5rem 1.35rem;
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .cc-account-card-inline {
   position: relative;
   z-index: 2;
-  padding-bottom: 2.6rem;
 }
 
 .cc-account-start-line {
-  position: absolute;
-  right: 0;
-  bottom: 0;
+  position: static;
+  display: inline-flex;
   text-decoration: none;
   background: #ffffff;
   color: #000000;
@@ -385,13 +384,24 @@ h3 {
 }
 
 .cc-account-status {
-  margin: 0;
+  margin: 0 auto;
   font-family: var(--cc-brand-font);
   font-size: clamp(1.45rem, 2.8vw, 2rem);
   font-weight: 800;
   color: var(--cc-text);
   position: relative;
   z-index: 1;
+}
+
+.cc-account-card-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.cc-account-logout-action {
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .cc-account-copy {
@@ -647,12 +657,6 @@ h3 {
 
 @media (max-width: 640px) {
   .cc-account-start-line {
-    position: static;
     margin-top: 0.7rem;
-    display: inline-flex;
-  }
-
-  .cc-account-card-inline {
-    padding-bottom: 0;
   }
 }

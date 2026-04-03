@@ -331,9 +331,17 @@
     card.className = "cc-account-card cc-account-card-inline";
     card.innerHTML = `
       <p id="ccAccountStatus" class="cc-account-status">Chasing Change Account</p>
-      <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
-        <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
-      </a>
+      <div class="cc-account-card-actions">
+        <a id="ccAccountAuthLink" href="#" class="cc-title-home cc-account-start-line" hidden>
+          <span class="cc-title-home-label">LOG IN | CREATE ACCOUNT</span>
+        </a>
+        <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
+          <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
+        </a>
+        <button id="ccAccountLogoutBtn" type="button" class="cc-title-home cc-account-start-line cc-account-logout-action" hidden>
+          <span class="cc-title-home-label">LOG OUT</span>
+        </button>
+      </div>
     `;
 
     const titleBlock = document.querySelector(".cc-title-block");
@@ -344,28 +352,43 @@
     }
 
     const statusEl = card.querySelector("#ccAccountStatus");
+    const accountAuthLink = card.querySelector("#ccAccountAuthLink");
     const accountStartLine = card.querySelector("#ccAccountStartLine");
-
-    const normalizeUrl = (url) => String(url || "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+    const accountLogoutBtn = card.querySelector("#ccAccountLogoutBtn");
 
     const syncCard = () => {
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+      const isHomePage = /\/Home(?:\/index\.html)?$/.test(normalizedPath) || /^\/(?:index\.html)?$/.test(normalizedPath);
+      const name = getCurrentDisplayName();
+      const isLoggedIn = !!name;
+
+      if (accountAuthLink) {
+        accountAuthLink.setAttribute("href", "https://chasingchange.github.io/Home/create-account/index.html");
+        accountAuthLink.hidden = isLoggedIn;
+      }
 
       if (accountStartLine) {
         accountStartLine.setAttribute("href", "https://chasingchange.github.io/Home/index.html");
-        const currentPage = normalizeUrl(window.location.href);
-        const startLineTarget = normalizeUrl(accountStartLine.href);
-        accountStartLine.hidden = currentPage === startLineTarget;
+        accountStartLine.hidden = !isLoggedIn || isHomePage;
       }
 
-      const name = getCurrentDisplayName();
       const message = name ? `Welcome to your race, ${name}` : "Chasing Change Account";
       statusEl.textContent = message;
-      card.classList.toggle("is-logged-in", !!name);
+      card.classList.toggle("is-logged-in", isLoggedIn);
+
+      if (accountLogoutBtn) {
+        accountLogoutBtn.hidden = !isLoggedIn || !isHomePage;
+      }
+
       const pageLoginStatus = document.getElementById("pageLoginStatus");
       if (pageLoginStatus) pageLoginStatus.textContent = message;
     };
+
+    accountLogoutBtn?.addEventListener("click", () => {
+      logout();
+      syncCard();
+    });
 
     window.addEventListener("storage", (event) => {
       if (!event.key || event.key === SESSION_KEY || event.key === ACCOUNTS_KEY) {
