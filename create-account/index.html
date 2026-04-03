@@ -102,15 +102,21 @@
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <input id="caPassword" type="password" placeholder="Password (optional for new accounts)" autocomplete="current-password"
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text">
                 We already know this name. Switched to <span class="font-extrabold">Log In</span> mode.
                 <p id="nameMatchEmail" class="mt-1 text-xs opacity-70"></p>
+                <p id="passwordHintText" class="mt-1 text-xs opacity-70"></p>
+                <button id="passwordHintBtn" type="button" class="mt-2 inline-flex rounded-lg bg-white px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">
+                  Forgot password? Get hint
+                </button>
                 <button id="quickLoginBtn" type="submit" class="mt-2 inline-flex rounded-lg bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95">
                   Log In Now
                 </button>
               </div>
               <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
-                Email-only login is enabled right now. No password needed.
+                Add a password for extra privacy. If you forget it, we'll show a first-letter hint.
               </p>
             </div>
           </section>
@@ -321,6 +327,7 @@
       const submitBtn = document.getElementById("caSubmitBtn");
       const nameMatchNotice = document.getElementById("nameMatchNotice");
       const nameMatchEmail = document.getElementById("nameMatchEmail");
+      const passwordHintText = document.getElementById("passwordHintText");
       const aboutYouSection = document.getElementById("aboutYouSection");
       const coreSection = document.getElementById("coreSection");
 
@@ -330,6 +337,11 @@
         nameMatchNotice.classList.toggle("hidden", !isLogin);
         if (isLogin) {
           nameMatchEmail.textContent = matchedEmail ? `Account email on file: ${matchedEmail}` : "";
+          if (!passwordHintText.textContent) {
+            passwordHintText.textContent = "Enter your password to log in.";
+          }
+        } else if (passwordHintText) {
+          passwordHintText.textContent = "";
         }
       };
 
@@ -369,6 +381,12 @@
         clearTimeout(nameLookupTimeout);
         nameLookupTimeout = setTimeout(refreshAuthModeFromName, 120);
       });
+      document.getElementById("passwordHintBtn")?.addEventListener("click", async () => {
+        const email = emailInput.value.trim() || matchedAccountByName?.email || "";
+        const name = nameInput.value.trim() || matchedAccountByName?.account?.name || "";
+        const reminder = await sessionApi.sendCredentialReminder({ email, name });
+        passwordHintText.textContent = reminder?.message || "No password hint available yet.";
+      });
 
       // ── Form submit ────────────────────────────────────────────────
       document.getElementById("createAccountForm")?.addEventListener("submit", async (e) => {
@@ -376,6 +394,7 @@
 
         const name     = document.getElementById("caName").value.trim();
         const email    = document.getElementById("caEmail").value.trim();
+        const password = document.getElementById("caPassword").value;
         const age      = document.getElementById("caAge").value;
         const weight   = document.getElementById("caWeight").value;
 
@@ -392,7 +411,7 @@
 
         if (matchedAccountByName) {
           const loginEmail = email || matchedAccountByName.email;
-          const loginResult = await sessionApi.login(loginEmail);
+          const loginResult = await sessionApi.login(loginEmail, password, name || matchedAccountByName?.account?.name || "");
           if (!loginResult.ok) {
             formError.textContent = loginResult.error;
             formError.classList.remove("hidden");
@@ -426,7 +445,7 @@
         }
 
         // Create account (also sets session to this user)
-        const result = await sessionApi.createAccount({ name, email });
+        const result = await sessionApi.createAccount({ name, email, password });
 
         if (!result.ok) {
           formError.textContent = result.error;
