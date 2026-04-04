@@ -395,8 +395,8 @@
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
       const isHomePage = /\/Home(?:\/index\.html)?$/.test(normalizedPath) || /^\/(?:index\.html)?$/.test(normalizedPath);
-      const isSplitSculptorPage = /\/preparing-route\/split-sculptor\.html$/.test(normalizedPath);
-      const name = getCurrentDisplayName();
+      const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
+      const isRoadmapPage = normalizedPath.includes("/physique-roadmap/index.html");
       const isLoggedIn = !!getCurrentUserEmail();
 
       if (accountAuthLink) {
@@ -406,7 +406,7 @@
 
       if (accountStartLine) {
         accountStartLine.setAttribute("href", "https://chasingchange.github.io/Home/index.html");
-        accountStartLine.hidden = !isLoggedIn || isHomePage;
+        accountStartLine.hidden = !isLoggedIn || isHomePage || isSplitSculptorPage || isRoadmapPage;
       }
 
       const message = "Chasing Change Account";
@@ -414,10 +414,10 @@
       card.classList.toggle("is-logged-in", isLoggedIn);
 
       if (accountLogoutBtn) {
-        accountLogoutBtn.hidden = !isLoggedIn || !isHomePage || isSplitSculptorPage;
+        accountLogoutBtn.hidden = !isLoggedIn || isSplitSculptorPage;
       }
 
-      if (isSplitSculptorPage && isLoggedIn) {
+      if ((isSplitSculptorPage || isRoadmapPage) && isLoggedIn) {
         if (accountAuthLink) accountAuthLink.hidden = true;
         if (accountStartLine) accountStartLine.hidden = true;
       }
