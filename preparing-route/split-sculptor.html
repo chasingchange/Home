@@ -967,9 +967,19 @@ function getExerciseImageByMuscle(targetMuscle) {
   return map[key] || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=420&q=60';
 }
 
+function getExerciseSpecificImage(item, targetMuscle) {
+  const exercise = EXERCISES.find((x) => x.id === item.id);
+  if (!exercise) return getExerciseImageByMuscle(targetMuscle);
+  const query = encodeURIComponent(`${exercise.name} gym exercise`);
+  return `https://source.unsplash.com/420x220/?${query}`;
+}
+
 function renderExerciseVisual(item, targetMuscle) {
-  const src = getExerciseImageByMuscle(targetMuscle);
-  const alt = `${item.slot} exercise visual for ${targetMuscle || 'selected muscle'}`;
+  const exercise = EXERCISES.find((x) => x.id === item.id);
+  const src = getExerciseSpecificImage(item, targetMuscle);
+  const alt = exercise
+    ? `${exercise.name} demonstration image`
+    : `${item.slot} exercise visual for ${targetMuscle || 'selected muscle'}`;
   return `<div class="muscle-art"><img src="${src}" alt="${alt}" loading="lazy" style="width:100%;max-width:220px;height:110px;object-fit:cover;border-radius:8px;" /></div>`;
 }
 
