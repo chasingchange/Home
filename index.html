@@ -165,17 +165,24 @@
 
       const coreFilters = document.getElementById("coreFilters");
       const coreCards = Array.from(document.querySelectorAll(".core-card"));
+      const coreSubsections = Array.from(document.querySelectorAll(".core-subsection"));
       const noToolsMessage = document.getElementById("noToolsMessage");
       const roadmapNavDesktop = document.getElementById("roadmapNavDesktop");
       const roadmapNavMobile = document.getElementById("roadmapNavMobile");
       const roadmapToolCard = document.getElementById("roadmapToolCard");
+      let canViewRoadmap = false;
 
       const setCoreFilter = (core) => {
         const visibleCount = coreCards.reduce((count, card) => {
-          const visible = card.dataset.core === core;
+          const requiresAuth = card.id === "roadmapToolCard";
+          const visible = card.dataset.core === core && (!requiresAuth || canViewRoadmap);
           card.classList.toggle("hidden", !visible);
           return count + (visible ? 1 : 0);
         }, 0);
+        coreSubsections.forEach((subsection) => {
+          const visible = subsection.dataset.core === core;
+          subsection.classList.toggle("hidden", !visible);
+        });
 
         noToolsMessage?.classList.toggle("hidden", visibleCount > 0);
 
@@ -194,10 +201,10 @@
 
       setCoreFilter("body");
       sessionApi?.whenReady?.().finally(() => {
-        const isLoggedIn = !!sessionApi?.getCurrentAccount?.();
-        roadmapNavDesktop?.classList.toggle("hidden", !isLoggedIn);
-        roadmapNavMobile?.classList.toggle("hidden", !isLoggedIn);
-        roadmapToolCard?.classList.toggle("hidden", !isLoggedIn);
+        canViewRoadmap = !!sessionApi?.getCurrentAccount?.();
+        roadmapNavDesktop?.classList.toggle("hidden", !canViewRoadmap);
+        roadmapNavMobile?.classList.toggle("hidden", !canViewRoadmap);
+        roadmapToolCard?.classList.toggle("hidden", !canViewRoadmap);
         setCoreFilter("body");
       });
     </script>
