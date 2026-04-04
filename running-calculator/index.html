@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Runner | Chasing Change</title>
+    <meta
+      name="description"
+      content="The Runner intake and planning calculator for race predictions, goal pacing, and branded running plans."
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: {
+                bg: "#f5f5f7",
+                text: "#071f35",
+                accent: "#77d770",
+                card: "#ffffff",
+              },
+            },
+            fontFamily: {
+              title: ["Museo Moderno", "Raleway", "sans-serif"],
+              heading: ["Raleway", "system-ui", "sans-serif"],
+              body: ["Muli", "Mulish", "system-ui", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 14px 35px rgba(7,31,53,0.10)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <main class="max-w-6xl mx-auto px-4 py-8 sm:py-10">
+      <header class="rounded-3xl bg-white shadow-soft ring-1 ring-black/5 p-6 sm:p-8">
+        <p class="uppercase tracking-[0.2em] text-xs font-bold opacity-70">Chasing Change</p>
+        <h1 class="font-title text-4xl sm:text-5xl mt-2">The Runner</h1>
+        <p class="mt-3 max-w-3xl text-sm sm:text-base opacity-85">
+          Intake, assess, predict, and plan in one place. Use this with clients to identify running level, estimate race
+          finishes, set realistic pacing goals, and generate a branded plan.
+        </p>
+      </header>
+
+      <section class="mt-6 grid xl:grid-cols-2 gap-5">
+        <form id="runnerForm" class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 class="font-heading text-2xl font-extrabold">Intake Form</h2>
+            <p class="text-sm opacity-75">Leave any PR unknown if they do not have one yet.</p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="space-y-1">
+              <span class="text-sm font-bold">Current weekly mileage</span>
+              <input id="weeklyMileage" type="number" min="0" step="1" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 18" />
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-bold">Longest completed run (miles)</span>
+              <input id="longestRun" type="number" min="0" step="0.1" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 10" />
+            </label>
+          </div>
+
+          <div>
+            <h3 class="font-heading text-xl font-bold">Personal Records (time)</h3>
+            <p class="text-xs opacity-70">Format: mm:ss or hh:mm:ss</p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="space-y-1"><span class="text-sm font-bold">Mile PR</span><input id="prMile" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 7:30" /></label>
+            <label class="space-y-1"><span class="text-sm font-bold">5K PR</span><input id="pr5k" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 24:50" /></label>
+            <label class="space-y-1"><span class="text-sm font-bold">10K PR</span><input id="pr10k" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 52:00" /></label>
+            <label class="space-y-1"><span class="text-sm font-bold">Half Marathon PR</span><input id="prHalf" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 2:05:00" /></label>
+            <label class="space-y-1"><span class="text-sm font-bold">Marathon PR</span><input id="prFull" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 4:35:00" /></label>
+            <label class="space-y-1"><span class="text-sm font-bold">Ultra PR</span><input id="prUltra" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 6:20:00" /></label>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="space-y-1">
+              <span class="text-sm font-bold">Ultra distance (miles)</span>
+              <input id="ultraDistance" type="number" min="1" step="0.1" value="31.1" class="w-full rounded-xl border border-black/15 p-3" />
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-bold">Goal pace (min:sec per mile)</span>
+              <input id="goalPace" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 8:30" />
+            </label>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="space-y-1">
+              <span class="text-sm font-bold">Goal date</span>
+              <input id="goalDate" type="date" class="w-full rounded-xl border border-black/15 p-3" />
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-bold">or training weeks</span>
+              <input id="trainingWeeks" type="number" min="1" step="1" class="w-full rounded-xl border border-black/15 p-3" placeholder="e.g. 12" />
+            </label>
+          </div>
+
+          <button type="submit" class="w-full rounded-2xl bg-cc-accent px-4 py-3 font-heading font-extrabold text-lg hover:brightness-95 transition">
+            Build Runner Report
+          </button>
+        </form>
+
+        <div id="results" class="rounded-3xl bg-white shadow-soft ring-1 ring-black/5 p-5 sm:p-6">
+          <h2 class="font-heading text-2xl font-extrabold">Runner Report</h2>
+          <p class="mt-2 text-sm opacity-75">Submit the intake form to generate level assessment, race predictions, and a training plan.</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const raceDistances = {
+        mile: 1,
+        "5k": 3.10686,
+        "10k": 6.21371,
+        half: 13.1094,
+        full: 26.2188,
+      };
+
+      const parseTimeToSeconds = (value) => {
+        if (!value) return null;
+        const parts = value.split(":").map((p) => Number(p.trim()));
+        if (parts.some((n) => Number.isNaN(n))) return null;
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        return null;
+      };
+
+      const formatTime = (seconds) => {
+        if (!Number.isFinite(seconds) || seconds <= 0) return "Unknown";
+        const rounded = Math.round(seconds);
+        const h = Math.floor(rounded / 3600);
+        const m = Math.floor((rounded % 3600) / 60);
+        const s = rounded % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+        return `${m}:${String(s).padStart(2, "0")}`;
+      };
+
+      const paceLabel = (secondsPerMile) => {
+        if (!secondsPerMile) return "Unknown";
+        const m = Math.floor(secondsPerMile / 60);
+        const s = Math.round(secondsPerMile % 60);
+        return `${m}:${String(s).padStart(2, "0")}/mi`;
+      };
+
+      const riegel = (timeSec, fromMiles, toMiles) => timeSec * Math.pow(toMiles / fromMiles, 1.06);
+
+      const determineLevel = ({ weeklyMileage, best5kEquivalent, longestRun }) => {
+        if (!best5kEquivalent && weeklyMileage < 12) return "Beginner";
+        if ((best5kEquivalent && best5kEquivalent <= 1200) || weeklyMileage >= 45) return "Advanced";
+        if ((best5kEquivalent && best5kEquivalent <= 1500) || weeklyMileage >= 28 || longestRun >= 10) return "Intermediate";
+        if ((best5kEquivalent && best5kEquivalent <= 1800) || weeklyMileage >= 12 || longestRun >= 6) return "Novice";
+        return "Beginner";
+      };
+
+      const improvementByLevel = {
+        Beginner: 12,
+        Novice: 8,
+        Intermediate: 5,
+        Advanced: 3,
+      };
+
+      const results = document.getElementById("results");
+      const form = document.getElementById("runnerForm");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const weeklyMileage = Number(document.getElementById("weeklyMileage").value || 0);
+        const longestRun = Number(document.getElementById("longestRun").value || 0);
+
+        const pr = {
+          mile: parseTimeToSeconds(document.getElementById("prMile").value),
+          "5k": parseTimeToSeconds(document.getElementById("pr5k").value),
+          "10k": parseTimeToSeconds(document.getElementById("pr10k").value),
+          half: parseTimeToSeconds(document.getElementById("prHalf").value),
+          full: parseTimeToSeconds(document.getElementById("prFull").value),
+          ultra: parseTimeToSeconds(document.getElementById("prUltra").value),
+        };
+
+        const ultraDistance = Number(document.getElementById("ultraDistance").value || 31.1);
+        const goalPaceSec = parseTimeToSeconds(document.getElementById("goalPace").value);
+
+        const knownTimes = [];
+        Object.entries(raceDistances).forEach(([key, miles]) => {
+          if (pr[key]) knownTimes.push({ time: pr[key], miles });
+        });
+        if (pr.ultra) knownTimes.push({ time: pr.ultra, miles: ultraDistance });
+
+        const best5kEquivalent = knownTimes.length
+          ? Math.min(...knownTimes.map((entry) => riegel(entry.time, entry.miles, raceDistances["5k"])))
+          : null;
+
+        const level = determineLevel({ weeklyMileage, best5kEquivalent, longestRun });
+
+        const predictions = {
+          mile: pr.mile || (best5kEquivalent ? riegel(best5kEquivalent, raceDistances["5k"], raceDistances.mile) : null),
+          "5k": pr["5k"] || best5kEquivalent,
+          "10k": pr["10k"] || (best5kEquivalent ? riegel(best5kEquivalent, raceDistances["5k"], raceDistances["10k"]) : null),
+          half: pr.half || (best5kEquivalent ? riegel(best5kEquivalent, raceDistances["5k"], raceDistances.half) : null),
+          full: pr.full || (best5kEquivalent ? riegel(best5kEquivalent, raceDistances["5k"], raceDistances.full) : null),
+        };
+
+        const currentPace = best5kEquivalent ? best5kEquivalent / raceDistances["5k"] : null;
+        let paceTimeline = "Add a valid current PR plus a goal pace to estimate pacing timeline.";
+        let realisticWeeks = null;
+
+        if (currentPace && goalPaceSec && goalPaceSec < currentPace) {
+          const improvementNeeded = currentPace - goalPaceSec;
+          const weeklyGain = improvementByLevel[level] || 5;
+          realisticWeeks = Math.max(4, Math.ceil(improvementNeeded / weeklyGain));
+          paceTimeline = `Current estimated pace is ${paceLabel(currentPace)}. To reach ${paceLabel(goalPaceSec)}, a realistic timeline is about ${realisticWeeks} weeks for a ${level.toLowerCase()} runner.`;
+        } else if (currentPace && goalPaceSec && goalPaceSec >= currentPace) {
+          paceTimeline = `Current estimated pace is already ${paceLabel(currentPace)}. Goal pace ${paceLabel(goalPaceSec)} is currently achievable.`;
+          realisticWeeks = 2;
+        }
+
+        const goalDateRaw = document.getElementById("goalDate").value;
+        const inputWeeks = Number(document.getElementById("trainingWeeks").value || 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let goalWeeks = inputWeeks;
+
+        if (!goalWeeks && goalDateRaw) {
+          const goalDate = new Date(`${goalDateRaw}T00:00:00`);
+          goalWeeks = Math.max(1, Math.ceil((goalDate - today) / (1000 * 60 * 60 * 24 * 7)));
+        }
+
+        const finalWeeks = Math.max(goalWeeks || 8, realisticWeeks || 0, 4);
+        const compressed = goalWeeks > 0 && realisticWeeks && goalWeeks < realisticWeeks;
+
+        const startMileage = Math.max(weeklyMileage || 10, 8);
+        const peakMileage = Math.round(startMileage * (level === "Beginner" ? 1.35 : level === "Novice" ? 1.45 : level === "Intermediate" ? 1.55 : 1.65));
+
+        const planRows = Array.from({ length: finalWeeks }, (_, i) => {
+          const week = i + 1;
+          const ratio = week / finalWeeks;
+          const isDeload = week % 4 === 0;
+          const targetMileage = isDeload
+            ? Math.round((startMileage + (peakMileage - startMileage) * ratio) * 0.85)
+            : Math.round(startMileage + (peakMileage - startMileage) * ratio);
+
+          let focus = "Easy run + long run + strength";
+          if (ratio > 0.2 && ratio <= 0.65) focus = "Aerobic build + tempo intervals + long run";
+          if (ratio > 0.65 && ratio <= 0.9) focus = "Race-specific pace work + long run";
+          if (ratio > 0.9) focus = "Taper + sharpen + race week prep";
+
+          return `<tr class="border-b border-black/10">
+            <td class="py-2 pr-2 font-bold">Week ${week}</td>
+            <td class="py-2 pr-2">${targetMileage} mi</td>
+            <td class="py-2">${focus}</td>
+          </tr>`;
+        }).join("");
+
+        results.innerHTML = `
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="uppercase text-xs tracking-[0.2em] opacity-70">Chasing Change Runner Assessment</p>
+              <h2 class="font-heading text-3xl font-extrabold mt-1">${level} Runner</h2>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-cc-accent/25 px-3 py-1 text-sm font-bold">The Runner</span>
+          </div>
+
+          <div class="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
+            <div class="rounded-xl bg-cc-bg p-3"><p class="font-bold">Current Weekly Mileage</p><p>${weeklyMileage || 0} miles</p></div>
+            <div class="rounded-xl bg-cc-bg p-3"><p class="font-bold">Longest Completed Run</p><p>${longestRun || 0} miles</p></div>
+            <div class="rounded-xl bg-cc-bg p-3"><p class="font-bold">Estimated Current Pace</p><p>${paceLabel(currentPace)}</p></div>
+            <div class="rounded-xl bg-cc-bg p-3"><p class="font-bold">Suggested Plan Length</p><p>${finalWeeks} weeks</p></div>
+          </div>
+
+          <div class="mt-5">
+            <h3 class="font-heading text-xl font-bold">Race Time Predictions</h3>
+            <div class="mt-2 grid sm:grid-cols-2 gap-2 text-sm">
+              <p class="rounded-xl bg-cc-bg p-3"><strong>Mile:</strong> ${formatTime(predictions.mile)}</p>
+              <p class="rounded-xl bg-cc-bg p-3"><strong>5K:</strong> ${formatTime(predictions["5k"])}</p>
+              <p class="rounded-xl bg-cc-bg p-3"><strong>10K:</strong> ${formatTime(predictions["10k"])}</p>
+              <p class="rounded-xl bg-cc-bg p-3"><strong>Half:</strong> ${formatTime(predictions.half)}</p>
+              <p class="rounded-xl bg-cc-bg p-3"><strong>Full:</strong> ${formatTime(predictions.full)}</p>
+            </div>
+          </div>
+
+          <div class="mt-5 rounded-2xl border border-cc-accent/60 bg-cc-accent/10 p-4 text-sm">
+            <p class="font-heading text-lg font-extrabold">Goal Pacing Outlook</p>
+            <p class="mt-1">${paceTimeline}</p>
+            ${compressed ? '<p class="mt-2 font-bold">Your selected timeline is aggressive. Plan length was automatically extended to keep this realistic.</p>' : ""}
+          </div>
+
+          <div class="mt-5">
+            <h3 class="font-heading text-xl font-bold">Chasing Change Plan</h3>
+            <p class="text-sm opacity-75">Structure: 4-5 running days/week, 1-2 strength sessions, 1 full rest day.</p>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-sm rounded-xl overflow-hidden">
+                <thead class="bg-cc-text text-white">
+                  <tr><th class="text-left py-2 px-2">Week</th><th class="text-left py-2 px-2">Mileage</th><th class="text-left py-2 px-2">Focus</th></tr>
+                </thead>
+                <tbody>${planRows}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      });
+    </script>
+  </body>
+</html>
