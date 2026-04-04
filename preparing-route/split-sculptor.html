@@ -54,9 +54,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
 .focus-pill-row { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: .6rem; margin-bottom: .85rem; }
 .focus-pill { border: 1px solid var(--border); border-radius: 999px; padding: .5rem .8rem; text-align: center; background: #fff; font-family: 'Raleway', sans-serif; font-weight: 800; font-size: .74rem; letter-spacing: .09em; text-transform: uppercase; }
-.focus-pill.vision { color: #2f5b2f; border-color: rgba(47,91,47,.35); }
-.focus-pill.diet { color: #7d5313; border-color: rgba(125,83,19,.35); }
-.focus-pill.fitness { color: #204a7a; border-color: rgba(32,74,122,.35); }
+.focus-pill.vision { color: #1f4a1f; border-color: rgba(47,91,47,.42); background: rgba(119,215,112,.32); }
+.focus-pill.diet { color: #704610; border-color: rgba(125,83,19,.4); background: rgba(255,189,89,.34); }
+.focus-pill.fitness { color: #1c3f68; border-color: rgba(32,74,122,.4); background: rgba(42,157,240,.26); }
 .timeline { display: grid; grid-template-columns: repeat(8, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
 .t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
 .t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
@@ -676,7 +676,7 @@ function buildPriorityRanker() {
 function buildTimeline() {
   const wrap = document.getElementById('timeline');
   wrap.innerHTML = STEP_TIMING.map((x, i) => {
-    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div>${x.group ? `<div class="t-group group-pill ${x.group.toLowerCase()}">${x.group}</div>` : ''}<div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`;
+    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`;
   }).join('');
   wrap.addEventListener('click', (e) => {
     const btn = e.target.closest('.t-block');
