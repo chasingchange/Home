@@ -98,14 +98,14 @@
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
           </div>
 
-          <p class="mt-4 text-sm opacity-80">Tap a core below to filter tools by focus.</p>
-          <div id="coreFilters" class="mt-3 flex flex-wrap gap-2">
-            <button type="button" class="category-chip is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">Body</button>
-            <button type="button" class="category-chip" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">Art</button>
-            <button type="button" class="category-chip" style="--chip-color: #2a9df0" data-core="mind" aria-pressed="false">Mind</button>
-            <button type="button" class="category-chip" style="--chip-color: #aa70d7" data-core="soul" aria-pressed="false">Soul</button>
-            <button type="button" class="category-chip" style="--chip-color: #f02348" data-core="career" aria-pressed="false">Career</button>
-            <button type="button" class="category-chip" style="--chip-color: #e46702" data-core="life" aria-pressed="false">Life</button>
+          <p class="mt-4 text-sm opacity-80">Hover to preview a core or click to lock it in.</p>
+          <div id="coreFilters" class="mt-3 grid grid-cols-2 lg:grid-cols-6 gap-2">
+            <button type="button" class="core-section-card is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">BODY</button>
+            <button type="button" class="core-section-card" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">ART</button>
+            <button type="button" class="core-section-card" style="--chip-color: #2a9df0" data-core="mind" aria-pressed="false">MIND</button>
+            <button type="button" class="core-section-card" style="--chip-color: #aa70d7" data-core="soul" aria-pressed="false">SOUL</button>
+            <button type="button" class="core-section-card" style="--chip-color: #f02348" data-core="career" aria-pressed="false">CAREER</button>
+            <button type="button" class="core-section-card" style="--chip-color: #e46702" data-core="life" aria-pressed="false">LIFE</button>
           </div>
 
           <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
@@ -172,6 +172,9 @@
       const roadmapToolCard = document.getElementById("roadmapToolCard");
       let canViewRoadmap = false;
 
+      const desktopMedia = window.matchMedia("(min-width: 1024px)");
+      let lockedCore = "body";
+
       const setCoreFilter = (core) => {
         const visibleCount = coreCards.reduce((count, card) => {
           const requiresAuth = card.id === "roadmapToolCard";
@@ -193,19 +196,36 @@
         });
       };
 
+      const lockCore = (core) => {
+        lockedCore = core;
+        setCoreFilter(core);
+      };
+
       coreFilters?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-core]");
+        if (!button) return;
+        lockCore(button.dataset.core);
+      });
+
+      coreFilters?.addEventListener("mouseover", (event) => {
+        if (!desktopMedia.matches) return;
         const button = event.target.closest("[data-core]");
         if (!button) return;
         setCoreFilter(button.dataset.core);
       });
 
-      setCoreFilter("body");
+      coreFilters?.addEventListener("mouseleave", () => {
+        if (!desktopMedia.matches) return;
+        setCoreFilter(lockedCore);
+      });
+
+      setCoreFilter(lockedCore);
       sessionApi?.whenReady?.().finally(() => {
         canViewRoadmap = !!sessionApi?.getCurrentAccount?.();
         roadmapNavDesktop?.classList.toggle("hidden", !canViewRoadmap);
         roadmapNavMobile?.classList.toggle("hidden", !canViewRoadmap);
         roadmapToolCard?.classList.toggle("hidden", !canViewRoadmap);
-        setCoreFilter("body");
+        setCoreFilter(lockedCore);
       });
     </script>
   </body>
