@@ -39,29 +39,13 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body">
-    <div class="relative max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
       <!-- Background blobs -->
       <div class="absolute inset-0 -z-10 pointer-events-none">
         <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
         <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
       </div>
-
-      <!-- Header -->
-      <header class="rounded-3xl overflow-hidden ring-1 ring-black/5 shadow-neon bg-white mb-6 sm:mb-8">
-        <div class="relative p-6 sm:p-8">
-          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-          <div class="relative flex items-center gap-3">
-            <a href="../index.html">
-              <img src="../Logo.png" alt="Chasing Change logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ring-1 ring-black/10 bg-white/70 p-1" />
-            </a>
-            <div>
-              <a href="../index.html" class="text-2xl sm:text-3xl font-extrabold font-brand leading-tight hover:text-cc-outline transition">Chasing Change</a>
-              <p class="text-sm font-bold font-heading opacity-60">Create Your Account</p>
-            </div>
-          </div>
-        </div>
-      </header>
 
       <!-- Already logged in banner -->
       <div id="alreadyLoggedIn" class="hidden mb-6 rounded-2xl bg-cc-outline/15 ring-1 ring-cc-outline/40 p-5">
@@ -77,7 +61,7 @@
       <div id="successState" class="hidden mb-6 overflow-hidden rounded-[2rem] bg-white ring-1 ring-black/5 shadow-soft">
         <div class="race-card-track p-6 sm:p-8">
           <div class="race-card-overlay"></div>
-          <div class="relative z-10 max-w-lg">
+          <div class="relative z-10">
             <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to the Race, <span id="successName">Athlete</span>!</h2>
             <p class="mt-3 text-sm sm:text-base font-semibold text-white/90">Your account is ready. Let's get to work.</p>
             <div class="mt-5 flex flex-wrap justify-center gap-3">
