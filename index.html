@@ -108,36 +108,56 @@
             <button type="button" class="category-chip" style="--chip-color: #e46702" data-core="life" aria-pressed="false">Life</button>
           </div>
 
-          <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-            <a href="./macro/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h2>
-              <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
-            </a>
+          <div id="toolCards" class="mt-5 space-y-6">
+            <section class="core-subsection" data-core="body">
+              <h2 class="text-lg sm:text-xl font-extrabold font-heading">Fitness</h2>
+              <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+                <a href="./1RM Calculator/Index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+                  <h3 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h3>
+                  <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
+                  <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
+                </a>
 
-            <a href="./1RM Calculator/Index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h2>
-              <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
-            </a>
+                <a href="./preparing-route/split-sculptor.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+                  <h3 class="mt-4 text-2xl font-extrabold font-heading">Split Sculptor</h3>
+                  <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, print-ready summary, and PNG export.</p>
+                  <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
+                </a>
+              </div>
+            </section>
 
-            <a href="./preparing-route/split-sculptor.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Split Sculptor</h2>
-              <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, print-ready summary, and PNG export.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
-            </a>
+            <section class="core-subsection" data-core="body">
+              <h2 class="text-lg sm:text-xl font-extrabold font-heading">Nutrition</h2>
+              <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+                <a href="./macro/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+                  <h3 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h3>
+                  <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
+                  <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
+                </a>
+              </div>
+            </section>
 
-            <a href="./exercise-matrix/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h2>
-              <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
-            </a>
+            <section class="core-subsection" data-core="body">
+              <h2 class="text-lg sm:text-xl font-extrabold font-heading">Recovery</h2>
+              <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+                <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+                  <h3 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h3>
+                  <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
+                  <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
+                </a>
+              </div>
+            </section>
 
-            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
-              <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
-            </a>
+            <section class="core-subsection" data-core="body">
+              <h2 class="text-lg sm:text-xl font-extrabold font-heading">Equipment</h2>
+              <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+                <a href="./exercise-matrix/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+                  <h3 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h3>
+                  <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
+                  <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
+                </a>
+              </div>
+            </section>
           </div>
                     <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
         </section>
@@ -159,17 +179,24 @@
 
       const coreFilters = document.getElementById("coreFilters");
       const coreCards = Array.from(document.querySelectorAll(".core-card"));
+      const coreSubsections = Array.from(document.querySelectorAll(".core-subsection"));
       const noToolsMessage = document.getElementById("noToolsMessage");
       const roadmapNavDesktop = document.getElementById("roadmapNavDesktop");
       const roadmapNavMobile = document.getElementById("roadmapNavMobile");
       const roadmapToolCard = document.getElementById("roadmapToolCard");
+      let canViewRoadmap = false;
 
       const setCoreFilter = (core) => {
         const visibleCount = coreCards.reduce((count, card) => {
-          const visible = card.dataset.core === core;
+          const requiresAuth = card.id === "roadmapToolCard";
+          const visible = card.dataset.core === core && (!requiresAuth || canViewRoadmap);
           card.classList.toggle("hidden", !visible);
           return count + (visible ? 1 : 0);
         }, 0);
+        coreSubsections.forEach((subsection) => {
+          const visible = subsection.dataset.core === core;
+          subsection.classList.toggle("hidden", !visible);
+        });
 
         noToolsMessage?.classList.toggle("hidden", visibleCount > 0);
 
@@ -188,10 +215,10 @@
 
       setCoreFilter("body");
       sessionApi?.whenReady?.().finally(() => {
-        const isLoggedIn = !!sessionApi?.getCurrentAccount?.();
-        roadmapNavDesktop?.classList.toggle("hidden", !isLoggedIn);
-        roadmapNavMobile?.classList.toggle("hidden", !isLoggedIn);
-        roadmapToolCard?.classList.toggle("hidden", !isLoggedIn);
+        canViewRoadmap = !!sessionApi?.getCurrentAccount?.();
+        roadmapNavDesktop?.classList.toggle("hidden", !canViewRoadmap);
+        roadmapNavMobile?.classList.toggle("hidden", !canViewRoadmap);
+        roadmapToolCard?.classList.toggle("hidden", !canViewRoadmap);
         setCoreFilter("body");
       });
     </script>
