@@ -395,6 +395,7 @@
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
       const isHomePage = /\/Home(?:\/index\.html)?$/.test(normalizedPath) || /^\/(?:index\.html)?$/.test(normalizedPath);
+      const isSplitSculptorPage = /\/preparing-route\/split-sculptor\.html$/.test(normalizedPath);
       const name = getCurrentDisplayName();
       const isLoggedIn = !!name;
 
@@ -408,12 +409,17 @@
         accountStartLine.hidden = !isLoggedIn || isHomePage;
       }
 
-      const message = name ? `Welcome to your race, ${name}` : "Chasing Change Account";
+      const message = "Chasing Change Account";
       statusEl.textContent = message;
       card.classList.toggle("is-logged-in", isLoggedIn);
 
       if (accountLogoutBtn) {
-        accountLogoutBtn.hidden = !isLoggedIn || !isHomePage;
+        accountLogoutBtn.hidden = !isLoggedIn || !isHomePage || isSplitSculptorPage;
+      }
+
+      if (isSplitSculptorPage && isLoggedIn) {
+        if (accountAuthLink) accountAuthLink.hidden = true;
+        if (accountStartLine) accountStartLine.hidden = true;
       }
 
       const pageLoginStatus = document.getElementById("pageLoginStatus");
