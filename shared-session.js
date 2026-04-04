@@ -394,18 +394,22 @@
     const syncCard = () => {
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
-      const isHomePage = /\/Home(?:\/index\.html)?$/.test(normalizedPath) || /^\/(?:index\.html)?$/.test(normalizedPath);
+      const homeBaseMatch = normalizedPath.match(/^(.*\/Home)(?:\/.*)?$/);
+      const homeBasePath = homeBaseMatch?.[1] || "";
+      const homeHref = homeBasePath ? `${homeBasePath}/index.html` : "/index.html";
+      const createAccountHref = homeBasePath ? `${homeBasePath}/create-account/index.html` : "/create-account/index.html";
+      const isHomePage = normalizedPath === homeHref.replace(/\/index\.html$/, "") || normalizedPath === homeHref.replace(/\/+$/, "") || normalizedPath === "/";
       const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
       const isRoadmapPage = normalizedPath.includes("/physique-roadmap/index.html");
       const isLoggedIn = !!getCurrentUserEmail();
 
       if (accountAuthLink) {
-        accountAuthLink.setAttribute("href", "https://chasingchange.github.io/Home/create-account/index.html");
+        accountAuthLink.setAttribute("href", createAccountHref);
         accountAuthLink.hidden = isLoggedIn;
       }
 
       if (accountStartLine) {
-        accountStartLine.setAttribute("href", "https://chasingchange.github.io/Home/index.html");
+        accountStartLine.setAttribute("href", homeHref);
         accountStartLine.hidden = !isLoggedIn || isHomePage || isSplitSculptorPage || isRoadmapPage;
       }
 
