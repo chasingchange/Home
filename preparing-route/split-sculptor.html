@@ -97,9 +97,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-drop .placeholder { color: #9aa4af; font-size: .8rem; }
 .slot-drop .filled { font-size: .86rem; color: var(--text); font-weight: 600; }
 .slot-drop button { border: 0; background: transparent; color: #8f9aa6; cursor: pointer; font-size: .95rem; }
-.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 580px; }
-.priority-rank-item { display: grid; grid-template-columns: 1fr 140px; gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
-.priority-rank-label { font-family: 'Raleway', sans-serif; font-weight: 700; }
+.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 680px; }
+.priority-rank-item { display: grid; grid-template-columns: 180px 1fr; gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
+.priority-rank-label { font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .8rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
 .priority-rank-select, .slot-select, .slot-muscle-select { font-family: 'Muli', sans-serif; border: 1px solid var(--border); border-radius: 8px; padding: .42rem .5rem; background: #fff; color: var(--text); }
 .rank-help { margin-top: .75rem; font-size: .85rem; color: var(--muted); }
 .slot-row { border: 1px solid rgba(7,31,53,.1); border-radius: 10px; padding: .55rem; grid-template-columns: 1fr; gap: .5rem; }
@@ -110,6 +110,18 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-row.match .slot-status-light { background: #77d770; border-color: #59c352; }
 .slot-row.mismatch { border-color: rgba(204,60,60,.45); background: rgba(204,60,60,.08); }
 .slot-row.mismatch .slot-status-light { background: #e96a6a; border-color: #cc3c3c; }
+.slot-suggestion { margin-top: .45rem; font-size: .78rem; color: var(--muted); line-height: 1.45; }
+.builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
+.builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
+.builder-day-tab.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); }
+.equipment-wrap { display: none; margin-top: .8rem; border: 1px solid var(--border); border-radius: 12px; padding: .7rem; background: #fff; }
+.equipment-wrap.show { display: block; }
+.equipment-search { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; margin-bottom: .55rem; }
+.equipment-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .4rem; max-height: 170px; overflow: auto; }
+.equipment-item { border: 1px solid var(--border); border-radius: 8px; padding: .4rem .5rem; font-size: .86rem; cursor: pointer; display: flex; gap: .45rem; align-items: center; }
+.equipment-item.on { border-color: #59c352; background: var(--accent-dim); font-weight: 700; }
+.muscle-art { margin-top: .5rem; border: 1px solid rgba(7,31,53,.1); border-radius: 10px; background: #fff; padding: .5rem; display: grid; place-items: center; }
+.muscle-art svg { width: 72px; height: 110px; }
 @media (max-width: 900px) { .builder-layout { grid-template-columns: 1fr; } }
 .input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
 .ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
@@ -266,7 +278,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · PRIORITY</div>
     <h2 class="step-title">How should we prioritize your week?</h2>
-    <p class="step-sub">Rank your priority muscles. If Back is your top priority, the first Compound, Machine, and Isolated slots auto-target Back in the microcycle builder.</p>
+    <p class="step-sub">Pick your primary muscle for each training day. Pull days with Back priority auto-assign Biceps for the other compound, machine, and isolated slots.</p>
     <div class="priority-rank-list" id="priority-rank-list">
     </div>
     <div class="rank-help" id="priority-rank-help"></div>
@@ -282,6 +294,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="Home Gym">Home Gym</div>
     </div>
     <div class="rule" id="gym-rule"></div>
+    <div class="equipment-wrap" id="equipment-wrap">
+      <input id="equipment-search" class="equipment-search" type="text" placeholder="Search equipment (e.g. bench, cable, pull-up bar)" />
+      <div class="equipment-list" id="equipment-list"></div>
+    </div>
   </div>
 
   <div class="screen" id="s8">
@@ -300,6 +316,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       </div>
     </div>
     <div class="builder-layout">
+      <div class="builder-day-tabs" id="builder-day-tabs"></div>
       <div class="day-grid" id="builder-out"></div>
     </div>
   </div>
@@ -386,7 +403,10 @@ const state = {
   macroPlan: 'Use Macro Calculator',
   priority: 'Back',
   priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
+  dayPriorities: {},
   gymType: 'Commercial Gym',
+  homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
+  activeBuilderDay: 1,
   freq: 3,
   customDays: {},
   manualTargets: {}
@@ -463,6 +483,12 @@ const allowedCategories = {
   'Apartment Gym': ['Dumbbell', 'Machines', 'Body Weight', 'Carries'],
   'Home Gym': ['Barbell', 'Dumbbell', 'Body Weight', 'Carries']
 };
+
+const HOME_EQUIPMENT_OPTIONS = [
+  'Barbell', 'Plates', 'Dumbbells', 'Kettlebells', 'Adjustable Bench', 'Flat Bench', 'Squat Rack', 'Power Rack',
+  'Cable Tower', 'Lat Pulldown', 'Leg Extension / Curl', 'Pull-up Bar', 'Dip Bars', 'Bands', 'Smith Machine',
+  'Landmine', 'TRX / Suspension Trainer', 'Row Machine', 'Assault Bike'
+];
 
 const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
 
@@ -591,51 +617,51 @@ function muscleBucket(muscle) {
 }
 
 function applyPriorityProfileForFrequency() {
-  const current = [...state.priorities];
-  const firstByBucket = (bucket) => current.find((muscle) => muscleBucket(muscle) === bucket);
-  if (state.freq === 2) {
-    const upper = firstByBucket('Pull') || firstByBucket('Push') || 'Back';
-    const lower = firstByBucket('Legs') || 'Quads';
-    state.priorities = [upper, lower, ...current.filter((muscle) => muscle !== upper && muscle !== lower)];
-  } else if (state.freq === 3) {
-    const push = firstByBucket('Push') || 'Chest';
-    const pull = firstByBucket('Pull') || 'Back';
-    const legs = firstByBucket('Legs') || 'Quads';
-    state.priorities = [push, pull, legs, ...current.filter((muscle) => ![push, pull, legs].includes(muscle))];
-  }
-  state.priority = state.priorities[0];
+  const split = getSplitForFreq();
+  const existing = state.dayPriorities || {};
+  const next = {};
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const focus = extractFocusName(line);
+    const focusMuscles = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
+    next[dayKey] = focusMuscles.includes(existing[dayKey]) ? existing[dayKey] : (focusMuscles[0] || 'Back');
+  });
+  state.dayPriorities = next;
+  const chosen = Object.values(next);
+  const remaining = getPriorityMuscles().filter((muscle) => !chosen.includes(muscle));
+  state.priorities = [...chosen, ...remaining];
+  state.priority = chosen[0] || state.priorities[0];
 }
 
 function buildPriorityRanker() {
-  const ranked = state.priorities;
   const list = document.getElementById('priority-rank-list');
-  const options = Array.from({ length: getPriorityMuscles().length }, (_, i) => i + 1);
-  list.innerHTML = getPriorityMuscles().map((muscle) => {
-    const currentRank = ranked.indexOf(muscle) + 1;
-    const opts = options.map((rank) => `<option value="${rank}"${rank === currentRank ? ' selected' : ''}>Rank ${rank}</option>`).join('');
+  const split = getSplitForFreq();
+  list.innerHTML = split.map((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const focus = extractFocusName(line);
+    const options = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
+    const selected = state.dayPriorities[dayKey] || options[0] || '';
+    const opts = options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
     return `<div class="priority-rank-item">
-      <div class="priority-rank-label">${muscle}</div>
-      <select class="priority-rank-select" data-muscle="${muscle}">${opts}</select>
+      <div class="priority-rank-label">Day ${i + 1} · ${focus}</div>
+      <select class="priority-rank-select" data-day-priority="${dayKey}">${opts}</select>
     </div>`;
   }).join('');
-  list.querySelectorAll('.priority-rank-select').forEach((select) => {
+  list.querySelectorAll('[data-day-priority]').forEach((select) => {
     select.onchange = () => {
-      const muscle = select.dataset.muscle;
-      const newRank = parseInt(select.value, 10) - 1;
-      const current = [...state.priorities];
-      const oldRank = current.indexOf(muscle);
-      if (oldRank === newRank) return;
-      current.splice(oldRank, 1);
-      current.splice(newRank, 0, muscle);
-      state.priorities = current;
-      state.priority = current[0];
+      state.dayPriorities[select.dataset.dayPriority] = select.value;
+      applyPriorityProfileForFrequency();
       applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
       buildWorkoutBuilder();
       if (state.step === 9) buildSummary();
     };
   });
-  document.getElementById('priority-rank-help').textContent = `Current order: ${state.priorities.join(' → ')}.`;
+  const picks = split.map((line, i) => {
+    const focus = extractFocusName(line);
+    return `Day ${i + 1} (${focus}): ${state.dayPriorities[`d${i + 1}`]}`;
+  });
+  document.getElementById('priority-rank-help').textContent = `Priority picks (${split.length}/${state.freq} days): ${picks.join(' · ')}.`;
 }
 
 function buildTimeline() {
@@ -683,16 +709,56 @@ function buildFrequencyRule() {
   const guide = document.getElementById('freq-priority-guide');
   if (!guide) return;
   if (state.freq === 2) {
-    guide.textContent = 'Priority guidance: choose 2 muscles — one upper-body focus and one lower-body focus.';
+    guide.textContent = 'Priority guidance: choose exactly 2 day priorities (one for each day). Any muscle is allowed.';
   } else if (state.freq === 3) {
-    guide.textContent = 'Priority guidance: choose 3 muscles — one push, one pull, and one legs focus.';
+    guide.textContent = 'Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L).';
   } else {
-    guide.textContent = 'Priority guidance: rank all muscles. Your top entries are pushed to the front of the week.';
+    guide.textContent = `Priority guidance: choose ${state.freq} day priorities, one per training day based on that day focus.`;
   }
 }
 
 function buildGymRule() {
   document.getElementById('gym-rule').textContent = gymRules[state.gymType];
+  const wrap = document.getElementById('equipment-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('show', state.gymType === 'Home Gym');
+  if (state.gymType === 'Home Gym') renderEquipmentOptions();
+}
+
+function equipmentAllowsExercise(exercise) {
+  if (state.gymType !== 'Home Gym') return true;
+  const selected = state.homeEquipment || [];
+  if (!selected.length) return true;
+  const equip = (exercise.equipment || '').toLowerCase();
+  const name = (exercise.name || '').toLowerCase();
+  if (exercise.category === 'Body Weight') return true;
+  if (equip.includes('barbell') && selected.includes('Barbell')) return true;
+  if (equip.includes('dumbbell') && selected.includes('Dumbbells')) return true;
+  if (equip.includes('smith') && selected.includes('Smith Machine')) return true;
+  if (equip.includes('cable') && selected.includes('Cable Tower')) return true;
+  if (name.includes('pull up') && selected.includes('Pull-up Bar')) return true;
+  if (name.includes('dip') && selected.includes('Dip Bars')) return true;
+  if (equip.includes('machine')) return selected.some((item) => item.includes('Machine') || item.includes('Lat Pulldown') || item.includes('Leg Extension'));
+  return selected.some((item) => name.includes(item.toLowerCase()));
+}
+
+function renderEquipmentOptions() {
+  const list = document.getElementById('equipment-list');
+  if (!list) return;
+  const search = (document.getElementById('equipment-search')?.value || '').trim().toLowerCase();
+  list.innerHTML = HOME_EQUIPMENT_OPTIONS
+    .filter((item) => !search || item.toLowerCase().includes(search))
+    .map((item) => `<button type="button" class="equipment-item${state.homeEquipment.includes(item) ? ' on' : ''}" data-equipment="${item}">✔ ${item}</button>`)
+    .join('');
+  list.querySelectorAll('[data-equipment]').forEach((btn) => {
+    btn.onclick = () => {
+      const value = btn.dataset.equipment;
+      if (state.homeEquipment.includes(value)) state.homeEquipment = state.homeEquipment.filter((item) => item !== value);
+      else state.homeEquipment.push(value);
+      renderEquipmentOptions();
+      buildWorkoutBuilder();
+    };
+  });
 }
 
 function buildMacroRule() {
@@ -715,7 +781,7 @@ function extractFocusName(line) {
 
 function getDayFocusMuscles(focus) {
   const map = {
-    Push: ['Chest', 'Shoulders'],
+    Push: ['Chest', 'Shoulders', 'Triceps'],
     Pull: ['Back', 'Biceps'],
     Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
     Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
@@ -744,7 +810,7 @@ function getExercisePool(focus) {
     'Full Body': ['Full Body', 'Legs', 'Chest', 'Back', 'Shoulders', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain']
   };
   const muscles = focusToMuscles[focus] || focusToMuscles['Full Body'];
-  const pool = EXERCISES.filter((e) => muscles.includes(getMuscle(e)) && allowed.includes(e.category));
+  const pool = EXERCISES.filter((e) => muscles.includes(getMuscle(e)) && allowed.includes(e.category) && equipmentAllowsExercise(e));
   return pool.length ? pool : EXERCISES.filter((e) => allowed.includes(e.category)).slice(0, 8);
 }
 
@@ -786,6 +852,7 @@ function getExercisesForSlot(slotType) {
   return EXERCISES.filter((exercise) => {
     if (!allowed.includes(exercise.category)) return false;
     if (!matchesSlotType(exercise, slotType)) return false;
+    if (!equipmentAllowsExercise(exercise)) return false;
     const dedupeKey = `${exercise.name}|${getMuscle(exercise)}|${exercise.equipment}`;
     if (seen.has(dedupeKey)) return false;
     seen.add(dedupeKey);
@@ -794,8 +861,7 @@ function getExercisesForSlot(slotType) {
 }
 
 function getPriorityTargetForDay(dayIndex) {
-  const order = state.priorities.length ? state.priorities : getPriorityMuscles();
-  return order[dayIndex % order.length];
+  return state.dayPriorities[`d${dayIndex + 1}`] || state.priority || 'Back';
 }
 
 function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
@@ -806,6 +872,7 @@ function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
   const secondaryOptions = getDayFocusMuscles(dayFocus).filter((muscle) => muscle !== dayPriority);
 
   if (isPrimarySlot) return dayPriority || '';
+  if (dayFocus === 'Pull' && normalizedPriority === 'back') return 'Biceps';
   if (normalizedPriority === 'chest' && secondaryOptions.length === 1) return secondaryOptions[0];
   if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(normalizedPriority)) return '';
   return '';
@@ -828,6 +895,7 @@ function applyPriorityTargetsToBaseRows() {
 
 function ensureDayPlan() {
   const split = getSplitForFreq();
+  if (state.activeBuilderDay > split.length) state.activeBuilderDay = 1;
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
   split.forEach((line, i) => {
     const dayKey = `d${i + 1}`;
@@ -848,11 +916,55 @@ function ensureDayPlan() {
   });
 }
 
+function getMuscleSuggestion(targetMuscle, slotType, dayRows, rowIndex) {
+  const selected = dayRows.filter((row) => row.targetMuscle).map((row) => row.targetMuscle);
+  const targetCount = selected.filter((muscle) => muscle === targetMuscle).length;
+  if (!targetMuscle) return 'Pick a target muscle to keep your volume intentional.';
+  if (targetCount >= 4) return `You already have ${targetCount} ${targetMuscle} slots today. Consider balancing with another muscle.`;
+  if (slotType === 'Compound' && targetCount === 1) return `Good anchor: first ${targetMuscle} compound sets your main stimulus.`;
+  if (slotType === 'Isolated' && targetCount <= 1) return `This may underwork ${targetMuscle}. Keep at least 2 total slots if it is a day priority.`;
+  return `Balanced so far for ${targetMuscle}. Keep 2–4 quality slots per day priority muscle.`;
+}
+
+function renderMuscleArt(targetMuscle) {
+  const fill = '#77d770';
+  const muted = '#d8dee5';
+  const muscle = (targetMuscle || '').toLowerCase();
+  const chest = muscle === 'chest' ? fill : muted;
+  const back = muscle === 'back' ? fill : muted;
+  const arms = ['biceps', 'triceps'].includes(muscle) ? fill : muted;
+  const legs = ['quads', 'hamstrings', 'calves', 'glutes'].includes(muscle) ? fill : muted;
+  const shoulders = muscle === 'shoulders' ? fill : muted;
+  return `<div class="muscle-art"><svg viewBox="0 0 60 90" aria-hidden="true">
+    <circle cx="30" cy="10" r="8" fill="${muted}" />
+    <rect x="22" y="19" width="16" height="24" rx="8" fill="${chest}" />
+    <rect x="22" y="43" width="16" height="13" rx="6" fill="${back}" />
+    <rect x="14" y="22" width="8" height="24" rx="4" fill="${arms}" />
+    <rect x="38" y="22" width="8" height="24" rx="4" fill="${arms}" />
+    <circle cx="20" cy="24" r="4" fill="${shoulders}" />
+    <circle cx="40" cy="24" r="4" fill="${shoulders}" />
+    <rect x="23" y="56" width="6" height="28" rx="3" fill="${legs}" />
+    <rect x="31" y="56" width="6" height="28" rx="3" fill="${legs}" />
+  </svg></div>`;
+}
+
 function renderDayCards() {
   const split = getSplitForFreq();
   const dayState = state.customDays[state.freq];
+  const tabs = document.getElementById('builder-day-tabs');
+  tabs.innerHTML = split.map((line, i) => {
+    const day = i + 1;
+    return `<button type="button" class="builder-day-tab${state.activeBuilderDay === day ? ' on' : ''}" data-day-tab="${day}">Day ${day}</button>`;
+  }).join('');
+  tabs.querySelectorAll('[data-day-tab]').forEach((btn) => {
+    btn.onclick = () => {
+      state.activeBuilderDay = parseInt(btn.dataset.dayTab, 10);
+      renderDayCards();
+    };
+  });
   const out = document.getElementById('builder-out');
   out.innerHTML = split.map((line, i) => {
+    if (state.activeBuilderDay !== i + 1) return '';
     const namedLine = line.replace(' (Priority First)', '');
     const dayFocus = extractFocusName(namedLine);
     const dayTarget = getPriorityTargetForDay(i);
@@ -885,6 +997,8 @@ function renderDayCards() {
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
+      <div class="slot-suggestion">${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)}</div>
+      ${renderMuscleArt(item.targetMuscle)}
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
@@ -1029,7 +1143,7 @@ function buildSummary() {
       <div class="sum-row"><span class="sum-label">DIET · MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
       <div class="sum-row"><span class="sum-label">FITNESS · TRAINING DAYS (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
       <div class="sum-row"><span class="sum-label">FITNESS · PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
-      <div class="sum-row"><span class="sum-label">FITNESS · RANK ORDER</span><span class="sum-val">${state.priorities.join(' → ')}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · DAY PRIORITIES</span><span class="sum-val">${Object.entries(state.dayPriorities).map(([day, muscle]) => `${day.toUpperCase()}: ${muscle}`).join(' · ')}</span></div>
       <div class="sum-row"><span class="sum-label">FITNESS · ENVIRONMENT</span><span class="sum-val">${state.gymType}</span></div>
     </div>
     <div class="week">
@@ -1051,7 +1165,9 @@ function getSerializableState() {
     macroPlan: state.macroPlan,
     priority: state.priority,
     priorities: [...state.priorities],
+    dayPriorities: { ...state.dayPriorities },
     gymType: state.gymType,
+    homeEquipment: [...state.homeEquipment],
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
     manualTargets: { ...state.manualTargets },
@@ -1067,7 +1183,9 @@ function restoreState(payload) {
   state.macroPlan = payload.macroPlan || state.macroPlan;
   state.priority = payload.priority || state.priority;
   state.priorities = Array.isArray(payload.priorities) && payload.priorities.length ? payload.priorities : state.priorities;
+  state.dayPriorities = payload.dayPriorities && typeof payload.dayPriorities === 'object' ? payload.dayPriorities : state.dayPriorities;
   state.gymType = payload.gymType || state.gymType;
+  state.homeEquipment = Array.isArray(payload.homeEquipment) ? payload.homeEquipment : state.homeEquipment;
   state.freq = Number(payload.freq) || state.freq;
   state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
   state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
@@ -1193,6 +1311,7 @@ buildFrequencyRule();
 buildGymRule();
 buildWorkoutBuilder();
 loadSplitArchive().finally(syncPastSplitsPanel);
+document.getElementById('equipment-search').addEventListener('input', renderEquipmentOptions);
 
 document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   btn.addEventListener('click', () => {
