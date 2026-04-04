@@ -397,7 +397,7 @@
       const isHomePage = /\/Home(?:\/index\.html)?$/.test(normalizedPath) || /^\/(?:index\.html)?$/.test(normalizedPath);
       const isSplitSculptorPage = /\/preparing-route\/split-sculptor\.html$/.test(normalizedPath);
       const name = getCurrentDisplayName();
-      const isLoggedIn = !!name;
+      const isLoggedIn = !!getCurrentUserEmail();
 
       if (accountAuthLink) {
         accountAuthLink.setAttribute("href", "https://chasingchange.github.io/Home/create-account/index.html");

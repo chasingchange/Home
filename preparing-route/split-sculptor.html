@@ -52,6 +52,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; display: none; }
 .progress-track { display: none; }
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
+.focus-pill-row { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: .6rem; margin-bottom: .85rem; }
+.focus-pill { border: 1px solid var(--border); border-radius: 999px; padding: .5rem .8rem; text-align: center; background: #fff; font-family: 'Raleway', sans-serif; font-weight: 800; font-size: .74rem; letter-spacing: .09em; text-transform: uppercase; }
+.focus-pill.vision { color: #2f5b2f; border-color: rgba(47,91,47,.35); }
+.focus-pill.diet { color: #7d5313; border-color: rgba(125,83,19,.35); }
+.focus-pill.fitness { color: #204a7a; border-color: rgba(32,74,122,.35); }
 .timeline { display: grid; grid-template-columns: repeat(8, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
 .t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
 .t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
@@ -83,7 +88,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .filter-row { display: flex; flex-wrap: wrap; gap: .5rem; }
 .fchip { border: 1px solid var(--border); border-radius: 999px; padding: .44rem .82rem; font-size: .82rem; cursor: pointer; background: var(--surface); color: var(--muted); }
 .fchip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
-.builder-layout { display: grid; grid-template-columns: 300px 1fr; gap: .8rem; }
+.builder-layout { display: grid; grid-template-columns: 1fr; gap: .8rem; }
 .exercise-bank { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; max-height: 560px; overflow: auto; }
 .exercise-card { border: 1px solid var(--border); border-radius: 9px; padding: .52rem .6rem; margin-bottom: .45rem; background: #fff; cursor: grab; }
 .exercise-meta { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
@@ -161,6 +166,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
 .summary-panel { display: none; }
 .summary-panel.active { display: block; }
+.summary-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: .8rem; align-items: start; }
+.summary-main { min-width: 0; }
+.summary-side { min-width: 0; }
 .past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(140px, 1fr)); align-items: end; margin-top: .8rem; }
 .past-split-controls label { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .3rem; }
 .past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
@@ -173,8 +181,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .cc-title-logo { width: 182px; height: 182px; }
 .cc-title-brand { gap: .08rem; }
 .cc-title-coaching { margin: .35rem auto 0; }
-@media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
-@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } }
+@media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -204,6 +212,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
   <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
 
+  <div class="focus-pill-row">
+    <div class="focus-pill vision">Vision</div>
+    <div class="focus-pill diet">Diet</div>
+    <div class="focus-pill fitness">Fitness</div>
+  </div>
   <div class="timeline" id="timeline"></div>
 
   <div class="screen active" id="s1">
@@ -278,7 +291,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · PRIORITY</div>
     <h2 class="step-title">How should we prioritize your week?</h2>
-    <p class="step-sub">Pick your primary muscle for each training day. Pull days with Back priority auto-assign Biceps for the other compound, machine, and isolated slots.</p>
+    <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. Pull days with Back priority auto-assign Biceps for the other compound, machine, and isolated slots.</p>
     <div class="priority-rank-list" id="priority-rank-list">
     </div>
     <div class="rank-help" id="priority-rank-help"></div>
@@ -325,15 +338,17 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
     <h2 class="step-title">Split Sculptor</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
-    <div class="summary-tabs">
-      <button type="button" class="summary-tab on" data-summary-tab="current">Current Summary</button>
-      <button type="button" class="summary-tab" data-summary-tab="past">Past Splits</button>
-    </div>
-    <div class="summary-panel active" id="current-summary-panel">
-      <div id="summary-out"></div>
-    </div>
-    <div class="summary-panel" id="past-summary-panel">
-      <div class="week">
+    <div class="summary-layout">
+      <div class="summary-main">
+        <div class="summary-tabs">
+          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
+          <button type="button" class="summary-tab" data-summary-tab="workouts">Workouts</button>
+        </div>
+        <div class="summary-panel active" id="overview-summary-panel"></div>
+        <div class="summary-panel" id="workouts-summary-panel"></div>
+      </div>
+      <div class="summary-side">
+        <div class="week">
         <h3>Past Splits</h3>
         <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
         <div id="past-split-controls-wrap" style="display:none;">
@@ -367,6 +382,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
           <div class="past-split-msg" id="past-split-msg"></div>
         </div>
       </div>
+    </div>
     </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
@@ -530,14 +546,7 @@ function getPriorityFocus() {
 }
 
 function getSplitForFreq() {
-  const baseSplit = splitByFreq[state.freq] ? [...splitByFreq[state.freq]] : [...splitByFreq[3]];
-  const preferred = getPriorityFocus();
-  for (const focus of preferred) {
-    if (baseSplit.some((line) => extractFocusName(line) === focus)) {
-      return rotateSplitToFirstFocus(baseSplit, focus);
-    }
-  }
-  return baseSplit;
+  return splitByFreq[state.freq] ? [...splitByFreq[state.freq]] : [...splitByFreq[3]];
 }
 
 const explicitMovementTypeByName = {
@@ -607,7 +616,7 @@ function oneChip(groupId, key, isNum = false) {
 }
 
 function getPriorityMuscles() {
-  return ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
+  return ['Back', 'Biceps', 'Calves', 'Chest', 'Glutes', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
 }
 
 function muscleBucket(muscle) {
@@ -860,6 +869,14 @@ function getExercisesForSlot(slotType) {
   }).slice(0, 120);
 }
 
+function isExerciseInFocusMuscles(exercise, focusMuscles) {
+  if (!focusMuscles.length) return true;
+  const muscle = getMuscle(exercise);
+  if (focusMuscles.includes(muscle)) return true;
+  if (muscle === 'Posterior Chain') return focusMuscles.some((m) => ['Glutes', 'Hamstrings', 'Back'].includes(m));
+  return false;
+}
+
 function getPriorityTargetForDay(dayIndex) {
   return state.dayPriorities[`d${dayIndex + 1}`] || state.priority || 'Back';
 }
@@ -926,26 +943,26 @@ function getMuscleSuggestion(targetMuscle, slotType, dayRows, rowIndex) {
   return `Balanced so far for ${targetMuscle}. Keep 2–4 quality slots per day priority muscle.`;
 }
 
-function renderMuscleArt(targetMuscle) {
-  const fill = '#77d770';
-  const muted = '#d8dee5';
-  const muscle = (targetMuscle || '').toLowerCase();
-  const chest = muscle === 'chest' ? fill : muted;
-  const back = muscle === 'back' ? fill : muted;
-  const arms = ['biceps', 'triceps'].includes(muscle) ? fill : muted;
-  const legs = ['quads', 'hamstrings', 'calves', 'glutes'].includes(muscle) ? fill : muted;
-  const shoulders = muscle === 'shoulders' ? fill : muted;
-  return `<div class="muscle-art"><svg viewBox="0 0 60 90" aria-hidden="true">
-    <circle cx="30" cy="10" r="8" fill="${muted}" />
-    <rect x="22" y="19" width="16" height="24" rx="8" fill="${chest}" />
-    <rect x="22" y="43" width="16" height="13" rx="6" fill="${back}" />
-    <rect x="14" y="22" width="8" height="24" rx="4" fill="${arms}" />
-    <rect x="38" y="22" width="8" height="24" rx="4" fill="${arms}" />
-    <circle cx="20" cy="24" r="4" fill="${shoulders}" />
-    <circle cx="40" cy="24" r="4" fill="${shoulders}" />
-    <rect x="23" y="56" width="6" height="28" rx="3" fill="${legs}" />
-    <rect x="31" y="56" width="6" height="28" rx="3" fill="${legs}" />
-  </svg></div>`;
+function getExerciseImageByMuscle(targetMuscle) {
+  const key = (targetMuscle || '').toLowerCase();
+  const map = {
+    chest: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=420&q=60',
+    back: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=420&q=60',
+    shoulders: 'https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?auto=format&fit=crop&w=420&q=60',
+    biceps: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=420&q=60',
+    triceps: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=420&q=60',
+    quads: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=420&q=60',
+    hamstrings: 'https://images.unsplash.com/photo-1434596922112-19c563067271?auto=format&fit=crop&w=420&q=60',
+    glutes: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&w=420&q=60',
+    calves: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=420&q=60'
+  };
+  return map[key] || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=420&q=60';
+}
+
+function renderExerciseVisual(item, targetMuscle) {
+  const src = getExerciseImageByMuscle(targetMuscle);
+  const alt = `${item.slot} exercise visual for ${targetMuscle || 'selected muscle'}`;
+  return `<div class="muscle-art"><img src="${src}" alt="${alt}" loading="lazy" style="width:100%;max-width:220px;height:110px;object-fit:cover;border-radius:8px;" /></div>`;
 }
 
 function renderDayCards() {
@@ -971,9 +988,9 @@ function renderDayCards() {
     const dayKey = `d${i + 1}`;
     const dayMuscles = getDayFocusMuscles(dayFocus);
     const rows = dayState[dayKey].map((item, rowIndex) => {
-      const slotPool = getExercisesForSlot(item.slot);
-      const slotOptionsByMuscle = slotPool.filter((option) => !item.targetMuscle || getMuscle(option) === item.targetMuscle);
-      const slotOptions = slotOptionsByMuscle.length ? slotOptionsByMuscle : slotPool;
+      const slotPool = getExercisesForSlot(item.slot).filter((exercise) => isExerciseInFocusMuscles(exercise, dayMuscles));
+      const slotOptionsByMuscle = slotPool.filter((option) => item.targetMuscle && getMuscle(option) === item.targetMuscle);
+      const slotOptions = item.targetMuscle ? (slotOptionsByMuscle.length ? slotOptionsByMuscle : slotPool) : slotPool;
       const exercise = EXERCISES.find((x) => x.id === item.id);
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
       const isCustomRow = rowIndex >= slotPattern.length;
@@ -998,7 +1015,7 @@ function renderDayCards() {
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
       <div class="slot-suggestion">${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)}</div>
-      ${renderMuscleArt(item.targetMuscle)}
+      ${renderExerciseVisual(item, item.targetMuscle)}
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
@@ -1128,14 +1145,14 @@ function buildSummary() {
         <div class="target-card"><div class="target-label">Last Calculated</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
       </div>`
     : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
-  const split = getSplitForFreq().map((line, i) => {
+  const splitRows = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
       .map((slot) => `<li>${slot.slot}: ${slot.name || 'Not set'}</li>`)
       .join('');
     return `<li><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul>${rows}</ul></li>`;
   }).join('');
-  document.getElementById('summary-out').innerHTML = `
+  document.getElementById('overview-summary-panel').innerHTML = `
     <div class="summary-card">
       <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
@@ -1147,12 +1164,14 @@ function buildSummary() {
       <div class="sum-row"><span class="sum-label">FITNESS · ENVIRONMENT</span><span class="sum-val">${state.gymType}</span></div>
     </div>
     <div class="week">
-      <h3>Split</h3>
-      <ul>${split}</ul>
-    </div>
-    <div class="week">
       <h3>Calorie + Macro Targets</h3>
       ${targetMarkup}
+    </div>
+  `;
+  document.getElementById('workouts-summary-panel').innerHTML = `
+    <div class="week">
+      <h3>Split</h3>
+      <ul>${splitRows}</ul>
     </div>
   `;
 }
@@ -1317,10 +1336,9 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-summary-tab]').forEach((node) => node.classList.remove('on'));
     btn.classList.add('on');
-    const showPast = btn.dataset.summaryTab === 'past';
-    document.getElementById('current-summary-panel').classList.toggle('active', !showPast);
-    document.getElementById('past-summary-panel').classList.toggle('active', showPast);
-    if (showPast) syncPastSplitsPanel();
+    const showWorkouts = btn.dataset.summaryTab === 'workouts';
+    document.getElementById('overview-summary-panel').classList.toggle('active', !showWorkouts);
+    document.getElementById('workouts-summary-panel').classList.toggle('active', showWorkouts);
   });
 });
 
@@ -1387,7 +1405,7 @@ document.getElementById('print-summary-btn').addEventListener('click', () => {
 });
 
 document.getElementById('save-png-btn').addEventListener('click', async () => {
-  const summary = document.getElementById('summary-out');
+  const summary = document.querySelector('.summary-main');
   if (!summary || typeof window.html2canvas !== 'function') return;
   const canvas = await window.html2canvas(summary, { backgroundColor: '#f5f5f7', scale: 2 });
   const filename = 'split-sculptor-summary.png';
