@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Account — Chasing Change</title>
-    <meta name="description" content="Create your Chasing Change account to track your journey across every core." />
+    <meta name="description" content="Welcome to Your Race, Tyler Wade" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -62,10 +62,10 @@
         <div class="race-card-track p-6 sm:p-8">
           <div class="race-card-overlay"></div>
           <div class="relative z-10">
-            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to the Race, <span id="successName">Athlete</span>!</h2>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to Your Race, <span id="successName">Tyler Wade</span></h2>
             <p class="mt-3 text-sm sm:text-base font-semibold text-white/90">Your account is ready. Let's get to work.</p>
             <div class="mt-5 flex flex-wrap justify-center gap-3">
-              <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Go To Dashboard</a>
+              <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Start Line | Chasing Change Home.</a>
             </div>
           </div>
         </div>
@@ -405,7 +405,7 @@
 
           document.getElementById("formSection").classList.add("hidden");
           document.getElementById("alreadyLoggedIn").classList.add("hidden");
-          document.getElementById("successName").textContent = name || matchedAccountByName.account?.name || "Athlete";
+          document.getElementById("successName").textContent = "Tyler Wade";
           document.getElementById("successState").classList.remove("hidden");
           window.scrollTo({ top: 0, behavior: "smooth" });
           return;
@@ -450,7 +450,7 @@
         // Show success
         document.getElementById("formSection").classList.add("hidden");
         document.getElementById("alreadyLoggedIn").classList.add("hidden");
-        document.getElementById("successName").textContent = name;
+        document.getElementById("successName").textContent = "Tyler Wade";
         document.getElementById("successState").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
