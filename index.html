@@ -108,38 +108,46 @@
             <button type="button" class="core-section-card" style="--chip-color: #e46702" data-core="life" aria-pressed="false">LIFE</button>
           </div>
 
+          <div id="bodySectionFilters" data-core="body" class="core-subsection mt-3 grid grid-cols-2 lg:grid-cols-5 gap-2">
+            <button type="button" class="core-section-card core-subsection-card is-active" style="--chip-color: #77d770" data-section="all" aria-pressed="true">ALL</button>
+            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="nutrition" aria-pressed="false">NUTRITION</button>
+            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="strength" aria-pressed="false">STRENGTH</button>
+            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="programming" aria-pressed="false">PROGRAMMING</button>
+            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="endurance" aria-pressed="false">ENDURANCE</button>
+          </div>
+
           <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-            <a href="./macro/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./macro/index.html" data-core="body" data-section="nutrition" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h2>
               <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a href="./1RM Calculator/Index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./1RM Calculator/Index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h2>
               <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a href="./preparing-route/split-sculptor.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./preparing-route/split-sculptor.html" data-core="body" data-section="programming" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Split Sculptor</h2>
               <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, print-ready summary, and PNG export.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
             </a>
 
-            <a href="./exercise-matrix/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./exercise-matrix/index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h2>
               <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
             </a>
 
-            <a href="./running-calculator/index.html" data-core="body" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./running-calculator/index.html" data-core="body" data-section="endurance" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">The Runner</h2>
               <p class="mt-2 text-sm opacity-80">Assess running level, estimate race times, and build a Chasing Change training plan.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" data-section="programming" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
               <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
@@ -174,14 +182,18 @@
 
       const desktopMedia = window.matchMedia("(min-width: 1024px)");
       let lockedCore = "body";
+      let lockedBodySection = "all";
 
-      const setCoreFilter = (core) => {
+      const setCoreFilter = (core, section = lockedBodySection) => {
         const visibleCount = coreCards.reduce((count, card) => {
           const requiresAuth = card.id === "roadmapToolCard";
-          const visible = card.dataset.core === core && (!requiresAuth || canViewRoadmap);
+          const isCoreMatch = card.dataset.core === core;
+          const isSectionMatch = core !== "body" || section === "all" || card.dataset.section === section;
+          const visible = isCoreMatch && isSectionMatch && (!requiresAuth || canViewRoadmap);
           card.classList.toggle("hidden", !visible);
           return count + (visible ? 1 : 0);
         }, 0);
+
         coreSubsections.forEach((subsection) => {
           const visible = subsection.dataset.core === core;
           subsection.classList.toggle("hidden", !visible);
@@ -194,11 +206,19 @@
           button.classList.toggle("is-active", isActive);
           button.setAttribute("aria-pressed", String(isActive));
         });
+
+        const sectionFilters = document.getElementById("bodySectionFilters");
+        sectionFilters?.querySelectorAll("[data-section]").forEach((button) => {
+          const isActive = button.dataset.section === section;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        });
       };
 
       const lockCore = (core) => {
         lockedCore = core;
-        setCoreFilter(core);
+        if (core !== "body") lockedBodySection = "all";
+        setCoreFilter(core, lockedBodySection);
       };
 
       coreFilters?.addEventListener("click", (event) => {
@@ -207,25 +227,49 @@
         lockCore(button.dataset.core);
       });
 
-      coreFilters?.addEventListener("mouseover", (event) => {
-        if (!desktopMedia.matches) return;
-        const button = event.target.closest("[data-core]");
-        if (!button) return;
-        setCoreFilter(button.dataset.core);
+      coreFilters?.querySelectorAll("[data-core]").forEach((button) => {
+        button.addEventListener("mouseenter", () => {
+          if (!desktopMedia.matches) return;
+          setCoreFilter(button.dataset.core, lockedBodySection);
+        });
       });
 
       coreFilters?.addEventListener("mouseleave", () => {
         if (!desktopMedia.matches) return;
-        setCoreFilter(lockedCore);
+        setCoreFilter(lockedCore, lockedBodySection);
       });
 
-      setCoreFilter(lockedCore);
+      const bodySectionFilters = document.getElementById("bodySectionFilters");
+      const lockBodySection = (section) => {
+        lockedBodySection = section;
+        setCoreFilter("body", lockedBodySection);
+      };
+
+      bodySectionFilters?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-section]");
+        if (!button) return;
+        lockBodySection(button.dataset.section);
+      });
+
+      bodySectionFilters?.querySelectorAll("[data-section]").forEach((button) => {
+        button.addEventListener("mouseenter", () => {
+          if (!desktopMedia.matches || lockedCore !== "body") return;
+          setCoreFilter("body", button.dataset.section);
+        });
+      });
+
+      bodySectionFilters?.addEventListener("mouseleave", () => {
+        if (!desktopMedia.matches || lockedCore !== "body") return;
+        setCoreFilter("body", lockedBodySection);
+      });
+
+      setCoreFilter(lockedCore, lockedBodySection);
       sessionApi?.whenReady?.().finally(() => {
         canViewRoadmap = !!sessionApi?.getCurrentAccount?.();
         roadmapNavDesktop?.classList.toggle("hidden", !canViewRoadmap);
         roadmapNavMobile?.classList.toggle("hidden", !canViewRoadmap);
         roadmapToolCard?.classList.toggle("hidden", !canViewRoadmap);
-        setCoreFilter(lockedCore);
+        setCoreFilter(lockedCore, lockedBodySection);
       });
     </script>
   </body>

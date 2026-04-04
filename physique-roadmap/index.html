@@ -154,7 +154,8 @@
       <header>
         <p class="chip">Logged-In Athlete View</p>
         <h1 class="title">Physique Roadmap</h1>
-        <p id="welcomeName" class="muted">Track exactly how your body and performance evolve week to week.</p>
+                <p id="welcomeName" class="muted">Track exactly how your body and performance evolve week to week.</p>
+        <p id="dataSourceNote" class="muted" style="margin-top:.35rem;font-size:.88rem;">Data source: showing demo metrics until your calculators save account data.</p>
       </header>
 
       <section id="lockedState" class="card login-lock" hidden>
@@ -281,6 +282,7 @@
       const roadmapContent = document.getElementById("roadmapContent");
       const lockedState = document.getElementById("lockedState");
       const welcomeName = document.getElementById("welcomeName");
+      const dataSourceNote = document.getElementById("dataSourceNote");
 
       sessionApi?.whenReady?.().finally(() => {
         const session = sessionApi?.getCurrentAccount?.();
@@ -292,6 +294,12 @@
         if (isLoggedIn) {
           const name = session.account?.name || session.email?.split("@")[0] || "Athlete";
           welcomeName.textContent = `${name}, here is your performance dashboard and trend roadmap.`;
+          const calculatorKeys = Object.keys(session.account?.calculators || {}).filter((key) => key !== "profile");
+          dataSourceNote.textContent = calculatorKeys.length
+            ? `Data source: ${calculatorKeys.join(", ")} from your signed-in account storage.`
+            : "Data source: seeded demo metrics (no saved calculator data found on this account yet).";
+        } else {
+          dataSourceNote.textContent = "Data source: sign in to load your account-backed calculator history.";
         }
       });
     </script>

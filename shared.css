@@ -123,6 +123,11 @@ h3 {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 34px color-mix(in srgb, var(--chip-color, var(--cc-accent)) 35%, rgba(7, 31, 53, 0.15));
 }
 
+.core-subsection-card {
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
 .cc-link-chip {
   display: inline-flex;
   align-items: center;
@@ -436,6 +441,8 @@ h3 {
   margin-top: 0.75rem;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .cc-account-logout-action {
@@ -480,19 +487,9 @@ h3 {
 
 .cc-account-card.is-logged-in {
   background:
-    linear-gradient(180deg, rgba(7, 31, 53, 0.12), rgba(7, 31, 53, 0.45)),
-    radial-gradient(circle at top right, rgba(119, 215, 112, 0.3), transparent 35%),
-    repeating-linear-gradient(
-      -12deg,
-      #991b1b 0,
-      #991b1b 38px,
-      #f9d2d2 38px,
-      #f9d2d2 42px,
-      #b91c1c 42px,
-      #b91c1c 82px,
-      #f9d2d2 82px,
-      #f9d2d2 86px
-    );
+    linear-gradient(135deg, rgba(7, 31, 53, 0.92), rgba(7, 31, 53, 0.8)),
+    radial-gradient(circle at top right, rgba(119, 215, 112, 0.45), transparent 42%);
+  border-color: rgba(119, 215, 112, 0.6);
 }
 
 .cc-account-card.is-logged-in .cc-account-status {
