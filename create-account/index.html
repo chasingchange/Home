@@ -65,7 +65,7 @@
             <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to Your Race, <span id="successName">Tyler Wade</span></h2>
             <p class="mt-3 text-sm sm:text-base font-semibold text-white/90">Your account is ready. Let's get to work.</p>
             <div class="mt-5 flex flex-wrap justify-center gap-3">
-              <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Start Line | Chasing Change Home.</a>
+              <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Start Line Chasing Change Home</a>
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-              <input id="caPassword" type="password" placeholder="Password (optional for new accounts)" autocomplete="current-password"
+              <input id="caPassword" type="password" placeholder="Password" autocomplete="current-password"
                 class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text">
                 We already know this name. Switched to <span class="font-extrabold">Log In</span> mode.
@@ -99,7 +99,7 @@
                 </button>
               </div>
               <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
-                Add a password for extra privacy. If you forget it, we'll show a first-letter hint.
+                Create a password for your account. If you forget it, we'll show a first-letter hint.
               </p>
             </div>
           </section>
@@ -411,8 +411,8 @@
           return;
         }
 
-        if (!name || !email) {
-          formError.textContent = "Please fill in your name and email.";
+        if (!name || !email || !password) {
+          formError.textContent = "Please fill in your name, email, and password.";
           formError.classList.remove("hidden");
           submitBtn.disabled = false;
           submitBtn.textContent = "Create My Account";
