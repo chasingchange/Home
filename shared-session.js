@@ -363,19 +363,23 @@
 
     const card = document.createElement("section");
     card.id = "ccPersistentAccountCard";
-    card.className = "cc-account-card cc-account-card-inline";
+    card.className = "cc-account-card cc-account-card-inline race-card-track";
     card.innerHTML = `
-      <p id="ccAccountStatus" class="cc-account-status">Chasing Change Account</p>
+      <div class="race-card-overlay"></div>
+      <div class="cc-account-card-content">
+      <p id="ccAccountStatus" class="cc-account-status">Welcome to Your Race</p>
+      <p id="ccAccountSubStatus" class="cc-account-sub-status">Your account is ready. Let's get to work.</p>
       <div class="cc-account-card-actions">
         <a id="ccAccountAuthLink" href="#" class="cc-title-home cc-account-start-line" hidden>
           <span class="cc-title-home-label">LOG IN | CREATE ACCOUNT</span>
         </a>
         <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
-          <span class="cc-title-home-label">START LINE | CHASING CHANGE HOME</span>
+          <span class="cc-title-home-label">START LINE CHASING CHANGE HOME</span>
         </a>
         <button id="ccAccountLogoutBtn" type="button" class="cc-title-home cc-account-start-line cc-account-logout-action" hidden>
           <span class="cc-title-home-label">LOG OUT</span>
         </button>
+      </div>
       </div>
     `;
 
@@ -387,6 +391,7 @@
     }
 
     const statusEl = card.querySelector("#ccAccountStatus");
+    const subStatusEl = card.querySelector("#ccAccountSubStatus");
     const accountAuthLink = card.querySelector("#ccAccountAuthLink");
     const accountStartLine = card.querySelector("#ccAccountStartLine");
     const accountLogoutBtn = card.querySelector("#ccAccountLogoutBtn");
@@ -413,8 +418,9 @@
         accountStartLine.hidden = !isLoggedIn || isHomePage || isSplitSculptorPage || isRoadmapPage;
       }
 
-      const message = "Chasing Change Account";
+      const message = isLoggedIn ? "Welcome to Your Race, Tyler Wade" : "Welcome to Your Race";
       statusEl.textContent = message;
+      if (subStatusEl) subStatusEl.textContent = isLoggedIn ? "Your account is ready. Let's get to work." : "Log in to access your personalized dashboard.";
       card.classList.toggle("is-logged-in", isLoggedIn);
 
       if (accountLogoutBtn) {
