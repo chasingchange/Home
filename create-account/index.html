@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Account — Chasing Change</title>
-    <meta name="description" content="Welcome to Your Race, Tyler Wade" />
+    <meta name="description" content="Create or log in to your Chasing Change account." />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -62,7 +62,7 @@
         <div class="race-card-track p-6 sm:p-8">
           <div class="race-card-overlay"></div>
           <div class="relative z-10">
-            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">Welcome to Your Race, <span id="successName">Tyler Wade</span></h2>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold font-brand text-white">You're all set, <span id="successName">Tyler Wade</span></h2>
             <p class="mt-3 text-sm sm:text-base font-semibold text-white/90">Your account is ready. Let's get to work.</p>
             <div class="mt-5 flex flex-wrap justify-center gap-3">
               <a href="../index.html" class="rounded-xl bg-cc-outline px-5 py-2.5 text-sm font-extrabold text-cc-text transition hover:brightness-95">Start Line Chasing Change Home</a>
@@ -76,27 +76,29 @@
         <form id="createAccountForm" class="grid gap-5" novalidate>
 
           <!-- Section: Basic Info -->
-          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+          <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8 text-center">
             <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
             <h2 class="text-lg font-extrabold font-heading">Basic Info</h2>
             <p class="mt-1 text-sm opacity-60">Your login credentials.</p>
             <div class="mt-5 grid gap-3">
               <input id="caName" type="text" placeholder="Full Name" autocomplete="name"
-                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 text-center ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caEmail" type="email" inputmode="email" placeholder="Email Address" autocomplete="email"
-                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 text-center ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
               <input id="caPassword" type="password" placeholder="Password" autocomplete="current-password"
-                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-              <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text">
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 text-center ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <div id="nameMatchNotice" class="hidden rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold text-cc-text text-center">
                 We already know this name. Switched to <span class="font-extrabold">Log In</span> mode.
                 <p id="nameMatchEmail" class="mt-1 text-xs opacity-70"></p>
                 <p id="passwordHintText" class="mt-1 text-xs opacity-70"></p>
-                <button id="passwordHintBtn" type="button" class="mt-2 inline-flex rounded-lg bg-white px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">
-                  Forgot password? Get hint
-                </button>
-                <button id="quickLoginBtn" type="submit" class="mt-2 inline-flex rounded-lg bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95">
-                  Log In Now
-                </button>
+                <div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+                  <button id="passwordHintBtn" type="button" class="inline-flex rounded-lg bg-white px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">
+                    Forgot password? Get hint
+                  </button>
+                  <button id="quickLoginBtn" type="submit" class="inline-flex rounded-lg bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95">
+                    Log In Now
+                  </button>
+                </div>
               </div>
               <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
                 Create a password for your account. If you forget it, we'll show a first-letter hint.
