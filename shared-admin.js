@@ -4,6 +4,7 @@
   const ADMIN_PASSWORD = "Chasing1228!";
   const ADMIN_SYNC_CONFIG_KEY = "ccAdminSyncConfig";
   const pageKey = `${location.pathname}`;
+  const PREVIEW_PARAM_KEY = "adminPreview";
 
 
   const readSyncConfig = () => {
@@ -301,7 +302,12 @@
   };
 
   document.addEventListener("DOMContentLoaded", async () => {
-    await applySavedPage();
+    const params = new URLSearchParams(location.search);
+    const shouldApplyOverrides = isUnlocked() || params.get(PREVIEW_PARAM_KEY) === "1";
+
+    if (shouldApplyOverrides) {
+      await applySavedPage();
+    }
     mountAdminBar();
   });
 })();
