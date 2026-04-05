@@ -449,6 +449,8 @@ h3 {
 .cc-account-card-content {
   position: relative;
   z-index: 1;
+  width: 100%;
+  text-align: center;
 }
 
 .cc-account-card-actions {

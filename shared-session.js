@@ -404,9 +404,13 @@
       const homeHref = homeBasePath ? `${homeBasePath}/index.html` : "/index.html";
       const createAccountHref = homeBasePath ? `${homeBasePath}/create-account/index.html` : "/create-account/index.html";
       const isHomePage = normalizedPath === homeHref.replace(/\/index\.html$/, "") || normalizedPath === homeHref.replace(/\/+$/, "") || normalizedPath === "/";
+      const isCreateAccountPage = normalizedPath.includes("/create-account") || normalizedPath.endsWith("/create-account.html");
       const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
       const isRoadmapPage = normalizedPath.includes("/physique-roadmap/index.html");
       const isLoggedIn = !!getCurrentUserEmail();
+
+      card.hidden = isCreateAccountPage;
+      if (isCreateAccountPage) return;
 
       if (accountAuthLink) {
         accountAuthLink.setAttribute("href", createAccountHref);
