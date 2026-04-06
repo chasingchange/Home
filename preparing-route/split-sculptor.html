@@ -369,57 +369,62 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s9">
     <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
-    <h2 class="step-title">Split Sculptor</h2>
+    <h2 class="step-title">Current Summary</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
     <div class="summary-layout">
       <div class="summary-main">
         <div class="summary-tabs">
-          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
-          <button type="button" class="summary-tab" data-summary-tab="workouts">Workouts</button>
+          <button type="button" class="summary-tab on" data-summary-tab="overview">Current Summary + Macros</button>
+          <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
         </div>
         <div class="summary-panel active" id="overview-summary-panel"></div>
         <div class="summary-panel" id="workouts-summary-panel"></div>
-      </div>
-      <div class="summary-side">
-        <div class="week">
-        <h3>Past Splits</h3>
-        <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
-        <div id="past-split-controls-wrap" style="display:none;">
-          <div class="past-split-controls">
-            <div>
-              <label for="split-year-select">Year</label>
-              <select id="split-year-select"></select>
-            </div>
-            <div>
-              <label for="split-quarter-select">Quarter</label>
-              <select id="split-quarter-select">
-                <option value="1">Q1 (Jan–Mar)</option>
-                <option value="2">Q2 (Apr–Jun)</option>
-                <option value="3">Q3 (Jul–Sep)</option>
-                <option value="4">Q4 (Oct–Dec)</option>
-              </select>
-            </div>
-            <div>
-              <label for="save-year-select">Save Year</label>
-              <select id="save-year-select"></select>
-            </div>
-            <div>
-              <label for="save-quarter-select">Save Quarter</label>
-              <select id="save-quarter-select"></select>
-            </div>
-          </div>
-          <div class="past-split-actions">
-            <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
-            <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
-          </div>
-          <div class="past-split-msg" id="past-split-msg"></div>
-        </div>
       </div>
     </div>
     </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
       <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
+    </div>
+  </div>
+
+  <div class="screen" id="s10">
+    <div class="step-eyebrow">STEP 10 · PAST WORKOUTS</div>
+    <h2 class="step-title">Past Workouts</h2>
+    <p class="step-sub">Review, load, and manage your saved splits by quarter.</p>
+    <div class="week">
+      <h3>Past Splits</h3>
+      <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+      <div id="past-split-controls-wrap" style="display:none;">
+        <div class="past-split-controls">
+          <div>
+            <label for="split-year-select">Year</label>
+            <select id="split-year-select"></select>
+          </div>
+          <div>
+            <label for="split-quarter-select">Quarter</label>
+            <select id="split-quarter-select">
+              <option value="1">Q1 (Jan–Mar)</option>
+              <option value="2">Q2 (Apr–Jun)</option>
+              <option value="3">Q3 (Jul–Sep)</option>
+              <option value="4">Q4 (Oct–Dec)</option>
+            </select>
+          </div>
+          <div>
+            <label for="save-year-select">Save Year</label>
+            <select id="save-year-select"></select>
+          </div>
+          <div>
+            <label for="save-quarter-select">Save Quarter</label>
+            <select id="save-quarter-select"></select>
+          </div>
+        </div>
+        <div class="past-split-actions">
+          <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
+          <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
+        </div>
+        <div class="past-split-msg" id="past-split-msg"></div>
+      </div>
     </div>
   </div>
 
@@ -459,7 +464,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </div>
 
 <script>
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 const STEP_TIMING = [
   { name: 'Macrocycle', duration: '3 months', group: 'VISION' },
   { name: 'Mesocycle', duration: '4 weeks', group: 'VISION' },
@@ -469,7 +474,8 @@ const STEP_TIMING = [
   { name: 'Priority', duration: 'Now', group: 'FITNESS' },
   { name: 'Environment', duration: 'Now', group: 'FITNESS' },
   { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
-  { name: 'Summary', duration: '' }
+  { name: 'Current Summary', duration: '' },
+  { name: 'Past Workouts', duration: '' }
 ];
 const state = {
   step: 1,
@@ -698,7 +704,7 @@ function oneChip(groupId, key, isNum = false) {
     if (key === 'gymType') buildGymRule();
     if (key === 'meso' && state.step >= 8) renderDayCards();
     if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
-    if (state.step === 9) buildSummary();
+    if (state.step >= 9) buildSummary();
   });
 }
 
@@ -750,7 +756,7 @@ function buildPriorityRanker() {
       applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
       buildWorkoutBuilder();
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   const picks = split.map((line, i) => {
@@ -1179,7 +1185,7 @@ function renderDayCards() {
         });
       }
       renderDayCards();
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-select-ex]').forEach((select) => {
@@ -1189,21 +1195,21 @@ function renderDayCards() {
       state.customDays[state.freq][day][parseInt(row, 10)].id = chosen?.id || '';
       state.customDays[state.freq][day][parseInt(row, 10)].name = chosen?.name || '';
       renderDayCards();
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-select-sets]').forEach((select) => {
     select.onchange = () => {
       const { day, row } = select.dataset;
       state.customDays[state.freq][day][parseInt(row, 10)].sets = select.value;
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-select-reps]').forEach((select) => {
     select.onchange = () => {
       const { day, row } = select.dataset;
       state.customDays[state.freq][day][parseInt(row, 10)].reps = select.value;
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-clear]').forEach((btn) => {
@@ -1222,7 +1228,7 @@ function renderDayCards() {
       const [day, row] = btn.dataset.removeRow.split(':');
       state.customDays[state.freq][day].splice(parseInt(row, 10), 1);
       renderDayCards();
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-add-slot]').forEach((btn) => {
@@ -1241,7 +1247,7 @@ function renderDayCards() {
         reps: ''
       });
       renderDayCards();
-      if (state.step === 9) buildSummary();
+      if (state.step >= 9) buildSummary();
     };
   });
   out.querySelectorAll('[data-view-ex]').forEach((btn) => {
@@ -1434,7 +1440,7 @@ function restoreState(payload) {
   buildGymRule();
   buildPriorityRanker();
   buildWorkoutBuilder();
-  if (state.step === 9) buildSummary();
+  if (state.step >= 9) buildSummary();
   return true;
 }
 
@@ -1528,7 +1534,7 @@ function showStep(step) {
   document.getElementById('next-btn').disabled = step === TOTAL_STEPS;
   document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
-  if (step === 9) buildSummary();
+  if (step >= 9) buildSummary();
 }
 
 oneChip('macro-chips', 'macro');
@@ -1677,7 +1683,7 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
   const input = document.getElementById(`manual-${key}`);
   input.addEventListener('input', () => {
     state.manualTargets[key] = input.value;
-    if (state.step === 9) buildSummary();
+    if (state.step >= 9) buildSummary();
   });
 });
 
