@@ -204,12 +204,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
 .summary-panel { display: none; }
 .summary-panel.active { display: block; }
-.split-view-tabs { display: flex; gap: .5rem; margin-bottom: .9rem; flex-wrap: wrap; }
-.split-view-panel { display: none; }
-.split-view-panel.active { display: block; }
 .summary-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: .8rem; align-items: start; }
 .summary-main { min-width: 0; }
 .summary-side { min-width: 0; }
+.summary-side .week + .week { margin-top: .8rem; }
+#summary-save-card { margin-top: 2.3rem; }
 .past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(120px, 1fr)); align-items: end; margin-top: .8rem; }
 .past-split-controls label { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .3rem; }
 .past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
@@ -393,38 +392,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
           <div id="overview-summary-content"></div>
         </div>
         <div class="summary-panel" id="workouts-summary-panel">
-          <div class="split-view-tabs">
-            <button type="button" class="summary-tab on" data-split-view-tab="split">Split</button>
-            <button type="button" class="summary-tab" data-split-view-tab="past">Past Macrocycles</button>
-          </div>
-          <div class="split-view-panel active" id="split-workouts-panel"></div>
-          <div class="split-view-panel" id="past-workouts-panel">
-            <div class="week">
-              <h3>Past Splits</h3>
-              <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
-              <div id="past-split-controls-wrap" style="display:none;">
-                <div class="past-split-controls">
-                  <div>
-                    <label for="split-year-select">Year</label>
-                    <select id="split-year-select"></select>
-                  </div>
-                  <div>
-                    <label for="split-quarter-select">Quarter</label>
-                    <select id="split-quarter-select">
-                      <option value="1">Q1 (Jan–Mar)</option>
-                      <option value="2">Q2 (Apr–Jun)</option>
-                      <option value="3">Q3 (Jul–Sep)</option>
-                      <option value="4">Q4 (Oct–Dec)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="past-split-actions">
-                  <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
-                </div>
-                <div class="past-split-msg" id="past-split-msg"></div>
-              </div>
-            </div>
-          </div>
+          <div id="split-workouts-panel"></div>
         </div>
       </div>
       <aside class="summary-side" id="summary-save-card">
@@ -448,6 +416,31 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
             <div class="past-split-msg" id="summary-save-msg"></div>
           </div>
           <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
+        </div>
+        <div class="week">
+          <h3>Past Macrocycles</h3>
+          <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+          <div id="past-split-controls-wrap" style="display:none;">
+            <div class="past-split-controls">
+              <div>
+                <label for="split-year-select">Year</label>
+                <select id="split-year-select"></select>
+              </div>
+              <div>
+                <label for="split-quarter-select">Quarter</label>
+                <select id="split-quarter-select">
+                  <option value="1">Q1 (Jan–Mar)</option>
+                  <option value="2">Q2 (Apr–Jun)</option>
+                  <option value="3">Q3 (Jul–Sep)</option>
+                  <option value="4">Q4 (Oct–Dec)</option>
+                </select>
+              </div>
+            </div>
+            <div class="past-split-actions">
+              <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
+            </div>
+            <div class="past-split-msg" id="past-split-msg"></div>
+          </div>
         </div>
       </aside>
     </div>
@@ -1651,17 +1644,6 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
     const showWorkouts = btn.dataset.summaryTab === 'workouts';
     document.getElementById('overview-summary-panel').classList.toggle('active', !showWorkouts);
     document.getElementById('workouts-summary-panel').classList.toggle('active', showWorkouts);
-    document.getElementById('summary-save-card')?.classList.toggle('hidden', showWorkouts);
-  });
-});
-
-document.querySelectorAll('[data-split-view-tab]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-split-view-tab]').forEach((node) => node.classList.remove('on'));
-    btn.classList.add('on');
-    const showPast = btn.dataset.splitViewTab === 'past';
-    document.getElementById('split-workouts-panel').classList.toggle('active', !showPast);
-    document.getElementById('past-workouts-panel').classList.toggle('active', showPast);
   });
 });
 
