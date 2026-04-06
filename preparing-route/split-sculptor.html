@@ -380,43 +380,22 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   </div>
 
   <div class="screen" id="s9">
-    <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
-    <h2 class="step-title">View Split</h2>
+    <div class="step-eyebrow">STEP 9 · MACROCYCLE SUMMARIES</div>
+    <h2 class="step-title">Split</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
     <div class="summary-layout">
       <div class="summary-main">
         <div class="summary-tabs">
           <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
-          <button type="button" class="summary-tab" data-summary-tab="workouts">View Split</button>
+          <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
         </div>
         <div class="summary-panel active" id="overview-summary-panel">
-          <div class="week">
-            <h3>Save This View</h3>
-            <p class="step-sub" style="margin-bottom:.6rem;">Save this summary and macro setup to a quarter.</p>
-            <div id="summary-save-controls-wrap" style="display:none;">
-              <div class="past-split-controls">
-                <div>
-                  <label for="save-year-select">Save Year</label>
-                  <select id="save-year-select"></select>
-                </div>
-                <div>
-                  <label for="save-quarter-select">Save Quarter</label>
-                  <select id="save-quarter-select"></select>
-                </div>
-              </div>
-              <div class="past-split-actions">
-                <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
-              </div>
-              <div class="past-split-msg" id="summary-save-msg"></div>
-            </div>
-            <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
-          </div>
           <div id="overview-summary-content"></div>
         </div>
         <div class="summary-panel" id="workouts-summary-panel">
           <div class="split-view-tabs">
             <button type="button" class="summary-tab on" data-split-view-tab="split">Split</button>
-            <button type="button" class="summary-tab" data-split-view-tab="past">Past Workouts</button>
+            <button type="button" class="summary-tab" data-split-view-tab="past">Past Macrocycles</button>
           </div>
           <div class="split-view-panel active" id="split-workouts-panel"></div>
           <div class="split-view-panel" id="past-workouts-panel">
@@ -448,6 +427,29 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
           </div>
         </div>
       </div>
+      <aside class="summary-side" id="summary-save-card">
+        <div class="week">
+          <h3>Save This View</h3>
+          <p class="step-sub" style="margin-bottom:.6rem;">Save this summary and macro setup to a quarter.</p>
+          <div id="summary-save-controls-wrap" style="display:none;">
+            <div class="past-split-controls">
+              <div>
+                <label for="save-year-select">Save Year</label>
+                <select id="save-year-select"></select>
+              </div>
+              <div>
+                <label for="save-quarter-select">Save Quarter</label>
+                <select id="save-quarter-select"></select>
+              </div>
+            </div>
+            <div class="past-split-actions">
+              <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
+            </div>
+            <div class="past-split-msg" id="summary-save-msg"></div>
+          </div>
+          <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
+        </div>
+      </aside>
     </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
@@ -503,7 +505,7 @@ const STEP_TIMING = [
   { name: 'Priority', duration: 'Now', group: 'FITNESS' },
   { name: 'Environment', duration: 'Now', group: 'FITNESS' },
   { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
-  { name: 'View Split', duration: '' }
+  { name: 'Macrocycle Summaries', duration: '' }
 ];
 const state = {
   step: 1,
@@ -1649,6 +1651,7 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
     const showWorkouts = btn.dataset.summaryTab === 'workouts';
     document.getElementById('overview-summary-panel').classList.toggle('active', !showWorkouts);
     document.getElementById('workouts-summary-panel').classList.toggle('active', showWorkouts);
+    document.getElementById('summary-save-card')?.classList.toggle('hidden', showWorkouts);
   });
 });
 
