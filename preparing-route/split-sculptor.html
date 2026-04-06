@@ -72,6 +72,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .chip { border: 1px solid var(--border); border-radius: 999px; padding: .52rem .95rem; font-size: .9rem; cursor: pointer; background: var(--surface); color: var(--muted); transition: .15s; }
 .chip:hover { border-color: #59c352; color: var(--text); }
 .chip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
+.startup-choice-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: .85rem .9rem; margin-bottom: .9rem; }
+.startup-choice-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .55rem; }
+.startup-choice-controls { margin-top: .65rem; display: grid; gap: .55rem; grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.startup-choice-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.startup-choice-msg { margin-top: .55rem; font-size: .83rem; color: var(--muted); min-height: 1.1rem; }
 .rule { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid #59c352; border-radius: 0 var(--radius) var(--radius) 0; padding: .75rem .9rem; color: var(--muted); font-size: .86rem; line-height: 1.6; margin-bottom: 1rem; }
 .summary-card,.week,.agent { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; margin-bottom: .9rem; }
 .sum-row { display: flex; justify-content: space-between; gap: 1rem; padding: .58rem 0; border-bottom: 1px solid rgba(7,31,53,0.08); font-size: .92rem; }
@@ -265,6 +270,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 1 · MACROCYCLE</div>
     <h1 class="step-title">What do you want to improve this quarter?</h1>
     <p class="step-sub">Choose one primary outcome so every other decision supports a clear target.</p>
+    <div class="startup-choice-card" id="startup-macrocycle-card"></div>
     <div class="chips" id="macro-chips">
       <div class="chip on" data-v="Build Visible Muscle">Build Visible Muscle</div>
       <div class="chip" data-v="Slim Down">Slim Down</div>
@@ -686,6 +692,7 @@ const explicitMovementTypeByName = {
   'Reverse Fly': 'Isolated',
   'Face Pull': 'Isolated',
   'Bicep Curl': 'Isolated',
+  'Barbell Bicep Curl': 'Compound',
   'Hammer Curl': 'Isolated',
   'Preacher Curl': 'Isolated',
   'Skullcrusher': 'Isolated',
@@ -720,6 +727,7 @@ const explicitMovementTypeByName = {
   'Seated Row': 'Compound',
   'T Bar Row': 'Compound',
   'Barbell Row': 'Compound',
+  'Single Arm Dumbbell Row': 'Isolated',
   'Chest Press': 'Compound',
   'Incline Chest Press': 'Compound',
   'Shoulder Press': 'Compound'
@@ -1641,6 +1649,72 @@ function syncPastSplitsPanel() {
   controls.msg.textContent = '';
   controls.saveMsg.textContent = '';
   if (isLoggedIn) renderPastSplitSelectors();
+  renderStartupMacrocycleCard();
+}
+
+function getSavedSplitEntries() {
+  return Object.entries(splitArchive || {})
+    .filter(([, value]) => value && value.state)
+    .sort((a, b) => {
+      const aTime = new Date(a[1].savedAt || 0).getTime();
+      const bTime = new Date(b[1].savedAt || 0).getTime();
+      return bTime - aTime;
+    });
+}
+
+function renderStartupMacrocycleCard() {
+  const card = document.getElementById('startup-macrocycle-card');
+  if (!card) return;
+  const isLoggedIn = !!window.ChasingChangeSession?.getCurrentUserEmail?.();
+  if (!isLoggedIn) {
+    card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">Choose a new macrocycle below, or sign in to load a previous one.</p>`;
+    return;
+  }
+  const savedEntries = getSavedSplitEntries();
+  if (!savedEntries.length) {
+    card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">No previous macrocycles found yet. Start a new one below and save it in Step 9.</p>`;
+    return;
+  }
+  const options = savedEntries
+    .map(([key, value], index) => `<option value="${key}"${index === 0 ? ' selected' : ''}>${key} · saved ${formatSavedAt(value.savedAt)}</option>`)
+    .join('');
+  card.innerHTML = `
+    <strong>Start your macrocycle</strong>
+    <p class="step-sub">Choose to start new, or load a previous macrocycle before continuing.</p>
+    <div class="startup-choice-actions">
+      <button type="button" class="btn" id="startup-new-btn">Start New Macrocycle</button>
+    </div>
+    <div class="startup-choice-controls">
+      <div>
+        <label for="startup-load-select">Load Previous Macrocycle</label>
+        <select id="startup-load-select">${options}</select>
+      </div>
+      <button type="button" class="btn btn-p" id="startup-load-btn">Load</button>
+    </div>
+    <div class="startup-choice-msg" id="startup-choice-msg"></div>
+  `;
+  const msg = card.querySelector('#startup-choice-msg');
+  card.querySelector('#startup-new-btn')?.addEventListener('click', () => {
+    msg.textContent = 'Starting a new macrocycle. Continue through the steps and save when ready.';
+  });
+  card.querySelector('#startup-load-btn')?.addEventListener('click', () => {
+    const key = card.querySelector('#startup-load-select')?.value;
+    const found = splitArchive[key];
+    if (!found?.state) {
+      msg.textContent = `No saved data found for ${key}.`;
+      return;
+    }
+    const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current setup will be replaced.`);
+    if (!shouldLoad) {
+      msg.textContent = 'Load canceled. Current setup kept.';
+      return;
+    }
+    restoreState(found.state);
+    state.viewYear = Number(found.state.viewYear) || state.viewYear;
+    state.viewQuarter = Number(found.state.viewQuarter) || state.viewQuarter;
+    buildSummary();
+    msg.textContent = `Loaded ${key}. You can now continue editing or jump ahead.`;
+  });
 }
 
 function renderDots() {

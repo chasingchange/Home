@@ -29,6 +29,7 @@ window.EXERCISE_MATRIX = [
   { name: "Upright Row", equipment: "Dumbbell", primaryMuscle: "Shoulders" },
 
   { name: "Bicep Curl", equipment: "Barbell", primaryMuscle: "Biceps" },
+  { name: "Barbell Bicep Curl", equipment: "Barbell", primaryMuscle: "Biceps", movementType: "Compound" },
   { name: "Bicep Curl", equipment: "Machine", primaryMuscle: "Biceps" },
   { name: "Hammer Curl", equipment: "Cable", primaryMuscle: "Biceps" },
   { name: "Hammer Curl", equipment: "Dumbbell", primaryMuscle: "Biceps" },
@@ -121,6 +122,7 @@ window.EXERCISE_MATRIX = [
   { name: "Barbell Row", equipment: "Barbell", primaryMuscle: "Back" },
   { name: "Chest Supported Row", equipment: "Dumbbell", primaryMuscle: "Back" },
   { name: "Chin Up", equipment: "Bodyweight", primaryMuscle: "Back" },
+  { name: "Single Arm Dumbbell Row", equipment: "Dumbbell", primaryMuscle: "Back", movementType: "Isolated" },
   { name: "Straight Arm Pulldown", equipment: "Cable", primaryMuscle: "Back", movementType: "Isolated" },
   { name: "Dumbbell Pullover", equipment: "Dumbbell", primaryMuscle: "Back", movementType: "Isolated" },
   { name: "Machine Pullover", equipment: "Machine", primaryMuscle: "Back", movementType: "Isolated" },
