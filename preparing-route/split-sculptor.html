@@ -642,6 +642,7 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise) => {
     equipment: equipment || 'Bodyweight',
     category,
     primaryMuscle: exercise.primaryMuscle || 'Full Body',
+    movementType: exercise.movementType || '',
     instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.'
   };
 });

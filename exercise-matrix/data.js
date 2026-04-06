@@ -39,6 +39,11 @@ window.EXERCISE_MATRIX = [
   { name: "Cable Bayesian Curl", equipment: "Cable", primaryMuscle: "Biceps" },
   { name: "Machine High Row (Biceps Bias)", equipment: "Machine", primaryMuscle: "Biceps" },
   { name: "Machine Underhand Row", equipment: "Machine", primaryMuscle: "Biceps" },
+  { name: "Weighted Chin Up", equipment: "Bodyweight", primaryMuscle: "Biceps" },
+  { name: "Close Grip Chin Up", equipment: "Bodyweight", primaryMuscle: "Biceps" },
+  { name: "Underhand Inverted Row", equipment: "Bodyweight", primaryMuscle: "Biceps" },
+  { name: "Underhand Barbell Row", equipment: "Barbell", primaryMuscle: "Biceps" },
+  { name: "Underhand Pull Up", equipment: "Bodyweight", primaryMuscle: "Biceps" },
 
   { name: "Bench Dip", equipment: "Bodyweight", primaryMuscle: "Triceps" },
   { name: "Skullcrusher", equipment: "Barbell", primaryMuscle: "Triceps" },
@@ -116,7 +121,9 @@ window.EXERCISE_MATRIX = [
   { name: "Barbell Row", equipment: "Barbell", primaryMuscle: "Back" },
   { name: "Chest Supported Row", equipment: "Dumbbell", primaryMuscle: "Back" },
   { name: "Chin Up", equipment: "Bodyweight", primaryMuscle: "Back" },
-  { name: "Straight Arm Pulldown", equipment: "Cable", primaryMuscle: "Back" },
+  { name: "Straight Arm Pulldown", equipment: "Cable", primaryMuscle: "Back", movementType: "Isolated" },
+  { name: "Dumbbell Pullover", equipment: "Dumbbell", primaryMuscle: "Back", movementType: "Isolated" },
+  { name: "Machine Pullover", equipment: "Machine", primaryMuscle: "Back", movementType: "Isolated" },
 
   { name: "Arnold Press", equipment: "Dumbbell", primaryMuscle: "Shoulders" },
   { name: "Front Raise", equipment: "Barbell", primaryMuscle: "Shoulders" },
