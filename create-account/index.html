@@ -221,6 +221,7 @@
       const selectedCores = new Set();
       let matchedAccountByName = null;
       let nameLookupTimeout = null;
+      let matchedAccountNeedsPassword = false;
 
       // ── Check if already logged in ─────────────────────────────────
       sessionApi?.whenReady?.().then(() => {
@@ -318,13 +319,15 @@
 
       const setAuthMode = (mode, matchedEmail = "") => {
         const isLogin = mode === "login";
-        submitBtn.textContent = isLogin ? "Log In" : "Create My Account";
+        submitBtn.textContent = isLogin
+          ? (matchedAccountNeedsPassword ? "Set Password & Log In" : "Log In")
+          : "Create My Account";
         nameMatchNotice.classList.toggle("hidden", !isLogin);
         if (isLogin) {
           nameMatchEmail.textContent = matchedEmail ? `Account email on file: ${matchedEmail}` : "";
-          if (!passwordHintText.textContent) {
-            passwordHintText.textContent = "Enter your password to log in.";
-          }
+          passwordHintText.textContent = matchedAccountNeedsPassword
+            ? "No password is set yet. Create one now to log in."
+            : "Enter your password to log in.";
         } else if (passwordHintText) {
           passwordHintText.textContent = "";
         }
@@ -343,6 +346,7 @@
         const matchedByEmail = sessionApi.findAccountByEmail(lookupEmail);
         const matched = matchedByEmail || matchedByName;
         matchedAccountByName = matched;
+        matchedAccountNeedsPassword = !String(matched?.account?.password || "").trim();
         const hasIdentityInput = !!lookupName || !!lookupEmail;
 
         if (matched) {
@@ -355,6 +359,7 @@
         }
 
         setAuthMode("create");
+        matchedAccountNeedsPassword = false;
         setProfileQuestionsVisible(hasIdentityInput);
       };
 
@@ -396,12 +401,22 @@
 
         if (matchedAccountByName) {
           const loginEmail = email || matchedAccountByName.email;
+          if (matchedAccountNeedsPassword) {
+            const setPasswordResult = await sessionApi.setPassword(loginEmail, password);
+            if (!setPasswordResult.ok) {
+              formError.textContent = setPasswordResult.error;
+              formError.classList.remove("hidden");
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Set Password & Log In";
+              return;
+            }
+          }
           const loginResult = await sessionApi.login(loginEmail, password, name || matchedAccountByName?.account?.name || "");
           if (!loginResult.ok) {
             formError.textContent = loginResult.error;
             formError.classList.remove("hidden");
             submitBtn.disabled = false;
-            submitBtn.textContent = "Log In";
+            submitBtn.textContent = matchedAccountNeedsPassword ? "Set Password & Log In" : "Log In";
             return;
           }
 
