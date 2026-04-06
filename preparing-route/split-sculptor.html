@@ -175,6 +175,21 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
 .week li strong { display: block; margin-bottom: .6rem; }
 .week li ul { margin-top: .3rem; padding-left: 1.1rem; }
+.workout-item { margin-bottom: .65rem; }
+.workout-item:last-child { margin-bottom: 0; }
+.workout-line { margin-bottom: .35rem; }
+.workout-demo-row { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+.workout-demo-btn, .workout-demo-link { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 999px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; padding: .3rem .62rem; cursor: pointer; font-weight: 700; text-decoration: none; }
+.workout-demo-btn:hover, .workout-demo-link:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
+.workout-demo-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 62; padding: 1rem; }
+.workout-demo-modal.open { display: flex; }
+.workout-demo-panel { width: min(840px, 100%); background: #fff; border: 1px solid rgba(7,31,53,.16); border-radius: 16px; box-shadow: 0 24px 60px rgba(7,31,53,.3); padding: 1rem; }
+.workout-demo-head { display: flex; justify-content: space-between; gap: .75rem; align-items: start; margin-bottom: .7rem; }
+.workout-demo-title { font-family: 'Raleway', sans-serif; font-size: 1rem; font-weight: 800; line-height: 1.3; color: var(--text); }
+.workout-demo-sub { margin-top: .2rem; color: var(--muted); font-size: .84rem; }
+.workout-demo-close { border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); padding: .32rem .5rem; cursor: pointer; }
+.workout-demo-frame { width: 100%; min-height: 420px; border: 1px solid rgba(7,31,53,.12); border-radius: 12px; background: #fff; }
+.workout-demo-note { margin-top: .6rem; color: var(--muted); font-size: .8rem; line-height: 1.5; }
 .summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
@@ -427,6 +442,19 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     </div>
     <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
     <div class="exercise-detail-note" id="exercise-detail-note"></div>
+  </div>
+</div>
+<div class="workout-demo-modal" id="workout-demo-modal" aria-hidden="true">
+  <div class="workout-demo-panel" role="dialog" aria-modal="true" aria-labelledby="workout-demo-title">
+    <div class="workout-demo-head">
+      <div>
+        <div class="workout-demo-title" id="workout-demo-title">Workout demo</div>
+        <div class="workout-demo-sub" id="workout-demo-sub">Press play to preview this movement.</div>
+      </div>
+      <button type="button" class="workout-demo-close" id="workout-demo-close" aria-label="Close workout demo">✕</button>
+    </div>
+    <iframe class="workout-demo-frame" id="workout-demo-frame" title="Workout demo player" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <div class="workout-demo-note">Tip: this opens a playable demo search so you can quickly watch form cues without leaving your split builder.</div>
   </div>
 </div>
 
@@ -1271,6 +1299,35 @@ function formatSavedAt(value) {
   return date.toLocaleString();
 }
 
+function makeWorkoutDemoQuery(exerciseName) {
+  const base = (exerciseName || '').trim();
+  return `${base} exercise form demo`;
+}
+
+function openWorkoutDemo(exerciseName) {
+  if (!exerciseName) return;
+  const query = makeWorkoutDemoQuery(exerciseName);
+  const modal = document.getElementById('workout-demo-modal');
+  const title = document.getElementById('workout-demo-title');
+  const sub = document.getElementById('workout-demo-sub');
+  const frame = document.getElementById('workout-demo-frame');
+  if (!modal || !title || !sub || !frame) return;
+  title.textContent = `${exerciseName} demo player`;
+  sub.textContent = 'Play the video to see setup, range of motion, and tempo.';
+  frame.src = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeWorkoutDemo() {
+  const modal = document.getElementById('workout-demo-modal');
+  const frame = document.getElementById('workout-demo-frame');
+  if (!modal || !frame) return;
+  frame.src = '';
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
 function buildSummary() {
   ensureDayPlan();
   const macroTargets = readMacroTargets();
@@ -1286,7 +1343,19 @@ function buildSummary() {
   const splitRows = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
-      .map((slot) => `<li>${slot.slot}: ${slot.name || 'Not set'}${slot.sets && slot.reps ? ` — ${slot.sets} sets x ${slot.reps}` : ' — Sets/Reps not selected'}</li>`)
+      .map((slot) => {
+        const exerciseName = slot.name || '';
+        const safeExerciseName = exerciseName.replace(/"/g, '&quot;');
+        const isSet = Boolean(exerciseName);
+        const meta = slot.sets && slot.reps ? ` — ${slot.sets} sets x ${slot.reps}` : ' — Sets/Reps not selected';
+        return `<li class="workout-item">
+          <div class="workout-line">${slot.slot}: ${exerciseName || 'Not set'}${meta}</div>
+          ${isSet ? `<div class="workout-demo-row">
+            <button type="button" class="workout-demo-btn" data-demo-exercise="${safeExerciseName}">Play Demo</button>
+            <a class="workout-demo-link" href="https://tenor.com/search/${encodeURIComponent(exerciseName)}-exercise-gifs" target="_blank" rel="noopener noreferrer">Open GIFs</a>
+          </div>` : ''}
+        </li>`;
+      })
       .join('');
     return `<li><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul>${rows}</ul></li>`;
   }).join('');
@@ -1312,6 +1381,9 @@ function buildSummary() {
       <ul>${splitRows}</ul>
     </div>
   `;
+  document.querySelectorAll('[data-demo-exercise]').forEach((btn) => {
+    btn.onclick = () => openWorkoutDemo(btn.dataset.demoExercise || '');
+  });
 }
 
 function getSerializableState() {
@@ -1493,8 +1565,15 @@ document.getElementById('exercise-detail-close').addEventListener('click', close
 document.getElementById('exercise-detail-modal').addEventListener('click', (event) => {
   if (event.target.id === 'exercise-detail-modal') closeExerciseDetailModal();
 });
+document.getElementById('workout-demo-close').addEventListener('click', closeWorkoutDemo);
+document.getElementById('workout-demo-modal').addEventListener('click', (event) => {
+  if (event.target.id === 'workout-demo-modal') closeWorkoutDemo();
+});
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closeExerciseDetailModal();
+  if (event.key === 'Escape') {
+    closeExerciseDetailModal();
+    closeWorkoutDemo();
+  }
 });
 
 document.getElementById('load-selected-split-btn').addEventListener('click', () => {
