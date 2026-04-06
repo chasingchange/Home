@@ -189,18 +189,13 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .workout-item { margin-bottom: .65rem; }
 .workout-item:last-child { margin-bottom: 0; }
 .workout-line { margin-bottom: .35rem; }
-.workout-demo-row { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
-.workout-demo-btn, .workout-demo-link { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 999px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; padding: .3rem .62rem; cursor: pointer; font-weight: 700; text-decoration: none; }
-.workout-demo-btn:hover, .workout-demo-link:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
-.workout-demo-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 62; padding: 1rem; }
-.workout-demo-modal.open { display: flex; }
-.workout-demo-panel { width: min(840px, 100%); background: #fff; border: 1px solid rgba(7,31,53,.16); border-radius: 16px; box-shadow: 0 24px 60px rgba(7,31,53,.3); padding: 1rem; }
-.workout-demo-head { display: flex; justify-content: space-between; gap: .75rem; align-items: start; margin-bottom: .7rem; }
-.workout-demo-title { font-family: 'Raleway', sans-serif; font-size: 1rem; font-weight: 800; line-height: 1.3; color: var(--text); }
-.workout-demo-sub { margin-top: .2rem; color: var(--muted); font-size: .84rem; }
-.workout-demo-close { border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); padding: .32rem .5rem; cursor: pointer; }
-.workout-demo-frame { width: 100%; min-height: 420px; border: 1px solid rgba(7,31,53,.12); border-radius: 12px; background: #fff; }
-.workout-demo-note { margin-top: .6rem; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.split-day-card { border: 1px solid rgba(7,31,53,0.12); border-radius: 12px; padding: .75rem .85rem; background: #fff; margin-bottom: .6rem; }
+.split-day-card strong { font-family: 'Raleway', sans-serif; font-size: .86rem; letter-spacing: .03em; display: block; margin-bottom: .5rem; color: var(--text); }
+.split-workout-list { list-style: none; padding-left: 0; display: grid; gap: .4rem; }
+.split-workout-item { border: 1px solid rgba(7,31,53,0.1); border-radius: 10px; background: #f8fafc; padding: .48rem .58rem; }
+.split-workout-main { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; font-size: .88rem; }
+.split-workout-slot { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.split-workout-prescription { font-weight: 700; color: var(--text); }
 .summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
@@ -464,7 +459,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">View Workout</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
@@ -472,19 +467,6 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
     <div class="exercise-detail-instructions" id="exercise-detail-instructions"></div>
     <div class="exercise-detail-note" id="exercise-detail-note"></div>
-  </div>
-</div>
-<div class="workout-demo-modal" id="workout-demo-modal" aria-hidden="true">
-  <div class="workout-demo-panel" role="dialog" aria-modal="true" aria-labelledby="workout-demo-title">
-    <div class="workout-demo-head">
-      <div>
-        <div class="workout-demo-title" id="workout-demo-title">Workout demo</div>
-        <div class="workout-demo-sub" id="workout-demo-sub">Press play to preview this movement.</div>
-      </div>
-      <button type="button" class="workout-demo-close" id="workout-demo-close" aria-label="Close workout demo">✕</button>
-    </div>
-    <iframe class="workout-demo-frame" id="workout-demo-frame" title="Workout demo player" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <div class="workout-demo-note">Tip: this opens a playable demo search so you can quickly watch form cues without leaving your split builder.</div>
   </div>
 </div>
 <p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
@@ -613,28 +595,28 @@ const HOME_EQUIPMENT_OPTIONS = [
 const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
 
 const setOptions = ['', '2', '3', '4', '5', '6'];
-const repOptions = ['', '3-5', '4-6', '6-8', '8-10', '10-12', '12-15', '15-20'];
+const repOptions = ['', '3 - 5', '4 - 6', '6 - 8', '8 - 10', '10 - 12', '12 - 15', '15 - 20'];
 
 const mesoPrescription = {
   'Hypertrophy': {
-    Compound: { sets: '4', reps: '10-12', note: 'Hypertrophy: push compounds for 10+ reps.' },
-    Machine: { sets: '3', reps: '10-15', note: 'Machine work supports volume in 10+ reps.' },
-    Isolated: { sets: '2', reps: '12-20', note: 'Isolations stay higher rep with slightly less sets.' }
+    Compound: { sets: '4', reps: '10 - 12', note: 'Hypertrophy: push compounds for 10+ reps.' },
+    Machine: { sets: '3', reps: '10 - 15', note: 'Machine work supports volume in 10+ reps.' },
+    Isolated: { sets: '2', reps: '12 - 20', note: 'Isolations stay higher rep with slightly less sets.' }
   },
   'Progressive Overload / Strength Training': {
-    Compound: { sets: '4', reps: '4-6', note: 'Strength meso: heavier compounds with lower reps.' },
-    Machine: { sets: '3', reps: '6-8', note: 'Machine accessories fill supportive volume.' },
-    Isolated: { sets: '2', reps: '8-12', note: 'Isolation volume stays moderate while strength is prioritized.' }
+    Compound: { sets: '4', reps: '4 - 6', note: 'Strength meso: heavier compounds with lower reps.' },
+    Machine: { sets: '3', reps: '6 - 8', note: 'Machine accessories fill supportive volume.' },
+    Isolated: { sets: '2', reps: '8 - 12', note: 'Isolation volume stays moderate while strength is prioritized.' }
   },
   'Fat Loss / Conditioning': {
-    Compound: { sets: '3', reps: '8-10', note: 'Conditioning meso: moderate sets with controlled reps.' },
-    Machine: { sets: '3', reps: '10-12', note: 'Machine work keeps total output high.' },
-    Isolated: { sets: '2', reps: '12-15', note: 'Isolations finish with higher reps and lower set count.' }
+    Compound: { sets: '3', reps: '8 - 10', note: 'Conditioning meso: moderate sets with controlled reps.' },
+    Machine: { sets: '3', reps: '10 - 12', note: 'Machine work keeps total output high.' },
+    Isolated: { sets: '2', reps: '12 - 15', note: 'Isolations finish with higher reps and lower set count.' }
   },
   'Performance': {
-    Compound: { sets: '4', reps: '3-5', note: 'Performance meso: low-rep compounds for speed + power.' },
-    Machine: { sets: '3', reps: '6-8', note: 'Machine support work keeps quality high.' },
-    Isolated: { sets: '2', reps: '10-12', note: 'Isolations stay lower stress so performance stays high.' }
+    Compound: { sets: '4', reps: '3 - 5', note: 'Performance meso: low-rep compounds for speed + power.' },
+    Machine: { sets: '3', reps: '6 - 8', note: 'Machine support work keeps quality high.' },
+    Isolated: { sets: '2', reps: '10 - 12', note: 'Isolations stay lower stress so performance stays high.' }
   }
 };
 
@@ -1053,6 +1035,10 @@ function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
   return '';
 }
 
+function getResolvedTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
+  return getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) || getDefaultTargetForSlot(slotType, dayFocus, dayPriority);
+}
+
 function applyPriorityTargetsToBaseRows() {
   const split = getSplitForFreq();
   if (!state.customDays[state.freq]) return;
@@ -1063,7 +1049,7 @@ function applyPriorityTargetsToBaseRows() {
     const dayPriority = getPriorityTargetForDay(i);
     const dayFocus = extractFocusName(line);
     for (let rowIndex = 0; rowIndex < Math.min(slotPattern.length, dayRows.length); rowIndex += 1) {
-      dayRows[rowIndex].targetMuscle = getAutoTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority, dayFocus);
+      dayRows[rowIndex].targetMuscle = getResolvedTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority, dayFocus);
     }
   });
 }
@@ -1081,15 +1067,15 @@ function ensureDayPlan() {
         slot,
         name: '',
         id: '',
-        targetMuscle: getAutoTargetMuscle(slot, idx, dayPriority, dayFocus),
-        sets: '',
-        reps: ''
+        targetMuscle: getResolvedTargetMuscle(slot, idx, dayPriority, dayFocus),
+        sets: getSlotPrescription(slot).sets,
+        reps: getSlotPrescription(slot).reps
       }));
     } else {
       state.customDays[state.freq][dayKey].forEach((item, idx) => {
-        if (idx < slotPattern.length && !item.targetMuscle) item.targetMuscle = getAutoTargetMuscle(item.slot, idx, dayPriority, dayFocus);
-        if (typeof item.sets !== 'string') item.sets = '';
-        if (typeof item.reps !== 'string') item.reps = '';
+        if (!item.targetMuscle) item.targetMuscle = getResolvedTargetMuscle(item.slot, idx, dayPriority, dayFocus);
+        if (typeof item.sets !== 'string' || !item.sets) item.sets = getSlotPrescription(item.slot).sets;
+        if (typeof item.reps !== 'string' || !item.reps) item.reps = getSlotPrescription(item.slot).reps;
       });
     }
   });
@@ -1188,7 +1174,7 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = 'View Workout';
+  title.textContent = 'View';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
   const cards = [
     { k: 'Targets', v: primary },
@@ -1284,7 +1270,7 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View Workout</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
@@ -1373,8 +1359,8 @@ function renderDayCards() {
         name: '',
         id: '',
         targetMuscle: getDefaultTargetForSlot(addType, focus, dayPriority),
-        sets: '',
-        reps: ''
+        sets: getSlotPrescription(addType).sets,
+        reps: getSlotPrescription(addType).reps
       });
       renderDayCards();
       if (state.step >= 9) buildSummary();
@@ -1436,35 +1422,6 @@ function formatSavedAt(value) {
   return date.toLocaleString();
 }
 
-function makeWorkoutDemoQuery(exerciseName) {
-  const base = (exerciseName || '').trim();
-  return `${base} exercise form demo`;
-}
-
-function openWorkoutDemo(exerciseName) {
-  if (!exerciseName) return;
-  const query = makeWorkoutDemoQuery(exerciseName);
-  const modal = document.getElementById('workout-demo-modal');
-  const title = document.getElementById('workout-demo-title');
-  const sub = document.getElementById('workout-demo-sub');
-  const frame = document.getElementById('workout-demo-frame');
-  if (!modal || !title || !sub || !frame) return;
-  title.textContent = `${exerciseName} demo player`;
-  sub.textContent = 'Play the video to see setup, range of motion, and tempo.';
-  frame.src = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
-}
-
-function closeWorkoutDemo() {
-  const modal = document.getElementById('workout-demo-modal');
-  const frame = document.getElementById('workout-demo-frame');
-  if (!modal || !frame) return;
-  frame.src = '';
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
-}
-
 function buildSummary() {
   ensureDayPlan();
   const macroTargets = readMacroTargets();
@@ -1482,19 +1439,17 @@ function buildSummary() {
     const rows = state.customDays[state.freq][dayKey]
       .map((slot) => {
         const exerciseName = slot.name || '';
-        const safeExerciseName = exerciseName.replace(/"/g, '&quot;');
-        const isSet = Boolean(exerciseName);
-        const meta = slot.sets && slot.reps ? ` — ${slot.sets} sets x ${slot.reps}` : ' — Sets/Reps not selected';
-        return `<li class="workout-item">
-          <div class="workout-line">${slot.slot}: ${exerciseName || 'Not set'}${meta}</div>
-          ${isSet ? `<div class="workout-demo-row">
-            <button type="button" class="workout-demo-btn" data-demo-exercise="${safeExerciseName}">Play Demo</button>
-            <a class="workout-demo-link" href="https://tenor.com/search/${encodeURIComponent(exerciseName)}-exercise-gifs" target="_blank" rel="noopener noreferrer">Open GIFs</a>
-          </div>` : ''}
+        const sets = slot.sets || getSlotPrescription(slot.slot).sets;
+        const reps = slot.reps || getSlotPrescription(slot.slot).reps;
+        return `<li class="split-workout-item">
+          <div class="split-workout-main">
+            <span><span class="split-workout-slot">${slot.slot}</span> · ${exerciseName || 'Not set'}</span>
+            <span class="split-workout-prescription">${sets} sets × ${reps} reps</span>
+          </div>
         </li>`;
       })
       .join('');
-    return `<li><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul>${rows}</ul></li>`;
+    return `<li class="split-day-card"><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul class="split-workout-list">${rows}</ul></li>`;
   }).join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
@@ -1519,9 +1474,6 @@ function buildSummary() {
       <ul>${splitRows}</ul>
     </div>
   `;
-  document.querySelectorAll('[data-demo-exercise]').forEach((btn) => {
-    btn.onclick = () => openWorkoutDemo(btn.dataset.demoExercise || '');
-  });
 }
 
 function getSerializableState() {
@@ -1563,8 +1515,8 @@ function restoreState(payload) {
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
-        if (typeof row.sets !== 'string') row.sets = '';
-        if (typeof row.reps !== 'string') row.reps = '';
+        if (typeof row.sets !== 'string' || !row.sets) row.sets = getSlotPrescription(row.slot).sets;
+        if (typeof row.reps !== 'string' || !row.reps) row.reps = getSlotPrescription(row.slot).reps;
       });
     });
   });
@@ -1587,6 +1539,7 @@ function refreshSelectionsFromState() {
     });
   };
   syncChip('macro-chips', state.macro);
+  syncChip('meso-chips', state.meso);
   syncChip('nutrition-chips', state.nutrition);
   syncChip('macro-calc-chips', state.macroPlan);
   syncChip('gym-chips', state.gymType);
@@ -1714,14 +1667,9 @@ document.getElementById('exercise-detail-close').addEventListener('click', close
 document.getElementById('exercise-detail-modal').addEventListener('click', (event) => {
   if (event.target.id === 'exercise-detail-modal') closeExerciseDetailModal();
 });
-document.getElementById('workout-demo-close').addEventListener('click', closeWorkoutDemo);
-document.getElementById('workout-demo-modal').addEventListener('click', (event) => {
-  if (event.target.id === 'workout-demo-modal') closeWorkoutDemo();
-});
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     closeExerciseDetailModal();
-    closeWorkoutDemo();
   }
 });
 
@@ -1733,6 +1681,11 @@ document.getElementById('load-selected-split-btn').addEventListener('click', () 
   const found = splitArchive[key];
   if (!found) {
     controls.msg.textContent = `No saved split found for ${key}.`;
+    return;
+  }
+  const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current split will be lost.`);
+  if (!shouldLoad) {
+    controls.msg.textContent = 'Load canceled. Save your current split before loading an old macrocycle.';
     return;
   }
   restoreState(found.state);
