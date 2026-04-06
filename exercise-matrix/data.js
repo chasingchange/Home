@@ -75,9 +75,17 @@ window.EXERCISE_MATRIX = [
   { name: "Deadlift", equipment: "Machine", primaryMuscle: "Posterior Chain" },
   { name: "Hip Abductors", equipment: "Machine", primaryMuscle: "Glutes" },
   { name: "Hip Thrust", equipment: "Barbell", primaryMuscle: "Glutes" },
+  { name: "Hip Thrust", equipment: "Dumbbell", primaryMuscle: "Glutes" },
+  { name: "Glute Bridge", equipment: "Barbell", primaryMuscle: "Glutes" },
+  { name: "Glute Bridge", equipment: "Dumbbell", primaryMuscle: "Glutes" },
+  { name: "Cable Pull Through", equipment: "Cable", primaryMuscle: "Glutes" },
+  { name: "Cable Glute Kickback", equipment: "Cable", primaryMuscle: "Glutes" },
+  { name: "Donkey Kick", equipment: "Bodyweight", primaryMuscle: "Glutes" },
   { name: "Good Morning", equipment: "Barbell", primaryMuscle: "Posterior Chain" },
   { name: "Lying Leg Curl", equipment: "Machine", primaryMuscle: "Hamstrings" },
   { name: "Seated Leg Curl", equipment: "Machine", primaryMuscle: "Hamstrings" },
+  { name: "Sissy Squat", equipment: "Bodyweight", primaryMuscle: "Quads" },
+  { name: "Cable Leg Extension", equipment: "Cable", primaryMuscle: "Quads" },
 
   { name: "Calf Press", equipment: "Machine", primaryMuscle: "Calves" },
   { name: "Standing Calf Raise", equipment: "Barbell", primaryMuscle: "Calves" },
@@ -124,7 +132,7 @@ window.EXERCISE_MATRIX = [
   { name: "Rear Delt Fly", equipment: "Machine", primaryMuscle: "Rear Delts" },
   { name: "Bulgarian Split Squat", equipment: "Dumbbell", primaryMuscle: "Quads" },
   { name: "Romanian Deadlift", equipment: "Barbell", primaryMuscle: "Hamstrings" },
-  { name: "Hip Adductors", equipment: "Machine", primaryMuscle: "Glutes" }
+  { name: "Hip Adductors", equipment: "Machine", primaryMuscle: "Adductors" }
 ];
 
 const ISOLATED_KEYWORDS = ["fly", "raise", "curl", "extension", "pushdown", "kickback", "shrug", "abductor", "adductor", "calf", "deck"];
