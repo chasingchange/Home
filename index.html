@@ -108,12 +108,22 @@
             <button type="button" class="core-section-card" style="--chip-color: #e46702" data-core="life" aria-pressed="false">LIFE</button>
           </div>
 
-          <div id="bodySectionFilters" data-core="body" class="core-subsection mt-3 grid grid-cols-2 lg:grid-cols-5 gap-2">
-            <button type="button" class="core-section-card core-subsection-card is-active" style="--chip-color: #77d770" data-section="all" aria-pressed="true">ALL</button>
-            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="nutrition" aria-pressed="false">NUTRITION</button>
-            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="strength" aria-pressed="false">STRENGTH</button>
-            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="programming" aria-pressed="false">PROGRAMMING</button>
-            <button type="button" class="core-section-card core-subsection-card" style="--chip-color: #77d770" data-section="endurance" aria-pressed="false">ENDURANCE</button>
+          <div id="bodySectionFilters" data-core="body" class="core-subsection mt-3">
+            <label for="bodySectionSelect" class="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-cc-text/75">Body Tool Type</label>
+            <div class="relative max-w-md">
+              <select
+                id="bodySectionSelect"
+                class="w-full appearance-none rounded-2xl border border-cc-outline/55 bg-gradient-to-br from-cc-outline/35 via-white/55 to-cc-outline/20 px-4 py-3 pr-11 text-sm font-bold tracking-wide text-cc-text shadow-[0_18px_45px_rgba(119,215,112,0.22)] backdrop-blur-md transition hover:from-cc-outline/45 hover:to-cc-outline/25 focus:outline-none focus:ring-2 focus:ring-cc-outline/65"
+                aria-label="Filter body tools by category"
+              >
+                <option value="all">ALL TOOLS</option>
+                <option value="nutrition">NUTRITION</option>
+                <option value="strength">STRENGTH</option>
+                <option value="programming">PROGRAMMING</option>
+                <option value="planning-route">PLANNING THE ROUTE</option>
+              </select>
+              <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-cc-text/80">▾</span>
+            </div>
           </div>
 
           <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
@@ -135,13 +145,13 @@
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
             </a>
 
-            <a href="./running-calculator/index.html" data-core="body" data-section="endurance" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./running-calculator/index.html" data-core="body" data-section="planning-route" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">The Runner</h2>
               <p class="mt-2 text-sm opacity-80">Assess running level, estimate race times, and build a Chasing Change training plan.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a href="./gym-locator/index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
+            <a href="./gym-locator/index.html" data-core="body" data-section="planning-route" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Gym Locator</h2>
               <p class="mt-2 text-sm opacity-80">Find gyms near your address or current location with map pins, travel mode options, and details.</p>
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
@@ -215,12 +225,10 @@
           button.setAttribute("aria-pressed", String(isActive));
         });
 
-        const sectionFilters = document.getElementById("bodySectionFilters");
-        sectionFilters?.querySelectorAll("[data-section]").forEach((button) => {
-          const isActive = button.dataset.section === section;
-          button.classList.toggle("is-active", isActive);
-          button.setAttribute("aria-pressed", String(isActive));
-        });
+        const bodySectionSelect = document.getElementById("bodySectionSelect");
+        if (bodySectionSelect) {
+          bodySectionSelect.value = section;
+        }
       };
 
       const lockCore = (core) => {
@@ -236,16 +244,15 @@
       });
 
 
-      const bodySectionFilters = document.getElementById("bodySectionFilters");
+      const bodySectionSelect = document.getElementById("bodySectionSelect");
       const lockBodySection = (section) => {
         lockedBodySection = section;
         setCoreFilter("body", lockedBodySection);
       };
 
-      bodySectionFilters?.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-section]");
-        if (!button) return;
-        lockBodySection(button.dataset.section);
+      bodySectionSelect?.addEventListener("change", (event) => {
+        const { value } = event.target;
+        lockBodySection(value);
       });
 
 
