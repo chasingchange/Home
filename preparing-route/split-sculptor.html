@@ -446,7 +446,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">Exercise details</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View workout information</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
@@ -618,7 +618,8 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
     name: exercise.name,
     equipment: equipment || 'Bodyweight',
     category,
-    primaryMuscle: exercise.primaryMuscle || 'Full Body'
+    primaryMuscle: exercise.primaryMuscle || 'Full Body',
+    instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.'
   };
 });
 
@@ -1122,7 +1123,7 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = exercise.name;
+  title.textContent = 'View workout information';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
   const cards = [
     { k: 'Targets', v: primary },
@@ -1134,7 +1135,7 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
     : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
-  note.textContent = `${targetLine} ${describeSlotIntent(slotType)}`;
+  note.textContent = `${exercise.name}: ${exercise.instructions} ${targetLine} ${describeSlotIntent(slotType)}`;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -1200,7 +1201,7 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View workout information</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
