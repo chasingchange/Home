@@ -111,8 +111,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-controls { display: grid; grid-template-columns: 140px 1fr 92px 118px 72px repeat(2, 32px); gap: .45rem; align-items: center; }
 .slot-meta { display: flex; align-items: center; justify-content: space-between; }
 .slot-status-light { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(7,31,53,.2); display: inline-block; margin-left: .5rem; }
-.slot-row.match { border-color: rgba(89,195,82,.45); background: rgba(119,215,112,.14); }
-.slot-row.match .slot-status-light { background: #77d770; border-color: #59c352; }
+.slot-row.match { border-color: rgba(7,31,53,.18); background: #fff; }
+.slot-row.match .slot-status-light { background: #c7d0d8; border-color: rgba(7,31,53,.24); }
 .slot-row.mismatch { border-color: rgba(204,60,60,.45); background: rgba(204,60,60,.08); }
 .slot-row.mismatch .slot-status-light { background: #e96a6a; border-color: #cc3c3c; }
 .slot-row.prescription-partial { border-color: rgba(243,156,18,.6); background: rgba(243,156,18,.14); }
@@ -1216,8 +1216,13 @@ function renderDayCards() {
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
       const hasSets = !!item.sets;
       const hasReps = !!item.reps;
-      const prescriptionClass = hasSets && hasReps ? 'prescription-complete' : (hasSets || hasReps ? 'prescription-partial' : '');
-      const prescriptionStatus = hasSets && hasReps ? 'Sets + reps complete' : (hasSets || hasReps ? 'Sets/reps partially set' : 'Sets and reps not set');
+      const hasExercise = !!exercise;
+      const hasCompletePrescription = hasExercise && hasSets && hasReps;
+      const hasPartialPrescription = hasExercise && (!hasSets || !hasReps);
+      const prescriptionClass = hasCompletePrescription ? 'prescription-complete' : (hasPartialPrescription ? 'prescription-partial' : '');
+      const prescriptionStatus = hasCompletePrescription
+        ? 'Exercise + sets + reps complete'
+        : (hasPartialPrescription ? 'Exercise set, but sets/reps incomplete' : 'Complete all fields to mark this slot complete');
       const isCustomRow = rowIndex >= slotPattern.length;
       const muscleOptions = ['', ...dayMuscles]
         .map((muscle) => {
