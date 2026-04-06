@@ -111,8 +111,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-controls { display: grid; grid-template-columns: 140px 1fr 92px 118px 72px repeat(2, 32px); gap: .45rem; align-items: center; }
 .slot-meta { display: flex; align-items: center; justify-content: space-between; }
 .slot-status-light { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(7,31,53,.2); display: inline-block; margin-left: .5rem; }
-.slot-row.match { border-color: rgba(89,195,82,.45); background: rgba(119,215,112,.14); }
-.slot-row.match .slot-status-light { background: #77d770; border-color: #59c352; }
+.slot-row.match { border-color: rgba(7,31,53,.18); background: #fff; }
+.slot-row.match .slot-status-light { background: #c7d0d8; border-color: rgba(7,31,53,.24); }
 .slot-row.mismatch { border-color: rgba(204,60,60,.45); background: rgba(204,60,60,.08); }
 .slot-row.mismatch .slot-status-light { background: #e96a6a; border-color: #cc3c3c; }
 .slot-row.prescription-partial { border-color: rgba(243,156,18,.6); background: rgba(243,156,18,.14); }
@@ -123,8 +123,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-suggestion strong { font-family: 'Raleway', sans-serif; letter-spacing: .04em; font-size: .7rem; text-transform: uppercase; color: #1f4a1f; margin-right: .28rem; }
 .slot-suggestion-primary { display: block; margin-top: .5rem; padding-top: .38rem; border-top: 1px dashed rgba(7,31,53,.24); color: var(--text); font-family: 'Raleway', sans-serif; font-size: .84rem; letter-spacing: .02em; font-weight: 800; }
 .slot-suggestion-priority { display: block; margin-top: .38rem; font-size: .78rem; font-weight: 700; color: rgba(7,31,53,.88); }
+.slot-choice-guide { margin-top: .45rem; border: 1px solid rgba(7,31,53,.14); border-radius: 9px; background: #fff; padding: .55rem .65rem; }
+.slot-choice-guide-title { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: .32rem; }
+.slot-choice-guide ul { margin: 0; padding-left: 1rem; display: grid; gap: .22rem; }
+.slot-choice-guide li { font-size: .8rem; line-height: 1.45; color: var(--text); }
 .slot-select option[data-suggested="1"] { font-weight: 700; }
-.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; }
+.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
 .slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
 .exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
 .exercise-detail-modal.open { display: flex; }
@@ -462,7 +466,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">View workout information</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View Workout</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
@@ -497,9 +501,10 @@ const STEP_TIMING = [
   { name: 'Training Days', duration: '1 week', group: 'FITNESS' },
   { name: 'Priority', duration: 'Now', group: 'FITNESS' },
   { name: 'Environment', duration: 'Now', group: 'FITNESS' },
-  { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
+  { name: 'Microcycle', duration: '1 week', group: 'FITNESS' },
   { name: 'Macrocycle Summaries', duration: '' }
 ];
+const currentQuarter = getCurrentQuarterInfo();
 const state = {
   step: 1,
   macro: 'Build Visible Muscle',
@@ -512,6 +517,8 @@ const state = {
   gymType: 'Commercial Gym',
   homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
   activeBuilderDay: 1,
+  viewYear: currentQuarter.year,
+  viewQuarter: currentQuarter.quarter,
   freq: 3,
   customDays: {},
   manualTargets: {}
@@ -543,6 +550,16 @@ function canSaveToQuarter(year, quarter) {
   if (targetYear > current.year) return true;
   if (targetYear < current.year) return false;
   return targetQuarter >= current.quarter;
+}
+
+function formatViewPeriod(year, quarter) {
+  const y = Number(year);
+  const q = Number(quarter);
+  if (!y || !q) {
+    const current = getCurrentQuarterInfo();
+    return `Q${current.quarter} ${current.year}`;
+  }
+  return `Q${q} ${y}`;
 }
 
 const mesoByMacro = {
@@ -685,6 +702,8 @@ const explicitMovementTypeByName = {
   'Lying Leg Curl': 'Isolated',
   'Seated Leg Curl': 'Isolated',
   'Calf Press': 'Isolated',
+  'Standing Calf Press': 'Compound',
+  'Single-Leg Calf Press': 'Compound',
   'Standing Calf Raise': 'Isolated',
   'Hip Abductors': 'Isolated',
   'Hip Adductors': 'Isolated',
@@ -702,6 +721,8 @@ const explicitMovementTypeByName = {
   'Cable Pull Through': 'Compound',
   'Pull Up': 'Compound',
   'Chin Up': 'Compound',
+  'Machine High Row (Biceps Bias)': 'Compound',
+  'Machine Underhand Row': 'Compound',
   'Lat Pulldown': 'Compound',
   'Seated Row': 'Compound',
   'T Bar Row': 'Compound',
@@ -1131,6 +1152,34 @@ function describeSlotIntent(slotType) {
   return 'Best for isolating one muscle and accumulating targeted volume.';
 }
 
+function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
+  if (!item.targetMuscle) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>Select a target muscle first so recommendations can be personalized for this slot.</li>
+        <li>Pick a movement that matches your equipment and feels stable to progress week to week.</li>
+      </ul>
+    </div>`;
+  }
+  if (!slotOptionsByMuscle.length) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>No exact ${item.targetMuscle} match found for this slot and setup.</li>
+        <li>Try another target muscle from this day (${dayMuscles.join(', ')}) or switch gym environment settings.</li>
+      </ul>
+    </div>`;
+  }
+  const topRecommendations = slotOptionsByMuscle.slice(0, 3)
+    .map((option) => `<li><strong>${option.name}</strong> — ${getMuscle(option)} focus · ${option.equipment || 'Bodyweight'} · ${normalizeType(option)} movement.</li>`)
+    .join('');
+  return `<div class="slot-choice-guide">
+    <span class="slot-choice-guide-title">Top picks for ${item.targetMuscle}</span>
+    <ul>${topRecommendations}</ul>
+  </div>`;
+}
+
 function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   if (!exercise) return;
   const modal = document.getElementById('exercise-detail-modal');
@@ -1141,7 +1190,7 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = 'View workout information';
+  title.textContent = 'View Workout';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
   const cards = [
     { k: 'Targets', v: primary },
@@ -1203,8 +1252,13 @@ function renderDayCards() {
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
       const hasSets = !!item.sets;
       const hasReps = !!item.reps;
-      const prescriptionClass = hasSets && hasReps ? 'prescription-complete' : (hasSets || hasReps ? 'prescription-partial' : '');
-      const prescriptionStatus = hasSets && hasReps ? 'Sets + reps complete' : (hasSets || hasReps ? 'Sets/reps partially set' : 'Sets and reps not set');
+      const hasExercise = !!exercise;
+      const hasCompletePrescription = hasExercise && hasSets && hasReps;
+      const hasPartialPrescription = hasExercise && (!hasSets || !hasReps);
+      const prescriptionClass = hasCompletePrescription ? 'prescription-complete' : (hasPartialPrescription ? 'prescription-partial' : '');
+      const prescriptionStatus = hasCompletePrescription
+        ? 'Exercise + sets + reps complete'
+        : (hasPartialPrescription ? 'Exercise set, but sets/reps incomplete' : 'Complete all fields to mark this slot complete');
       const isCustomRow = rowIndex >= slotPattern.length;
       const muscleOptions = ['', ...dayMuscles]
         .map((muscle) => {
@@ -1228,11 +1282,12 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View workout information</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View Workout</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
       <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
+      ${buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles)}
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
@@ -1441,6 +1496,7 @@ function buildSummary() {
   }).join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
+      <div class="sum-row"><span class="sum-label">VIEWING PERIOD</span><span class="sum-val">${formatViewPeriod(state.viewYear, state.viewQuarter)}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
       <div class="sum-row"><span class="sum-label">DIET · NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
@@ -1480,6 +1536,8 @@ function getSerializableState() {
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
     manualTargets: { ...state.manualTargets },
+    viewYear: Number(state.viewYear) || getCurrentQuarterInfo().year,
+    viewQuarter: Number(state.viewQuarter) || getCurrentQuarterInfo().quarter,
     savedAt: new Date().toISOString()
   };
 }
@@ -1498,6 +1556,8 @@ function restoreState(payload) {
   state.freq = Number(payload.freq) || state.freq;
   state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
   state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
+  state.viewYear = Number(payload.viewYear) || state.viewYear;
+  state.viewQuarter = Number(payload.viewQuarter) || state.viewQuarter;
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
@@ -1665,13 +1725,18 @@ document.addEventListener('keydown', (event) => {
 
 document.getElementById('load-selected-split-btn').addEventListener('click', () => {
   const controls = getArchiveControls();
-  const key = quarterKey(controls.splitYear.value, controls.splitQuarter.value);
+  const selectedYear = Number(controls.splitYear.value);
+  const selectedQuarter = Number(controls.splitQuarter.value);
+  const key = quarterKey(selectedYear, selectedQuarter);
   const found = splitArchive[key];
   if (!found) {
     controls.msg.textContent = `No saved split found for ${key}.`;
     return;
   }
   restoreState(found.state);
+  state.viewYear = selectedYear || state.viewYear;
+  state.viewQuarter = selectedQuarter || state.viewQuarter;
+  buildSummary();
   controls.msg.textContent = `Loaded split from ${key} (saved ${formatSavedAt(found.savedAt)}).`;
   document.querySelector('[data-summary-tab="overview"]')?.click();
 });
@@ -1687,7 +1752,11 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
   const key = quarterKey(year, quarter);
   splitArchive[key] = {
     savedAt: new Date().toISOString(),
-    state: getSerializableState()
+    state: {
+      ...getSerializableState(),
+      viewYear: year,
+      viewQuarter: quarter
+    }
   };
   const saved = await persistSplitArchive();
   controls.saveMsg.textContent = saved
