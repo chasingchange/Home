@@ -329,6 +329,28 @@
     return cloneAccounts(session.account.calculators?.[calculatorKey] || null);
   };
 
+  const setPassword = async (email, password) => {
+    await ready;
+
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPassword = String(password || "");
+    if (!normalizedEmail || !accountsCache?.[normalizedEmail]) {
+      return { ok: false, error: "Account not found." };
+    }
+    if (!normalizedPassword.trim()) {
+      return { ok: false, error: "Enter a password to continue." };
+    }
+
+    const nextAccount = ensureAccountShape(accountsCache[normalizedEmail]);
+    nextAccount.password = normalizedPassword;
+    nextAccount.updatedAt = new Date().toISOString();
+    accountsCache[normalizedEmail] = nextAccount;
+
+    pendingWrite = pendingWrite.then(() => syncAccountsToAllStores(accountsCache));
+    await pendingWrite;
+    return { ok: true };
+  };
+
   window.ChasingChangeSession = {
     ready,
     whenReady,
@@ -352,6 +374,13 @@
     saveCalculatorData,
     getCalculatorData,
     sendCredentialReminder,
+    setPassword,
+    listAccounts: () => Object.entries(accountsCache || {}).map(([email, account]) => ({
+      email,
+      name: account?.name || "",
+      hasPassword: !!String(account?.password || ""),
+      createdAt: account?.createdAt || "",
+    })),
     getSyncConfig: readSyncConfig,
     setSyncConfig: saveSyncConfig,
     syncNow: () => pendingWrite.then(() => syncAccountsToAllStores(accountsCache || {})),

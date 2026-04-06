@@ -119,14 +119,28 @@
           </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="mb-5 inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-          <button type="button" id="tabCreateBtn" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text transition" data-tab="create">Create Account</button>
-          <button type="button" id="tabAccountsBtn" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition" data-tab="accounts">All Accounts</button>
-        </div>
+        <!-- View as member -->
+        <section class="mb-6 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+          <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
+          <h2 class="text-lg font-extrabold font-heading">View Site As Member</h2>
+          <p class="mt-1 text-sm opacity-60">Start typing a name to find any account, then switch to that member.</p>
+          <div class="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div>
+              <input id="viewAsNameInput" type="text" placeholder="Type member name…" list="viewAsNameOptions" autocomplete="off"
+                class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+              <datalist id="viewAsNameOptions"></datalist>
+            </div>
+            <button id="viewAsSubmitBtn" type="button"
+              class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-extrabold text-cc-text transition hover:brightness-95">
+              View Site
+            </button>
+          </div>
+          <p id="viewAsMeta" class="mt-2 text-xs opacity-60">No account selected.</p>
+          <div id="viewAsError" class="hidden mt-3 rounded-xl bg-red-50 ring-1 ring-red-200 px-4 py-3 text-sm font-semibold text-red-700"></div>
+        </section>
 
-        <!-- ── Tab: Create Account ──────────────────────────────────── -->
-        <div id="tabCreate" class="tab-panel">
+        <!-- Create account (password optional) -->
+        <div>
           <form id="adminCreateForm" class="grid gap-5" novalidate>
 
             <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
@@ -138,7 +152,7 @@
                 <input id="acEmail" type="email" inputmode="email" placeholder="Email Address"
                   class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
                 <p class="rounded-xl bg-cc-outline/10 ring-1 ring-cc-outline/40 px-4 py-3 text-sm font-semibold">
-                  Account login is email-only for now.
+                  Admin-created accounts can be password-free. Members will create their password when they first log in.
                 </p>
               </div>
             </section>
@@ -237,19 +251,6 @@
           </form>
         </div>
 
-        <!-- ── Tab: All Accounts ───────────────────────────────────── -->
-        <div id="tabAccounts" class="tab-panel hidden">
-          <div class="mb-4 flex items-center justify-between gap-3">
-            <p class="text-sm font-bold opacity-60">All accounts stored in this browser.</p>
-            <button id="refreshAccountsBtn" type="button"
-              class="rounded-xl bg-white px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">
-              Refresh
-            </button>
-          </div>
-          <div id="accountsList" class="grid gap-4"></div>
-          <p id="noAccountsMsg" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm opacity-60">No accounts found in this browser.</p>
-        </div>
-
       </div><!-- /adminPanel -->
 
       <p class="mt-10 text-center text-xs opacity-50">© 2026 Chasing Change — 1% better every day.</p>
@@ -279,15 +280,21 @@
         return sessionStorage.getItem("ccAdminAuthed") === "1";
       }
 
+      let cachedAccounts = [];
+
       function showAdminPanel() {
         document.getElementById("adminGate").classList.add("hidden");
         document.getElementById("adminPanel").classList.remove("hidden");
         refreshSessionStatus();
-        renderAccounts();
+        refreshAccountDirectory();
       }
 
       // Check on load
       if (isAdminAuthed()) showAdminPanel();
+      sessionApi?.whenReady?.().then(() => {
+        refreshSessionStatus();
+        refreshAccountDirectory();
+      });
 
       // Gate form
       const gatePasswordInput = document.getElementById("adminPasswordInput");
@@ -344,136 +351,59 @@
         showToast("Session cleared.");
       });
 
-      // ── Tabs ──────────────────────────────────────────────────────
-      document.querySelectorAll(".tab-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const target = btn.dataset.tab;
-          document.querySelectorAll(".tab-btn").forEach((b) => {
-            const active = b.dataset.tab === target;
-            b.classList.toggle("bg-cc-outline", active);
-            b.classList.toggle("text-cc-text", active);
-            b.classList.toggle("hover:bg-white", !active);
-          });
-          document.querySelectorAll(".tab-panel").forEach((p) => {
-            p.classList.toggle("hidden", p.id !== `tab${target.charAt(0).toUpperCase() + target.slice(1)}`);
-          });
-          if (target === "accounts") renderAccounts();
-        });
-      });
-
-      // ── Accounts list ─────────────────────────────────────────────
-      const CORE_COLORS = {
-        body:   "#77d770",
-        art:    "#ffbd59",
-        mind:   "#2a9df0",
-        soul:   "#aa70d7",
-        career: "#f02348",
-        life:   "#e46702",
-      };
-
-      function formatHeight(h) {
-        if (!h) return "—";
-        if (h.unit === "imperial") return `${h.ft || 0}′${h.in || 0}″`;
-        if (h.unit === "metric")   return `${h.cm} cm`;
-        return "—";
+      // ── Account directory (name autocomplete for "view as") ─────
+      function refreshAccountDirectory() {
+        cachedAccounts = (sessionApi.listAccounts?.() || [])
+          .filter((account) => account?.name && account?.email)
+          .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+        const options = document.getElementById("viewAsNameOptions");
+        options.innerHTML = cachedAccounts.map((account) =>
+          `<option value="${account.name.replace(/"/g, "&quot;")}">${account.email}</option>`
+        ).join("");
       }
 
-      function formatWeight(w) {
-        if (!w) return "—";
-        return `${w.value} ${w.unit}`;
-      }
-
-      function formatDate(iso) {
-        if (!iso) return "—";
-        return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-      }
-
-      function renderAccounts() {
-        let accounts = {};
-        try { accounts = JSON.parse(localStorage.getItem("ccAccounts") || "{}"); } catch {}
-
-        const list  = document.getElementById("accountsList");
-        const empty = document.getElementById("noAccountsMsg");
-        const entries = Object.entries(accounts);
-
-        if (entries.length === 0) {
-          list.innerHTML = "";
-          empty.classList.remove("hidden");
+      function setViewAsError(message = "") {
+        const errorEl = document.getElementById("viewAsError");
+        if (!message) {
+          errorEl.classList.add("hidden");
+          errorEl.textContent = "";
           return;
         }
-        empty.classList.add("hidden");
-
-        list.innerHTML = entries.map(([email, account]) => {
-          const profile = account.calculators?.profile || {};
-          const macroTargets = profile.macroTargets || null;
-          const cores   = (profile.cores || []).map((c) =>
-            `<span style="background:${CORE_COLORS[c]}20;border:1px solid ${CORE_COLORS[c]}80;color:${CORE_COLORS[c] === '#ffbd59' || CORE_COLORS[c] === '#77d770' ? '#071f35' : '#071f35'}"
-              class="inline-flex rounded-full px-2.5 py-0.5 text-[0.65rem] font-extrabold">${c.charAt(0).toUpperCase() + c.slice(1)}</span>`
-          ).join(" ");
-
-          return `
-          <article class="rounded-2xl bg-white ring-1 ring-black/10 p-5 sm:p-6">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="text-base font-extrabold font-heading">${account.name || "(no name)"}</p>
-                <p class="text-sm opacity-60">${email}</p>
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <button type="button"
-                  class="login-as-btn rounded-xl bg-cc-outline px-3 py-1.5 text-xs font-extrabold text-cc-text transition hover:brightness-95"
-                  data-email="${email}" data-name="${account.name || email}">
-                  Login As
-                </button>
-              </div>
-            </div>
-
-            <dl class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div class="rounded-xl bg-cc-bg px-3 py-2">
-                <dt class="font-bold uppercase tracking-wide opacity-50">Age</dt>
-                <dd class="mt-0.5 font-extrabold">${profile.age || "—"}</dd>
-              </div>
-              <div class="rounded-xl bg-cc-bg px-3 py-2">
-                <dt class="font-bold uppercase tracking-wide opacity-50">Height</dt>
-                <dd class="mt-0.5 font-extrabold">${formatHeight(profile.height)}</dd>
-              </div>
-              <div class="rounded-xl bg-cc-bg px-3 py-2">
-                <dt class="font-bold uppercase tracking-wide opacity-50">Sex</dt>
-                <dd class="mt-0.5 font-extrabold capitalize">${profile.sex ? profile.sex.replace(/-/g, " ") : "—"}</dd>
-              </div>
-              <div class="rounded-xl bg-cc-bg px-3 py-2">
-                <dt class="font-bold uppercase tracking-wide opacity-50">Weight</dt>
-                <dd class="mt-0.5 font-extrabold">${formatWeight(profile.weight)}</dd>
-              </div>
-            </dl>
-
-            ${cores ? `<div class="mt-3 flex flex-wrap gap-1.5">${cores}</div>` : ""}
-            <div class="mt-3 rounded-xl bg-cc-bg px-3 py-2">
-              <p class="text-[0.65rem] font-bold uppercase tracking-wide opacity-50">Current Macro Targets</p>
-              <p class="mt-1 text-xs font-extrabold">
-                ${macroTargets
-                  ? `${macroTargets.calories || "0"} cal · P ${macroTargets.protein || "0"}g · C ${macroTargets.carbs || "0"}g · F ${macroTargets.fat || "0"}g`
-                  : "No macro targets saved yet"}
-              </p>
-            </div>
-
-            <p class="mt-3 text-xs opacity-40">Created ${formatDate(account.createdAt)}</p>
-          </article>`;
-        }).join("");
-
-        // Login As buttons
-        list.querySelectorAll(".login-as-btn").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const targetEmail = btn.dataset.email;
-            const targetName  = btn.dataset.name;
-            localStorage.setItem("ccSession", targetEmail);
-            refreshSessionStatus();
-            showToast(`Now logged in as ${targetName}.`);
-          });
-        });
-
+        errorEl.textContent = message;
+        errorEl.classList.remove("hidden");
       }
 
-      document.getElementById("refreshAccountsBtn")?.addEventListener("click", renderAccounts);
+      const viewAsNameInput = document.getElementById("viewAsNameInput");
+      const viewAsMeta = document.getElementById("viewAsMeta");
+      const findMatchingAccount = () => {
+        const term = viewAsNameInput.value.trim().toLowerCase();
+        if (!term) return null;
+        return cachedAccounts.find((account) => account.name.trim().toLowerCase() === term)
+          || cachedAccounts.find((account) => account.name.trim().toLowerCase().includes(term))
+          || null;
+      };
+
+      viewAsNameInput?.addEventListener("input", () => {
+        setViewAsError("");
+        const match = findMatchingAccount();
+        viewAsMeta.textContent = match
+          ? `${match.name} • ${match.email}`
+          : "Keep typing to find an account.";
+      });
+
+      document.getElementById("viewAsSubmitBtn")?.addEventListener("click", () => {
+        const match = findMatchingAccount();
+        if (!match) {
+          setViewAsError("No matching account found. Type the member's name and choose one from suggestions.");
+          return;
+        }
+        localStorage.setItem("ccSession", match.email);
+        refreshSessionStatus();
+        setViewAsError("");
+        viewAsNameInput.value = match.name;
+        viewAsMeta.textContent = `${match.name} • ${match.email}`;
+        showToast(`Now viewing the site as ${match.name}.`);
+      });
 
       // ── Admin Create Account ──────────────────────────────────────
       let acHeightUnit = "imperial";
@@ -624,6 +554,7 @@
         formSuccess.textContent = `Account created for ${name} (${email}).`;
         formSuccess.classList.remove("hidden");
         showToast(`Account created for ${name}.`);
+        refreshAccountDirectory();
       });
     </script>
   </body>
