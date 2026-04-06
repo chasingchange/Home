@@ -296,6 +296,22 @@
         return { distanceKm, durationMinutes: waitMinutes + rideMinutes, estimated: true };
       };
 
+      const estimateRouteForMode = (distanceKm, mode) => {
+        if (mode === "transit") return estimateTransit(distanceKm);
+
+        const speeds = {
+          driving: 45,
+          walking: 5,
+          biking: 15,
+        };
+        const speed = speeds[mode] || speeds.driving;
+        return {
+          distanceKm,
+          durationMinutes: (distanceKm / speed) * 60,
+          estimated: true,
+        };
+      };
+
       const geocodeAddress = async (query) => {
         const endpoint = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
         const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
@@ -367,7 +383,7 @@ out body 40;
         }));
       };
 
-      const getRoute = async (origin, gym, mode) => {
+      const getRoute = async (origin, gym, mode, timeoutMs = 3000) => {
         if (mode === "transit") {
           const distanceKm = haversineKm(origin.lat, origin.lon, gym.lat, gym.lon);
           return estimateTransit(distanceKm);
@@ -375,7 +391,9 @@ out body 40;
 
         const profile = modeMap[mode] || "driving";
         const url = `https://router.project-osrm.org/route/v1/${profile}/${origin.lon},${origin.lat};${gym.lon},${gym.lat}?overview=false`;
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        const response = await fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId));
         if (!response.ok) throw new Error("Routing unavailable.");
         const data = await response.json();
         const route = data?.routes?.[0];
@@ -455,6 +473,16 @@ out body 40;
             return;
           }
 
+          const withEstimatedRoutes = gyms
+            .map((gym) => {
+              const distanceKm = haversineKm(origin.lat, origin.lon, gym.lat, gym.lon);
+              return { ...gym, route: estimateRouteForMode(distanceKm, mode) };
+            })
+            .sort((a, b) => a.route.durationMinutes - b.route.durationMinutes);
+
+          renderList(withEstimatedRoutes, mode);
+          statusText.textContent = `Showing ${withEstimatedRoutes.length} gyms near ${origin.label}. Refining live travel times...`;
+
           const withRoutes = await Promise.all(
             gyms.map(async (gym) => {
               try {
@@ -464,7 +492,7 @@ out body 40;
                 const fallbackDistance = haversineKm(origin.lat, origin.lon, gym.lat, gym.lon);
                 return {
                   ...gym,
-                  route: { distanceKm: fallbackDistance, durationMinutes: fallbackDistance * 5, estimated: true },
+                  route: estimateRouteForMode(fallbackDistance, mode),
                 };
               }
             })
