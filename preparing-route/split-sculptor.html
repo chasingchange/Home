@@ -124,7 +124,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-suggestion-primary { display: block; margin-top: .5rem; padding-top: .38rem; border-top: 1px dashed rgba(7,31,53,.24); color: var(--text); font-family: 'Raleway', sans-serif; font-size: .84rem; letter-spacing: .02em; font-weight: 800; }
 .slot-suggestion-priority { display: block; margin-top: .38rem; font-size: .78rem; font-weight: 700; color: rgba(7,31,53,.88); }
 .slot-select option[data-suggested="1"] { font-weight: 700; }
-.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; }
+.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
 .slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
 .exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
 .exercise-detail-modal.open { display: flex; }
@@ -462,7 +462,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">View workout information</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View Workout</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
@@ -497,9 +497,10 @@ const STEP_TIMING = [
   { name: 'Training Days', duration: '1 week', group: 'FITNESS' },
   { name: 'Priority', duration: 'Now', group: 'FITNESS' },
   { name: 'Environment', duration: 'Now', group: 'FITNESS' },
-  { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
+  { name: 'Microcycle', duration: '1 week', group: 'FITNESS' },
   { name: 'Macrocycle Summaries', duration: '' }
 ];
+const currentQuarter = getCurrentQuarterInfo();
 const state = {
   step: 1,
   macro: 'Build Visible Muscle',
@@ -512,6 +513,8 @@ const state = {
   gymType: 'Commercial Gym',
   homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
   activeBuilderDay: 1,
+  viewYear: currentQuarter.year,
+  viewQuarter: currentQuarter.quarter,
   freq: 3,
   customDays: {},
   manualTargets: {}
@@ -543,6 +546,16 @@ function canSaveToQuarter(year, quarter) {
   if (targetYear > current.year) return true;
   if (targetYear < current.year) return false;
   return targetQuarter >= current.quarter;
+}
+
+function formatViewPeriod(year, quarter) {
+  const y = Number(year);
+  const q = Number(quarter);
+  if (!y || !q) {
+    const current = getCurrentQuarterInfo();
+    return `Q${current.quarter} ${current.year}`;
+  }
+  return `Q${q} ${y}`;
 }
 
 const mesoByMacro = {
@@ -1141,7 +1154,7 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = 'View workout information';
+  title.textContent = 'View Workout';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
   const cards = [
     { k: 'Targets', v: primary },
@@ -1228,7 +1241,7 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View workout information</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View Workout</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
@@ -1441,6 +1454,7 @@ function buildSummary() {
   }).join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
+      <div class="sum-row"><span class="sum-label">VIEWING PERIOD</span><span class="sum-val">${formatViewPeriod(state.viewYear, state.viewQuarter)}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
       <div class="sum-row"><span class="sum-label">DIET · NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
@@ -1480,6 +1494,8 @@ function getSerializableState() {
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
     manualTargets: { ...state.manualTargets },
+    viewYear: Number(state.viewYear) || getCurrentQuarterInfo().year,
+    viewQuarter: Number(state.viewQuarter) || getCurrentQuarterInfo().quarter,
     savedAt: new Date().toISOString()
   };
 }
@@ -1498,6 +1514,8 @@ function restoreState(payload) {
   state.freq = Number(payload.freq) || state.freq;
   state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
   state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
+  state.viewYear = Number(payload.viewYear) || state.viewYear;
+  state.viewQuarter = Number(payload.viewQuarter) || state.viewQuarter;
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
@@ -1665,13 +1683,18 @@ document.addEventListener('keydown', (event) => {
 
 document.getElementById('load-selected-split-btn').addEventListener('click', () => {
   const controls = getArchiveControls();
-  const key = quarterKey(controls.splitYear.value, controls.splitQuarter.value);
+  const selectedYear = Number(controls.splitYear.value);
+  const selectedQuarter = Number(controls.splitQuarter.value);
+  const key = quarterKey(selectedYear, selectedQuarter);
   const found = splitArchive[key];
   if (!found) {
     controls.msg.textContent = `No saved split found for ${key}.`;
     return;
   }
   restoreState(found.state);
+  state.viewYear = selectedYear || state.viewYear;
+  state.viewQuarter = selectedQuarter || state.viewQuarter;
+  buildSummary();
   controls.msg.textContent = `Loaded split from ${key} (saved ${formatSavedAt(found.savedAt)}).`;
   document.querySelector('[data-summary-tab="overview"]')?.click();
 });
@@ -1687,7 +1710,11 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
   const key = quarterKey(year, quarter);
   splitArchive[key] = {
     savedAt: new Date().toISOString(),
-    state: getSerializableState()
+    state: {
+      ...getSerializableState(),
+      viewYear: year,
+      viewQuarter: quarter
+    }
   };
   const saved = await persistSplitArchive();
   controls.saveMsg.textContent = saved
