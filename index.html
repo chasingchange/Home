@@ -193,7 +193,6 @@
       const roadmapToolCard = document.getElementById("roadmapToolCard");
       let canViewRoadmap = false;
 
-      const desktopMedia = window.matchMedia("(min-width: 1024px)");
       let lockedCore = "body";
       let lockedBodySection = "all";
 
@@ -253,17 +252,6 @@
         lockBodySection(button.dataset.section);
       });
 
-      bodySectionFilters?.querySelectorAll("[data-section]").forEach((button) => {
-        button.addEventListener("mouseenter", () => {
-          if (!desktopMedia.matches || lockedCore !== "body") return;
-          setCoreFilter("body", button.dataset.section);
-        });
-      });
-
-      bodySectionFilters?.addEventListener("mouseleave", () => {
-        if (!desktopMedia.matches || lockedCore !== "body") return;
-        setCoreFilter("body", lockedBodySection);
-      });
 
       setCoreFilter(lockedCore, lockedBodySection);
       sessionApi?.whenReady?.().finally(() => {
