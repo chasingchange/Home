@@ -98,7 +98,7 @@
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
           </div>
 
-          <p class="mt-4 text-sm opacity-80">Hover to preview a core or click to lock it in.</p>
+          <p class="mt-4 text-sm opacity-80">Click a core to show its tools.</p>
           <div id="coreFilters" class="mt-3 grid grid-cols-2 lg:grid-cols-6 gap-2">
             <button type="button" class="core-section-card is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">BODY</button>
             <button type="button" class="core-section-card" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">ART</button>
@@ -234,17 +234,6 @@
         lockCore(button.dataset.core);
       });
 
-      coreFilters?.querySelectorAll("[data-core]").forEach((button) => {
-        button.addEventListener("mouseenter", () => {
-          if (!desktopMedia.matches) return;
-          setCoreFilter(button.dataset.core, lockedBodySection);
-        });
-      });
-
-      coreFilters?.addEventListener("mouseleave", () => {
-        if (!desktopMedia.matches) return;
-        setCoreFilter(lockedCore, lockedBodySection);
-      });
 
       const bodySectionFilters = document.getElementById("bodySectionFilters");
       const lockBodySection = (section) => {
