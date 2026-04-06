@@ -111,10 +111,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-controls { display: grid; grid-template-columns: 140px 1fr 92px 118px 72px repeat(2, 32px); gap: .45rem; align-items: center; }
 .slot-meta { display: flex; align-items: center; justify-content: space-between; }
 .slot-status-light { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(7,31,53,.2); display: inline-block; margin-left: .5rem; }
-.slot-row.match { border-color: rgba(7,31,53,.18); background: #fff; }
-.slot-row.match .slot-status-light { background: #c7d0d8; border-color: rgba(7,31,53,.24); }
-.slot-row.mismatch { border-color: rgba(204,60,60,.45); background: rgba(204,60,60,.08); }
-.slot-row.mismatch .slot-status-light { background: #e96a6a; border-color: #cc3c3c; }
+.slot-row.prescription-empty { border-color: rgba(7,31,53,.18); background: #fff; }
+.slot-row.prescription-empty .slot-status-light { background: #c7d0d8; border-color: rgba(7,31,53,.24); }
 .slot-row.prescription-partial { border-color: rgba(243,156,18,.6); background: rgba(243,156,18,.14); }
 .slot-row.prescription-partial .slot-status-light { background: #f39c12; border-color: #e38b07; }
 .slot-row.prescription-complete { border-color: rgba(89,195,82,.62); background: rgba(119,215,112,.2); }
@@ -1253,12 +1251,16 @@ function renderDayCards() {
       const hasSets = !!item.sets;
       const hasReps = !!item.reps;
       const hasExercise = !!exercise;
+      const hasAnySelection = hasExercise || hasSets || hasReps;
       const hasCompletePrescription = hasExercise && hasSets && hasReps;
-      const hasPartialPrescription = hasExercise && (!hasSets || !hasReps);
-      const prescriptionClass = hasCompletePrescription ? 'prescription-complete' : (hasPartialPrescription ? 'prescription-partial' : '');
+      const hasPartialPrescription = hasAnySelection && !hasCompletePrescription;
+      const prescriptionClass = hasCompletePrescription
+        ? 'prescription-complete'
+        : (hasPartialPrescription ? 'prescription-partial' : 'prescription-empty');
       const prescriptionStatus = hasCompletePrescription
         ? 'Exercise + sets + reps complete'
-        : (hasPartialPrescription ? 'Exercise set, but sets/reps incomplete' : 'Complete all fields to mark this slot complete');
+        : (hasPartialPrescription ? 'Partially complete — finish selecting exercise, sets, and reps' : 'No selections yet');
+      const matchStatus = hasExercise ? (matches ? 'Exercise matches this slot' : 'Exercise does not match this slot') : 'No exercise selected';
       const isCustomRow = rowIndex >= slotPattern.length;
       const muscleOptions = ['', ...dayMuscles]
         .map((muscle) => {
@@ -1272,10 +1274,10 @@ function renderDayCards() {
         const marker = isSuggested ? '★ ' : '';
         return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${marker}${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
       })].join('');
-      return `<div class="slot-row ${matches ? 'match' : 'mismatch'} ${prescriptionClass}">
+      return `<div class="slot-row ${prescriptionClass}">
       <div class="slot-meta">
         <div class="slot-label">${item.slot} | ${item.targetMuscle || 'Select Muscle'}</div>
-        <span class="slot-status-light" title="${matches ? 'Match' : 'No match'} · ${prescriptionStatus}"></span>
+        <span class="slot-status-light" title="${matchStatus} · ${prescriptionStatus}"></span>
       </div>
       <div class="slot-controls">
         <select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>
