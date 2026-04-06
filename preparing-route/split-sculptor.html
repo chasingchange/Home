@@ -52,7 +52,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; display: none; }
 .progress-track { display: none; }
 .progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
-.focus-pill-row { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: .6rem; margin-bottom: .85rem; }
+.focus-pill-row { display: grid; grid-template-columns: 2fr 2fr 4fr; gap: .35rem; margin-bottom: .85rem; }
 .focus-pill { border: 1px solid var(--border); border-radius: 999px; padding: .5rem .8rem; text-align: center; background: #fff; font-family: 'Raleway', sans-serif; font-weight: 800; font-size: .74rem; letter-spacing: .09em; text-transform: uppercase; }
 .focus-pill.vision { color: #1f4a1f; border-color: rgba(119,215,112,.48); background: linear-gradient(135deg, rgba(255,255,255,.46), rgba(119,215,112,.24)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
 .focus-pill.diet { color: #2f5b2f; border-color: rgba(119,215,112,.42); background: linear-gradient(135deg, rgba(255,255,255,.44), rgba(119,215,112,.2)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
@@ -219,7 +219,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .cc-title-brand { gap: .08rem; }
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
-@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: .5rem; } }
 @media (max-width: 640px) { .slot-controls { grid-template-columns: 1fr; } .exercise-detail-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -620,7 +620,16 @@ const mesoPrescription = {
   }
 };
 
-const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
+function buildExerciseId(exercise) {
+  const key = [exercise.name, exercise.equipment || 'Bodyweight', exercise.primaryMuscle || 'Full Body']
+    .join('|')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  return `ex_${key}`;
+}
+
+const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise) => {
   const equipment = (exercise.equipment || '').trim();
   let category = 'Body Weight';
   if (equipment === 'Barbell') category = 'Barbell';
@@ -628,7 +637,7 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
   else if (equipment === 'Machine' || equipment === 'Cable' || equipment === 'Smith Machine') category = 'Machines';
 
   return {
-    id: `${exercise.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${index + 1}`,
+    id: buildExerciseId(exercise),
     name: exercise.name,
     equipment: equipment || 'Bodyweight',
     category,
@@ -1187,10 +1196,17 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
     .split('.')
     .map((step) => step.trim())
     .filter(Boolean)
-    .slice(0, 4);
+    .slice(0, 3);
+  const beginnerGuide = [
+    `Setup: set the equipment first, then stand or sit in a stable position with your core tight and feet planted.`,
+    `Execution: move slowly through the full range of motion, then stop the set the moment your form breaks down.`,
+    `Breathing: inhale before the hard part, exhale while you push or pull, and keep your ribs down instead of over-arching.`,
+    `Coaching cue: keep tension on your ${primary.toLowerCase()} muscles so momentum does not take over.`,
+    `Safety check: choose a weight that lets you finish every rep with control before adding load next session.`
+  ];
   instructions.innerHTML = `
-    <span class="label">How to perform</span>
-    <ul>${instructionSteps.map((step) => `<li>${step}.</li>`).join('')}</ul>
+    <span class="label">How to perform (beginner-friendly)</span>
+    <ul>${instructionSteps.map((step) => `<li>${step}.</li>`).join('')}${beginnerGuide.map((step) => `<li>${step}</li>`).join('')}</ul>
   `;
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
@@ -1515,6 +1531,12 @@ function restoreState(payload) {
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
+        if (row.id && !EXERCISES.some((item) => item.id === row.id)) {
+          const migrated = EXERCISES.find((item) => item.name === row.name && (!row.targetMuscle || getMuscle(item) === row.targetMuscle))
+            || EXERCISES.find((item) => item.name === row.name);
+          row.id = migrated?.id || '';
+          row.name = migrated?.name || row.name || '';
+        }
         if (typeof row.sets !== 'string' || !row.sets) row.sets = getSlotPrescription(row.slot).sets;
         if (typeof row.reps !== 'string' || !row.reps) row.reps = getSlotPrescription(row.slot).reps;
       });
@@ -1568,13 +1590,18 @@ function renderPastSplitSelectors() {
   const endYear = current.year + 1;
   const yearOptions = Array.from({ length: (endYear - startYear) + 1 }, (_, i) => startYear + i);
   const selectedReadYear = Number(controls.splitYear.value) || current.year;
+  const selectedReadQuarter = Number(controls.splitQuarter.value) || current.quarter;
   const selectedSaveYear = Number(controls.saveYear.value) || current.year;
+  const selectedSaveQuarter = Number(controls.saveQuarter.value) || current.quarter;
   controls.splitYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedReadYear ? ' selected' : ''}>${year}</option>`).join('');
   controls.saveYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedSaveYear ? ' selected' : ''}>${year}</option>`).join('');
+  controls.splitQuarter.innerHTML = [1, 2, 3, 4]
+    .map((quarter) => `<option value="${quarter}"${quarter === selectedReadQuarter ? ' selected' : ''}>Q${quarter}</option>`)
+    .join('');
 
   const saveQuarterOptions = [1, 2, 3, 4]
     .filter((quarter) => canSaveToQuarter(Number(controls.saveYear.value), quarter))
-    .map((quarter) => `<option value="${quarter}">Q${quarter}</option>`)
+    .map((quarter) => `<option value="${quarter}"${quarter === selectedSaveQuarter ? ' selected' : ''}>Q${quarter}</option>`)
     .join('');
   controls.saveQuarter.innerHTML = saveQuarterOptions || `<option value="${current.quarter}">Q${current.quarter}</option>`;
 }
@@ -1662,6 +1689,7 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   });
 });
 
+document.getElementById('split-year-select').addEventListener('change', renderPastSplitSelectors);
 document.getElementById('save-year-select').addEventListener('change', renderPastSplitSelectors);
 document.getElementById('exercise-detail-close').addEventListener('click', closeExerciseDetailModal);
 document.getElementById('exercise-detail-modal').addEventListener('click', (event) => {
