@@ -35,6 +35,10 @@ window.EXERCISE_MATRIX = [
   { name: "Preacher Curl", equipment: "Barbell", primaryMuscle: "Biceps" },
   { name: "Preacher Curl", equipment: "Dumbbell", primaryMuscle: "Biceps" },
   { name: "Preacher Curl", equipment: "Machine", primaryMuscle: "Biceps" },
+  { name: "Machine Spider Curl", equipment: "Machine", primaryMuscle: "Biceps" },
+  { name: "Cable Bayesian Curl", equipment: "Cable", primaryMuscle: "Biceps" },
+  { name: "Machine High Row (Biceps Bias)", equipment: "Machine", primaryMuscle: "Biceps" },
+  { name: "Machine Underhand Row", equipment: "Machine", primaryMuscle: "Biceps" },
 
   { name: "Bench Dip", equipment: "Bodyweight", primaryMuscle: "Triceps" },
   { name: "Skullcrusher", equipment: "Barbell", primaryMuscle: "Triceps" },
@@ -88,6 +92,8 @@ window.EXERCISE_MATRIX = [
   { name: "Cable Leg Extension", equipment: "Cable", primaryMuscle: "Quads" },
 
   { name: "Calf Press", equipment: "Machine", primaryMuscle: "Calves" },
+  { name: "Standing Calf Press", equipment: "Machine", primaryMuscle: "Calves" },
+  { name: "Single-Leg Calf Press", equipment: "Machine", primaryMuscle: "Calves" },
   { name: "Standing Calf Raise", equipment: "Barbell", primaryMuscle: "Calves" },
   { name: "Standing Calf Raise", equipment: "Dumbbell", primaryMuscle: "Calves" },
   { name: "Standing Calf Raise", equipment: "Machine", primaryMuscle: "Calves" },

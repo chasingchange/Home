@@ -123,6 +123,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-suggestion strong { font-family: 'Raleway', sans-serif; letter-spacing: .04em; font-size: .7rem; text-transform: uppercase; color: #1f4a1f; margin-right: .28rem; }
 .slot-suggestion-primary { display: block; margin-top: .5rem; padding-top: .38rem; border-top: 1px dashed rgba(7,31,53,.24); color: var(--text); font-family: 'Raleway', sans-serif; font-size: .84rem; letter-spacing: .02em; font-weight: 800; }
 .slot-suggestion-priority { display: block; margin-top: .38rem; font-size: .78rem; font-weight: 700; color: rgba(7,31,53,.88); }
+.slot-choice-guide { margin-top: .45rem; border: 1px solid rgba(7,31,53,.14); border-radius: 9px; background: #fff; padding: .55rem .65rem; }
+.slot-choice-guide-title { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: .32rem; }
+.slot-choice-guide ul { margin: 0; padding-left: 1rem; display: grid; gap: .22rem; }
+.slot-choice-guide li { font-size: .8rem; line-height: 1.45; color: var(--text); }
 .slot-select option[data-suggested="1"] { font-weight: 700; }
 .slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
 .slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
@@ -698,6 +702,8 @@ const explicitMovementTypeByName = {
   'Lying Leg Curl': 'Isolated',
   'Seated Leg Curl': 'Isolated',
   'Calf Press': 'Isolated',
+  'Standing Calf Press': 'Compound',
+  'Single-Leg Calf Press': 'Compound',
   'Standing Calf Raise': 'Isolated',
   'Hip Abductors': 'Isolated',
   'Hip Adductors': 'Isolated',
@@ -715,6 +721,8 @@ const explicitMovementTypeByName = {
   'Cable Pull Through': 'Compound',
   'Pull Up': 'Compound',
   'Chin Up': 'Compound',
+  'Machine High Row (Biceps Bias)': 'Compound',
+  'Machine Underhand Row': 'Compound',
   'Lat Pulldown': 'Compound',
   'Seated Row': 'Compound',
   'T Bar Row': 'Compound',
@@ -1144,6 +1152,34 @@ function describeSlotIntent(slotType) {
   return 'Best for isolating one muscle and accumulating targeted volume.';
 }
 
+function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
+  if (!item.targetMuscle) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>Select a target muscle first so recommendations can be personalized for this slot.</li>
+        <li>Pick a movement that matches your equipment and feels stable to progress week to week.</li>
+      </ul>
+    </div>`;
+  }
+  if (!slotOptionsByMuscle.length) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>No exact ${item.targetMuscle} match found for this slot and setup.</li>
+        <li>Try another target muscle from this day (${dayMuscles.join(', ')}) or switch gym environment settings.</li>
+      </ul>
+    </div>`;
+  }
+  const topRecommendations = slotOptionsByMuscle.slice(0, 3)
+    .map((option) => `<li><strong>${option.name}</strong> — ${getMuscle(option)} focus · ${option.equipment || 'Bodyweight'} · ${normalizeType(option)} movement.</li>`)
+    .join('');
+  return `<div class="slot-choice-guide">
+    <span class="slot-choice-guide-title">Top picks for ${item.targetMuscle}</span>
+    <ul>${topRecommendations}</ul>
+  </div>`;
+}
+
 function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   if (!exercise) return;
   const modal = document.getElementById('exercise-detail-modal');
@@ -1251,6 +1287,7 @@ function renderDayCards() {
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
       <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
+      ${buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles)}
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
