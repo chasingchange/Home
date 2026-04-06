@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Scriptor System | Chasing Change</title>
+    <meta
+      name="description"
+      content="Plan your writing project timeline and keep daily progress aligned with your total word goal."
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../shared.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+              neon: "0 24px 80px rgba(119,215,112,0.30)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <header class="cc-title-block mb-6 sm:mb-8">
+        <div class="cc-title-block-inner">
+          <div class="cc-title-block-top">
+            <div class="cc-title-brand">
+              <img src="../../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
+              <h1 class="cc-title-name">The Scriptor System</h1>
+            </div>
+            <a
+              href="../../index.html"
+              class="inline-flex items-center rounded-xl bg-cc-text text-white px-4 py-2 text-sm font-bold hover:opacity-90 transition"
+              >Back to Tools</a
+            >
+          </div>
+          <p class="cc-title-subline">Build your writing project and stay synced to your target finish date.</p>
+        </div>
+      </header>
+
+      <main class="grid lg:grid-cols-2 gap-5">
+        <section class="rounded-3xl bg-cc-card ring-1 ring-black/10 shadow-soft p-5 sm:p-6">
+          <h2 class="text-2xl font-heading font-extrabold">Create Project</h2>
+          <p class="mt-2 text-sm opacity-80">Set your title, final word goal, and the date you want to finish.</p>
+
+          <form id="projectForm" class="mt-5 grid gap-4">
+            <label class="grid gap-1">
+              <span class="text-sm font-semibold">Project Name</span>
+              <input
+                id="projectName"
+                type="text"
+                required
+                placeholder="Example: Novel Draft 1"
+                class="rounded-xl border border-black/15 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-cc-outline"
+              />
+            </label>
+
+            <label class="grid gap-1">
+              <span class="text-sm font-semibold">Total Word Goal</span>
+              <input
+                id="wordGoal"
+                type="number"
+                min="1"
+                required
+                placeholder="50000"
+                class="rounded-xl border border-black/15 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-cc-outline"
+              />
+            </label>
+
+            <label class="grid gap-1">
+              <span class="text-sm font-semibold">Finish By</span>
+              <input
+                id="dueDate"
+                type="date"
+                required
+                class="rounded-xl border border-black/15 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-cc-outline"
+              />
+            </label>
+
+            <button
+              type="submit"
+              class="mt-1 inline-flex justify-center rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition"
+            >
+              Save Project
+            </button>
+          </form>
+        </section>
+
+        <section class="rounded-3xl bg-cc-card ring-1 ring-black/10 shadow-soft p-5 sm:p-6">
+          <h2 class="text-2xl font-heading font-extrabold">Update Progress</h2>
+          <p class="mt-2 text-sm opacity-80">Enter your current total words. The tracker auto-updates expected vs. actual progress.</p>
+
+          <div id="emptyState" class="mt-4 rounded-2xl border border-dashed border-black/20 bg-black/[0.02] p-4 text-sm">
+            Create a project first to start tracking.
+          </div>
+
+          <div id="trackerPanel" class="hidden mt-4">
+            <div class="rounded-2xl bg-cc-bg ring-1 ring-black/5 p-4">
+              <p id="projectTitle" class="font-heading text-xl font-extrabold"></p>
+              <p id="timelineText" class="text-sm mt-1 opacity-80"></p>
+
+              <label class="grid gap-1 mt-4">
+                <span class="text-sm font-semibold">Current Total Words</span>
+                <div class="flex gap-2">
+                  <input
+                    id="currentWords"
+                    type="number"
+                    min="0"
+                    class="w-full rounded-xl border border-black/15 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-cc-outline"
+                  />
+                  <button
+                    id="saveWordsBtn"
+                    type="button"
+                    class="rounded-xl bg-cc-text text-white px-4 py-2 text-sm font-bold hover:opacity-90"
+                  >
+                    Update
+                  </button>
+                </div>
+              </label>
+            </div>
+
+            <dl class="mt-4 grid sm:grid-cols-3 gap-3 text-sm">
+              <div class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
+                <dt class="font-semibold opacity-70">Goal</dt>
+                <dd id="goalWords" class="mt-1 text-lg font-extrabold"></dd>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
+                <dt class="font-semibold opacity-70">Expected by Today</dt>
+                <dd id="expectedWords" class="mt-1 text-lg font-extrabold"></dd>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
+                <dt class="font-semibold opacity-70">Actual Total</dt>
+                <dd id="actualWords" class="mt-1 text-lg font-extrabold"></dd>
+              </div>
+            </dl>
+
+            <div class="mt-4 grid gap-2">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wide">
+                  <span>Expected Progress</span>
+                  <span id="expectedPercent">0%</span>
+                </div>
+                <div class="mt-1 h-2 rounded-full bg-black/10 overflow-hidden">
+                  <div id="expectedBar" class="h-full bg-cc-text/45" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wide">
+                  <span>Actual Progress</span>
+                  <span id="actualPercent">0%</span>
+                </div>
+                <div class="mt-1 h-2 rounded-full bg-black/10 overflow-hidden">
+                  <div id="actualBar" class="h-full bg-cc-outline" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <p id="statusText" class="mt-4 rounded-xl border border-black/10 bg-white p-3 text-sm font-semibold"></p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "chasing-change-scriptor-project";
+      const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+      const projectForm = document.getElementById("projectForm");
+      const projectNameInput = document.getElementById("projectName");
+      const wordGoalInput = document.getElementById("wordGoal");
+      const dueDateInput = document.getElementById("dueDate");
+      const currentWordsInput = document.getElementById("currentWords");
+      const saveWordsBtn = document.getElementById("saveWordsBtn");
+
+      const emptyState = document.getElementById("emptyState");
+      const trackerPanel = document.getElementById("trackerPanel");
+
+      const projectTitle = document.getElementById("projectTitle");
+      const timelineText = document.getElementById("timelineText");
+      const goalWords = document.getElementById("goalWords");
+      const expectedWords = document.getElementById("expectedWords");
+      const actualWords = document.getElementById("actualWords");
+      const expectedPercent = document.getElementById("expectedPercent");
+      const actualPercent = document.getElementById("actualPercent");
+      const expectedBar = document.getElementById("expectedBar");
+      const actualBar = document.getElementById("actualBar");
+      const statusText = document.getElementById("statusText");
+
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const formatNumber = (value) => new Intl.NumberFormat().format(value || 0);
+
+      const loadProject = () => {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        } catch {
+          return null;
+        }
+      };
+
+      const saveProject = (project) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+      };
+
+      const getExpectedRatio = (startDateISO, dueDateISO) => {
+        const start = new Date(`${startDateISO}T00:00:00`);
+        const due = new Date(`${dueDateISO}T00:00:00`);
+        const today = new Date();
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        const totalDays = Math.max(1, Math.ceil((due - start) / MS_PER_DAY));
+        const elapsedDays = clamp(Math.ceil((todayOnly - start) / MS_PER_DAY), 0, totalDays);
+        return clamp(elapsedDays / totalDays, 0, 1);
+      };
+
+      const render = () => {
+        const project = loadProject();
+        if (!project) {
+          emptyState.classList.remove("hidden");
+          trackerPanel.classList.add("hidden");
+          return;
+        }
+
+        emptyState.classList.add("hidden");
+        trackerPanel.classList.remove("hidden");
+
+        projectTitle.textContent = project.name;
+        timelineText.textContent = `Start: ${project.startDate} • Finish: ${project.dueDate}`;
+
+        const expectedRatio = getExpectedRatio(project.startDate, project.dueDate);
+        const expectedCount = Math.round(project.goal * expectedRatio);
+        const actualCount = Number(project.currentWords || 0);
+
+        const actualRatio = project.goal > 0 ? clamp(actualCount / project.goal, 0, 1) : 0;
+
+        goalWords.textContent = `${formatNumber(project.goal)} words`;
+        expectedWords.textContent = `${formatNumber(expectedCount)} words`;
+        actualWords.textContent = `${formatNumber(actualCount)} words`;
+
+        expectedPercent.textContent = `${Math.round(expectedRatio * 100)}%`;
+        actualPercent.textContent = `${Math.round(actualRatio * 100)}%`;
+        expectedBar.style.width = `${expectedRatio * 100}%`;
+        actualBar.style.width = `${actualRatio * 100}%`;
+
+        const gap = actualCount - expectedCount;
+        const remaining = Math.max(project.goal - actualCount, 0);
+
+        if (remaining === 0) {
+          statusText.textContent = "Project complete. You hit your word goal!";
+        } else if (gap >= 0) {
+          statusText.textContent = `You are ${formatNumber(gap)} words ahead of expected pace with ${formatNumber(remaining)} words left.`;
+        } else {
+          statusText.textContent = `You are ${formatNumber(Math.abs(gap))} words behind expected pace with ${formatNumber(remaining)} words left.`;
+        }
+
+        currentWordsInput.value = project.currentWords ?? 0;
+      };
+
+      projectForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const name = projectNameInput.value.trim();
+        const goal = Number(wordGoalInput.value);
+        const dueDate = dueDateInput.value;
+        const today = new Date();
+        const startDate = today.toISOString().slice(0, 10);
+
+        if (!name || !goal || !dueDate) return;
+
+        const due = new Date(`${dueDate}T00:00:00`);
+        const start = new Date(`${startDate}T00:00:00`);
+        if (due < start) {
+          statusText.textContent = "Finish date must be today or later.";
+          statusText.classList.remove("hidden");
+          return;
+        }
+
+        saveProject({ name, goal, dueDate, startDate, currentWords: 0 });
+        currentWordsInput.value = "0";
+        render();
+      });
+
+      saveWordsBtn.addEventListener("click", () => {
+        const project = loadProject();
+        if (!project) return;
+
+        project.currentWords = Math.max(0, Number(currentWordsInput.value || 0));
+        saveProject(project);
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
