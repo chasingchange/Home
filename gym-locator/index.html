@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Locator | Chasing Change</title>
+    <meta
+      name="description"
+      content="Find gyms near an address or your current location with route distance and travel estimates."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --text: #071f35;
+        --accent: #77d770;
+        --card: #ffffff;
+        --brand-font: "Museo Moderno", "Raleway", sans-serif;
+        --heading-font: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --body-font: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--body-font);
+      }
+
+      .container {
+        width: min(1220px, 96vw);
+        margin: 24px auto;
+      }
+
+      .title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-family: var(--brand-font);
+        font-size: clamp(1.65rem, 2.4vw, 2.3rem);
+      }
+
+      .title p {
+        margin: 0;
+        font-size: 0.96rem;
+      }
+
+      .controls {
+        padding: 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        background: var(--card);
+        box-shadow: 0 10px 24px rgba(7, 31, 53, 0.08);
+        display: grid;
+        grid-template-columns: 1.6fr auto auto auto;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .controls input,
+      .controls select,
+      .controls button {
+        border-radius: 12px;
+        border: 1px solid rgba(7, 31, 53, 0.18);
+        padding: 0.74rem 0.86rem;
+        font-family: inherit;
+        color: var(--text);
+        background: #fff;
+      }
+
+      .controls input:focus,
+      .controls select:focus,
+      .controls button:focus-visible {
+        outline: 2px solid rgba(119, 215, 112, 0.58);
+        outline-offset: 1px;
+        border-color: rgba(119, 215, 112, 0.95);
+      }
+
+      .controls button {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(320px, 1.8fr) minmax(280px, 1fr);
+        gap: 12px;
+      }
+
+      #map {
+        min-height: 68vh;
+        border-radius: 20px;
+        border: 1px solid rgba(7, 31, 53, 0.14);
+        overflow: hidden;
+      }
+
+      .panel {
+        border-radius: 20px;
+        background: var(--card);
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        box-shadow: 0 10px 24px rgba(7, 31, 53, 0.08);
+        padding: 1rem;
+        max-height: 68vh;
+        overflow: auto;
+      }
+
+      .status {
+        margin: 0 0 0.8rem;
+        padding: 0.6rem 0.7rem;
+        border-radius: 10px;
+        background: rgba(119, 215, 112, 0.17);
+        border: 1px solid rgba(119, 215, 112, 0.5);
+        font-size: 0.9rem;
+      }
+
+      .gym-item {
+        border: 1px solid rgba(7, 31, 53, 0.14);
+        border-radius: 14px;
+        margin-bottom: 0.7rem;
+        overflow: hidden;
+      }
+
+      .gym-item summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.75rem;
+        display: grid;
+        gap: 0.28rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f6fbf5 100%);
+      }
+
+      .gym-item summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .gym-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .gym-name {
+        font-family: var(--heading-font);
+        font-weight: 800;
+      }
+
+      .badge {
+        border-radius: 999px;
+        font-size: 0.75rem;
+        border: 1px solid rgba(7, 31, 53, 0.16);
+        padding: 0.16rem 0.5rem;
+      }
+
+      .gym-meta {
+        padding: 0.7rem 0.75rem 0.8rem;
+        border-top: 1px solid rgba(7, 31, 53, 0.12);
+        display: grid;
+        gap: 0.35rem;
+        font-size: 0.9rem;
+      }
+
+      .gym-meta a {
+        color: var(--text);
+      }
+
+      @media (max-width: 920px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        #map,
+        .panel {
+          max-height: none;
+          min-height: 55vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <header class="title">
+        <div>
+          <h1>Gym Locator</h1>
+          <p>Find gyms near an address or your current location with route times and affordability.</p>
+        </div>
+      </header>
+
+      <section class="controls" aria-label="search controls">
+        <input id="addressInput" type="text" placeholder="Enter an address, city, or ZIP code" aria-label="Address" />
+        <select id="modeSelect" aria-label="Travel mode">
+          <option value="driving">Driving</option>
+          <option value="walking">Walking</option>
+          <option value="biking">Biking</option>
+          <option value="transit">Public Transit</option>
+        </select>
+        <button id="searchBtn" class="btn-primary" type="button">Find Gyms</button>
+        <button id="locateBtn" type="button">Use Current Location</button>
+      </section>
+
+      <section class="workspace" aria-label="map and gym details">
+        <div id="map" role="img" aria-label="Map of gym locations"></div>
+        <aside class="panel">
+          <p class="status" id="statusText">Search to discover nearby gyms.</p>
+          <div id="results"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const map = L.map("map", { zoomControl: true }).setView([39.8283, -98.5795], 4);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        subdomains: "abcd",
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      }).addTo(map);
+
+      const markersLayer = L.layerGroup().addTo(map);
+      const addressInput = document.getElementById("addressInput");
+      const modeSelect = document.getElementById("modeSelect");
+      const searchBtn = document.getElementById("searchBtn");
+      const locateBtn = document.getElementById("locateBtn");
+      const results = document.getElementById("results");
+      const statusText = document.getElementById("statusText");
+
+      let currentOrigin = null;
+
+      const modeMap = {
+        driving: "driving",
+        walking: "foot",
+        biking: "bike",
+      };
+
+      const formatPrice = (index) => "$".repeat(Math.min(4, Math.max(1, index)));
+
+      const toRad = (value) => (value * Math.PI) / 180;
+      const haversineKm = (aLat, aLon, bLat, bLon) => {
+        const r = 6371;
+        const dLat = toRad(bLat - aLat);
+        const dLon = toRad(bLon - aLon);
+        const p =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return 2 * r * Math.atan2(Math.sqrt(p), Math.sqrt(1 - p));
+      };
+
+      const estimateTransit = (distanceKm) => {
+        const waitMinutes = 8;
+        const avgTransitSpeedKph = 28;
+        const rideMinutes = (distanceKm / avgTransitSpeedKph) * 60;
+        return { distanceKm, durationMinutes: waitMinutes + rideMinutes, estimated: true };
+      };
+
+      const geocodeAddress = async (query) => {
+        const endpoint = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+        const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error("Unable to geocode address right now.");
+        const data = await response.json();
+        if (!data?.length) throw new Error("No location found for that address.");
+        return { lat: Number(data[0].lat), lon: Number(data[0].lon), label: data[0].display_name };
+      };
+
+      const reverseGeocode = async (lat, lon) => {
+        const endpoint = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+        const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+        if (!response.ok) return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        const data = await response.json();
+        return data?.display_name || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+      };
+
+      const findNearbyGyms = async (lat, lon) => {
+        const overpass = `
+[out:json][timeout:25];
+(
+  node["leisure"="fitness_centre"](around:6000,${lat},${lon});
+  node["sport"="fitness"](around:6000,${lat},${lon});
+);
+out body 40;
+`;
+        const response = await fetch("https://overpass-api.de/api/interpreter", {
+          method: "POST",
+          body: overpass,
+        });
+        if (!response.ok) throw new Error("Gym lookup service unavailable.");
+        const data = await response.json();
+        return (data.elements || []).slice(0, 12).map((el, idx) => ({
+          id: el.id,
+          index: idx,
+          name: el.tags?.name || `Gym ${String.fromCharCode(65 + idx)}`,
+          lat: el.lat,
+          lon: el.lon,
+          hours: el.tags?.opening_hours || "Hours not listed",
+          phone: el.tags?.phone || el.tags?.["contact:phone"] || "Phone not listed",
+          website: el.tags?.website || el.tags?.["contact:website"] || "",
+          address:
+            [el.tags?.["addr:housenumber"], el.tags?.["addr:street"], el.tags?.["addr:city"], el.tags?.["addr:state"]]
+              .filter(Boolean)
+              .join(" ") || "Address not listed",
+          affordability: formatPrice((idx % 4) + 1),
+        }));
+      };
+
+      const getRoute = async (origin, gym, mode) => {
+        if (mode === "transit") {
+          const distanceKm = haversineKm(origin.lat, origin.lon, gym.lat, gym.lon);
+          return estimateTransit(distanceKm);
+        }
+
+        const profile = modeMap[mode] || "driving";
+        const url = `https://router.project-osrm.org/route/v1/${profile}/${origin.lon},${origin.lat};${gym.lon},${gym.lat}?overview=false`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Routing unavailable.");
+        const data = await response.json();
+        const route = data?.routes?.[0];
+        if (!route) throw new Error("No route available.");
+        return { distanceKm: route.distance / 1000, durationMinutes: route.duration / 60, estimated: false };
+      };
+
+      const renderList = (gyms, mode) => {
+        results.innerHTML = "";
+        const bounds = [];
+        markersLayer.clearLayers();
+
+        gyms.forEach((gym) => {
+          const markerId = `Gym ${String.fromCharCode(65 + gym.index)}`;
+          const marker = L.marker([gym.lat, gym.lon])
+            .bindPopup(`<strong>${markerId}</strong><br>${gym.name}`)
+            .addTo(markersLayer);
+          bounds.push([gym.lat, gym.lon]);
+
+          const details = document.createElement("details");
+          details.className = "gym-item";
+
+          const distance = `${gym.route.distanceKm.toFixed(1)} km`;
+          const duration = `${Math.round(gym.route.durationMinutes)} min`;
+          const routeTag = gym.route.estimated ? "Estimated" : "Live";
+
+          details.innerHTML = `
+            <summary>
+              <div class="gym-head">
+                <span class="gym-name">${markerId} • ${gym.name}</span>
+                <span class="badge">${gym.affordability}</span>
+              </div>
+              <span>${distance} • ${duration} via ${mode}${gym.route.estimated ? " (estimated)" : ""}</span>
+            </summary>
+            <div class="gym-meta">
+              <div><strong>Address:</strong> ${gym.address}</div>
+              <div><strong>Hours:</strong> ${gym.hours}</div>
+              <div><strong>Phone:</strong> ${gym.phone}</div>
+              <div><strong>Cost:</strong> ${gym.affordability}</div>
+              <div><strong>Route:</strong> ${distance} / ${duration} <span class="badge">${routeTag}</span></div>
+              ${gym.website ? `<div><a href="${gym.website}" target="_blank" rel="noopener noreferrer">Visit website</a></div>` : ""}
+            </div>
+          `;
+
+          details.addEventListener("toggle", () => {
+            if (details.open) {
+              marker.openPopup();
+              map.panTo([gym.lat, gym.lon]);
+            }
+          });
+
+          results.appendChild(details);
+        });
+
+        if (bounds.length) {
+          bounds.push([currentOrigin.lat, currentOrigin.lon]);
+          map.fitBounds(bounds, { padding: [35, 35] });
+        }
+      };
+
+      const locateGyms = async (origin, mode) => {
+        statusText.textContent = "Loading gyms and travel details...";
+        searchBtn.disabled = true;
+        locateBtn.disabled = true;
+
+        try {
+          currentOrigin = origin;
+          markersLayer.clearLayers();
+          L.marker([origin.lat, origin.lon], { title: "You are here" })
+            .bindPopup("Your location")
+            .addTo(markersLayer);
+
+          const gyms = await findNearbyGyms(origin.lat, origin.lon);
+          if (!gyms.length) {
+            statusText.textContent = "No gyms found in this area. Try a different location.";
+            results.innerHTML = "";
+            return;
+          }
+
+          const withRoutes = await Promise.all(
+            gyms.map(async (gym) => {
+              try {
+                const route = await getRoute(origin, gym, mode);
+                return { ...gym, route };
+              } catch {
+                const fallbackDistance = haversineKm(origin.lat, origin.lon, gym.lat, gym.lon);
+                return {
+                  ...gym,
+                  route: { distanceKm: fallbackDistance, durationMinutes: fallbackDistance * 5, estimated: true },
+                };
+              }
+            })
+          );
+
+          withRoutes.sort((a, b) => a.route.durationMinutes - b.route.durationMinutes);
+          renderList(withRoutes, mode);
+          statusText.textContent = `Showing ${withRoutes.length} gyms near ${origin.label}.`;
+        } catch (error) {
+          statusText.textContent = error.message || "Could not fetch gym locations right now.";
+          results.innerHTML = "";
+        } finally {
+          searchBtn.disabled = false;
+          locateBtn.disabled = false;
+        }
+      };
+
+      searchBtn.addEventListener("click", async () => {
+        const query = addressInput.value.trim();
+        if (!query) {
+          statusText.textContent = "Please enter an address first.";
+          return;
+        }
+        const mode = modeSelect.value;
+        try {
+          const origin = await geocodeAddress(query);
+          await locateGyms(origin, mode);
+        } catch (error) {
+          statusText.textContent = error.message || "Address search failed.";
+        }
+      });
+
+      locateBtn.addEventListener("click", () => {
+        if (!navigator.geolocation) {
+          statusText.textContent = "Geolocation is not supported in this browser.";
+          return;
+        }
+
+        const mode = modeSelect.value;
+        statusText.textContent = "Getting your current location...";
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const label = await reverseGeocode(lat, lon);
+            await locateGyms({ lat, lon, label }, mode);
+          },
+          () => {
+            statusText.textContent = "Unable to access your location. Please use an address instead.";
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      });
+    </script>
+  </body>
+</html>
