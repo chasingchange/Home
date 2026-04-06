@@ -204,10 +204,13 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
 .summary-panel { display: none; }
 .summary-panel.active { display: block; }
+.split-view-tabs { display: flex; gap: .5rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.split-view-panel { display: none; }
+.split-view-panel.active { display: block; }
 .summary-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: .8rem; align-items: start; }
 .summary-main { min-width: 0; }
 .summary-side { min-width: 0; }
-.past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(140px, 1fr)); align-items: end; margin-top: .8rem; }
+.past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(120px, 1fr)); align-items: end; margin-top: .8rem; }
 .past-split-controls label { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .3rem; }
 .past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
 .past-split-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .85rem; }
@@ -378,62 +381,77 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 
   <div class="screen" id="s9">
     <div class="step-eyebrow">STEP 9 · SPLIT SCULPTOR SUMMARY</div>
-    <h2 class="step-title">Current Summary</h2>
+    <h2 class="step-title">View Split</h2>
     <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
     <div class="summary-layout">
       <div class="summary-main">
         <div class="summary-tabs">
-          <button type="button" class="summary-tab on" data-summary-tab="overview">Current Summary + Macros</button>
-          <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
+          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
+          <button type="button" class="summary-tab" data-summary-tab="workouts">View Split</button>
         </div>
-        <div class="summary-panel active" id="overview-summary-panel"></div>
-        <div class="summary-panel" id="workouts-summary-panel"></div>
+        <div class="summary-panel active" id="overview-summary-panel">
+          <div class="week">
+            <h3>Save This View</h3>
+            <p class="step-sub" style="margin-bottom:.6rem;">Save this summary and macro setup to a quarter.</p>
+            <div id="summary-save-controls-wrap" style="display:none;">
+              <div class="past-split-controls">
+                <div>
+                  <label for="save-year-select">Save Year</label>
+                  <select id="save-year-select"></select>
+                </div>
+                <div>
+                  <label for="save-quarter-select">Save Quarter</label>
+                  <select id="save-quarter-select"></select>
+                </div>
+              </div>
+              <div class="past-split-actions">
+                <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
+              </div>
+              <div class="past-split-msg" id="summary-save-msg"></div>
+            </div>
+            <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
+          </div>
+          <div id="overview-summary-content"></div>
+        </div>
+        <div class="summary-panel" id="workouts-summary-panel">
+          <div class="split-view-tabs">
+            <button type="button" class="summary-tab on" data-split-view-tab="split">Split</button>
+            <button type="button" class="summary-tab" data-split-view-tab="past">Past Workouts</button>
+          </div>
+          <div class="split-view-panel active" id="split-workouts-panel"></div>
+          <div class="split-view-panel" id="past-workouts-panel">
+            <div class="week">
+              <h3>Past Splits</h3>
+              <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+              <div id="past-split-controls-wrap" style="display:none;">
+                <div class="past-split-controls">
+                  <div>
+                    <label for="split-year-select">Year</label>
+                    <select id="split-year-select"></select>
+                  </div>
+                  <div>
+                    <label for="split-quarter-select">Quarter</label>
+                    <select id="split-quarter-select">
+                      <option value="1">Q1 (Jan–Mar)</option>
+                      <option value="2">Q2 (Apr–Jun)</option>
+                      <option value="3">Q3 (Jul–Sep)</option>
+                      <option value="4">Q4 (Oct–Dec)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="past-split-actions">
+                  <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
+                </div>
+                <div class="past-split-msg" id="past-split-msg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
       <button class="btn" id="print-summary-btn" type="button">Print</button>
       <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
-    </div>
-  </div>
-
-  <div class="screen" id="s10">
-    <div class="step-eyebrow">STEP 10 · PAST WORKOUTS</div>
-    <h2 class="step-title">Past Workouts</h2>
-    <p class="step-sub">Review, load, and manage your saved splits by quarter.</p>
-    <div class="week">
-      <h3>Past Splits</h3>
-      <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
-      <div id="past-split-controls-wrap" style="display:none;">
-        <div class="past-split-controls">
-          <div>
-            <label for="split-year-select">Year</label>
-            <select id="split-year-select"></select>
-          </div>
-          <div>
-            <label for="split-quarter-select">Quarter</label>
-            <select id="split-quarter-select">
-              <option value="1">Q1 (Jan–Mar)</option>
-              <option value="2">Q2 (Apr–Jun)</option>
-              <option value="3">Q3 (Jul–Sep)</option>
-              <option value="4">Q4 (Oct–Dec)</option>
-            </select>
-          </div>
-          <div>
-            <label for="save-year-select">Save Year</label>
-            <select id="save-year-select"></select>
-          </div>
-          <div>
-            <label for="save-quarter-select">Save Quarter</label>
-            <select id="save-quarter-select"></select>
-          </div>
-        </div>
-        <div class="past-split-actions">
-          <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
-          <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
-        </div>
-        <div class="past-split-msg" id="past-split-msg"></div>
-      </div>
     </div>
   </div>
 
@@ -475,7 +493,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 <p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
 
 <script>
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 9;
 const STEP_TIMING = [
   { name: 'Macrocycle', duration: '3 months', group: 'VISION' },
   { name: 'Mesocycle', duration: '4 weeks', group: 'VISION' },
@@ -485,8 +503,7 @@ const STEP_TIMING = [
   { name: 'Priority', duration: 'Now', group: 'FITNESS' },
   { name: 'Environment', duration: 'Now', group: 'FITNESS' },
   { name: 'Microcycle Builder', duration: '1 week', group: 'FITNESS' },
-  { name: 'Current Summary', duration: '' },
-  { name: 'Past Workouts', duration: '' }
+  { name: 'View Split', duration: '' }
 ];
 const state = {
   step: 1,
@@ -1427,7 +1444,7 @@ function buildSummary() {
       .join('');
     return `<li><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul>${rows}</ul></li>`;
   }).join('');
-  document.getElementById('overview-summary-panel').innerHTML = `
+  document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
       <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
       <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
@@ -1443,7 +1460,7 @@ function buildSummary() {
       ${targetMarkup}
     </div>
   `;
-  document.getElementById('workouts-summary-panel').innerHTML = `
+  document.getElementById('split-workouts-panel').innerHTML = `
     <div class="week">
       <h3>Split</h3>
       <ul>${splitRows}</ul>
@@ -1525,9 +1542,12 @@ function getArchiveControls() {
     controlsWrap: document.getElementById('past-split-controls-wrap'),
     splitYear: document.getElementById('split-year-select'),
     splitQuarter: document.getElementById('split-quarter-select'),
+    summaryLoginPrompt: document.getElementById('summary-save-login-prompt'),
+    summaryControlsWrap: document.getElementById('summary-save-controls-wrap'),
     saveYear: document.getElementById('save-year-select'),
     saveQuarter: document.getElementById('save-quarter-select'),
-    msg: document.getElementById('past-split-msg')
+    msg: document.getElementById('past-split-msg'),
+    saveMsg: document.getElementById('summary-save-msg')
   };
 }
 
@@ -1572,7 +1592,11 @@ function syncPastSplitsPanel() {
     ? ''
     : 'Log in to view and manage your past splits. Go to the account section to sign in.';
   controls.controlsWrap.style.display = isLoggedIn ? 'block' : 'none';
+  controls.summaryLoginPrompt.style.display = isLoggedIn ? 'none' : 'block';
+  controls.summaryLoginPrompt.textContent = isLoggedIn ? '' : 'Log in to save your summary to a quarter.';
+  controls.summaryControlsWrap.style.display = isLoggedIn ? 'block' : 'none';
   controls.msg.textContent = '';
+  controls.saveMsg.textContent = '';
   if (isLoggedIn) renderPastSplitSelectors();
 }
 
@@ -1628,6 +1652,16 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   });
 });
 
+document.querySelectorAll('[data-split-view-tab]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-split-view-tab]').forEach((node) => node.classList.remove('on'));
+    btn.classList.add('on');
+    const showPast = btn.dataset.splitViewTab === 'past';
+    document.getElementById('split-workouts-panel').classList.toggle('active', !showPast);
+    document.getElementById('past-workouts-panel').classList.toggle('active', showPast);
+  });
+});
+
 document.getElementById('save-year-select').addEventListener('change', renderPastSplitSelectors);
 document.getElementById('exercise-detail-close').addEventListener('click', closeExerciseDetailModal);
 document.getElementById('exercise-detail-modal').addEventListener('click', (event) => {
@@ -1654,6 +1688,7 @@ document.getElementById('load-selected-split-btn').addEventListener('click', () 
   }
   restoreState(found.state);
   controls.msg.textContent = `Loaded split from ${key} (saved ${formatSavedAt(found.savedAt)}).`;
+  document.querySelector('[data-summary-tab="overview"]')?.click();
 });
 
 document.getElementById('save-selected-split-btn').addEventListener('click', async () => {
@@ -1670,8 +1705,8 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
     state: getSerializableState()
   };
   const saved = await persistSplitArchive();
-  controls.msg.textContent = saved
-    ? `Saved current summary to ${key}. Existing data was overwritten for that quarter.`
+  controls.saveMsg.textContent = saved
+    ? `Saved this split view to ${key}. Existing data was overwritten for that quarter.`
     : 'Could not save right now. Please make sure you are logged in and try again.';
 });
 
@@ -1708,14 +1743,48 @@ document.getElementById('back-btn').addEventListener('click', () => {
 });
 
 
+function getActiveSummaryPanel() {
+  const overviewActive = document.getElementById('overview-summary-panel')?.classList.contains('active');
+  if (overviewActive) return document.getElementById('overview-summary-content');
+  const splitActive = document.getElementById('split-workouts-panel')?.classList.contains('active');
+  if (splitActive) return document.getElementById('split-workouts-panel');
+  return null;
+}
+
 document.getElementById('print-summary-btn').addEventListener('click', () => {
-  window.print();
+  const activePanel = getActiveSummaryPanel();
+  if (!activePanel) return;
+  const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1200,height=900');
+  if (!printWindow) return;
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Split Sculptor Print</title>
+        <style>
+          body { font-family: 'Muli', Arial, sans-serif; background: #f5f5f7; color: #071f35; padding: 24px; }
+          .summary-card,.week { background: #fff; border: 1px solid rgba(7,31,53,0.14); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+          .sum-row { display:flex; justify-content:space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid rgba(7,31,53,0.08); }
+          .sum-row:last-child { border-bottom: 0; }
+          .sum-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; }
+          .sum-val { font-weight: 700; text-align: right; }
+          .week h3 { margin-top: 0; }
+          .week ul { list-style: none; padding: 0; }
+          .week li { border: 1px solid rgba(7,31,53,0.14); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+          button { display: none !important; }
+        </style>
+      </head>
+      <body>${activePanel.innerHTML}</body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
 });
 
 document.getElementById('save-png-btn').addEventListener('click', async () => {
-  const summary = document.querySelector('.summary-main');
-  if (!summary || typeof window.html2canvas !== 'function') return;
-  const canvas = await window.html2canvas(summary, { backgroundColor: '#f5f5f7', scale: 2 });
+  const panel = getActiveSummaryPanel();
+  if (!panel || typeof window.html2canvas !== 'function') return;
+  const canvas = await window.html2canvas(panel, { backgroundColor: '#f5f5f7', scale: 2 });
   const filename = 'split-sculptor-summary.png';
   const dataUrl = canvas.toDataURL('image/png');
 
