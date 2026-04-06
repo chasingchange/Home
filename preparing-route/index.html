@@ -97,9 +97,21 @@
           </div>
 
           <section class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
-            <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Admin moved</p>
+            <p class="text-sm font-semibold uppercase tracking-wide text-cc-text/70">Planning the Route</p>
             <h2 class="mt-2 text-2xl font-extrabold font-heading">Preparing the Route</h2>
-            <p class="mt-2 text-sm opacity-80">Split Sculptor has been removed from this page. Use the homepage tools. To edit this page or any page, use the password box in the lower-right Admin control.</p>
+            <p class="mt-2 text-sm opacity-80">These tools are being staged here before wider release. Access them from this tab only for now.</p>
+            <div class="mt-5 grid gap-4 md:grid-cols-2">
+              <a href="./split-sculptor.html" class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4 sm:p-5 hover:-translate-y-0.5 hover:shadow-soft transition">
+                <h3 class="text-lg font-extrabold font-heading">Split Sculptor</h3>
+                <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, detailed movement instructions, and summary export.</p>
+                <p class="mt-3 text-sm font-extrabold">Open Split Sculptor →</p>
+              </a>
+              <a href="../art/scriptor-system/index.html" class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4 sm:p-5 hover:-translate-y-0.5 hover:shadow-soft transition">
+                <h3 class="text-lg font-extrabold font-heading">The Scriptor System</h3>
+                <p class="mt-2 text-sm opacity-80">Writing workflow builder for deadlines, word goals, and progress pacing.</p>
+                <p class="mt-3 text-sm font-extrabold">Open Scriptor System →</p>
+              </a>
+            </div>
           </section>
 
           <section class="mt-5 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
@@ -166,7 +178,8 @@
             </div>
           </section>
         </section>
-      <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
+      <p id="lastUpdatedStamp" class="mt-6 text-center text-xs sm:text-sm opacity-70">Last updated: —</p>
+      <p class="mt-2 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
 
       </main>
     </div>
@@ -174,6 +187,13 @@
     <script>
       const menuToggle = document.getElementById("menuToggle");
       const mobileMenu = document.getElementById("mobileMenu");
+      const lastUpdatedStamp = document.getElementById("lastUpdatedStamp");
+      if (lastUpdatedStamp) {
+        const modified = new Date(document.lastModified);
+        lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
+          ? "Last updated: unavailable"
+          : `Last updated: ${modified.toLocaleString()}`;
+      }
       menuToggle?.addEventListener("click", () => {
         const expanded = menuToggle.getAttribute("aria-expanded") === "true";
         menuToggle.setAttribute("aria-expanded", String(!expanded));

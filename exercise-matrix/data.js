@@ -147,7 +147,23 @@ function getMovementType(exercise) {
   return "Compound";
 }
 
+function getExerciseInstructions(exercise) {
+  const name = exercise.name || "This movement";
+  const movementType = exercise.movementType || getMovementType(exercise);
+  const primaryMuscle = exercise.primaryMuscle || "target muscle";
+  const equipment = exercise.equipment || "your equipment";
+
+  const setupCue = `Set up for ${name} using ${equipment} with a stable stance and your core braced.`;
+  const mainCue =
+    movementType === "Isolated"
+      ? `Move with control, keep tension on your ${primaryMuscle.toLowerCase()}, and avoid momentum through the full range of motion.`
+      : `Drive through each rep with controlled tempo, keep your torso and joints stacked, and feel your ${primaryMuscle.toLowerCase()} doing the work.`;
+  const safetyCue = "Stop 1-2 reps before form breaks, then adjust load or reps as needed.";
+  return `${setupCue} ${mainCue} ${safetyCue}`;
+}
+
 window.EXERCISE_MATRIX = window.EXERCISE_MATRIX.map((exercise) => ({
   ...exercise,
-  movementType: exercise.movementType || getMovementType(exercise)
+  movementType: exercise.movementType || getMovementType(exercise),
+  instructions: exercise.instructions || getExerciseInstructions(exercise)
 }));

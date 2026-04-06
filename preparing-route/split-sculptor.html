@@ -119,12 +119,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-row.prescription-partial .slot-status-light { background: #f39c12; border-color: #e38b07; }
 .slot-row.prescription-complete { border-color: rgba(89,195,82,.62); background: rgba(119,215,112,.2); }
 .slot-row.prescription-complete .slot-status-light { background: #59c352; border-color: #469f41; }
-.slot-suggestion { margin-top: .45rem; font-size: .8rem; color: var(--text); line-height: 1.5; border: 1px solid rgba(119,215,112,.38); border-left: 4px solid #59c352; border-radius: 9px; background: rgba(119,215,112,.14); padding: .5rem .6rem; }
+.slot-suggestion { margin-top: .45rem; font-size: .84rem; color: var(--text); line-height: 1.6; border: 1px solid rgba(119,215,112,.38); border-left: 4px solid #59c352; border-radius: 9px; background: rgba(119,215,112,.14); padding: .58rem .7rem; }
 .slot-suggestion strong { font-family: 'Raleway', sans-serif; letter-spacing: .04em; font-size: .7rem; text-transform: uppercase; color: #1f4a1f; margin-right: .28rem; }
-.slot-suggestion-primary { display: inline-block; margin: .32rem 0 0; padding: .2rem .45rem; border-radius: 999px; border: 1px solid rgba(89,195,82,.55); background: #fff; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .82rem; letter-spacing: .02em; font-weight: 800; }
-.slot-suggestion-priority { display: inline-block; margin-top: .35rem; font-size: .76rem; font-weight: 700; color: rgba(7,31,53,.88); }
+.slot-suggestion-primary { display: block; margin-top: .5rem; padding-top: .38rem; border-top: 1px dashed rgba(7,31,53,.24); color: var(--text); font-family: 'Raleway', sans-serif; font-size: .84rem; letter-spacing: .02em; font-weight: 800; }
+.slot-suggestion-priority { display: block; margin-top: .38rem; font-size: .78rem; font-weight: 700; color: rgba(7,31,53,.88); }
 .slot-select option[data-suggested="1"] { font-weight: 700; }
-.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; padding: .45rem .55rem; cursor: pointer; font-weight: 700; }
+.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; }
 .slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
 .exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
 .exercise-detail-modal.open { display: flex; }
@@ -137,7 +137,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .exercise-detail-card { border: 1px solid rgba(7,31,53,.12); border-radius: 10px; padding: .55rem .65rem; background: #f5f5f7; }
 .exercise-detail-card .k { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .exercise-detail-card .v { display: block; margin-top: .2rem; font-size: .9rem; font-weight: 700; color: var(--text); }
-.exercise-detail-note { margin-top: .7rem; border: 1px solid rgba(119,215,112,.35); border-left: 4px solid #59c352; border-radius: 10px; background: rgba(119,215,112,.12); padding: .65rem .75rem; color: var(--text); font-size: .84rem; line-height: 1.5; }
+.exercise-detail-instructions { margin-top: .7rem; border: 1px solid rgba(7,31,53,.16); border-radius: 10px; background: #f8fafc; padding: .72rem .82rem; color: var(--text); }
+.exercise-detail-instructions .label { display: block; margin-bottom: .4rem; font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.exercise-detail-instructions ul { margin: 0; padding-left: 1.05rem; font-size: .9rem; line-height: 1.62; }
+.exercise-detail-note { margin-top: .7rem; border: 1px solid rgba(119,215,112,.35); border-left: 4px solid #59c352; border-radius: 10px; background: rgba(119,215,112,.12); padding: .68rem .78rem; color: var(--text); font-size: .88rem; line-height: 1.58; }
 .builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
 .builder-day-tab.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); }
@@ -446,12 +449,13 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">Exercise details</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View workout information</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
     </div>
     <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
+    <div class="exercise-detail-instructions" id="exercise-detail-instructions"></div>
     <div class="exercise-detail-note" id="exercise-detail-note"></div>
   </div>
 </div>
@@ -468,6 +472,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="workout-demo-note">Tip: this opens a playable demo search so you can quickly watch form cues without leaving your split builder.</div>
   </div>
 </div>
+<p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
 
 <script>
 const TOTAL_STEPS = 10;
@@ -618,7 +623,8 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise, index) => {
     name: exercise.name,
     equipment: equipment || 'Bodyweight',
     category,
-    primaryMuscle: exercise.primaryMuscle || 'Full Body'
+    primaryMuscle: exercise.primaryMuscle || 'Full Body',
+    instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.'
   };
 });
 
@@ -1119,10 +1125,11 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const title = document.getElementById('exercise-detail-title');
   const sub = document.getElementById('exercise-detail-sub');
   const grid = document.getElementById('exercise-detail-grid');
+  const instructions = document.getElementById('exercise-detail-instructions');
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = exercise.name;
+  title.textContent = 'View workout information';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
   const cards = [
     { k: 'Targets', v: primary },
@@ -1131,10 +1138,19 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
     { k: 'Equipment', v: exercise.equipment || 'Bodyweight' }
   ];
   grid.innerHTML = cards.map((item) => `<div class="exercise-detail-card"><span class="k">${item.k}</span><span class="v">${item.v}</span></div>`).join('');
+  const instructionSteps = (exercise.instructions || '')
+    .split('.')
+    .map((step) => step.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+  instructions.innerHTML = `
+    <span class="label">How to perform</span>
+    <ul>${instructionSteps.map((step) => `<li>${step}.</li>`).join('')}</ul>
+  `;
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
     : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
-  note.textContent = `${targetLine} ${describeSlotIntent(slotType)}`;
+  note.textContent = `${exercise.name}: ${targetLine} ${describeSlotIntent(slotType)}`;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -1200,11 +1216,11 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View workout information</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
-      <div class="slot-suggestion"><strong>Coach Suggestion</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
+      <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
@@ -1733,6 +1749,14 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
 });
 
 showStep(1);
+
+const lastUpdatedStamp = document.getElementById('lastUpdatedStamp');
+if (lastUpdatedStamp) {
+  const modified = new Date(document.lastModified);
+  lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
+    ? 'Last updated: unavailable'
+    : `Last updated: ${modified.toLocaleString()}`;
+}
 
 </script>
 </body>
