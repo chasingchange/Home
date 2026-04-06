@@ -139,12 +139,6 @@
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
             </a>
 
-            <a href="./preparing-route/split-sculptor.html" data-core="body" data-section="programming" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Split Sculptor</h2>
-              <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, print-ready summary, and PNG export.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
-            </a>
-
             <a href="./exercise-matrix/index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h2>
               <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
@@ -163,13 +157,6 @@
               <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
             </a>
 
-
-            <a href="./art/scriptor-system/index.html" data-core="art" data-section="writing" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">The Scriptor System</h2>
-              <p class="mt-2 text-sm opacity-80">Build writing projects with deadlines and word goals, then track actual progress vs expected pace.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open tool →</p>
-            </a>
-
             <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" data-section="programming" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
               <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
               <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
@@ -179,7 +166,8 @@
                     <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
         </section>
 
-      <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
+      <p id="lastUpdatedStamp" class="mt-6 text-center text-xs sm:text-sm opacity-70">Last updated: —</p>
+      <p class="mt-2 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
 
       </main>
     </div>
@@ -201,7 +189,15 @@
       const roadmapNavDesktop = document.getElementById("roadmapNavDesktop");
       const roadmapNavMobile = document.getElementById("roadmapNavMobile");
       const roadmapToolCard = document.getElementById("roadmapToolCard");
+      const lastUpdatedStamp = document.getElementById("lastUpdatedStamp");
       let canViewRoadmap = false;
+
+      if (lastUpdatedStamp) {
+        const modified = new Date(document.lastModified);
+        lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
+          ? "Last updated: unavailable"
+          : `Last updated: ${modified.toLocaleString()}`;
+      }
 
       let lockedCore = "body";
       let lockedBodySection = "all";
