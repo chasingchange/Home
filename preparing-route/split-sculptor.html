@@ -193,9 +193,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .split-day-card strong { font-family: 'Raleway', sans-serif; font-size: .86rem; letter-spacing: .03em; display: block; margin-bottom: .5rem; color: var(--text); }
 .split-workout-list { list-style: none; padding-left: 0; display: grid; gap: .4rem; }
 .split-workout-item { border: 1px solid rgba(7,31,53,0.1); border-radius: 10px; background: #f8fafc; padding: .48rem .58rem; }
+.split-workout-item.missing { border-color: rgba(196, 48, 48, 0.65); background: rgba(220, 38, 38, 0.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
 .split-workout-main { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; font-size: .88rem; }
 .split-workout-slot { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
 .split-workout-prescription { font-weight: 700; color: var(--text); }
+.split-warning { margin-top: .55rem; border: 1px solid rgba(196, 48, 48, 0.42); border-left: 4px solid #c43030; border-radius: 9px; padding: .52rem .62rem; background: rgba(220, 38, 38, 0.1); color: #7a1515; font-size: .82rem; line-height: 1.55; }
 .summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
@@ -410,6 +412,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
             <div class="past-split-actions">
               <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
             </div>
+            <p class="split-warning">Warning: saving a Split Sculptor view to a quarter replaces any previously saved split data for that same year + quarter.</p>
             <div class="past-split-msg" id="summary-save-msg"></div>
           </div>
           <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
@@ -1458,7 +1461,8 @@ function buildSummary() {
         const exerciseName = slot.name || '';
         const sets = slot.sets || getSlotPrescription(slot.slot).sets;
         const reps = slot.reps || getSlotPrescription(slot.slot).reps;
-        return `<li class="split-workout-item">
+        const missingClass = exerciseName ? '' : ' missing';
+        return `<li class="split-workout-item${missingClass}">
           <div class="split-workout-main">
             <span><span class="split-workout-slot">${slot.slot}</span> · ${exerciseName || 'Not set'}</span>
             <span class="split-workout-prescription">${sets} sets × ${reps} reps</span>
@@ -1488,6 +1492,7 @@ function buildSummary() {
   document.getElementById('split-workouts-panel').innerHTML = `
     <div class="week">
       <h3>Split</h3>
+      <p class="step-sub">Any workout row marked red is still not set and needs an exercise selection.</p>
       <ul>${splitRows}</ul>
     </div>
   `;
@@ -1734,6 +1739,14 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
     return;
   }
   const key = quarterKey(year, quarter);
+  const existing = splitArchive[key];
+  if (existing) {
+    const shouldOverwrite = window.confirm(`Overwrite existing Split Sculptor data for ${key}? This cannot be undone.`);
+    if (!shouldOverwrite) {
+      controls.saveMsg.textContent = `Save canceled. Existing ${key} split data was kept.`;
+      return;
+    }
+  }
   splitArchive[key] = {
     savedAt: new Date().toISOString(),
     state: {
