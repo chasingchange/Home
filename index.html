@@ -3,261 +3,458 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chasing Change</title>
-    <meta name="description" content="Calculate your next move with Chasing Change tools." />
+    <title>Chasing Change | Front Door Search</title>
+    <meta
+      name="description"
+      content="A simple front-door search experience to route visitors to the right Chasing Change tool or resource."
+    />
 
+    <!-- Tailwind CDN keeps this static-site friendly for GitHub Pages -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="./shared-admin.js" defer></script>
 
+    <!-- Brand fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./shared.css" />
-    <script src="./shared-session.js"></script>
 
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
+              cc: {
+                // EDIT COLORS HERE
+                bg: "#f5f5f7",
+                text: "#071f35",
+                accent: "#77d770",
+                panel: "#ffffff",
+              },
             },
             fontFamily: {
-              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              // EDIT FONTS HERE
               brand: ["Museo Moderno", "Raleway", "sans-serif"],
+              heading: ["Raleway", "system-ui", "sans-serif"],
+              body: ["Muli", "system-ui", "sans-serif"],
             },
             boxShadow: {
-              soft: "0 10px 30px rgba(7,31,53,0.10)",
-              neon: "0 24px 80px rgba(119,215,112,0.30)",
+              soft: "0 14px 45px rgba(7, 31, 53, 0.08)",
             },
           },
         },
       };
     </script>
   </head>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased">
+    <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-5 py-14 sm:px-8">
+      <!-- Minimal brand label -->
+      <p class="mb-10 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
 
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body">
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div class="absolute inset-0 -z-10 pointer-events-none">
-        <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
-        <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
-      </div>
+      <section class="w-full text-center" aria-labelledby="hero-heading">
+        <!-- EDIT HERO COPY HERE -->
+        <h1 id="hero-heading" class="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">What are you chasing?</h1>
+        <p class="mx-auto mt-4 max-w-2xl text-sm text-cc-text/70 sm:text-base">
+          Start with a goal, problem, or question. We’ll point you in the right direction.
+        </p>
 
-      <header class="cc-title-block mb-6 sm:mb-8">
-        <div class="cc-title-block-inner">
-          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-
-          <div class="cc-title-block-top">
-            <div class="cc-title-brand">
-              <img src="./Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
-              <h1 class="cc-title-name">Chasing Change</h1>
-            </div>
+        <div class="mx-auto mt-10 w-full max-w-3xl text-left">
+          <label for="searchInput" class="sr-only">Search Chasing Change resources</label>
+          <div
+            class="flex items-center rounded-full bg-cc-panel px-3 py-2 shadow-soft ring-1 ring-black/10 transition focus-within:ring-2 focus-within:ring-cc-accent"
+          >
+            <!-- Option B: fixed prefix label for premium clarity -->
+            <span class="rounded-full bg-cc-text/5 px-4 py-2 text-sm font-semibold text-cc-text/75 sm:text-base">I’m Chasing...</span>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="fat loss, better sleep, career clarity, routine..."
+              class="w-full bg-transparent px-3 py-2 text-base text-cc-text placeholder:text-cc-text/45 focus:outline-none"
+              aria-describedby="searchHelp"
+            />
           </div>
-          <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
+          <p id="searchHelp" class="mt-3 text-xs text-cc-text/55">Type naturally. We’ll recommend the best next resource.</p>
+
+          <!-- Suggestions (shown only while search is empty) -->
+          <div id="suggestions" class="mt-4 flex flex-wrap gap-2" role="list" aria-label="Suggested searches"></div>
+
+          <!-- Dynamic result panel -->
+          <div id="resultsPanel" class="mt-4 hidden rounded-2xl bg-cc-panel p-2 shadow-soft ring-1 ring-black/10" role="region" aria-live="polite" aria-label="Search results"></div>
         </div>
-      </header>
 
-      <main data-admin-edit-root>
-        <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
-          <nav>
-            <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-              <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Tools</a>
-              <a id="roadmapNavDesktop" href="./physique-roadmap/index.html" class="hidden px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Physique Roadmap</a>
-              <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
-              <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">About</a>
-              <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
-              <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Contact</a>
-              <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Preparing the Route</a>
-            </div>
-
-            <div class="md:hidden">
-              <button id="menuToggle" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text" aria-expanded="false" aria-controls="mobileMenu">
-                <span>Menu</span>
-                <span class="text-lg leading-none">☰</span>
-              </button>
-              <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-                <div class="grid gap-1">
-                  <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">Tools</a>
-                  <a id="roadmapNavMobile" href="./physique-roadmap/index.html" class="hidden px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Physique Roadmap</a>
-                  <a href="./testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Testimonials</a>
-                  <a href="./about/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">About</a>
-                  <a href="./apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
-                  <a href="./contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Contact</a>
-                  <a href="./preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Preparing the Route</a>
-                    </div>
-              </div>
-            </div>
-          </nav>
-
-          <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
-            <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to Chase Change?</p>
-            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
-          </div>
-
-          <p class="mt-4 text-sm opacity-80">Click a core to show its tools.</p>
-          <div id="coreFilters" class="mt-3 grid grid-cols-2 lg:grid-cols-6 gap-2">
-            <button type="button" class="core-section-card is-active" style="--chip-color: #77d770" data-core="body" aria-pressed="true">BODY</button>
-            <button type="button" class="core-section-card" style="--chip-color: #ffbd59" data-core="art" aria-pressed="false">ART</button>
-            <button type="button" class="core-section-card" style="--chip-color: #2a9df0" data-core="mind" aria-pressed="false">MIND</button>
-            <button type="button" class="core-section-card" style="--chip-color: #aa70d7" data-core="soul" aria-pressed="false">SOUL</button>
-            <button type="button" class="core-section-card" style="--chip-color: #f02348" data-core="career" aria-pressed="false">CAREER</button>
-            <button type="button" class="core-section-card" style="--chip-color: #e46702" data-core="life" aria-pressed="false">LIFE</button>
-          </div>
-
-          <div id="bodySectionFilters" data-core="body" class="core-subsection mt-3">
-            <label for="bodySectionSelect" class="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-cc-text/75">Body Tool Type</label>
-            <div class="relative max-w-md">
-              <select
-                id="bodySectionSelect"
-                class="w-full appearance-none rounded-2xl border border-cc-outline/55 bg-gradient-to-br from-cc-outline/35 via-white/55 to-cc-outline/20 px-4 py-3 pr-11 text-sm font-bold tracking-wide text-cc-text shadow-[0_18px_45px_rgba(119,215,112,0.22)] backdrop-blur-md transition hover:from-cc-outline/45 hover:to-cc-outline/25 focus:outline-none focus:ring-2 focus:ring-cc-outline/65"
-                aria-label="Filter body tools by category"
-              >
-                <option value="all">ALL TOOLS</option>
-                <option value="nutrition">NUTRITION</option>
-                <option value="strength">STRENGTH</option>
-                <option value="programming">PROGRAMMING</option>
-                <option value="planning-route">PLANNING THE ROUTE</option>
-              </select>
-              <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-cc-text/80">▾</span>
-            </div>
-          </div>
-
-          <div id="toolCards" class="mt-5 grid md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-            <a href="./macro/index.html" data-core="body" data-section="nutrition" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Macro Calculator</h2>
-              <p class="mt-2 text-sm opacity-80">Set calories and macro targets based on body stats, activity, and goals.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
-            </a>
-
-            <a href="./1RM Calculator/Index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">1 Rep Max</h2>
-              <p class="mt-2 text-sm opacity-80">Estimate your maxes, compare target tiers, and set working weights instantly.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
-            </a>
-
-            <a href="./exercise-matrix/index.html" data-core="body" data-section="strength" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Exercise Matrix</h2>
-              <p class="mt-2 text-sm opacity-80">Browse exercises by movement patterns and training focus.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open matrix →</p>
-            </a>
-
-            <a href="./preparing-route/split-sculptor.html" data-core="body" data-section="programming" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Split Sculptor</h2>
-              <p class="mt-2 text-sm opacity-80">Build your weekly split with guided steps, detailed movement instructions, and macrocycle summaries.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open Split Sculptor →</p>
-            </a>
-
-            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" data-section="programming" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
-              <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
-            </a>
-          </div>
-                    <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
-        </section>
-
-      <p id="lastUpdatedStamp" class="mt-6 text-center text-xs sm:text-sm opacity-70">Last updated: —</p>
-      <p class="mt-2 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
-
-      </main>
-    </div>
+        <a
+          id="startLineButton"
+          href="#"
+          class="mt-10 inline-flex items-center justify-center rounded-full border border-cc-text/20 bg-white/65 px-6 py-3 text-sm font-semibold text-cc-text transition hover:border-cc-accent hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-accent"
+        >
+          Start Line | Chasing Change Homepage
+        </a>
+      </section>
+    </main>
 
     <script>
-      const sessionApi = window.ChasingChangeSession;
-      const menuToggle = document.getElementById("menuToggle");
-      const mobileMenu = document.getElementById("mobileMenu");
-      menuToggle?.addEventListener("click", () => {
-        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-        menuToggle.setAttribute("aria-expanded", String(!expanded));
-        mobileMenu.classList.toggle("hidden");
-      });
+      // ==============================
+      // EDITABLE CONFIG AREA
+      // ==============================
 
-      const coreFilters = document.getElementById("coreFilters");
-      const coreCards = Array.from(document.querySelectorAll(".core-card"));
-      const coreSubsections = Array.from(document.querySelectorAll(".core-subsection"));
-      const noToolsMessage = document.getElementById("noToolsMessage");
-      const roadmapNavDesktop = document.getElementById("roadmapNavDesktop");
-      const roadmapNavMobile = document.getElementById("roadmapNavMobile");
-      const roadmapToolCard = document.getElementById("roadmapToolCard");
-      const lastUpdatedStamp = document.getElementById("lastUpdatedStamp");
-      let canViewRoadmap = false;
+      // 1) EDIT START LINE URL HERE
+      const START_LINE_URL = "./about/index.html";
 
-      if (lastUpdatedStamp) {
-        const modified = new Date(document.lastModified);
-        lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
-          ? "Last updated: unavailable"
-          : `Last updated: ${modified.toLocaleString()}`;
+      // 2) EDIT SUGGESTED PILLS HERE (keep short for minimal UI)
+      const suggestedSearches = ["Body", "Career", "Sleep", "Focus", "Routine"];
+
+      // 3) EDIT / EXPAND RESOURCE LIBRARY HERE
+      // status: "live" or "coming_soon"
+      const resources = [
+        {
+          id: "macro-calculator",
+          title: "Macro Calculator",
+          type: "Calculator",
+          core: "Body",
+          description: "Set calorie and macro targets for fat loss, muscle gain, and nutrition structure.",
+          url: "./macro/index.html",
+          status: "live",
+          tags: ["body", "nutrition", "fat loss"],
+          keywords: ["calories", "macros", "protein", "muscle", "weight", "meal prep"],
+          triggers: ["im chasing fat loss", "im chasing a better body", "im chasing nutrition help"],
+          featured: true,
+          priority: 9,
+        },
+        {
+          id: "physique-ledger",
+          title: "Physique Ledger",
+          type: "Tracker",
+          core: "Body",
+          description: "Track body composition, training outputs, and progress trends over time.",
+          url: "./PhysiqueLedger/index.html",
+          status: "live",
+          tags: ["body", "progress", "training"],
+          keywords: ["leaner", "muscle", "weight", "measurements", "routine"],
+          triggers: ["im chasing consistency", "im chasing a leaner body"],
+          featured: false,
+          priority: 8,
+        },
+        {
+          id: "five-ps-career-fit-calculator",
+          title: "5Ps Career Fit Calculator",
+          type: "Calculator",
+          core: "Career",
+          description: "Score your current role against your values, strengths, and long-term direction.",
+          url: "./career-core/index.html",
+          status: "live",
+          tags: ["career", "clarity", "work"],
+          keywords: ["job", "money", "purpose", "direction", "career"],
+          triggers: ["im chasing career clarity", "im chasing more money"],
+          featured: true,
+          priority: 9,
+        },
+        {
+          id: "fix-your-focus",
+          title: "Fix Your Focus",
+          type: "Guide",
+          core: "Mind",
+          description: "A practical reset framework to reduce overwhelm and rebuild deep focus blocks.",
+          url: "/field-guide/fix-your-focus.html",
+          status: "coming_soon",
+          tags: ["focus", "mind", "productivity"],
+          keywords: ["overwhelmed", "distracted", "consistency", "routine", "schedule"],
+          triggers: ["im chasing focus", "i feel stuck", "help me reset"],
+          featured: true,
+          priority: 8,
+        },
+        {
+          id: "gagging-the-critic",
+          title: "Gagging the Critic",
+          type: "Framework",
+          core: "Mind",
+          description: "Challenge self-sabotage loops and build a stronger inner operating voice.",
+          url: "/field-guide/gagging-the-critic.html",
+          status: "coming_soon",
+          tags: ["mind", "confidence"],
+          keywords: ["self doubt", "inner critic", "peace", "anxiety"],
+          triggers: ["im chasing peace", "i feel stuck"],
+          featured: false,
+          priority: 6,
+        },
+        {
+          id: "56-hour-sleep-protocol",
+          title: "The 56-Hour Sleep Protocol",
+          type: "Protocol",
+          core: "Soul",
+          description: "Simple system to stabilize sleep, reduce stress load, and restore recovery rhythm.",
+          url: "/field-guide/56-hour-sleep-protocol.html",
+          status: "coming_soon",
+          tags: ["sleep", "recovery", "stress"],
+          keywords: ["better sleep", "tired", "rest", "peace", "recovery"],
+          triggers: ["im chasing better sleep", "im chasing peace"],
+          featured: true,
+          priority: 8,
+        },
+        {
+          id: "winning-the-back-to-work-war",
+          title: "Winning The Back To Work War",
+          type: "Guide",
+          core: "Career",
+          description: "A return-to-work strategy for momentum, boundaries, and output consistency.",
+          url: "/field-guide/winning-the-back-to-work-war.html",
+          status: "coming_soon",
+          tags: ["career", "work", "consistency"],
+          keywords: ["job", "work", "focus", "schedule", "clarity"],
+          triggers: ["im chasing routine", "im chasing consistency"],
+          featured: false,
+          priority: 7,
+        },
+        {
+          id: "circle-of-influence",
+          title: "Circle of Influence",
+          type: "Framework",
+          core: "Life",
+          description: "Sort what you can control vs. what drains you, then reallocate your energy.",
+          url: "/field-guide/circle-of-influence.html",
+          status: "coming_soon",
+          tags: ["life", "clarity", "peace"],
+          keywords: ["stress", "overwhelmed", "reset", "stuck"],
+          triggers: ["get my life together", "help me reset"],
+          featured: false,
+          priority: 7,
+        },
+        {
+          id: "millionaires-calendar",
+          title: "The Millionaire’s Calendar",
+          type: "Planner",
+          core: "Life",
+          description: "Plan high-leverage weeks around priorities, deep work, and non-negotiables.",
+          url: "/field-guide/millionaires-calendar.html",
+          status: "coming_soon",
+          tags: ["life", "focus", "planning"],
+          keywords: ["routine", "schedule", "consistency", "money", "calendar"],
+          triggers: ["im chasing a routine", "im chasing consistency"],
+          featured: true,
+          priority: 8,
+        },
+        {
+          id: "coaching-application",
+          title: "Coaching Application",
+          type: "Application",
+          core: "Career",
+          description: "Apply for direct coaching support and personalized strategy.",
+          url: "./apply-for-coaching/index.html",
+          status: "live",
+          tags: ["coaching", "support"],
+          keywords: ["help", "mentor", "coach", "apply"],
+          triggers: ["i need help", "im stuck"],
+          featured: false,
+          priority: 6,
+        },
+        {
+          id: "start-line-homepage",
+          title: "Start Line | Chasing Change Homepage",
+          type: "Homepage",
+          core: "Life",
+          description: "Browse the full site experience with offers, tools, and testimonials.",
+          url: START_LINE_URL,
+          status: "live",
+          tags: ["home", "start"],
+          keywords: ["homepage", "main site", "start line"],
+          triggers: ["show everything", "browse site"],
+          featured: false,
+          priority: 5,
+        },
+      ];
+
+      // ==============================
+      // SEARCH ENGINE (MODULAR + EXPANDABLE)
+      // ==============================
+
+      const MAX_RESULTS = 6;
+
+      const searchInput = document.getElementById("searchInput");
+      const resultsPanel = document.getElementById("resultsPanel");
+      const suggestionsContainer = document.getElementById("suggestions");
+      const startLineButton = document.getElementById("startLineButton");
+      startLineButton.href = START_LINE_URL;
+
+      function normalizeText(value = "") {
+        return value
+          .toLowerCase()
+          .trim()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
       }
 
-      let lockedCore = "body";
-      let lockedBodySection = "all";
+      function tokenize(value = "") {
+        return normalizeText(value)
+          .split(" ")
+          .filter(Boolean);
+      }
 
-      const setCoreFilter = (core, section = lockedBodySection) => {
-        const visibleCount = coreCards.reduce((count, card) => {
-          const requiresAuth = card.id === "roadmapToolCard";
-          const isCoreMatch = card.dataset.core === core;
-          const isSectionMatch = core !== "body" || section === "all" || card.dataset.section === section;
-          const visible = isCoreMatch && isSectionMatch && (!requiresAuth || canViewRoadmap);
-          card.classList.toggle("hidden", !visible);
-          return count + (visible ? 1 : 0);
-        }, 0);
+      function includesPhrase(haystack, needle) {
+        return haystack.includes(normalizeText(needle));
+      }
 
-        coreSubsections.forEach((subsection) => {
-          const visible = subsection.dataset.core === core;
-          subsection.classList.toggle("hidden", !visible);
+      function scoreResource(resource, normalizedQuery, queryTokens) {
+        if (!normalizedQuery) return 0;
+
+        let score = 0;
+        const title = normalizeText(resource.title);
+        const description = normalizeText(resource.description);
+        const triggers = resource.triggers.map(normalizeText);
+        const tags = resource.tags.map(normalizeText);
+        const keywords = resource.keywords.map(normalizeText);
+
+        // 1) Exact title / strong title match
+        if (title === normalizedQuery) score += 140;
+        if (title.startsWith(normalizedQuery)) score += 70;
+        if (title.includes(normalizedQuery)) score += 45;
+
+        // 2) Trigger phrase match
+        triggers.forEach((trigger) => {
+          if (trigger === normalizedQuery) score += 110;
+          else if (trigger.includes(normalizedQuery) || normalizedQuery.includes(trigger)) score += 60;
         });
 
-        noToolsMessage?.classList.toggle("hidden", visibleCount > 0);
-
-        coreFilters?.querySelectorAll("[data-core]").forEach((button) => {
-          const isActive = button.dataset.core === core;
-          button.classList.toggle("is-active", isActive);
-          button.setAttribute("aria-pressed", String(isActive));
+        // 3) Tag / keyword matching
+        queryTokens.forEach((token) => {
+          if (tags.some((tag) => tag.includes(token))) score += 24;
+          if (keywords.some((keyword) => keyword.includes(token))) score += 20;
+          if (title.includes(token)) score += 18;
         });
 
-        const bodySectionSelect = document.getElementById("bodySectionSelect");
-        if (bodySectionSelect) {
-          bodySectionSelect.value = section;
+        // 4) Description match
+        queryTokens.forEach((token) => {
+          if (description.includes(token)) score += 10;
+        });
+
+        // Broad-intent routing boosts
+        const intentBoosts = [
+          { terms: ["body", "muscle", "fat loss", "calories", "nutrition"], core: "body", bonus: 16 },
+          { terms: ["job", "career", "work", "clarity", "money"], core: "career", bonus: 16 },
+          { terms: ["focus", "overwhelmed", "routine", "schedule", "consistency"], core: "mind", bonus: 16 },
+          { terms: ["sleep", "stress", "peace"], core: "soul", bonus: 16 },
+        ];
+
+        intentBoosts.forEach((intent) => {
+          if (intent.terms.some((term) => includesPhrase(normalizedQuery, term)) && normalizeText(resource.core) === intent.core) {
+            score += intent.bonus;
+          }
+        });
+
+        if (resource.featured) score += 4;
+        score += resource.priority || 0;
+
+        return score;
+      }
+
+      function searchResources(query) {
+        const normalizedQuery = normalizeText(query);
+        const queryTokens = tokenize(query);
+
+        return resources
+          .map((resource) => ({
+            resource,
+            score: scoreResource(resource, normalizedQuery, queryTokens),
+          }))
+          .filter((entry) => entry.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, MAX_RESULTS)
+          .map((entry) => entry.resource);
+      }
+
+      function resultItemTemplate(resource) {
+        const isLive = resource.status === "live";
+        const ctaText = isLive ? (resource.type === "Calculator" || resource.type === "Tracker" ? "Open Tool" : "View Resource") : "Coming Soon";
+        const statusBadge = isLive
+          ? ""
+          : '<span class="rounded-full bg-cc-text/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-cc-text/70">Coming Soon</span>';
+
+        const cardInner = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.12em] text-cc-text/55">${resource.type}${resource.core ? ` • ${resource.core}` : ""}</p>
+              <h3 class="mt-1 font-heading text-lg font-bold text-cc-text">${resource.title}</h3>
+              <p class="mt-1 text-sm text-cc-text/75">${resource.description}</p>
+            </div>
+            ${statusBadge}
+          </div>
+          <p class="mt-3 text-sm font-semibold ${isLive ? "text-cc-text" : "text-cc-text/55"}">${ctaText}</p>
+        `;
+
+        if (!isLive) {
+          return `
+            <li>
+              <div class="rounded-xl border border-black/5 bg-white/85 p-4">
+                ${cardInner}
+              </div>
+            </li>
+          `;
         }
-      };
 
-      const lockCore = (core) => {
-        lockedCore = core;
-        if (core !== "body") lockedBodySection = "all";
-        setCoreFilter(core, lockedBodySection);
-      };
+        return `
+          <li>
+            <a href="${resource.url}" class="block rounded-xl border border-black/5 bg-white/85 p-4 transition hover:border-cc-accent/65 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-accent">
+              ${cardInner}
+            </a>
+          </li>
+        `;
+      }
 
-      coreFilters?.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-core]");
+      function renderResults(query) {
+        const normalizedQuery = normalizeText(query);
+
+        if (!normalizedQuery) {
+          resultsPanel.classList.add("hidden");
+          resultsPanel.innerHTML = "";
+          renderSuggestions();
+          return;
+        }
+
+        const matches = searchResources(query);
+        suggestionsContainer.innerHTML = "";
+
+        resultsPanel.classList.remove("hidden");
+
+        if (!matches.length) {
+          resultsPanel.innerHTML = `
+            <div class="rounded-xl border border-dashed border-black/15 bg-white/75 p-5 text-center">
+              <p class="font-heading text-base font-bold text-cc-text">No direct match yet.</p>
+              <p class="mt-1 text-sm text-cc-text/70">Try a simpler phrase or head to Start Line.</p>
+            </div>
+          `;
+          return;
+        }
+
+        resultsPanel.innerHTML = `<ul class="space-y-2">${matches.map(resultItemTemplate).join("")}</ul>`;
+      }
+
+      function renderSuggestions() {
+        suggestionsContainer.innerHTML = suggestedSearches
+          .map(
+            (term) =>
+              `<button type="button" class="rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold text-cc-text/75 transition hover:border-cc-accent hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-accent" data-suggestion="${term}">${term}</button>`,
+          )
+          .join("");
+      }
+
+      searchInput.addEventListener("input", (event) => {
+        renderResults(event.target.value);
+      });
+
+      suggestionsContainer.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-suggestion]");
         if (!button) return;
-        lockCore(button.dataset.core);
+        searchInput.value = button.dataset.suggestion;
+        searchInput.focus();
+        renderResults(button.dataset.suggestion);
       });
 
-
-      const bodySectionSelect = document.getElementById("bodySectionSelect");
-      const lockBodySection = (section) => {
-        lockedBodySection = section;
-        setCoreFilter("body", lockedBodySection);
-      };
-
-      bodySectionSelect?.addEventListener("change", (event) => {
-        const { value } = event.target;
-        lockBodySection(value);
-      });
-
-
-      setCoreFilter(lockedCore, lockedBodySection);
-      sessionApi?.whenReady?.().finally(() => {
-        canViewRoadmap = !!sessionApi?.getCurrentAccount?.();
-        roadmapNavDesktop?.classList.toggle("hidden", !canViewRoadmap);
-        roadmapNavMobile?.classList.toggle("hidden", !canViewRoadmap);
-        roadmapToolCard?.classList.toggle("hidden", !canViewRoadmap);
-        setCoreFilter(lockedCore, lockedBodySection);
-      });
+      // initial render: minimal UI + elegant suggestions
+      renderSuggestions();
     </script>
   </body>
 </html>
