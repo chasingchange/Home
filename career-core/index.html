@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5Ps Career Fit Calculator | Chasing Change</title>
+  <meta name="description" content="A premium self-assessment tool from Chasing Change to evaluate career alignment using the 5Ps framework." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#071f35',
+            brandBg: '#f5f5f7',
+            brandAccent: '#77d770'
+          },
+          fontFamily: {
+            title: ['"MuseoModerno"', 'sans-serif'],
+            heading: ['Raleway', 'sans-serif'],
+            body: ['Mulish', 'Muli', 'sans-serif']
+          },
+          boxShadow: {
+            soft: '0 8px 30px rgba(7, 31, 53, 0.08)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@600;700;800&family=Raleway:wght@500;600;700;800&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: #f5f5f7; color: #071f35; }
+
+    .score-pill[aria-pressed="true"] {
+      background: #071f35;
+      color: #ffffff;
+      border-color: #071f35;
+      transform: translateY(-1px);
+    }
+
+    .score-pill {
+      transition: all 0.2s ease;
+    }
+
+    .progress-fill {
+      transition: width 0.35s ease;
+    }
+
+    .focus-ring:focus-visible {
+      outline: 3px solid rgba(119, 215, 112, 0.65);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+
+<body class="font-body antialiased">
+  <main>
+    <!-- Hero -->
+    <section class="px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+      <div class="max-w-6xl mx-auto">
+        <div class="bg-white shadow-soft rounded-3xl p-8 md:p-12">
+          <p class="text-sm font-heading font-semibold tracking-wide uppercase text-brandDark/70">Chasing Change</p>
+          <h1 class="font-title text-4xl sm:text-5xl lg:text-6xl text-brandDark mt-3 leading-tight">5Ps Career Fit Calculator</h1>
+          <p class="mt-5 text-lg text-brandDark/85 font-heading">Evaluate how aligned a role is with your life using Passion, Place, Problem, People, and Pay.</p>
+          <p class="mt-4 text-brandDark/75 max-w-2xl">Use the 5Ps to evaluate whether a role fits your life, not just your résumé.</p>
+          <a href="#assessment" class="focus-ring inline-flex items-center justify-center mt-8 bg-brandAccent text-brandDark font-heading font-bold px-6 py-3 rounded-full shadow-sm hover:brightness-95 transition">Start the Assessment</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="assessment" class="px-4 sm:px-6 lg:px-8 pb-16">
+      <div class="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6 lg:gap-8">
+
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Input Section -->
+          <section class="bg-white rounded-3xl shadow-soft p-6 sm:p-8">
+            <header>
+              <h2 class="font-heading text-2xl font-bold">1) Define Your 5Ps</h2>
+              <p class="text-brandDark/70 mt-2">Ground this in your real life—not idealized answers.</p>
+            </header>
+
+            <div class="mt-8 space-y-6">
+              <!-- Passion -->
+              <article class="rounded-2xl border border-slate-200 p-5">
+                <h3 class="font-heading text-xl font-bold">Passion</h3>
+                <p class="mt-1 text-sm text-brandDark/75">What do you naturally care about?</p>
+                <p class="text-sm text-brandDark/60 mt-2">What kind of work, mission, or topics naturally pull your attention?</p>
+                <div class="mt-4 grid gap-3">
+                  <label class="block">
+                    <span class="sr-only">Passion item 1</span>
+                    <input id="passion1" type="text" maxlength="120" placeholder="Passion item 1" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  </label>
+                  <label class="block">
+                    <span class="sr-only">Passion item 2</span>
+                    <input id="passion2" type="text" maxlength="120" placeholder="Passion item 2" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  </label>
+                  <label class="block">
+                    <span class="sr-only">Passion item 3</span>
+                    <input id="passion3" type="text" maxlength="120" placeholder="Passion item 3" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  </label>
+                </div>
+              </article>
+
+              <!-- Place -->
+              <article class="rounded-2xl border border-slate-200 p-5">
+                <h3 class="font-heading text-xl font-bold">Place</h3>
+                <p class="mt-1 text-sm text-brandDark/75">Where and how do you want to work?</p>
+                <p class="text-sm text-brandDark/60 mt-2">Think about geography, flexibility, energy, and daily lifestyle.</p>
+
+                <label class="block mt-4">
+                  <span class="text-sm font-semibold">Preferred location</span>
+                  <input id="preferredLocation" type="text" maxlength="120" placeholder="City, region, or travel preference" class="focus-ring mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                </label>
+
+                <fieldset class="mt-4">
+                  <legend class="text-sm font-semibold">Work mode</legend>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <button type="button" class="work-mode-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Remote" aria-pressed="false">Remote</button>
+                    <button type="button" class="work-mode-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Hybrid" aria-pressed="false">Hybrid</button>
+                    <button type="button" class="work-mode-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="In Person" aria-pressed="false">In Person</button>
+                    <button type="button" class="work-mode-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Travel-Based" aria-pressed="false">Travel-Based</button>
+                  </div>
+                </fieldset>
+              </article>
+
+              <!-- Problem -->
+              <article class="rounded-2xl border border-slate-200 p-5">
+                <h3 class="font-heading text-xl font-bold">Problem</h3>
+                <p class="mt-1 text-sm text-brandDark/75">List 3–5 problems you are good at solving.</p>
+                <p class="text-sm text-brandDark/60 mt-2">Focus on outcomes you create well, not just tasks you perform.</p>
+                <div class="mt-4 grid gap-3">
+                  <input id="problem1" type="text" maxlength="120" placeholder="Problem-solving strength 1" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  <input id="problem2" type="text" maxlength="120" placeholder="Problem-solving strength 2" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  <input id="problem3" type="text" maxlength="120" placeholder="Problem-solving strength 3" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  <input id="problem4" type="text" maxlength="120" placeholder="Problem-solving strength 4 (optional)" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  <input id="problem5" type="text" maxlength="120" placeholder="Problem-solving strength 5 (optional)" class="focus-ring w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                </div>
+              </article>
+
+              <!-- People -->
+              <article class="rounded-2xl border border-slate-200 p-5">
+                <h3 class="font-heading text-xl font-bold">People</h3>
+                <p class="mt-1 text-sm text-brandDark/75">Who do you want to work with and for?</p>
+                <p class="text-sm text-brandDark/60 mt-2">Who energizes you? What type of team, client, or environment helps you thrive?</p>
+
+                <fieldset class="mt-4">
+                  <legend class="text-sm font-semibold">Industry / client type</legend>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="B2B" aria-pressed="false">B2B</button>
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="B2C" aria-pressed="false">B2C</button>
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Enterprise" aria-pressed="false">Enterprise</button>
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Startup" aria-pressed="false">Startup</button>
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Creator" aria-pressed="false">Creator</button>
+                    <button type="button" class="industry-btn focus-ring rounded-full border border-slate-300 px-4 py-2 text-sm" data-value="Nonprofit" aria-pressed="false">Nonprofit</button>
+                  </div>
+                </fieldset>
+
+                <label for="preferredEnvironment" class="block mt-4 text-sm font-semibold">Preferred environment</label>
+                <input id="preferredEnvironment" type="text" maxlength="140" placeholder="Type A? Structured? Creative?" class="focus-ring mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+              </article>
+
+              <!-- Pay -->
+              <article class="rounded-2xl border border-slate-200 p-5">
+                <h3 class="font-heading text-xl font-bold">Pay</h3>
+                <p class="mt-1 text-sm text-brandDark/75">Does the role support your financial reality and goals?</p>
+                <p class="text-sm text-brandDark/60 mt-2">Your compensation should support stability, growth, and peace of mind.</p>
+
+                <div class="mt-4 grid sm:grid-cols-2 gap-4">
+                  <label class="block">
+                    <span class="text-sm font-semibold">Monthly expenses (USD)</span>
+                    <input id="monthlyExpenses" inputmode="decimal" type="text" placeholder="$0" class="focus-ring mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  </label>
+                  <label class="block">
+                    <span class="text-sm font-semibold">Target role market salary (USD)</span>
+                    <input id="targetSalary" inputmode="decimal" type="text" placeholder="$0" class="focus-ring mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5" />
+                  </label>
+                </div>
+
+                <div class="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-4 text-sm">
+                  <p><span class="font-semibold">Ideal minimum yearly salary:</span> <span id="idealSalary">$0</span></p>
+                  <p class="text-brandDark/70 mt-1">This estimate uses monthly expenses × 18 to cover taxes and allow saving.</p>
+                  <p class="mt-2">Floor status: <span id="salaryStatus" class="font-semibold text-brandDark/80">Enter values to compare</span></p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- Scoring -->
+          <section class="bg-white rounded-3xl shadow-soft p-6 sm:p-8">
+            <header>
+              <h2 class="font-heading text-2xl font-bold">2) Score It</h2>
+              <p class="text-brandDark/70 mt-2">Rate each category from 1 (Not Ideal) to 5 (Extremely Ideal).</p>
+            </header>
+
+            <div id="scoreGrid" class="mt-6 space-y-5"></div>
+            <p id="scorePrompt" class="text-sm text-brandDark/60 mt-4">Complete all five scores to finalize your fit analysis.</p>
+
+            <button id="calculateBtn" class="focus-ring mt-6 bg-brandDark text-white font-heading font-semibold px-5 py-2.5 rounded-full hover:opacity-95 transition" type="button">Calculate My Fit</button>
+          </section>
+
+          <!-- Results -->
+          <section class="bg-white rounded-3xl shadow-soft p-6 sm:p-8" aria-live="polite">
+            <header>
+              <h2 class="font-heading text-2xl font-bold">3) Results & Reality Check</h2>
+              <p class="text-brandDark/70 mt-2">Use this as clarity for decision-making, not as a rigid verdict.</p>
+            </header>
+
+            <div class="mt-6">
+              <div class="flex items-center flex-wrap gap-3">
+                <p class="text-3xl font-heading font-extrabold"><span id="totalScore">0</span><span class="text-brandDark/50">/25</span></p>
+                <span id="fitBadge" class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold">Incomplete</span>
+              </div>
+
+              <div class="mt-4 h-3 rounded-full bg-slate-200 overflow-hidden" role="progressbar" aria-label="Total alignment score" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0">
+                <div id="progressFill" class="progress-fill h-full bg-brandAccent" style="width: 0%;"></div>
+              </div>
+
+              <p id="interpretation" class="mt-4 text-brandDark/85">Add your scores to see your interpretation.</p>
+              <p id="realityMessage" class="mt-2 text-brandDark/80 font-semibold"></p>
+              <p id="warningMessage" class="mt-2 text-amber-700 font-semibold"></p>
+
+              <div id="scoreBreakdown" class="mt-5 grid sm:grid-cols-2 gap-2 text-sm"></div>
+            </div>
+          </section>
+
+          <!-- Reflection -->
+          <section class="bg-white rounded-3xl shadow-soft p-6 sm:p-8">
+            <h2 class="font-heading text-2xl font-bold">4) Reflection</h2>
+            <p class="mt-3 text-brandDark/85 font-semibold">If I stay in work scoring below 18 for five years, what does it cost me?</p>
+            <textarea id="reflection" rows="4" placeholder="Write your honest answer here..." class="focus-ring mt-4 w-full rounded-xl border border-slate-300 px-4 py-3"></textarea>
+          </section>
+
+          <!-- Actions -->
+          <section class="bg-white rounded-3xl shadow-soft p-6 sm:p-8">
+            <h2 class="font-heading text-2xl font-bold">5) Save or Export</h2>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button id="copySummaryBtn" type="button" class="focus-ring rounded-full border border-brandDark px-5 py-2.5 font-heading font-semibold">Copy Summary</button>
+              <button id="printBtn" type="button" class="focus-ring rounded-full border border-brandDark px-5 py-2.5 font-heading font-semibold">Print / Save as PDF</button>
+              <button id="resetBtn" type="button" class="focus-ring rounded-full bg-slate-200 px-5 py-2.5 font-heading font-semibold">Reset</button>
+            </div>
+            <p id="actionMessage" class="mt-3 text-sm text-brandDark/70"></p>
+          </section>
+        </div>
+
+        <!-- Sticky desktop summary -->
+        <aside class="lg:sticky lg:top-4 lg:self-start h-fit bg-white rounded-3xl shadow-soft p-6">
+          <h2 class="font-heading text-xl font-bold">Alignment Snapshot</h2>
+          <p class="text-sm text-brandDark/70 mt-2">Live summary while you complete the assessment.</p>
+
+          <dl class="mt-5 space-y-3 text-sm">
+            <div class="flex justify-between gap-3"><dt>Total score</dt><dd class="font-semibold" id="stickyTotal">0/25</dd></div>
+            <div class="flex justify-between gap-3"><dt>Status</dt><dd class="font-semibold" id="stickyStatus">Incomplete</dd></div>
+            <div class="flex justify-between gap-3"><dt>Ideal floor</dt><dd class="font-semibold" id="stickyFloor">$0</dd></div>
+            <div class="flex justify-between gap-3"><dt>Salary check</dt><dd class="font-semibold" id="stickySalaryState">N/A</dd></div>
+          </dl>
+
+          <p class="mt-6 text-sm text-brandDark/70">Saved automatically in your browser.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="px-4 sm:px-6 lg:px-8 pb-10">
+      <div class="max-w-6xl mx-auto bg-brandDark text-white rounded-3xl p-8 md:p-10 shadow-soft">
+        <p class="font-heading text-2xl md:text-3xl font-bold leading-tight">Clarity beats guessing.<br />If your work is out of alignment, the cost adds up.</p>
+        <a href="https://example.com/coaching" id="coachingLink" class="focus-ring inline-flex mt-6 rounded-full bg-brandAccent text-brandDark px-6 py-3 font-heading font-bold hover:brightness-95 transition">Explore Coaching</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="px-4 sm:px-6 lg:px-8 pb-10">
+    <div class="max-w-6xl mx-auto border-t border-slate-300 pt-6 text-sm text-brandDark/70">
+      <p class="font-heading font-semibold">Chasing Change</p>
+      <p class="mt-1">Built to help you choose work that supports your life.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'cc-5ps-career-fit-v1';
+      const categories = ['Passion', 'Place', 'Problem', 'People', 'Pay'];
+
+      const state = {
+        passion: ['', '', ''],
+        preferredLocation: '',
+        workMode: '',
+        problems: ['', '', '', '', ''],
+        industry: '',
+        preferredEnvironment: '',
+        monthlyExpensesRaw: '',
+        targetSalaryRaw: '',
+        monthlyExpenses: 0,
+        targetSalary: 0,
+        idealSalary: 0,
+        scores: {
+          Passion: null,
+          Place: null,
+          Problem: null,
+          People: null,
+          Pay: null
+        },
+        reflection: ''
+      };
+
+      const scoreGrid = document.getElementById('scoreGrid');
+      const scorePrompt = document.getElementById('scorePrompt');
+
+      function sanitizeText(value) {
+        return String(value || '').replace(/[<>]/g, '').trim();
+      }
+
+      function parseCurrency(raw) {
+        if (!raw) return 0;
+        const cleaned = String(raw).replace(/[^\d.-]/g, '');
+        const numeric = Number.parseFloat(cleaned);
+        return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
+      }
+
+      function formatUSD(amount) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        }).format(amount || 0);
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function loadState() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          Object.assign(state, parsed);
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      function updateButtonGroup(selector, selectedValue) {
+        document.querySelectorAll(selector).forEach((button) => {
+          const active = button.dataset.value === selectedValue;
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
+          button.classList.toggle('bg-brandDark', active);
+          button.classList.toggle('text-white', active);
+          button.classList.toggle('border-brandDark', active);
+        });
+      }
+
+      function renderScoreControls() {
+        scoreGrid.innerHTML = categories.map((category) => {
+          const pills = [1, 2, 3, 4, 5].map((score) => `
+            <button type="button" class="score-pill focus-ring rounded-full border border-slate-300 px-3.5 py-1.5 text-sm font-semibold" data-category="${category}" data-score="${score}" aria-pressed="${state.scores[category] === score}">${score}</button>
+          `).join('');
+
+          return `
+            <div class="rounded-xl border border-slate-200 p-4">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <h3 class="font-heading font-semibold">${category}</h3>
+                <span class="text-sm text-brandDark/70">${state.scores[category] || 'Not scored'}</span>
+              </div>
+              <div class="mt-3 flex gap-2 flex-wrap" role="group" aria-label="${category} score buttons">${pills}</div>
+            </div>
+          `;
+        }).join('');
+
+        scoreGrid.querySelectorAll('.score-pill').forEach((button) => {
+          button.addEventListener('click', () => {
+            const category = button.dataset.category;
+            const score = Number(button.dataset.score);
+            state.scores[category] = score;
+            saveState();
+            renderAll();
+          });
+        });
+      }
+
+      function computeTotal() {
+        const values = Object.values(state.scores);
+        const completed = values.every((v) => Number.isInteger(v));
+        const total = values.reduce((sum, value) => sum + (Number.isInteger(value) ? value : 0), 0);
+        return { completed, total };
+      }
+
+      function interpretationFor(total, completed) {
+        if (!completed) {
+          return {
+            badge: 'Incomplete',
+            text: 'Complete each 1–5 score to unlock your full interpretation.',
+            badgeClass: 'border-slate-300 text-brandDark/70 bg-slate-100',
+            label: 'Incomplete'
+          };
+        }
+
+        if (total >= 22) {
+          return {
+            badge: 'Strong Fit',
+            text: 'This role appears highly aligned with the life you want to build.',
+            badgeClass: 'border-emerald-200 text-emerald-800 bg-emerald-50',
+            label: 'Strong Fit'
+          };
+        }
+
+        if (total >= 18) {
+          return {
+            badge: 'Moderate Fit',
+            text: 'There is real potential here, but a few gaps deserve honest attention.',
+            badgeClass: 'border-amber-200 text-amber-800 bg-amber-50',
+            label: 'Moderate Fit'
+          };
+        }
+
+        return {
+          badge: 'Weak Fit',
+          text: 'This path may cost more than it gives if the misalignment continues.',
+          badgeClass: 'border-rose-200 text-rose-800 bg-rose-50',
+          label: 'Weak Fit'
+        };
+      }
+
+      function getRealityMessage(total, completed) {
+        if (!completed) return '';
+        if (total >= 20) return 'Aligned';
+        if (total < 18) return 'You are compromising somewhere important.';
+        return 'Close, but worth examining more carefully.';
+      }
+
+      function updateResults() {
+        const { completed, total } = computeTotal();
+        const fit = interpretationFor(total, completed);
+        const lowScoreExists = Object.values(state.scores).some((v) => Number.isInteger(v) && v <= 2);
+
+        document.getElementById('totalScore').textContent = String(total);
+
+        const badge = document.getElementById('fitBadge');
+        badge.textContent = fit.badge;
+        badge.className = `inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${fit.badgeClass}`;
+
+        const progressPercent = Math.max(0, Math.min(100, (total / 25) * 100));
+        document.getElementById('progressFill').style.width = `${progressPercent}%`;
+        document.querySelector('[role="progressbar"]').setAttribute('aria-valuenow', String(total));
+
+        document.getElementById('interpretation').textContent = fit.text;
+        document.getElementById('realityMessage').textContent = getRealityMessage(total, completed);
+        document.getElementById('warningMessage').textContent = lowScoreExists
+          ? 'If any category is a 1 or 2, long-term resentment builds.'
+          : '';
+
+        const breakdown = categories.map((cat) => {
+          const val = state.scores[cat];
+          return `<div class="rounded-lg border border-slate-200 px-3 py-2 flex justify-between"><span>${cat}</span><strong>${val ?? '—'}</strong></div>`;
+        }).join('');
+        document.getElementById('scoreBreakdown').innerHTML = breakdown;
+
+        scorePrompt.textContent = completed
+          ? 'All categories scored. Review your interpretation and reflection.'
+          : 'Complete all five scores to finalize your fit analysis.';
+
+        document.getElementById('stickyTotal').textContent = `${total}/25`;
+        document.getElementById('stickyStatus').textContent = fit.label;
+      }
+
+      function updatePayCalculations() {
+        state.monthlyExpenses = parseCurrency(state.monthlyExpensesRaw);
+        state.targetSalary = parseCurrency(state.targetSalaryRaw);
+        state.idealSalary = state.monthlyExpenses * 18;
+
+        document.getElementById('idealSalary').textContent = formatUSD(state.idealSalary);
+        document.getElementById('stickyFloor').textContent = formatUSD(state.idealSalary);
+
+        let statusText = 'Enter values to compare';
+        let stickyStatus = 'N/A';
+
+        if (state.idealSalary > 0 && state.targetSalary > 0) {
+          if (state.targetSalary < state.idealSalary) {
+            statusText = 'Below your floor';
+            stickyStatus = 'Below floor';
+          } else if (Math.abs(state.targetSalary - state.idealSalary) <= 500) {
+            statusText = 'At your floor';
+            stickyStatus = 'At floor';
+          } else {
+            statusText = 'Above your floor';
+            stickyStatus = 'Above floor';
+          }
+        }
+
+        document.getElementById('salaryStatus').textContent = statusText;
+        document.getElementById('stickySalaryState').textContent = stickyStatus;
+      }
+
+      function inputBindings() {
+        const inputMap = [
+          ['passion1', (v) => state.passion[0] = v],
+          ['passion2', (v) => state.passion[1] = v],
+          ['passion3', (v) => state.passion[2] = v],
+          ['preferredLocation', (v) => state.preferredLocation = v],
+          ['problem1', (v) => state.problems[0] = v],
+          ['problem2', (v) => state.problems[1] = v],
+          ['problem3', (v) => state.problems[2] = v],
+          ['problem4', (v) => state.problems[3] = v],
+          ['problem5', (v) => state.problems[4] = v],
+          ['preferredEnvironment', (v) => state.preferredEnvironment = v],
+          ['monthlyExpenses', (v) => state.monthlyExpensesRaw = v],
+          ['targetSalary', (v) => state.targetSalaryRaw = v],
+          ['reflection', (v) => state.reflection = v]
+        ];
+
+        inputMap.forEach(([id, writer]) => {
+          const el = document.getElementById(id);
+          el.addEventListener('input', () => {
+            writer(sanitizeText(el.value));
+            saveState();
+            renderAll();
+          });
+        });
+
+        document.querySelectorAll('.work-mode-btn').forEach((button) => {
+          button.addEventListener('click', () => {
+            state.workMode = button.dataset.value;
+            saveState();
+            renderAll();
+          });
+        });
+
+        document.querySelectorAll('.industry-btn').forEach((button) => {
+          button.addEventListener('click', () => {
+            state.industry = button.dataset.value;
+            saveState();
+            renderAll();
+          });
+        });
+
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+          renderAll();
+          document.getElementById('actionMessage').textContent = 'Results refreshed.';
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => {
+          window.print();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+          localStorage.removeItem(STORAGE_KEY);
+          window.location.reload();
+        });
+
+        document.getElementById('copySummaryBtn').addEventListener('click', async () => {
+          const { completed, total } = computeTotal();
+          const fit = interpretationFor(total, completed);
+          const salaryStatus = document.getElementById('salaryStatus').textContent;
+
+          const summary = [
+            '5Ps Career Fit Calculator — Chasing Change',
+            '',
+            'PASSION:',
+            ...state.passion.map((v, i) => `  ${i + 1}. ${v || '-'}`),
+            '',
+            'PLACE:',
+            `  Preferred location: ${state.preferredLocation || '-'}`,
+            `  Work mode: ${state.workMode || '-'}`,
+            '',
+            'PROBLEM (strengths):',
+            ...state.problems.map((v, i) => `  ${i + 1}. ${v || '-'}`),
+            '',
+            'PEOPLE:',
+            `  Industry/client type: ${state.industry || '-'}`,
+            `  Preferred environment: ${state.preferredEnvironment || '-'}`,
+            '',
+            'PAY:',
+            `  Monthly expenses: ${formatUSD(state.monthlyExpenses)}`,
+            `  Ideal minimum salary (Monthly × 18): ${formatUSD(state.idealSalary)}`,
+            `  Target role market salary: ${formatUSD(state.targetSalary)}`,
+            `  Salary comparison: ${salaryStatus}`,
+            '',
+            'SCORES:',
+            ...categories.map((c) => `  ${c}: ${state.scores[c] ?? '-'}`),
+            `  Total: ${total}/25`,
+            `  Interpretation: ${fit.text}`,
+            '',
+            'Reflection prompt:',
+            '  If I stay in work scoring below 18 for five years, what does it cost me?',
+            `  Reflection notes: ${state.reflection || '-'}`
+          ].join('\n');
+
+          try {
+            await navigator.clipboard.writeText(summary);
+            document.getElementById('actionMessage').textContent = 'Summary copied to clipboard.';
+          } catch {
+            document.getElementById('actionMessage').textContent = 'Copy failed. Try again or use Print / Save as PDF.';
+          }
+        });
+      }
+
+      function hydrateInputs() {
+        document.getElementById('passion1').value = state.passion[0] || '';
+        document.getElementById('passion2').value = state.passion[1] || '';
+        document.getElementById('passion3').value = state.passion[2] || '';
+        document.getElementById('preferredLocation').value = state.preferredLocation || '';
+
+        document.getElementById('problem1').value = state.problems[0] || '';
+        document.getElementById('problem2').value = state.problems[1] || '';
+        document.getElementById('problem3').value = state.problems[2] || '';
+        document.getElementById('problem4').value = state.problems[3] || '';
+        document.getElementById('problem5').value = state.problems[4] || '';
+
+        document.getElementById('preferredEnvironment').value = state.preferredEnvironment || '';
+        document.getElementById('monthlyExpenses').value = state.monthlyExpensesRaw || '';
+        document.getElementById('targetSalary').value = state.targetSalaryRaw || '';
+        document.getElementById('reflection').value = state.reflection || '';
+
+        updateButtonGroup('.work-mode-btn', state.workMode);
+        updateButtonGroup('.industry-btn', state.industry);
+      }
+
+      function renderAll() {
+        hydrateInputs();
+        renderScoreControls();
+        updatePayCalculations();
+        updateResults();
+      }
+
+      loadState();
+      inputBindings();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
