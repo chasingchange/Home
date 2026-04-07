@@ -432,14 +432,14 @@ h3 {
   font-family: var(--cc-brand-font);
   font-size: clamp(1.45rem, 2.8vw, 2rem);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--cc-text);
   position: relative;
   z-index: 1;
 }
 
 .cc-account-sub-status {
   margin: 0.4rem auto 0;
-  color: rgba(255, 255, 255, 0.92);
+  color: color-mix(in srgb, var(--cc-text) 88%, #ffffff);
   font-size: 0.92rem;
   font-weight: 700;
   position: relative;
@@ -521,6 +521,10 @@ h3 {
 
 .cc-account-card.is-logged-in .cc-account-status {
   color: #ffffff;
+}
+
+.cc-account-card.is-logged-in .cc-account-sub-status {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .cc-account-login-btn {
