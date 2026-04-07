@@ -457,13 +457,32 @@
     const accountStartLine = card.querySelector("#ccAccountStartLine");
     const accountLogoutBtn = card.querySelector("#ccAccountLogoutBtn");
 
+    const resolveSiteBasePath = () => {
+      const scriptEl = document.currentScript || Array.from(document.scripts || []).find((script) => {
+        const src = script?.getAttribute?.("src") || "";
+        return /shared-session\.js(?:\?.*)?$/i.test(src);
+      });
+
+      if (scriptEl?.src) {
+        try {
+          const scriptUrl = new URL(scriptEl.src, window.location.href);
+          const cleanPath = scriptUrl.pathname.replace(/\/+$/, "");
+          return cleanPath.replace(/\/shared-session\.js$/i, "/");
+        } catch (error) {
+          // fall through to pathname-based fallback
+        }
+      }
+
+      const pathname = window.location.pathname || "/";
+      return pathname.replace(/\/[^/]*$/, "/");
+    };
+
     const syncCard = () => {
       const pathname = window.location.pathname || "/";
       const normalizedPath = pathname.replace(/\/+$/, "") || "/";
-      const homeBaseMatch = normalizedPath.match(/^(.*\/Home)(?:\/.*)?$/);
-      const homeBasePath = homeBaseMatch?.[1] || "";
-      const homeHref = homeBasePath ? `${homeBasePath}/index.html` : "/index.html";
-      const createAccountHref = homeBasePath ? `${homeBasePath}/create-account/index.html` : "/create-account/index.html";
+      const siteBasePath = resolveSiteBasePath();
+      const homeHref = `${siteBasePath}index.html`;
+      const createAccountHref = `${siteBasePath}create-account/index.html`;
       const isHomePage = normalizedPath === homeHref.replace(/\/index\.html$/, "") || normalizedPath === homeHref.replace(/\/+$/, "") || normalizedPath === "/";
       const isCreateAccountPage = normalizedPath.includes("/create-account") || normalizedPath.endsWith("/create-account.html");
       const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
