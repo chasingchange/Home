@@ -723,3 +723,115 @@ h3 {
     margin-top: 0.7rem;
   }
 }
+
+/* ===== Chasing Change light design system ===== */
+:root {
+  --cc-container: 72rem;
+  --cc-section-y: clamp(2rem, 4vw, 4rem);
+  --cc-radius-lg: 1rem;
+  --cc-radius-xl: 1.25rem;
+  --cc-radius-2xl: 1.5rem;
+  --cc-shadow-soft: 0 14px 34px rgba(7, 31, 53, 0.08);
+  --cc-border-subtle: 1px solid rgba(7, 31, 53, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--cc-text);
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--cc-text) 88%, black);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.01em;
+}
+
+.cc-page {
+  min-height: 100vh;
+  background: var(--cc-bg);
+  color: var(--cc-text);
+  font-family: var(--cc-body-font);
+}
+
+.cc-container {
+  width: min(var(--cc-container), calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.cc-section {
+  padding-block: var(--cc-section-y);
+}
+
+.cc-card,
+.cc-panel {
+  background: var(--cc-card);
+  border: var(--cc-border-subtle);
+  border-radius: var(--cc-radius-2xl);
+  box-shadow: var(--cc-shadow-soft);
+}
+
+.cc-btn,
+button,
+input[type="submit"],
+input[type="button"] {
+  border-radius: var(--cc-radius-xl);
+  border: 1px solid rgba(7, 31, 53, 0.15);
+  padding: 0.72rem 1rem;
+  font-family: var(--cc-heading-font);
+  font-weight: 700;
+  color: var(--cc-text);
+  background: #fff;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.cc-btn:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(7, 31, 53, 0.1);
+}
+
+.cc-btn-primary {
+  border-color: rgba(119, 215, 112, 0.85);
+  background: var(--cc-accent);
+}
+
+.cc-btn-secondary {
+  background: #fff;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(7, 31, 53, 0.15);
+  background: #fff;
+  color: var(--cc-text);
+  font-family: var(--cc-body-font);
+  padding: 0.72rem 0.84rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+.cc-btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cc-accent) 72%, white);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--cc-accent) 86%, black);
+}
+
+::placeholder {
+  color: rgba(7, 31, 53, 0.48);
+}
