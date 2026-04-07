@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Split Sculptor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+<script src="../exercise-matrix/data.js"></script>
+<script src="../shared-admin.js" defer></script>
+<script src="../shared-title-block.js" defer></script>
+<link rel="stylesheet" href="../shared.css" />
+<script src="../shared-session.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface2: #edf2f7;
+  --border: rgba(7,31,53,0.14);
+  --text: #071f35;
+  --muted: #5d6c79;
+  --accent: #77d770;
+  --accent-dim: rgba(119,215,112,0.14);
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem 1.25rem 3rem; }
+.page-shell { max-width: 980px; margin: 0 auto; }
+.brand-header { margin-bottom: 1.25rem; border-radius: 24px; overflow: hidden; border: 1px solid rgba(7,31,53,0.08); background: #fff; box-shadow: 0 24px 80px rgba(119,215,112,0.2); }
+.brand-header-inner { position: relative; padding: 1.5rem 1.5rem 1.25rem; }
+.brand-row { display: flex; align-items: stretch; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.brand-main { display: flex; align-items: center; gap: .7rem; min-width: 240px; }
+.brand-logo { width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(7,31,53,0.12); background: rgba(255,255,255,0.7); padding: .2rem; }
+.brand-title { font-family: 'Museo Moderno', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; }
+.brand-subrow { margin-top: .55rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.start-line-card { position: relative; min-width: clamp(220px, 30vw, 320px); border-radius: 18px; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.55); background: linear-gradient(135deg, rgba(255,255,255,0.42), rgba(255,255,255,0.22)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 16px 34px rgba(7,31,53,0.16); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); overflow: hidden; isolation: isolate; text-decoration: none; color: var(--text); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.start-line-title { display: block; font-family: 'Raleway', sans-serif; font-weight: 800; font-size: clamp(1rem,2.2vw,1.3rem); letter-spacing: .03em; text-transform: uppercase; }
+.start-line-sub { display: block; margin-top: .25rem; font-size: .9rem; font-weight: 700; color: rgba(7,31,53,.72); }
+.start-line-card::before, .start-line-card::after { content: ''; position: absolute; inset: -65% -20%; pointer-events: none; }
+.start-line-card::before { background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.42), rgba(255,255,255,0) 42%), radial-gradient(circle at 74% 68%, rgba(119,215,112,.28), rgba(119,215,112,0) 44%); opacity: .95; z-index: -1; }
+.start-line-card::after { background: repeating-linear-gradient(110deg, rgba(255,255,255,.2) 0 14px, rgba(255,255,255,.04) 14px 28px); transform: translateX(-28%) translateY(8%) rotate(6deg); opacity: 0; transition: transform .45s ease, opacity .45s ease; }
+.start-line-card:hover { transform: translateY(-3px) scale(1.01); border-color: rgba(255,255,255,.78); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 22px 40px rgba(7,31,53,.2); }
+.start-line-card:hover::after { opacity: 1; transform: translateX(12%) translateY(-5%) rotate(6deg); animation: waterFlow 1.8s linear infinite; }
+@keyframes waterFlow { 0% { background-position: 0 0; } 100% { background-position: 160px 0; } }
+.brand-tool-title { margin-top: .85rem; text-align: center; font-family: 'Raleway', sans-serif; font-size: clamp(1.4rem, 3.1vw, 2rem); font-weight: 800; }
+.top-glow { position: absolute; top: -100px; right: -100px; width: 280px; height: 280px; border-radius: 999px; background: rgba(119,215,112,0.2); filter: blur(36px); }
+.app { max-width: 980px; margin: 0 auto; }
+.header { display: none; }
+.header-spacer { flex: 1; }
+.step-counter { font-family: 'Raleway', sans-serif; font-size: 12px; color: var(--muted); font-weight: 700; display: none; }
+.progress-track { display: none; }
+.progress-fill { height: 100%; width: 14%; background: linear-gradient(90deg, #59c352, var(--accent)); transition: width .2s ease; }
+.focus-pill-row { display: grid; grid-template-columns: 2fr 2fr 4fr; gap: .35rem; margin-bottom: .85rem; }
+.focus-pill { border: 1px solid var(--border); border-radius: 999px; padding: .5rem .8rem; text-align: center; background: #fff; font-family: 'Raleway', sans-serif; font-weight: 800; font-size: .74rem; letter-spacing: .09em; text-transform: uppercase; }
+.focus-pill.vision { color: #1f4a1f; border-color: rgba(119,215,112,.48); background: linear-gradient(135deg, rgba(255,255,255,.46), rgba(119,215,112,.24)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+.focus-pill.diet { color: #2f5b2f; border-color: rgba(119,215,112,.42); background: linear-gradient(135deg, rgba(255,255,255,.44), rgba(119,215,112,.2)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+.focus-pill.fitness { color: #1e4b36; border-color: rgba(119,215,112,.42); background: linear-gradient(135deg, rgba(255,255,255,.44), rgba(119,215,112,.22)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+.timeline { display: grid; grid-template-columns: repeat(8, minmax(80px, 1fr)); gap: .35rem; margin-bottom: 1.7rem; }
+.t-block { appearance: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .45rem; }
+.t-step { font-family: 'Raleway', sans-serif; font-size: .62rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.t-group { display: block; margin-bottom: .35rem; font-family: 'Raleway', sans-serif; font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; color: rgba(7,31,53,.58); white-space: normal; word-break: break-word; line-height: 1.25; }
+.t-time { font-size: .78rem; font-weight: 700; margin-top: .15rem; }
+.t-duration { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+.screen { display: none; }
+.screen.active { display: block; }
+.step-eyebrow { font-family: 'Raleway', sans-serif; font-size: clamp(1.25rem, 3vw, 1.7rem); line-height: 1.2; font-weight: 800; letter-spacing: .02em; color: var(--text); margin-bottom: .45rem; }
+.step-title { font-family: 'Muli', sans-serif; font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.4; margin-bottom: .45rem; color: var(--muted); font-weight: 600; }
+.step-sub { color: var(--text); max-width: 780px; line-height: 1.6; margin-bottom: 1.2rem; }
+.chips { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
+.chip { border: 1px solid var(--border); border-radius: 999px; padding: .52rem .95rem; font-size: .9rem; cursor: pointer; background: var(--surface); color: var(--muted); transition: .15s; }
+.chip:hover { border-color: #59c352; color: var(--text); }
+.chip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
+.startup-choice-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: .85rem .9rem; margin-bottom: .9rem; }
+.startup-choice-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .55rem; }
+.startup-choice-controls { margin-top: .65rem; display: grid; gap: .55rem; grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.startup-choice-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.startup-choice-msg { margin-top: .55rem; font-size: .83rem; color: var(--muted); min-height: 1.1rem; }
+.rule { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid #59c352; border-radius: 0 var(--radius) var(--radius) 0; padding: .75rem .9rem; color: var(--muted); font-size: .86rem; line-height: 1.6; margin-bottom: 1rem; }
+.summary-card,.week,.agent { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; margin-bottom: .9rem; }
+.sum-row { display: flex; justify-content: space-between; gap: 1rem; padding: .58rem 0; border-bottom: 1px solid rgba(7,31,53,0.08); font-size: .92rem; }
+.sum-row:last-child { border-bottom: 0; }
+.sum-label { font-family: 'Raleway', sans-serif; font-size: .7rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
+.sum-val { font-weight: 700; text-align: right; }
+.week h3,.agent h3 { font-family: 'Raleway', sans-serif; font-size: 1rem; margin-bottom: .7rem; }
+.week ul { list-style: none; display: grid; gap: .5rem; }
+.week li { border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; font-size: .9rem; }
+.timeline .t-block { cursor: pointer; transition: .15s ease; }
+.timeline .t-block:hover { border-color: #59c352; transform: translateY(-1px); }
+.timeline .t-block.active { background: var(--accent-dim); border-color: #59c352; }
+.builder-tools { display: grid; gap: .6rem; margin: 1rem 0; }
+.filter-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.fchip { border: 1px solid var(--border); border-radius: 999px; padding: .44rem .82rem; font-size: .82rem; cursor: pointer; background: var(--surface); color: var(--muted); }
+.fchip.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); font-weight: 700; }
+.builder-layout { display: grid; grid-template-columns: 1fr; gap: .8rem; }
+.exercise-bank { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; max-height: 560px; overflow: auto; }
+.exercise-card { border: 1px solid var(--border); border-radius: 9px; padding: .52rem .6rem; margin-bottom: .45rem; background: #fff; cursor: grab; }
+.exercise-meta { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
+.day-grid { display: grid; gap: .75rem; }
+.day-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; }
+.day-card h4 { font-family: 'Raleway', sans-serif; font-size: .95rem; margin-bottom: .55rem; }
+.slot-row { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: .5rem; margin-bottom: .45rem; }
+.slot-label { font-size: .72rem; font-family: 'Raleway', sans-serif; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.slot-drop { min-height: 40px; border: 1px dashed rgba(7,31,53,.25); border-radius: 8px; padding: .38rem .55rem; background: #fff; display: flex; align-items: center; justify-content: space-between; }
+.slot-drop.dragover { border-color: #59c352; background: var(--accent-dim); }
+.slot-drop .placeholder { color: #9aa4af; font-size: .8rem; }
+.slot-drop .filled { font-size: .86rem; color: var(--text); font-weight: 600; }
+.slot-drop button { border: 0; background: transparent; color: #8f9aa6; cursor: pointer; font-size: .95rem; }
+.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 680px; }
+.priority-rank-item { display: grid; grid-template-columns: 180px 1fr; gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
+.priority-rank-label { font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .8rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.priority-rank-select, .slot-select, .slot-muscle-select { font-family: 'Muli', sans-serif; border: 1px solid var(--border); border-radius: 8px; padding: .42rem .5rem; background: #fff; color: var(--text); }
+.rank-help { margin-top: .75rem; font-size: .85rem; color: var(--muted); }
+.slot-row { border: 1px solid rgba(7,31,53,.1); border-radius: 10px; padding: .55rem; grid-template-columns: 1fr; gap: .5rem; }
+.slot-controls { display: grid; grid-template-columns: 140px 1fr 92px 118px 72px repeat(2, 32px); gap: .45rem; align-items: center; }
+.slot-meta { display: flex; align-items: center; justify-content: space-between; }
+.slot-status-light { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(7,31,53,.2); display: inline-block; margin-left: .5rem; }
+.slot-row.prescription-empty { border-color: rgba(7,31,53,.18); background: #fff; }
+.slot-row.prescription-empty .slot-status-light { background: #c7d0d8; border-color: rgba(7,31,53,.24); }
+.slot-row.prescription-partial { border-color: rgba(243,156,18,.6); background: rgba(243,156,18,.14); }
+.slot-row.prescription-partial .slot-status-light { background: #f39c12; border-color: #e38b07; }
+.slot-row.prescription-complete { border-color: rgba(89,195,82,.62); background: rgba(119,215,112,.2); }
+.slot-row.prescription-complete .slot-status-light { background: #59c352; border-color: #469f41; }
+.slot-suggestion { margin-top: .45rem; font-size: .84rem; color: var(--text); line-height: 1.6; border: 1px solid rgba(119,215,112,.38); border-left: 4px solid #59c352; border-radius: 9px; background: rgba(119,215,112,.14); padding: .58rem .7rem; }
+.slot-suggestion strong { font-family: 'Raleway', sans-serif; letter-spacing: .04em; font-size: .7rem; text-transform: uppercase; color: #1f4a1f; margin-right: .28rem; }
+.slot-suggestion-primary { display: block; margin-top: .5rem; padding-top: .38rem; border-top: 1px dashed rgba(7,31,53,.24); color: var(--text); font-family: 'Raleway', sans-serif; font-size: .84rem; letter-spacing: .02em; font-weight: 800; }
+.slot-suggestion-priority { display: block; margin-top: .38rem; font-size: .78rem; font-weight: 700; color: rgba(7,31,53,.88); }
+.slot-choice-guide { margin-top: .45rem; border: 1px solid rgba(7,31,53,.14); border-radius: 9px; background: #fff; padding: .55rem .65rem; }
+.slot-choice-guide-title { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: .32rem; }
+.slot-choice-guide ul { margin: 0; padding-left: 1rem; display: grid; gap: .22rem; }
+.slot-choice-guide li { font-size: .8rem; line-height: 1.45; color: var(--text); }
+.slot-select option[data-suggested="1"] { font-weight: 700; }
+.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
+.slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
+.exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
+.exercise-detail-modal.open { display: flex; }
+.exercise-detail-panel { width: min(640px, 100%); background: #fff; border: 1px solid rgba(7,31,53,.16); border-radius: 16px; box-shadow: 0 24px 60px rgba(7,31,53,.3); padding: 1.1rem; }
+.exercise-detail-head { display: flex; justify-content: space-between; gap: .75rem; align-items: start; }
+.exercise-detail-title { font-family: 'Raleway', sans-serif; font-size: 1.05rem; font-weight: 800; line-height: 1.3; color: var(--text); }
+.exercise-detail-sub { margin-top: .2rem; color: var(--muted); font-size: .84rem; }
+.exercise-detail-close { border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); padding: .32rem .5rem; cursor: pointer; }
+.exercise-detail-grid { margin-top: .75rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+.exercise-detail-card { border: 1px solid rgba(7,31,53,.12); border-radius: 10px; padding: .55rem .65rem; background: #f5f5f7; }
+.exercise-detail-card .k { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.exercise-detail-card .v { display: block; margin-top: .2rem; font-size: .9rem; font-weight: 700; color: var(--text); }
+.exercise-detail-instructions { margin-top: .7rem; border: 1px solid rgba(7,31,53,.16); border-radius: 10px; background: #f8fafc; padding: .72rem .82rem; color: var(--text); }
+.exercise-detail-instructions .label { display: block; margin-bottom: .4rem; font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.exercise-detail-instructions ul { margin: 0; padding-left: 1.05rem; font-size: .9rem; line-height: 1.62; }
+.exercise-detail-note { margin-top: .7rem; border: 1px solid rgba(119,215,112,.35); border-left: 4px solid #59c352; border-radius: 10px; background: rgba(119,215,112,.12); padding: .68rem .78rem; color: var(--text); font-size: .88rem; line-height: 1.58; }
+.builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
+.builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
+.builder-day-tab.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); }
+.equipment-wrap { display: none; margin-top: .8rem; border: 1px solid var(--border); border-radius: 12px; padding: .7rem; background: #fff; }
+.equipment-wrap.show { display: block; }
+.equipment-search { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; margin-bottom: .55rem; }
+.equipment-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .4rem; max-height: 170px; overflow: auto; }
+.equipment-item { border: 1px solid var(--border); border-radius: 8px; padding: .4rem .5rem; font-size: .86rem; cursor: pointer; display: flex; gap: .45rem; align-items: center; }
+.equipment-item.on { border-color: #59c352; background: var(--accent-dim); font-weight: 700; }
+@media (max-width: 900px) { .builder-layout { grid-template-columns: 1fr; } }
+.input-grid { display: grid; gap: .7rem; grid-template-columns: 1fr auto; }
+.ask { font-family: 'Muli', sans-serif; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 10px; }
+.ask-out { margin-top: .8rem; font-size: .9rem; line-height: 1.5; color: var(--text); }
+.quick-link-row { margin-top: .7rem; }
+.quick-link-row .btn { text-decoration: none; display: inline-block; }
+.nav { display: flex; align-items: center; gap: .55rem; margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid rgba(7,31,53,0.1); }
+.btn { font-family: 'Muli', sans-serif; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); padding: .55rem 1rem; cursor: pointer; color: var(--muted); }
+.btn:disabled { opacity: .35; pointer-events: none; }
+.btn-p { background: var(--accent); border-color: var(--accent); color: var(--text); font-weight: 700; }
+.dots { margin-left: auto; display: flex; gap: .35rem; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #9ea8b1; }
+.dot.cur { width: 18px; border-radius: 999px; background: var(--accent); }
+.dot.done { background: #59c352; }
+.macro-embed { margin-top: .95rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.macro-embed iframe { width: 100%; min-height: 720px; border: 0; background: #fff; }
+.manual-macro-wrap { margin-top: .95rem; display: none; }
+.manual-macro-wrap.show { display: block; }
+.manual-macro-grid { display: grid; gap: .7rem; grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+.manual-field { border: 2px solid #60ce59; border-radius: 12px; padding: .8rem .9rem; background: #fff; }
+.manual-field.soft-green { background: #c8dbc9; }
+.manual-field.soft-tan { background: #dcd5ce; }
+.manual-field.soft-pink { background: #e8c8d1; }
+.manual-field label { display: block; font-family: 'Raleway', sans-serif; font-size: .75rem; letter-spacing: .06em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .35rem; }
+.manual-field input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .48rem .55rem; font-family: 'Muli', sans-serif; font-size: 1rem; color: var(--text); background: #fff; }
+.target-grid { display: grid; gap: .6rem; margin-top: .75rem; }
+.target-card { border: 1px solid var(--border); border-radius: 10px; padding: .7rem .8rem; background: #fff; }
+.target-card.target-protein { background: rgba(119, 215, 112, 0.2); border-color: rgba(89, 195, 82, 0.5); }
+.target-card.target-carbs { background: rgba(255, 209, 102, 0.26); border-color: rgba(243, 176, 63, 0.45); }
+.target-card.target-fat { background: rgba(255, 138, 138, 0.2); border-color: rgba(230, 106, 106, 0.45); }
+.target-label { font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+.target-value { margin-top: .2rem; font-size: 1.05rem; font-weight: 700; }
+.week li strong { display: block; margin-bottom: .6rem; }
+.week li ul { margin-top: .3rem; padding-left: 1.1rem; }
+.workout-item { margin-bottom: .65rem; }
+.workout-item:last-child { margin-bottom: 0; }
+.workout-line { margin-bottom: .35rem; }
+.split-day-card { border: 1px solid rgba(7,31,53,0.12); border-radius: 12px; padding: .75rem .85rem; background: #fff; margin-bottom: .6rem; }
+.split-day-card strong { font-family: 'Raleway', sans-serif; font-size: .86rem; letter-spacing: .03em; display: block; margin-bottom: .5rem; color: var(--text); }
+.split-workout-list { list-style: none; padding-left: 0; display: grid; gap: .4rem; }
+.split-workout-item { border: 1px solid rgba(7,31,53,0.1); border-radius: 10px; background: #f8fafc; padding: .48rem .58rem; }
+.split-workout-item.missing { border-color: rgba(196, 48, 48, 0.65); background: rgba(220, 38, 38, 0.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
+.split-workout-main { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; font-size: .88rem; }
+.split-workout-slot { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.split-workout-prescription { font-weight: 700; color: var(--text); }
+.split-warning { margin-top: .55rem; border: 1px solid rgba(196, 48, 48, 0.42); border-left: 4px solid #c43030; border-radius: 9px; padding: .52rem .62rem; background: rgba(220, 38, 38, 0.1); color: #7a1515; font-size: .82rem; line-height: 1.55; }
+.summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
+.summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
+.summary-panel { display: none; }
+.summary-panel.active { display: block; }
+.summary-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: .8rem; align-items: start; }
+.summary-main { min-width: 0; }
+.summary-side { min-width: 0; }
+.summary-side .week + .week { margin-top: .8rem; }
+#summary-save-card { margin-top: 2.3rem; }
+.past-split-controls { display: grid; gap: .6rem; grid-template-columns: repeat(4, minmax(120px, 1fr)); align-items: end; margin-top: .8rem; }
+.past-split-controls label { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: .3rem; }
+.past-split-controls select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .45rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.past-split-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .85rem; }
+.past-split-msg { margin-top: .75rem; font-size: .85rem; color: var(--muted); min-height: 1.2rem; }
+.group-pill { display: block; margin-bottom: .35rem; font-family: 'Raleway', sans-serif; letter-spacing: .2em; font-size: .58rem; color: rgba(7,31,53,.58); text-transform: uppercase; font-weight: 800; white-space: normal; word-break: break-word; line-height: 1.25; }
+.group-pill.vision { color: #2f5b2f; }
+.group-pill.diet { color: #7d5313; }
+.group-pill.fitness { color: #204a7a; }
+.cc-title-logo { width: 182px; height: 182px; }
+.cc-title-brand { gap: .08rem; }
+.cc-title-coaching { margin: .35rem auto 0; }
+@media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: .5rem; } }
+@media (max-width: 640px) { .slot-controls { grid-template-columns: 1fr; } .exercise-detail-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="cc-page">
+<div class="page-shell" data-admin-edit-root>
+  <header class="cc-title-block">
+    <div class="cc-title-block-inner">
+      <div class="cc-title-block-top">
+        <div class="cc-title-brand">
+          <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
+          <div>
+            <h1 class="cc-title-name">Chasing Change</h1>
+          </div>
+        </div>
+      </div>
+      <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
+      <div class="cc-page-title">Split Sculptor</div>
+      <div style="text-align:center;">
+        <a href="https://tally.so/r/w5JXKE" data-coaching-popup-url="https://tally.so/r/w5JXKE" class="cc-title-coaching">
+          Want this dialed in? Apply for coaching →
+        </a>
+      </div>
+    </div>
+  </header>
+
+<div class="app">
+  <div class="header">
+    <div class="header-spacer"></div>
+    <div class="step-counter" id="step-counter">STEP 1 OF 9</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+
+  <div class="focus-pill-row">
+    <div class="focus-pill vision">Vision</div>
+    <div class="focus-pill diet">Diet</div>
+    <div class="focus-pill fitness">Fitness</div>
+  </div>
+  <div class="timeline" id="timeline"></div>
+
+  <div class="screen active" id="s1">
+    <div class="step-eyebrow">STEP 1 · MACROCYCLE</div>
+    <h1 class="step-title">What do you want to improve this quarter?</h1>
+    <p class="step-sub">Choose one primary outcome so every other decision supports a clear target.</p>
+    <div class="startup-choice-card" id="startup-macrocycle-card"></div>
+    <div class="chips" id="macro-chips">
+      <div class="chip on" data-v="Build Visible Muscle">Build Visible Muscle</div>
+      <div class="chip" data-v="Slim Down">Slim Down</div>
+      <div class="chip" data-v="Fat Loss">Fat Loss</div>
+      <div class="chip" data-v="Increase Strength">Increase Strength</div>
+      <div class="chip" data-v="Performance">Performance</div>
+    </div>
+  </div>
+
+  <div class="screen" id="s2">
+    <div class="step-eyebrow">STEP 2 · MESOCYCLE</div>
+    <h2 class="step-title">What strategy are you running this month?</h2>
+    <p class="step-sub">Use the strategy that best matches your macrocycle goal.</p>
+    <div class="chips" id="meso-chips"></div>
+    <div class="rule" id="meso-rule"></div>
+  </div>
+
+  <div class="screen" id="s3">
+    <div class="step-eyebrow">STEP 3 · NUTRITION</div>
+    <h2 class="step-title">What do you need to eat to support your goal?</h2>
+    <p class="step-sub">Select the calorie direction that fits your goal. Protein anchor: ~0.9–1.0g per lb bodyweight.</p>
+    <div class="chips" id="nutrition-chips"></div>
+    <div class="rule" id="nutrition-rule"></div>
+  </div>
+
+  <div class="screen" id="s4">
+    <div class="step-eyebrow">STEP 4 · MACRO CALCULATOR</div>
+    <h2 class="step-title">What Are Your Macro Targets?</h2>
+    <p class="step-sub">Use the macro calculator, then choose how you want to store your macro plan.</p>
+    <div class="chips" id="macro-calc-chips">
+      <div class="chip on" data-v="Use Macro Calculator">Use Macro Calculator</div>
+      <div class="chip" data-v="Manual Macro Targets">Manual Macro Targets</div>
+    </div>
+    <a href="../macro/index.html" target="_blank" rel="noopener noreferrer" class="btn btn-p" style="display:inline-block;text-decoration:none;text-align:center;">Open Macro Calculator in New Tab</a>
+    <div class="macro-embed" id="macro-embed" aria-label="Embedded macro calculator">
+      <iframe src="../macro/index.html" title="Chasing Change Macro Calculator" loading="lazy"></iframe>
+    </div>
+    <div class="manual-macro-wrap" id="manual-macro-wrap">
+      <div class="manual-macro-grid">
+        <div class="manual-field"><label for="manual-calories">Daily Target Calories</label><input id="manual-calories" type="number" min="0" placeholder="e.g. 2172" /></div>
+        <div class="manual-field"><label for="manual-bmr">BMR (Resting)</label><input id="manual-bmr" type="number" min="0" placeholder="e.g. 1724" /></div>
+        <div class="manual-field"><label for="manual-tdee">TDEE (Activity)</label><input id="manual-tdee" type="number" min="0" placeholder="e.g. 2672" /></div>
+        <div class="manual-field soft-green"><label for="manual-protein">Protein (g)</label><input id="manual-protein" type="number" min="0" placeholder="e.g. 180" /></div>
+        <div class="manual-field soft-tan"><label for="manual-carbs">Carbs (g)</label><input id="manual-carbs" type="number" min="0" placeholder="e.g. 227" /></div>
+        <div class="manual-field soft-pink"><label for="manual-fat">Fat (g)</label><input id="manual-fat" type="number" min="0" placeholder="e.g. 60" /></div>
+      </div>
+    </div>
+    <div class="rule" id="macro-calc-rule"></div>
+  </div>
+
+  <div class="screen" id="s5">
+    <div class="step-eyebrow">STEP 5 · TRAINING DAYS</div>
+    <h2 class="step-title">How many days can you train each week?</h2>
+    <p class="step-sub">Set your weekly frequency first, then we'll guide your priority selection so it divides your week appropriately.</p>
+    <div class="chips" id="freq-chips">
+      <div class="chip" data-v="2">2 days</div>
+      <div class="chip on" data-v="3">3 days</div>
+      <div class="chip" data-v="4">4 days</div>
+      <div class="chip" data-v="5">5 days</div>
+      <div class="chip" data-v="6">6 days</div>
+    </div>
+    <div class="rule" id="freq-rule"></div>
+    <div class="rank-help" id="freq-priority-guide"></div>
+  </div>
+
+  <div class="screen" id="s6">
+    <div class="step-eyebrow">STEP 6 · PRIORITY</div>
+    <h2 class="step-title">How should we prioritize your week?</h2>
+    <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. Pull days with Back priority auto-assign Biceps for the other compound, machine, and isolated slots.</p>
+    <div class="priority-rank-list" id="priority-rank-list">
+    </div>
+    <div class="rank-help" id="priority-rank-help"></div>
+  </div>
+
+  <div class="screen" id="s7">
+    <div class="step-eyebrow">STEP 7 · TRAINING ENVIRONMENT</div>
+    <h2 class="step-title">Where are you training most often?</h2>
+    <p class="step-sub">This helps us infer equipment and tailor your day builder.</p>
+    <div class="chips" id="gym-chips">
+      <div class="chip on" data-v="Commercial Gym">Commercial Gym</div>
+      <div class="chip" data-v="Apartment Gym">Apartment Gym</div>
+      <div class="chip" data-v="Home Gym">Home Gym</div>
+    </div>
+    <div class="rule" id="gym-rule"></div>
+    <div class="equipment-wrap" id="equipment-wrap">
+      <input id="equipment-search" class="equipment-search" type="text" placeholder="Search equipment (e.g. bench, cable, pull-up bar)" />
+      <div class="equipment-list" id="equipment-list"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s8">
+    <div class="step-eyebrow">STEP 8 · MICROCYCLE BUILDER</div>
+    <h2 class="step-title">Build each training day</h2>
+    <p class="step-sub">Choose each slot’s target muscle + movement, then select sets and reps. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower).</p>
+    <div class="agent">
+      <h3>Split Sculptor Agent</h3>
+      <div class="input-grid">
+        <input id="agent-q" class="ask" type="text" placeholder="Ask: Can you swap a machine move? What if I only have 30 minutes?" />
+        <button class="btn btn-p" id="agent-btn">Ask</button>
+      </div>
+      <div class="ask-out" id="agent-out">Ask a question and I’ll suggest swaps, progressions, and time-efficient adjustments.</div>
+      <div class="quick-link-row">
+        <a class="btn" href="../1RM Calculator/Index.html" target="_blank" rel="noopener noreferrer">Open 1RM Calculator for Working Weights</a>
+      </div>
+    </div>
+    <div class="builder-layout">
+      <div class="builder-day-tabs" id="builder-day-tabs"></div>
+      <div class="day-grid" id="builder-out"></div>
+    </div>
+    <div class="rank-help" id="builder-validation-msg"></div>
+  </div>
+
+  <div class="screen" id="s9">
+    <div class="step-eyebrow">STEP 9 · MACROCYCLE SUMMARIES</div>
+    <h2 class="step-title">Split</h2>
+    <p class="step-sub">Execute this plan for four weeks, then reassess and modify as needed.</p>
+    <div class="summary-layout">
+      <div class="summary-main">
+        <div class="summary-tabs">
+          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
+          <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
+        </div>
+        <div class="summary-panel active" id="overview-summary-panel">
+          <div id="overview-summary-content"></div>
+        </div>
+        <div class="summary-panel" id="workouts-summary-panel">
+          <div id="split-workouts-panel"></div>
+        </div>
+      </div>
+      <aside class="summary-side" id="summary-save-card">
+        <div class="week">
+          <h3>Save This View</h3>
+          <p class="step-sub" style="margin-bottom:.6rem;">Save this summary and macro setup to a quarter.</p>
+          <div id="summary-save-controls-wrap" style="display:none;">
+            <div class="past-split-controls">
+              <div>
+                <label for="save-year-select">Save Year</label>
+                <select id="save-year-select"></select>
+              </div>
+              <div>
+                <label for="save-quarter-select">Save Quarter</label>
+                <select id="save-quarter-select"></select>
+              </div>
+            </div>
+            <div class="past-split-actions">
+              <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
+            </div>
+            <p class="split-warning">Warning: saving a Split Sculptor view to a quarter replaces any previously saved split data for that same year + quarter.</p>
+            <div class="past-split-msg" id="summary-save-msg"></div>
+          </div>
+          <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
+        </div>
+        <div class="week">
+          <h3>Past Macrocycles</h3>
+          <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+          <div id="past-split-controls-wrap" style="display:none;">
+            <div class="past-split-controls">
+              <div>
+                <label for="split-year-select">Year</label>
+                <select id="split-year-select"></select>
+              </div>
+              <div>
+                <label for="split-quarter-select">Quarter</label>
+                <select id="split-quarter-select">
+                  <option value="1">Q1 (Jan–Mar)</option>
+                  <option value="2">Q2 (Apr–Jun)</option>
+                  <option value="3">Q3 (Jul–Sep)</option>
+                  <option value="4">Q4 (Oct–Dec)</option>
+                </select>
+              </div>
+            </div>
+            <div class="past-split-actions">
+              <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
+            </div>
+            <div class="past-split-msg" id="past-split-msg"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="nav" style="border-top:0;padding-top:.2rem;">
+      <button class="btn" id="print-summary-btn" type="button">Print</button>
+      <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="back-btn" disabled>Back</button>
+    <button class="btn btn-p" id="next-btn">Next</button>
+    <div class="dots" id="dot-row"></div>
+  </div>
+</div>
+</div>
+
+<div class="exercise-detail-modal" id="exercise-detail-modal" aria-hidden="true">
+  <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
+    <div class="exercise-detail-head">
+      <div>
+        <div class="exercise-detail-title" id="exercise-detail-title">View</div>
+        <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
+      </div>
+      <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
+    </div>
+    <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
+    <div class="exercise-detail-instructions" id="exercise-detail-instructions"></div>
+    <div class="exercise-detail-note" id="exercise-detail-note"></div>
+  </div>
+</div>
+<p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
+
+<script>
+const TOTAL_STEPS = 9;
+const STEP_TIMING = [
+  { name: 'Macrocycle', duration: '3 months', group: 'VISION' },
+  { name: 'Mesocycle', duration: '4 weeks', group: 'VISION' },
+  { name: 'Nutrition', duration: '3 months', group: 'DIET' },
+  { name: 'Macros', duration: 'Now', group: 'DIET' },
+  { name: 'Training Days', duration: '1 week', group: 'FITNESS' },
+  { name: 'Priority', duration: 'Now', group: 'FITNESS' },
+  { name: 'Environment', duration: 'Now', group: 'FITNESS' },
+  { name: 'Microcycle', duration: '1 week', group: 'FITNESS' },
+  { name: 'Macrocycle Summaries', duration: '' }
+];
+const currentQuarter = getCurrentQuarterInfo();
+const state = {
+  step: 1,
+  macro: 'Build Visible Muscle',
+  meso: 'Hypertrophy',
+  nutrition: 'Surplus',
+  macroPlan: 'Use Macro Calculator',
+  priority: 'Back',
+  priorities: ['Back', 'Biceps', 'Calves', 'Chest', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'],
+  dayPriorities: {},
+  gymType: 'Commercial Gym',
+  homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
+  activeBuilderDay: 1,
+  viewYear: currentQuarter.year,
+  viewQuarter: currentQuarter.quarter,
+  freq: 3,
+  customDays: {},
+  manualTargets: {}
+};
+let splitArchive = {};
+
+function quarterKey(year, quarter) {
+  return `${year}-Q${quarter}`;
+}
+
+function getQuarterFromDate(date = new Date()) {
+  const month = date.getUTCMonth();
+  return Math.floor(month / 3) + 1;
+}
+
+function getCurrentQuarterInfo() {
+  const now = new Date();
+  return {
+    year: now.getUTCFullYear(),
+    quarter: getQuarterFromDate(now)
+  };
+}
+
+function canSaveToQuarter(year, quarter) {
+  const current = getCurrentQuarterInfo();
+  const targetYear = Number(year);
+  const targetQuarter = Number(quarter);
+  if (!targetYear || !targetQuarter) return false;
+  if (targetYear > current.year) return true;
+  if (targetYear < current.year) return false;
+  return targetQuarter >= current.quarter;
+}
+
+function formatViewPeriod(year, quarter) {
+  const y = Number(year);
+  const q = Number(quarter);
+  if (!y || !q) {
+    const current = getCurrentQuarterInfo();
+    return `Q${current.quarter} ${current.year}`;
+  }
+  return `Q${q} ${y}`;
+}
+
+const mesoByMacro = {
+  'Build Visible Muscle': 'Hypertrophy',
+  'Slim Down': 'Fat Loss / Conditioning',
+  'Fat Loss': 'Fat Loss / Conditioning',
+  'Increase Strength': 'Progressive Overload / Strength Training',
+  'Performance': 'Performance'
+};
+
+const nutritionByMacro = {
+  'Build Visible Muscle': 'Surplus',
+  'Slim Down': 'Slight Deficit',
+  'Fat Loss': 'Deficit',
+  'Increase Strength': 'Slight Surplus',
+  'Performance': 'Maintenance'
+};
+
+const splitByFreq = {
+  2: ['Full Body (Priority First)', 'Full Body'],
+  3: ['Push (Priority First)', 'Pull', 'Legs'],
+  4: ['Upper (Priority First)', 'Lower', 'Upper', 'Lower'],
+  5: ['Push (Priority First)', 'Pull', 'Legs', 'Upper', 'Lower'],
+  6: ['Push (Priority First)', 'Pull', 'Legs', 'Push', 'Pull', 'Legs']
+};
+
+const freqRule = {
+  2: '2 days → Full Body x2.',
+  3: '3 days → Push / Pull / Legs.',
+  4: '4 days → Upper / Lower / Upper / Lower.',
+  5: '5 days → Push / Pull / Legs / Upper / Lower.',
+  6: '6 days → Push / Pull / Legs repeated.'
+};
+
+const gymRules = {
+  'Commercial Gym': 'Commercial gym assumes broad access (barbell, dumbbell, machines, cables).',
+  'Apartment Gym': 'Apartment gym prioritizes dumbbells, cables/basic machines, and bodyweight movements.',
+  'Home Gym': 'Home gym prioritizes dumbbell + barbell + bodyweight with minimal machine dependence.'
+};
+
+const allowedCategories = {
+  'Commercial Gym': ['Barbell', 'Dumbbell', 'Machines', 'Body Weight', 'Carries'],
+  'Apartment Gym': ['Dumbbell', 'Machines', 'Body Weight', 'Carries'],
+  'Home Gym': ['Barbell', 'Dumbbell', 'Body Weight', 'Carries']
+};
+
+const HOME_EQUIPMENT_OPTIONS = [
+  'Barbell', 'Plates', 'Dumbbells', 'Kettlebells', 'Adjustable Bench', 'Flat Bench', 'Squat Rack', 'Power Rack',
+  'Cable Tower', 'Lat Pulldown', 'Leg Extension / Curl', 'Pull-up Bar', 'Dip Bars', 'Bands', 'Smith Machine',
+  'Landmine', 'TRX / Suspension Trainer', 'Row Machine', 'Assault Bike'
+];
+
+const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
+
+const setOptions = ['', '2', '3', '4', '5', '6'];
+const repOptions = ['', '3 - 5', '4 - 6', '6 - 8', '8 - 10', '10 - 12', '12 - 15', '15 - 20'];
+
+const mesoPrescription = {
+  'Hypertrophy': {
+    Compound: { sets: '4', reps: '10 - 12', note: 'Hypertrophy: push compounds for 10+ reps.' },
+    Machine: { sets: '3', reps: '10 - 15', note: 'Machine work supports volume in 10+ reps.' },
+    Isolated: { sets: '2', reps: '12 - 20', note: 'Isolations stay higher rep with slightly less sets.' }
+  },
+  'Progressive Overload / Strength Training': {
+    Compound: { sets: '4', reps: '4 - 6', note: 'Strength meso: heavier compounds with lower reps.' },
+    Machine: { sets: '3', reps: '6 - 8', note: 'Machine accessories fill supportive volume.' },
+    Isolated: { sets: '2', reps: '8 - 12', note: 'Isolation volume stays moderate while strength is prioritized.' }
+  },
+  'Fat Loss / Conditioning': {
+    Compound: { sets: '3', reps: '8 - 10', note: 'Conditioning meso: moderate sets with controlled reps.' },
+    Machine: { sets: '3', reps: '10 - 12', note: 'Machine work keeps total output high.' },
+    Isolated: { sets: '2', reps: '12 - 15', note: 'Isolations finish with higher reps and lower set count.' }
+  },
+  'Performance': {
+    Compound: { sets: '4', reps: '3 - 5', note: 'Performance meso: low-rep compounds for speed + power.' },
+    Machine: { sets: '3', reps: '6 - 8', note: 'Machine support work keeps quality high.' },
+    Isolated: { sets: '2', reps: '10 - 12', note: 'Isolations stay lower stress so performance stays high.' }
+  }
+};
+
+function buildExerciseId(exercise) {
+  const key = [exercise.name, exercise.equipment || 'Bodyweight', exercise.primaryMuscle || 'Full Body']
+    .join('|')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  return `ex_${key}`;
+}
+
+const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise) => {
+  const equipment = (exercise.equipment || '').trim();
+  let category = 'Body Weight';
+  if (equipment === 'Barbell') category = 'Barbell';
+  else if (equipment === 'Dumbbell') category = 'Dumbbell';
+  else if (equipment === 'Machine' || equipment === 'Cable' || equipment === 'Smith Machine') category = 'Machines';
+
+  return {
+    id: buildExerciseId(exercise),
+    name: exercise.name,
+    equipment: equipment || 'Bodyweight',
+    category,
+    primaryMuscle: exercise.primaryMuscle || 'Full Body',
+    movementType: exercise.movementType || '',
+    instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.'
+  };
+});
+
+function rotateSplitToFirstFocus(split, desiredFocus) {
+  if (!desiredFocus) return split;
+  const index = split.findIndex((line) => extractFocusName(line) === desiredFocus);
+  if (index <= 0) return split;
+  const rotated = [...split.slice(index), ...split.slice(0, index)];
+  rotated[0] = `${desiredFocus} (Priority First)`;
+  return rotated.map((line, lineIndex) => {
+    if (lineIndex !== 0) return line.replace(' (Priority First)', '');
+    return line;
+  });
+}
+
+function getPriorityFocus() {
+  const priority = (state.priority || '').toLowerCase();
+  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(priority)) return ['Legs', 'Lower'];
+  if (priority === 'chest') return ['Push', 'Upper'];
+  if (priority === 'back') return ['Pull', 'Upper'];
+  if (priority === 'shoulders' || priority === 'biceps' || priority === 'triceps' || priority === 'arms') return ['Pull', 'Upper', 'Push'];
+  return ['Push', 'Upper', 'Legs', 'Lower', 'Pull', 'Full Body'];
+}
+
+function getSplitForFreq() {
+  return splitByFreq[state.freq] ? [...splitByFreq[state.freq]] : [...splitByFreq[3]];
+}
+
+const explicitMovementTypeByName = {
+  'Chest Fly': 'Isolated',
+  'Incline Chest Fly': 'Isolated',
+  'Decline Cable Fly': 'Isolated',
+  'Incline Cable Fly': 'Isolated',
+  'Cable Crossover': 'Isolated',
+  'Lateral Raise': 'Isolated',
+  'Front Raise': 'Isolated',
+  'Reverse Fly': 'Isolated',
+  'Face Pull': 'Isolated',
+  'Bicep Curl': 'Isolated',
+  'Barbell Bicep Curl': 'Compound',
+  'Hammer Curl': 'Isolated',
+  'Preacher Curl': 'Isolated',
+  'Skullcrusher': 'Isolated',
+  'Tricep Extension': 'Isolated',
+  'Tricep Pushdown': 'Isolated',
+  'Leg Extension': 'Isolated',
+  'Lying Leg Curl': 'Isolated',
+  'Seated Leg Curl': 'Isolated',
+  'Calf Press': 'Isolated',
+  'Standing Calf Press': 'Compound',
+  'Single-Leg Calf Press': 'Compound',
+  'Standing Calf Raise': 'Isolated',
+  'Hip Abductors': 'Isolated',
+  'Hip Adductors': 'Isolated',
+  'Pec Deck': 'Isolated',
+  'Rear Delt Fly': 'Isolated',
+  'Cable Glute Kickback': 'Isolated',
+  'Donkey Kick': 'Isolated',
+  'Cable Leg Extension': 'Isolated',
+  'Sissy Squat': 'Isolated',
+  'Goblet Squat': 'Compound',
+  'Lunges': 'Compound',
+  'Bulgarian Split Squat': 'Compound',
+  'Romanian Deadlift': 'Compound',
+  'Glute Bridge': 'Compound',
+  'Cable Pull Through': 'Compound',
+  'Pull Up': 'Compound',
+  'Chin Up': 'Compound',
+  'Machine High Row (Biceps Bias)': 'Compound',
+  'Machine Underhand Row': 'Compound',
+  'Lat Pulldown': 'Compound',
+  'Seated Row': 'Compound',
+  'T Bar Row': 'Compound',
+  'Barbell Row': 'Compound',
+  'Single Arm Dumbbell Row': 'Isolated',
+  'Chest Press': 'Compound',
+  'Incline Chest Press': 'Compound',
+  'Shoulder Press': 'Compound'
+};
+
+function oneChip(groupId, key, isNum = false) {
+  document.getElementById(groupId).addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+    state[key] = isNum ? parseInt(chip.dataset.v, 10) : chip.dataset.v;
+    if (key === 'macro') {
+      state.meso = mesoByMacro[state.macro];
+      state.nutrition = nutritionByMacro[state.macro];
+      buildMesoChips();
+      buildNutritionChips();
+    }
+    if (key === 'macroPlan') buildMacroRule();
+    if (key === 'freq') {
+      applyPriorityProfileForFrequency();
+      buildFrequencyRule();
+      applyPriorityTargetsToBaseRows();
+      buildPriorityRanker();
+    }
+    if (key === 'gymType') buildGymRule();
+    if (key === 'meso' && state.step >= 8) renderDayCards();
+    if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
+    if (state.step >= 9) buildSummary();
+  });
+}
+
+function getPriorityMuscles() {
+  return ['Back', 'Biceps', 'Calves', 'Chest', 'Glutes', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
+}
+
+function muscleBucket(muscle) {
+  if (['Chest', 'Shoulders', 'Triceps'].includes(muscle)) return 'Push';
+  if (['Back', 'Biceps'].includes(muscle)) return 'Pull';
+  return 'Legs';
+}
+
+function applyPriorityProfileForFrequency() {
+  const split = getSplitForFreq();
+  const existing = state.dayPriorities || {};
+  const next = {};
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const focus = extractFocusName(line);
+    const focusMuscles = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
+    next[dayKey] = focusMuscles.includes(existing[dayKey]) ? existing[dayKey] : (focusMuscles[0] || 'Back');
+  });
+  state.dayPriorities = next;
+  const chosen = Object.values(next);
+  const remaining = getPriorityMuscles().filter((muscle) => !chosen.includes(muscle));
+  state.priorities = [...chosen, ...remaining];
+  state.priority = chosen[0] || state.priorities[0];
+}
+
+function buildPriorityRanker() {
+  const list = document.getElementById('priority-rank-list');
+  const split = getSplitForFreq();
+  list.innerHTML = split.map((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const focus = extractFocusName(line);
+    const options = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
+    const selected = state.dayPriorities[dayKey] || options[0] || '';
+    const opts = options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
+    return `<div class="priority-rank-item">
+      <div class="priority-rank-label">Day ${i + 1} · ${focus}</div>
+      <select class="priority-rank-select" data-day-priority="${dayKey}">${opts}</select>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('[data-day-priority]').forEach((select) => {
+    select.onchange = () => {
+      state.dayPriorities[select.dataset.dayPriority] = select.value;
+      applyPriorityProfileForFrequency();
+      applyPriorityTargetsToBaseRows();
+      buildPriorityRanker();
+      buildWorkoutBuilder();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  const picks = split.map((line, i) => {
+    const focus = extractFocusName(line);
+    return `Day ${i + 1} (${focus}): ${state.dayPriorities[`d${i + 1}`]}`;
+  });
+  document.getElementById('priority-rank-help').textContent = `Priority picks (${split.length}/${state.freq} days): ${picks.join(' · ')}.`;
+}
+
+function buildTimeline() {
+  const wrap = document.getElementById('timeline');
+  wrap.innerHTML = STEP_TIMING.map((x, i) => {
+    return `<button class="t-block" data-step="${i + 1}"><div class="t-step">STEP ${i + 1}</div><div class="t-time">${x.name}</div><div class="t-duration">${x.duration}</div></button>`;
+  }).join('');
+  wrap.addEventListener('click', (e) => {
+    const btn = e.target.closest('.t-block');
+    if (!btn) return;
+    state.step = parseInt(btn.dataset.step, 10);
+    showStep(state.step);
+  });
+}
+
+function buildMesoChips() {
+  const wrap = document.getElementById('meso-chips');
+  wrap.innerHTML = '';
+  ['Hypertrophy', 'Fat Loss / Conditioning', 'Progressive Overload / Strength Training', 'Performance'].forEach(option => {
+    const chip = document.createElement('div');
+    chip.className = `chip${state.meso === option ? ' on' : ''}`;
+    chip.dataset.v = option;
+    chip.textContent = option;
+    wrap.appendChild(chip);
+  });
+  document.getElementById('meso-rule').textContent = `${state.macro} → recommended mesocycle: ${mesoByMacro[state.macro]}.`;
+}
+
+function buildNutritionChips() {
+  const wrap = document.getElementById('nutrition-chips');
+  wrap.innerHTML = '';
+  ['Surplus', 'Slight Surplus', 'Maintenance', 'Slight Deficit', 'Deficit'].forEach(option => {
+    const chip = document.createElement('div');
+    chip.className = `chip${state.nutrition === option ? ' on' : ''}`;
+    chip.dataset.v = option;
+    chip.textContent = option;
+    wrap.appendChild(chip);
+  });
+  const perfNote = state.nutrition === 'Maintenance' ? ' Increase carbs before training.' : '';
+  document.getElementById('nutrition-rule').textContent = `${state.macro} → recommended nutrition: ${nutritionByMacro[state.macro]}.${perfNote}`;
+}
+
+function buildFrequencyRule() {
+  document.getElementById('freq-rule').textContent = freqRule[state.freq];
+  const guide = document.getElementById('freq-priority-guide');
+  if (!guide) return;
+  if (state.freq === 2) {
+    guide.textContent = 'Priority guidance: choose exactly 2 day priorities (one for each day). Any muscle is allowed.';
+  } else if (state.freq === 3) {
+    guide.textContent = 'Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L).';
+  } else {
+    guide.textContent = `Priority guidance: choose ${state.freq} day priorities, one per training day based on that day focus.`;
+  }
+}
+
+function buildGymRule() {
+  document.getElementById('gym-rule').textContent = gymRules[state.gymType];
+  const wrap = document.getElementById('equipment-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('show', state.gymType === 'Home Gym');
+  if (state.gymType === 'Home Gym') renderEquipmentOptions();
+}
+
+function equipmentAllowsExercise(exercise) {
+  if (state.gymType !== 'Home Gym') return true;
+  const selected = state.homeEquipment || [];
+  if (!selected.length) return true;
+  const equip = (exercise.equipment || '').toLowerCase();
+  const name = (exercise.name || '').toLowerCase();
+  if (exercise.category === 'Body Weight') return true;
+  if (equip.includes('barbell') && selected.includes('Barbell')) return true;
+  if (equip.includes('dumbbell') && selected.includes('Dumbbells')) return true;
+  if (equip.includes('smith') && selected.includes('Smith Machine')) return true;
+  if (equip.includes('cable') && selected.includes('Cable Tower')) return true;
+  if (name.includes('pull up') && selected.includes('Pull-up Bar')) return true;
+  if (name.includes('dip') && selected.includes('Dip Bars')) return true;
+  if (equip.includes('machine')) return selected.some((item) => item.includes('Machine') || item.includes('Lat Pulldown') || item.includes('Leg Extension'));
+  return selected.some((item) => name.includes(item.toLowerCase()));
+}
+
+function renderEquipmentOptions() {
+  const list = document.getElementById('equipment-list');
+  if (!list) return;
+  const search = (document.getElementById('equipment-search')?.value || '').trim().toLowerCase();
+  list.innerHTML = HOME_EQUIPMENT_OPTIONS
+    .filter((item) => !search || item.toLowerCase().includes(search))
+    .map((item) => `<button type="button" class="equipment-item${state.homeEquipment.includes(item) ? ' on' : ''}" data-equipment="${item}">✔ ${item}</button>`)
+    .join('');
+  list.querySelectorAll('[data-equipment]').forEach((btn) => {
+    btn.onclick = () => {
+      const value = btn.dataset.equipment;
+      if (state.homeEquipment.includes(value)) state.homeEquipment = state.homeEquipment.filter((item) => item !== value);
+      else state.homeEquipment.push(value);
+      renderEquipmentOptions();
+      buildWorkoutBuilder();
+    };
+  });
+}
+
+function buildMacroRule() {
+  const usingCalculator = state.macroPlan === 'Use Macro Calculator';
+  document.getElementById('macro-embed').style.display = usingCalculator ? 'block' : 'none';
+  document.getElementById('manual-macro-wrap').classList.toggle('show', !usingCalculator);
+  document.getElementById('macro-calc-rule').textContent = state.macroPlan === 'Use Macro Calculator'
+    ? 'Open the calculator and save your targets there before moving to your split.'
+    : 'Skip the calculator and enter your own macro targets below. These values will appear in your summary.';
+}
+
+function extractFocusName(line) {
+  if (line.startsWith('Push')) return 'Push';
+  if (line.startsWith('Pull')) return 'Pull';
+  if (line.startsWith('Legs')) return 'Legs';
+  if (line.startsWith('Upper')) return 'Upper';
+  if (line.startsWith('Lower')) return 'Lower';
+  return 'Full Body';
+}
+
+function getDayFocusMuscles(focus) {
+  const map = {
+    Push: ['Chest', 'Shoulders', 'Triceps'],
+    Pull: ['Back', 'Biceps'],
+    Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    Lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    'Full Body': ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Calves']
+  };
+  return map[focus] || map['Full Body'];
+}
+
+function getDefaultTargetForSlot(slotType, focus, dayPriority) {
+  const focusMuscles = getDayFocusMuscles(focus);
+  if (focusMuscles.includes(dayPriority)) return dayPriority;
+  if (slotType === 'Isolated') return focusMuscles[focusMuscles.length - 1] || focusMuscles[0] || '';
+  if (slotType === 'Machine') return focusMuscles[1] || focusMuscles[0] || '';
+  return focusMuscles[0] || '';
+}
+
+function getExercisePool(focus) {
+  const allowed = allowedCategories[state.gymType];
+  const focusToMuscles = {
+    Push: ['Chest', 'Shoulders', 'Triceps'],
+    Pull: ['Back', 'Biceps', 'Shoulders'],
+    Legs: ['Legs', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain'],
+    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    Lower: ['Legs', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain'],
+    'Full Body': ['Full Body', 'Legs', 'Chest', 'Back', 'Shoulders', 'Glutes', 'Quads', 'Hamstrings', 'Calves', 'Posterior Chain']
+  };
+  const muscles = focusToMuscles[focus] || focusToMuscles['Full Body'];
+  const pool = EXERCISES.filter((e) => muscles.includes(getMuscle(e)) && allowed.includes(e.category) && equipmentAllowsExercise(e));
+  return pool.length ? pool : EXERCISES.filter((e) => allowed.includes(e.category)).slice(0, 8);
+}
+
+function getDayPlan(focus) {
+  const pool = getExercisePool(focus);
+  const prioritized = pool.filter((e) => getMuscle(e) === state.priority);
+  const list = [...prioritized, ...pool].slice(0, 6);
+  return list;
+}
+
+function normalizeType(exercise) {
+  if (exercise.movementType) return exercise.movementType;
+  const byName = explicitMovementTypeByName[exercise.name];
+  if (byName) return byName;
+  const name = exercise.name.toLowerCase();
+  const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
+  const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
+  if (isolationKeywords.some((keyword) => name.includes(keyword))) return 'Isolated';
+  if (exercise.category === 'Machines' || exercise.equipment === 'Machine' || exercise.equipment === 'Smith Machine') return 'Machine';
+  if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
+  return 'Compound';
+}
+
+function matchesSlotType(exercise, slotType) {
+  if (slotType === 'Machine') return exercise.category === 'Machines' || exercise.equipment === 'Machine' || exercise.equipment === 'Smith Machine';
+  return normalizeType(exercise) === slotType;
+}
+
+function getMuscle(exercise) {
+  const muscle = (exercise.primaryMuscle || 'Full Body').trim();
+  if (muscle === 'Rear Delts') return 'Shoulders';
+  if (muscle === 'Lower Back') return 'Back';
+  return muscle;
+}
+
+function muscleMatchesTarget(muscle, targetMuscle) {
+  if (!targetMuscle) return true;
+  if (muscle === targetMuscle) return true;
+  if (muscle === 'Posterior Chain') return ['Glutes', 'Hamstrings', 'Back'].includes(targetMuscle);
+  return false;
+}
+
+function canonicalExerciseName(name) {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(abductors|abductor)\b/g, 'abductor')
+    .replace(/\b(adductors|adductor)\b/g, 'adductor')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function getExercisesForSlot(slotType) {
+  const allowed = allowedCategories[state.gymType];
+  const seen = new Set();
+  return EXERCISES.filter((exercise) => {
+    if (!allowed.includes(exercise.category)) return false;
+    if (!matchesSlotType(exercise, slotType)) return false;
+    if (!equipmentAllowsExercise(exercise)) return false;
+    const dedupeKey = `${canonicalExerciseName(exercise.name)}|${getMuscle(exercise)}|${exercise.equipment}`;
+    if (seen.has(dedupeKey)) return false;
+    seen.add(dedupeKey);
+    return true;
+  }).slice(0, 120);
+}
+
+function isExerciseInFocusMuscles(exercise, focusMuscles) {
+  if (!focusMuscles.length) return true;
+  const muscle = getMuscle(exercise);
+  if (focusMuscles.some((focusMuscle) => muscleMatchesTarget(muscle, focusMuscle))) return true;
+  if (muscle === 'Posterior Chain') return focusMuscles.some((m) => ['Glutes', 'Hamstrings', 'Back'].includes(m));
+  return false;
+}
+
+function getPriorityTargetForDay(dayIndex) {
+  return state.dayPriorities[`d${dayIndex + 1}`] || state.priority || 'Back';
+}
+
+function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
+  const primarySlotIndex = slotPattern.indexOf(slotType);
+  if (primarySlotIndex < 0) return '';
+  const isPrimarySlot = slotIndex === primarySlotIndex;
+  const normalizedPriority = (dayPriority || '').toLowerCase();
+  const secondaryOptions = getDayFocusMuscles(dayFocus).filter((muscle) => muscle !== dayPriority);
+
+  if (isPrimarySlot) return dayPriority || '';
+  if (dayFocus === 'Pull' && normalizedPriority === 'back') return 'Biceps';
+  if (normalizedPriority === 'chest' && secondaryOptions.length === 1) return secondaryOptions[0];
+  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(normalizedPriority)) return '';
+  return '';
+}
+
+function getResolvedTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
+  return getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) || getDefaultTargetForSlot(slotType, dayFocus, dayPriority);
+}
+
+function applyPriorityTargetsToBaseRows() {
+  const split = getSplitForFreq();
+  if (!state.customDays[state.freq]) return;
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const dayRows = state.customDays[state.freq][dayKey];
+    if (!dayRows) return;
+    const dayPriority = getPriorityTargetForDay(i);
+    const dayFocus = extractFocusName(line);
+    for (let rowIndex = 0; rowIndex < Math.min(slotPattern.length, dayRows.length); rowIndex += 1) {
+      dayRows[rowIndex].targetMuscle = getResolvedTargetMuscle(dayRows[rowIndex].slot, rowIndex, dayPriority, dayFocus);
+    }
+  });
+}
+
+function ensureDayPlan() {
+  const split = getSplitForFreq();
+  if (state.activeBuilderDay > split.length) state.activeBuilderDay = 1;
+  if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
+  split.forEach((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const dayFocus = extractFocusName(line);
+    const dayPriority = getPriorityTargetForDay(i);
+    if (!state.customDays[state.freq][dayKey]) {
+      state.customDays[state.freq][dayKey] = slotPattern.map((slot, idx) => ({
+        slot,
+        name: '',
+        id: '',
+        targetMuscle: getResolvedTargetMuscle(slot, idx, dayPriority, dayFocus),
+        sets: getSlotPrescription(slot).sets,
+        reps: getSlotPrescription(slot).reps
+      }));
+    } else {
+      state.customDays[state.freq][dayKey].forEach((item, idx) => {
+        if (!item.targetMuscle) item.targetMuscle = getResolvedTargetMuscle(item.slot, idx, dayPriority, dayFocus);
+        if (typeof item.sets !== 'string' || !item.sets) item.sets = getSlotPrescription(item.slot).sets;
+        if (typeof item.reps !== 'string' || !item.reps) item.reps = getSlotPrescription(item.slot).reps;
+      });
+    }
+  });
+}
+
+function getSlotPrescription(slotType) {
+  const mesoPlan = mesoPrescription[state.meso] || mesoPrescription.Hypertrophy;
+  return mesoPlan[slotType] || { sets: '3', reps: '8-12', note: 'Use quality sets near technical failure.' };
+}
+
+function getPresetOrSuggestion(value, slotType, key) {
+  if (value) return value;
+  return getSlotPrescription(slotType)[key] || '';
+}
+
+function hasCompleteBuilderPrescription() {
+  ensureDayPlan();
+  const split = getSplitForFreq();
+  const missing = [];
+  split.forEach((_, idx) => {
+    const dayKey = `d${idx + 1}`;
+    const rows = state.customDays[state.freq]?.[dayKey] || [];
+    rows.forEach((row, rowIndex) => {
+      if (!row.sets || !row.reps) {
+        missing.push(`Day ${idx + 1}, ${row.slot} slot ${rowIndex + 1}`);
+      }
+    });
+  });
+  return { ok: missing.length === 0, missing };
+}
+
+function syncBuilderStepGate(showWarning = false) {
+  if (state.step !== 8) return;
+  const validation = hasCompleteBuilderPrescription();
+  const msg = document.getElementById('builder-validation-msg');
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = !validation.ok;
+  if (!validation.ok && showWarning) {
+    msg.textContent = `Before continuing, select sets and reps for every slot. Missing: ${validation.missing.slice(0, 4).join('; ')}${validation.missing.length > 4 ? '…' : ''}`;
+    return;
+  }
+  msg.textContent = validation.ok ? '' : 'Set both sets and reps for every movement to unlock Next.';
+}
+
+function getMuscleSuggestion(targetMuscle, slotType, dayRows, rowIndex) {
+  const selected = dayRows.filter((row) => row.targetMuscle).map((row) => row.targetMuscle);
+  const targetCount = selected.filter((muscle) => muscle === targetMuscle).length;
+  if (!targetMuscle) return 'Pick a target muscle to keep your volume intentional.';
+  if (targetCount >= 4) return `You already have ${targetCount} ${targetMuscle} slots today. Consider balancing with another muscle.`;
+  if (slotType === 'Compound' && targetCount === 1) return `Good anchor: first ${targetMuscle} compound sets your main stimulus.`;
+  if (slotType === 'Isolated' && targetCount <= 1) return `This may underwork ${targetMuscle}. Keep at least 2 total slots if it is a day priority.`;
+  return `Balanced so far for ${targetMuscle}. Keep 2–4 quality slots per day priority muscle.`;
+}
+
+function describeSlotIntent(slotType) {
+  if (slotType === 'Compound') return 'Best for heavy loading, system-wide stimulus, and progressive overload.';
+  if (slotType === 'Machine') return 'Best for controlled paths, stable tension, and low-skill hard sets.';
+  return 'Best for isolating one muscle and accumulating targeted volume.';
+}
+
+function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
+  if (!item.targetMuscle) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>Select a target muscle first so recommendations can be personalized for this slot.</li>
+        <li>Pick a movement that matches your equipment and feels stable to progress week to week.</li>
+      </ul>
+    </div>`;
+  }
+  if (!slotOptionsByMuscle.length) {
+    return `<div class="slot-choice-guide">
+      <span class="slot-choice-guide-title">How to choose</span>
+      <ul>
+        <li>No exact ${item.targetMuscle} match found for this slot and setup.</li>
+        <li>Try another target muscle from this day (${dayMuscles.join(', ')}) or switch gym environment settings.</li>
+      </ul>
+    </div>`;
+  }
+  const topRecommendations = slotOptionsByMuscle.slice(0, 3)
+    .map((option) => `<li><strong>${option.name}</strong> — ${getMuscle(option)} focus · ${option.equipment || 'Bodyweight'} · ${normalizeType(option)} movement.</li>`)
+    .join('');
+  return `<div class="slot-choice-guide">
+    <span class="slot-choice-guide-title">Top picks for ${item.targetMuscle}</span>
+    <ul>${topRecommendations}</ul>
+  </div>`;
+}
+
+function openExerciseDetailModal(exercise, slotType, targetMuscle) {
+  if (!exercise) return;
+  const modal = document.getElementById('exercise-detail-modal');
+  const title = document.getElementById('exercise-detail-title');
+  const sub = document.getElementById('exercise-detail-sub');
+  const grid = document.getElementById('exercise-detail-grid');
+  const instructions = document.getElementById('exercise-detail-instructions');
+  const note = document.getElementById('exercise-detail-note');
+  const primary = getMuscle(exercise);
+  const movementType = normalizeType(exercise);
+  title.textContent = 'View';
+  sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
+  const cards = [
+    { k: 'Targets', v: primary },
+    { k: 'Slot Type', v: slotType || movementType },
+    { k: 'Movement Class', v: movementType },
+    { k: 'Equipment', v: exercise.equipment || 'Bodyweight' }
+  ];
+  grid.innerHTML = cards.map((item) => `<div class="exercise-detail-card"><span class="k">${item.k}</span><span class="v">${item.v}</span></div>`).join('');
+  const instructionSteps = (exercise.instructions || '')
+    .split('.')
+    .map((step) => step.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const beginnerGuide = [
+    `Setup: set the equipment first, then stand or sit in a stable position with your core tight and feet planted.`,
+    `Execution: move slowly through the full range of motion, then stop the set the moment your form breaks down.`,
+    `Breathing: inhale before the hard part, exhale while you push or pull, and keep your ribs down instead of over-arching.`,
+    `Coaching cue: keep tension on your ${primary.toLowerCase()} muscles so momentum does not take over.`,
+    `Safety check: choose a weight that lets you finish every rep with control before adding load next session.`
+  ];
+  instructions.innerHTML = `
+    <span class="label">How to perform (beginner-friendly)</span>
+    <ul>${instructionSteps.map((step) => `<li>${step}.</li>`).join('')}${beginnerGuide.map((step) => `<li>${step}</li>`).join('')}</ul>
+  `;
+  const targetLine = targetMuscle
+    ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
+    : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
+  note.textContent = `${exercise.name}: ${targetLine} ${describeSlotIntent(slotType)}`;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeExerciseDetailModal() {
+  const modal = document.getElementById('exercise-detail-modal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function renderDayCards() {
+  const split = getSplitForFreq();
+  const dayState = state.customDays[state.freq];
+  const tabs = document.getElementById('builder-day-tabs');
+  tabs.innerHTML = split.map((line, i) => {
+    const day = i + 1;
+    return `<button type="button" class="builder-day-tab${state.activeBuilderDay === day ? ' on' : ''}" data-day-tab="${day}">Day ${day}</button>`;
+  }).join('');
+  tabs.querySelectorAll('[data-day-tab]').forEach((btn) => {
+    btn.onclick = () => {
+      state.activeBuilderDay = parseInt(btn.dataset.dayTab, 10);
+      renderDayCards();
+    };
+  });
+  const out = document.getElementById('builder-out');
+  out.innerHTML = split.map((line, i) => {
+    if (state.activeBuilderDay !== i + 1) return '';
+    const namedLine = line.replace(' (Priority First)', '');
+    const dayFocus = extractFocusName(namedLine);
+    const dayTarget = getPriorityTargetForDay(i);
+    const dayKey = `d${i + 1}`;
+    const dayMuscles = getDayFocusMuscles(dayFocus);
+    const rows = dayState[dayKey].map((item, rowIndex) => {
+      const slotPool = getExercisesForSlot(item.slot).filter((exercise) => isExerciseInFocusMuscles(exercise, dayMuscles));
+      const slotOptionsByMuscle = slotPool.filter((option) => item.targetMuscle && muscleMatchesTarget(getMuscle(option), item.targetMuscle));
+      const slotOptions = item.targetMuscle ? slotOptionsByMuscle : slotPool;
+      const exercise = EXERCISES.find((x) => x.id === item.id);
+      const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
+      const hasSets = !!item.sets;
+      const hasReps = !!item.reps;
+      const hasExercise = !!exercise;
+      const hasAnySelection = hasExercise || hasSets || hasReps;
+      const hasCompletePrescription = hasExercise && hasSets && hasReps;
+      const hasPartialPrescription = hasAnySelection && !hasCompletePrescription;
+      const prescriptionClass = hasCompletePrescription
+        ? 'prescription-complete'
+        : (hasPartialPrescription ? 'prescription-partial' : 'prescription-empty');
+      const prescriptionStatus = hasCompletePrescription
+        ? 'Exercise + sets + reps complete'
+        : (hasPartialPrescription ? 'Partially complete — finish selecting exercise, sets, and reps' : 'No selections yet');
+      const matchStatus = hasExercise ? (matches ? 'Exercise matches this slot' : 'Exercise does not match this slot') : 'No exercise selected';
+      const isCustomRow = rowIndex >= slotPattern.length;
+      const muscleOptions = ['', ...dayMuscles]
+        .map((muscle) => {
+          const label = muscle || 'Select Muscle';
+          return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
+        }).join('');
+      const suggestedIds = slotOptionsByMuscle.slice(0, 3).map((option) => option.id);
+      const movementOptions = [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
+        const selected = item.id === option.id ? ' selected' : '';
+        const isSuggested = suggestedIds.includes(option.id);
+        const marker = isSuggested ? '★ ' : '';
+        return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${marker}${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
+      })].join('');
+      return `<div class="slot-row ${prescriptionClass}">
+      <div class="slot-meta">
+        <div class="slot-label">${item.slot} | ${item.targetMuscle || 'Select Muscle'}</div>
+        <span class="slot-status-light" title="${matchStatus} · ${prescriptionStatus}"></span>
+      </div>
+      <div class="slot-controls">
+        <select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>
+        <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions}</select>
+        <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
+        <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View</button>
+        <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
+        ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
+      </div>
+      <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
+      ${buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles)}
+    </div>`;
+    }).join('');
+    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
+      <div class="slot-controls" style="grid-template-columns:1fr 170px;">
+        <button type="button" class="btn" data-add-slot="${dayKey}">＋ Add movement</button>
+        <select class="slot-select" data-add-type="${dayKey}">
+          <option value="Compound">Compound</option>
+          <option value="Machine">Machine</option>
+          <option value="Isolated" selected>Isolated</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+  out.querySelectorAll('[data-muscle]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      const rowIndex = parseInt(row, 10);
+      const dayRows = state.customDays[state.freq][day];
+      dayRows[rowIndex].targetMuscle = select.value;
+      if (dayRows[rowIndex].slot === 'Isolated' && select.value === 'Back') {
+        dayRows.forEach((entry, idx) => {
+          if (idx !== rowIndex && entry.slot === 'Isolated') entry.targetMuscle = '';
+        });
+      }
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-select-ex]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      const chosen = EXERCISES.find((x) => x.id === select.value);
+      state.customDays[state.freq][day][parseInt(row, 10)].id = chosen?.id || '';
+      state.customDays[state.freq][day][parseInt(row, 10)].name = chosen?.name || '';
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-select-sets]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      state.customDays[state.freq][day][parseInt(row, 10)].sets = select.value;
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-select-reps]').forEach((select) => {
+    select.onchange = () => {
+      const { day, row } = select.dataset;
+      state.customDays[state.freq][day][parseInt(row, 10)].reps = select.value;
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-clear]').forEach((btn) => {
+    btn.onclick = () => {
+      const [day, row] = btn.dataset.clear.split(':');
+      const target = state.customDays[state.freq][day][parseInt(row, 10)];
+      target.name = '';
+      target.id = '';
+      target.sets = '';
+      target.reps = '';
+      renderDayCards();
+    };
+  });
+  out.querySelectorAll('[data-remove-row]').forEach((btn) => {
+    btn.onclick = () => {
+      const [day, row] = btn.dataset.removeRow.split(':');
+      state.customDays[state.freq][day].splice(parseInt(row, 10), 1);
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-add-slot]').forEach((btn) => {
+    btn.onclick = () => {
+      const dayKey = btn.dataset.addSlot;
+      const dayIndex = parseInt(dayKey.replace('d', ''), 10) - 1;
+      const focus = extractFocusName(getSplitForFreq()[dayIndex].replace(' (Priority First)', ''));
+      const dayPriority = getPriorityTargetForDay(dayIndex);
+      const addType = out.querySelector(`[data-add-type="${dayKey}"]`)?.value || 'Isolated';
+      state.customDays[state.freq][dayKey].push({
+        slot: addType,
+        name: '',
+        id: '',
+        targetMuscle: getDefaultTargetForSlot(addType, focus, dayPriority),
+        sets: getSlotPrescription(addType).sets,
+        reps: getSlotPrescription(addType).reps
+      });
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-view-ex]').forEach((btn) => {
+    btn.onclick = () => {
+      const [day, row] = btn.dataset.viewEx.split(':');
+      const entry = state.customDays[state.freq][day][parseInt(row, 10)];
+      if (!entry?.id) return;
+      const selectedExercise = EXERCISES.find((item) => item.id === entry.id);
+      openExerciseDetailModal(selectedExercise, entry.slot, entry.targetMuscle);
+    };
+  });
+  syncBuilderStepGate();
+}
+
+function buildWorkoutBuilder() {
+  ensureDayPlan();
+  renderDayCards();
+}
+
+function answerAgent(question) {
+  const q = question.toLowerCase();
+  if (!q.trim()) return 'Try asking: "Can I swap machine lifts for home gym options?"';
+  const split = getSplitForFreq();
+  const firstDay = getDayPlan(extractFocusName(split[0]));
+  if (q.includes('swap') || q.includes('machine') || q.includes('home')) {
+    return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).map((x) => x.name).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
+  }
+  if (q.includes('30') || q.includes('time') || q.includes('quick')) {
+    return 'Run 3 lifts per day: 1 priority movement, 1 secondary compound, 1 isolation finisher. Keep rests 60–90s for accessory work.';
+  }
+  if (q.includes('progress') || q.includes('overload') || q.includes('heavier')) {
+    return 'Progression target: add 1 rep per set weekly until top of range, then increase load 2.5–5% and repeat.';
+  }
+  if (q.includes('hypertophy') || q.includes('hypertrophy') || q.includes('meso') || q.includes('performance') || q.includes('rep target')) {
+    return 'Mesocycle guide (4 weeks): Hypertrophy = mostly 6–12 reps for compounds and 10–20 reps for isolations, with ~10–20 hard sets per muscle each week. Progressive overload = keep 1–3 reps in reserve, add reps first week to week, then increase load 2.5–5% when you hit the top of the rep range. Performance mesocycle = bias strength/speed with compounds in the 3–6 rep range at higher intent, accessories at 6–10 reps, and keep total volume slightly lower so output stays high. For working weights, use your estimated 1RM and run sets around 60–75% (hypertrophy) or 75–88% (performance-strength bias).';
+  }
+  if (q.includes('beginner') || q.includes('new')) {
+    return 'Start with 2 working sets per lift and keep 2 reps in reserve. Add a 3rd set after week 2 if recovery is solid.';
+  }
+  return `Recommendation: stay with the ${state.freq}-day plan, keep ${state.priority} first, and choose from ${state.gymType} options in your builder.`;
+}
+
+
+function readMacroTargets() {
+  try {
+    return JSON.parse(localStorage.getItem('physiqueLedgerTargets') || 'null');
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatSavedAt(value) {
+  if (!value) return 'Not saved yet';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Not saved yet';
+  return date.toLocaleString();
+}
+
+function buildSummary() {
+  ensureDayPlan();
+  const macroTargets = readMacroTargets();
+  const targetMarkup = macroTargets
+    ? `<div class="target-grid">
+        <div class="target-card"><div class="target-label">Calories</div><div class="target-value">${macroTargets.calories} kcal/day</div></div>
+        <div class="target-card target-protein"><div class="target-label">Protein</div><div class="target-value">${macroTargets.protein} g/day</div></div>
+        <div class="target-card target-carbs"><div class="target-label">Carbs</div><div class="target-value">${macroTargets.carbs} g/day</div></div>
+        <div class="target-card target-fat"><div class="target-label">Fat</div><div class="target-value">${macroTargets.fat} g/day</div></div>
+        <div class="target-card"><div class="target-label">Last Calculated</div><div class="target-value">${formatSavedAt(macroTargets.savedAt)}</div></div>
+      </div>`
+    : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
+  const splitRows = getSplitForFreq().map((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const rows = state.customDays[state.freq][dayKey]
+      .map((slot) => {
+        const exerciseName = slot.name || '';
+        const sets = slot.sets || getSlotPrescription(slot.slot).sets;
+        const reps = slot.reps || getSlotPrescription(slot.slot).reps;
+        const missingClass = exerciseName ? '' : ' missing';
+        return `<li class="split-workout-item${missingClass}">
+          <div class="split-workout-main">
+            <span><span class="split-workout-slot">${slot.slot}</span> · ${exerciseName || 'Not set'}</span>
+            <span class="split-workout-prescription">${sets} sets × ${reps} reps</span>
+          </div>
+        </li>`;
+      })
+      .join('');
+    return `<li class="split-day-card"><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul class="split-workout-list">${rows}</ul></li>`;
+  }).join('');
+  document.getElementById('overview-summary-content').innerHTML = `
+    <div class="summary-card">
+      <div class="sum-row"><span class="sum-label">VIEWING PERIOD</span><span class="sum-val">${formatViewPeriod(state.viewYear, state.viewQuarter)}</span></div>
+      <div class="sum-row"><span class="sum-label">VISION · MACROCYCLE (3 MONTHS)</span><span class="sum-val">${state.macro}</span></div>
+      <div class="sum-row"><span class="sum-label">VISION · MESOCYCLE (4 WEEKS)</span><span class="sum-val">${state.meso}</span></div>
+      <div class="sum-row"><span class="sum-label">DIET · NUTRITION (3 MONTHS)</span><span class="sum-val">${state.nutrition}</span></div>
+      <div class="sum-row"><span class="sum-label">DIET · MACRO PLAN</span><span class="sum-val">${state.macroPlan}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · TRAINING DAYS (1 WEEK)</span><span class="sum-val">${state.freq} training days / week</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · PRIORITY (1 MONTH)</span><span class="sum-val">${state.priority}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · DAY PRIORITIES</span><span class="sum-val">${Object.entries(state.dayPriorities).map(([day, muscle]) => `${day.toUpperCase()}: ${muscle}`).join(' · ')}</span></div>
+      <div class="sum-row"><span class="sum-label">FITNESS · ENVIRONMENT</span><span class="sum-val">${state.gymType}</span></div>
+    </div>
+    <div class="week">
+      <h3>Calorie + Macro Targets</h3>
+      ${targetMarkup}
+    </div>
+  `;
+  document.getElementById('split-workouts-panel').innerHTML = `
+    <div class="week">
+      <h3>Split</h3>
+      <p class="step-sub">Any workout row marked red is still not set and needs an exercise selection.</p>
+      <ul>${splitRows}</ul>
+    </div>
+  `;
+}
+
+function getSerializableState() {
+  return {
+    macro: state.macro,
+    meso: state.meso,
+    nutrition: state.nutrition,
+    macroPlan: state.macroPlan,
+    priority: state.priority,
+    priorities: [...state.priorities],
+    dayPriorities: { ...state.dayPriorities },
+    gymType: state.gymType,
+    homeEquipment: [...state.homeEquipment],
+    freq: state.freq,
+    customDays: JSON.parse(JSON.stringify(state.customDays)),
+    manualTargets: { ...state.manualTargets },
+    viewYear: Number(state.viewYear) || getCurrentQuarterInfo().year,
+    viewQuarter: Number(state.viewQuarter) || getCurrentQuarterInfo().quarter,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function restoreState(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  state.macro = payload.macro || state.macro;
+  state.meso = payload.meso || state.meso;
+  state.nutrition = payload.nutrition || state.nutrition;
+  state.macroPlan = payload.macroPlan || state.macroPlan;
+  state.priority = payload.priority || state.priority;
+  state.priorities = Array.isArray(payload.priorities) && payload.priorities.length ? payload.priorities : state.priorities;
+  state.dayPriorities = payload.dayPriorities && typeof payload.dayPriorities === 'object' ? payload.dayPriorities : state.dayPriorities;
+  state.gymType = payload.gymType || state.gymType;
+  state.homeEquipment = Array.isArray(payload.homeEquipment) ? payload.homeEquipment : state.homeEquipment;
+  state.freq = Number(payload.freq) || state.freq;
+  state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
+  state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
+  state.viewYear = Number(payload.viewYear) || state.viewYear;
+  state.viewQuarter = Number(payload.viewQuarter) || state.viewQuarter;
+  Object.values(state.customDays || {}).forEach((dayMap) => {
+    Object.values(dayMap || {}).forEach((rows) => {
+      (rows || []).forEach((row) => {
+        if (row.id && !EXERCISES.some((item) => item.id === row.id)) {
+          const migrated = EXERCISES.find((item) => item.name === row.name && (!row.targetMuscle || getMuscle(item) === row.targetMuscle))
+            || EXERCISES.find((item) => item.name === row.name);
+          row.id = migrated?.id || '';
+          row.name = migrated?.name || row.name || '';
+        }
+        if (typeof row.sets !== 'string' || !row.sets) row.sets = getSlotPrescription(row.slot).sets;
+        if (typeof row.reps !== 'string' || !row.reps) row.reps = getSlotPrescription(row.slot).reps;
+      });
+    });
+  });
+  refreshSelectionsFromState();
+  buildMesoChips();
+  buildNutritionChips();
+  buildMacroRule();
+  buildFrequencyRule();
+  buildGymRule();
+  buildPriorityRanker();
+  buildWorkoutBuilder();
+  if (state.step >= 9) buildSummary();
+  return true;
+}
+
+function refreshSelectionsFromState() {
+  const syncChip = (groupId, value) => {
+    document.querySelectorAll(`#${groupId} .chip`).forEach((chip) => {
+      chip.classList.toggle('on', chip.dataset.v === String(value));
+    });
+  };
+  syncChip('macro-chips', state.macro);
+  syncChip('meso-chips', state.meso);
+  syncChip('nutrition-chips', state.nutrition);
+  syncChip('macro-calc-chips', state.macroPlan);
+  syncChip('gym-chips', state.gymType);
+  syncChip('freq-chips', state.freq);
+}
+
+function getArchiveControls() {
+  return {
+    loginPrompt: document.getElementById('past-split-login-prompt'),
+    controlsWrap: document.getElementById('past-split-controls-wrap'),
+    splitYear: document.getElementById('split-year-select'),
+    splitQuarter: document.getElementById('split-quarter-select'),
+    summaryLoginPrompt: document.getElementById('summary-save-login-prompt'),
+    summaryControlsWrap: document.getElementById('summary-save-controls-wrap'),
+    saveYear: document.getElementById('save-year-select'),
+    saveQuarter: document.getElementById('save-quarter-select'),
+    msg: document.getElementById('past-split-msg'),
+    saveMsg: document.getElementById('summary-save-msg')
+  };
+}
+
+function renderPastSplitSelectors() {
+  const controls = getArchiveControls();
+  const current = getCurrentQuarterInfo();
+  const startYear = current.year - 1;
+  const endYear = current.year + 1;
+  const yearOptions = Array.from({ length: (endYear - startYear) + 1 }, (_, i) => startYear + i);
+  const selectedReadYear = Number(controls.splitYear.value) || current.year;
+  const selectedReadQuarter = Number(controls.splitQuarter.value) || current.quarter;
+  const selectedSaveYear = Number(controls.saveYear.value) || current.year;
+  const selectedSaveQuarter = Number(controls.saveQuarter.value) || current.quarter;
+  controls.splitYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedReadYear ? ' selected' : ''}>${year}</option>`).join('');
+  controls.saveYear.innerHTML = yearOptions.map((year) => `<option value="${year}"${year === selectedSaveYear ? ' selected' : ''}>${year}</option>`).join('');
+  controls.splitQuarter.innerHTML = [1, 2, 3, 4]
+    .map((quarter) => `<option value="${quarter}"${quarter === selectedReadQuarter ? ' selected' : ''}>Q${quarter}</option>`)
+    .join('');
+
+  const saveQuarterOptions = [1, 2, 3, 4]
+    .filter((quarter) => canSaveToQuarter(Number(controls.saveYear.value), quarter))
+    .map((quarter) => `<option value="${quarter}"${quarter === selectedSaveQuarter ? ' selected' : ''}>Q${quarter}</option>`)
+    .join('');
+  controls.saveQuarter.innerHTML = saveQuarterOptions || `<option value="${current.quarter}">Q${current.quarter}</option>`;
+}
+
+async function loadSplitArchive(options = {}) {
+  const { refresh = false } = options;
+  const sessionApi = window.ChasingChangeSession;
+  if (!sessionApi?.whenReady) return;
+  await sessionApi.whenReady();
+  if (refresh && typeof sessionApi.refreshFromStores === 'function') {
+    try {
+      await sessionApi.refreshFromStores();
+    } catch (error) {
+      console.warn('Unable to refresh account data from stores before loading split archive.', error);
+    }
+  }
+  const data = sessionApi.getCalculatorData('splitSculptor') || {};
+  splitArchive = data.quarterlySplits || {};
+}
+
+async function persistSplitArchive() {
+  const sessionApi = window.ChasingChangeSession;
+  if (!sessionApi?.saveCalculatorData) return false;
+  return sessionApi.saveCalculatorData('splitSculptor', { quarterlySplits: splitArchive });
+}
+
+function syncPastSplitsPanel() {
+  const controls = getArchiveControls();
+  const user = window.ChasingChangeSession?.getCurrentUserEmail?.();
+  const isLoggedIn = !!user;
+  controls.loginPrompt.style.display = isLoggedIn ? 'none' : 'block';
+  controls.loginPrompt.textContent = isLoggedIn
+    ? ''
+    : 'Log in to view and manage your past splits. Go to the account section to sign in.';
+  controls.controlsWrap.style.display = isLoggedIn ? 'block' : 'none';
+  controls.summaryLoginPrompt.style.display = isLoggedIn ? 'none' : 'block';
+  controls.summaryLoginPrompt.textContent = isLoggedIn ? '' : 'Log in to save your summary to a quarter.';
+  controls.summaryControlsWrap.style.display = isLoggedIn ? 'block' : 'none';
+  controls.msg.textContent = '';
+  controls.saveMsg.textContent = '';
+  if (isLoggedIn) renderPastSplitSelectors();
+  renderStartupMacrocycleCard();
+}
+
+function getSavedSplitEntries() {
+  return Object.entries(splitArchive || {})
+    .filter(([, value]) => value && value.state)
+    .sort((a, b) => {
+      const aTime = new Date(a[1].savedAt || 0).getTime();
+      const bTime = new Date(b[1].savedAt || 0).getTime();
+      return bTime - aTime;
+    });
+}
+
+function renderStartupMacrocycleCard() {
+  const card = document.getElementById('startup-macrocycle-card');
+  if (!card) return;
+  const isLoggedIn = !!window.ChasingChangeSession?.getCurrentUserEmail?.();
+  if (!isLoggedIn) {
+    card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">Choose a new macrocycle below, or sign in to load a previous one.</p>`;
+    return;
+  }
+  const savedEntries = getSavedSplitEntries();
+  if (!savedEntries.length) {
+    card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">No previous macrocycles found yet. Start a new one below and save it in Step 9.</p>`;
+    return;
+  }
+  const options = savedEntries
+    .map(([key, value], index) => `<option value="${key}"${index === 0 ? ' selected' : ''}>${key} · saved ${formatSavedAt(value.savedAt)}</option>`)
+    .join('');
+  card.innerHTML = `
+    <strong>Start your macrocycle</strong>
+    <p class="step-sub">Choose to start new, or load a previous macrocycle before continuing.</p>
+    <div class="startup-choice-actions">
+      <button type="button" class="btn" id="startup-new-btn">Start New Macrocycle</button>
+    </div>
+    <div class="startup-choice-controls">
+      <div>
+        <label for="startup-load-select">Load Previous Macrocycle</label>
+        <select id="startup-load-select">${options}</select>
+      </div>
+      <button type="button" class="btn btn-p" id="startup-load-btn">Load</button>
+    </div>
+    <div class="startup-choice-msg" id="startup-choice-msg"></div>
+  `;
+  const msg = card.querySelector('#startup-choice-msg');
+  card.querySelector('#startup-new-btn')?.addEventListener('click', () => {
+    msg.textContent = 'Starting a new macrocycle. Continue through the steps and save when ready.';
+  });
+  card.querySelector('#startup-load-btn')?.addEventListener('click', () => {
+    const key = card.querySelector('#startup-load-select')?.value;
+    const found = splitArchive[key];
+    if (!found?.state) {
+      msg.textContent = `No saved data found for ${key}.`;
+      return;
+    }
+    const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current setup will be replaced.`);
+    if (!shouldLoad) {
+      msg.textContent = 'Load canceled. Current setup kept.';
+      return;
+    }
+    restoreState(found.state);
+    state.viewYear = Number(found.state.viewYear) || state.viewYear;
+    state.viewQuarter = Number(found.state.viewQuarter) || state.viewQuarter;
+    buildSummary();
+    msg.textContent = `Loaded ${key}. You can now continue editing or jump ahead.`;
+  });
+}
+
+function renderDots() {
+  const dots = document.getElementById('dot-row');
+  dots.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const dot = document.createElement('div');
+    dot.className = `dot${i < state.step ? ' done' : i === state.step ? ' cur' : ''}`;
+    dots.appendChild(dot);
+  }
+}
+
+function showStep(step) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`s${step}`).classList.add('active');
+  document.querySelectorAll('.timeline .t-block').forEach((x, idx) => x.classList.toggle('active', idx + 1 === step));
+  document.getElementById('step-counter').textContent = `STEP ${step} OF ${TOTAL_STEPS}`;
+  document.getElementById('back-btn').disabled = step === 1;
+  document.getElementById('next-btn').textContent = 'Next';
+  document.getElementById('next-btn').disabled = step === TOTAL_STEPS;
+  document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
+  renderDots();
+  if (step >= 9) buildSummary();
+}
+
+oneChip('macro-chips', 'macro');
+oneChip('meso-chips', 'meso');
+oneChip('nutrition-chips', 'nutrition');
+oneChip('macro-calc-chips', 'macroPlan');
+oneChip('gym-chips', 'gymType');
+oneChip('freq-chips', 'freq', true);
+
+buildTimeline();
+buildMesoChips();
+buildNutritionChips();
+buildMacroRule();
+applyPriorityProfileForFrequency();
+buildPriorityRanker();
+buildFrequencyRule();
+buildGymRule();
+buildWorkoutBuilder();
+
+const refreshSplitArchiveUi = () => {
+  loadSplitArchive({ refresh: true }).finally(syncPastSplitsPanel);
+};
+
+refreshSplitArchiveUi();
+document.getElementById('equipment-search').addEventListener('input', renderEquipmentOptions);
+
+window.addEventListener('cc-session-changed', refreshSplitArchiveUi);
+window.addEventListener('focus', refreshSplitArchiveUi);
+window.addEventListener('storage', (event) => {
+  if (!event.key || event.key === 'ccAccounts' || event.key === 'ccSession') {
+    refreshSplitArchiveUi();
+  }
+});
+
+document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-summary-tab]').forEach((node) => node.classList.remove('on'));
+    btn.classList.add('on');
+    const showWorkouts = btn.dataset.summaryTab === 'workouts';
+    document.getElementById('overview-summary-panel').classList.toggle('active', !showWorkouts);
+    document.getElementById('workouts-summary-panel').classList.toggle('active', showWorkouts);
+  });
+});
+
+document.getElementById('split-year-select').addEventListener('change', renderPastSplitSelectors);
+document.getElementById('save-year-select').addEventListener('change', renderPastSplitSelectors);
+document.getElementById('exercise-detail-close').addEventListener('click', closeExerciseDetailModal);
+document.getElementById('exercise-detail-modal').addEventListener('click', (event) => {
+  if (event.target.id === 'exercise-detail-modal') closeExerciseDetailModal();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    closeExerciseDetailModal();
+  }
+});
+
+document.getElementById('load-selected-split-btn').addEventListener('click', () => {
+  const controls = getArchiveControls();
+  const selectedYear = Number(controls.splitYear.value);
+  const selectedQuarter = Number(controls.splitQuarter.value);
+  const key = quarterKey(selectedYear, selectedQuarter);
+  const found = splitArchive[key];
+  if (!found) {
+    controls.msg.textContent = `No saved split found for ${key}.`;
+    return;
+  }
+  const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current split will be lost.`);
+  if (!shouldLoad) {
+    controls.msg.textContent = 'Load canceled. Save your current split before loading an old macrocycle.';
+    return;
+  }
+  restoreState(found.state);
+  state.viewYear = selectedYear || state.viewYear;
+  state.viewQuarter = selectedQuarter || state.viewQuarter;
+  buildSummary();
+  controls.msg.textContent = `Loaded split from ${key} (saved ${formatSavedAt(found.savedAt)}).`;
+  document.querySelector('[data-summary-tab="overview"]')?.click();
+});
+
+document.getElementById('save-selected-split-btn').addEventListener('click', async () => {
+  const controls = getArchiveControls();
+  const year = Number(controls.saveYear.value);
+  const quarter = Number(controls.saveQuarter.value);
+  if (!canSaveToQuarter(year, quarter)) {
+    controls.msg.textContent = 'You can only save to the current quarter or an upcoming quarter.';
+    return;
+  }
+  const key = quarterKey(year, quarter);
+  const existing = splitArchive[key];
+  if (existing) {
+    const shouldOverwrite = window.confirm(`Overwrite existing Split Sculptor data for ${key}? This cannot be undone.`);
+    if (!shouldOverwrite) {
+      controls.saveMsg.textContent = `Save canceled. Existing ${key} split data was kept.`;
+      return;
+    }
+  }
+  splitArchive[key] = {
+    savedAt: new Date().toISOString(),
+    state: {
+      ...getSerializableState(),
+      viewYear: year,
+      viewQuarter: quarter
+    }
+  };
+  const saved = await persistSplitArchive();
+  controls.saveMsg.textContent = saved
+    ? `Saved this split view to ${key}. Existing data was overwritten for that quarter.`
+    : 'Could not save right now. Please make sure you are logged in and try again.';
+});
+
+document.getElementById('agent-btn').addEventListener('click', () => {
+  document.getElementById('agent-out').textContent = answerAgent(document.getElementById('agent-q').value);
+});
+document.getElementById('agent-q').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('agent-btn').click();
+  }
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (state.step === 8) {
+    const validation = hasCompleteBuilderPrescription();
+    if (!validation.ok) {
+      syncBuilderStepGate(true);
+      return;
+    }
+    syncBuilderStepGate();
+  }
+  if (state.step < TOTAL_STEPS) {
+    state.step += 1;
+    showStep(state.step);
+  }
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  if (state.step > 1) {
+    state.step -= 1;
+    showStep(state.step);
+  }
+});
+
+
+function getActiveSummaryPanel() {
+  const overviewActive = document.getElementById('overview-summary-panel')?.classList.contains('active');
+  if (overviewActive) return document.getElementById('overview-summary-content');
+  const splitActive = document.getElementById('split-workouts-panel')?.classList.contains('active');
+  if (splitActive) return document.getElementById('split-workouts-panel');
+  return null;
+}
+
+function buildExportMarkup(panelHtml) {
+  const logoUrl = new URL('../Logo.png', window.location.href).href;
+  return `
+    <div class="export-shell">
+      <div class="export-brand">
+        <img src="${logoUrl}" alt="Chasing Change logo" class="export-logo" />
+        <div class="export-brand-copy">
+          <h1>Chasing Change</h1>
+          <p>Split Sculptor</p>
+        </div>
+      </div>
+      <div class="export-content">${panelHtml}</div>
+    </div>
+  `;
+}
+
+function getExportStyles() {
+  return `
+    body { font-family: 'Muli', Arial, sans-serif; background: #f5f5f7; color: #071f35; margin: 0; padding: 24px; }
+    .export-shell { max-width: 980px; margin: 0 auto; }
+    .export-brand { display: flex; gap: 12px; align-items: center; border: 1px solid rgba(7,31,53,0.14); background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+    .export-logo { width: 58px; height: 58px; border-radius: 12px; border: 1px solid rgba(7,31,53,0.14); }
+    .export-brand-copy h1 { margin: 0; font-family: 'Museo Moderno', sans-serif; font-size: 1.6rem; color: #071f35; line-height: 1.1; }
+    .export-brand-copy p { margin: 4px 0 0; font-family: 'Raleway', sans-serif; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; font-weight: 700; }
+    .summary-card,.week { background: #fff; border: 1px solid rgba(7,31,53,0.14); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .sum-row { display:flex; justify-content:space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid rgba(7,31,53,0.08); }
+    .sum-row:last-child { border-bottom: 0; }
+    .sum-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; }
+    .sum-val { font-weight: 700; text-align: right; }
+    .week h3 { margin-top: 0; font-family: 'Raleway', sans-serif; }
+    .week ul { list-style: none; padding: 0; }
+    .week li { border: 1px solid rgba(7,31,53,0.14); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+    button { display: none !important; }
+  `;
+}
+
+async function createExportCanvas() {
+  const panel = getActiveSummaryPanel();
+  if (!panel || typeof window.html2canvas !== 'function') return null;
+
+  const exportNode = document.createElement('div');
+  exportNode.style.position = 'fixed';
+  exportNode.style.left = '-20000px';
+  exportNode.style.top = '0';
+  exportNode.style.width = '980px';
+  exportNode.style.background = '#f5f5f7';
+  exportNode.style.padding = '24px';
+  exportNode.style.zIndex = '-1';
+  exportNode.innerHTML = `<style>${getExportStyles()}</style>${buildExportMarkup(panel.innerHTML)}`;
+  document.body.appendChild(exportNode);
+
+  try {
+    return await window.html2canvas(exportNode, { backgroundColor: '#f5f5f7', scale: 2, useCORS: true });
+  } finally {
+    exportNode.remove();
+  }
+}
+
+document.getElementById('print-summary-btn').addEventListener('click', () => {
+  const panel = getActiveSummaryPanel();
+  if (!panel) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc || !iframe.contentWindow) {
+    iframe.remove();
+    return;
+  }
+
+  doc.open();
+  doc.write(`
+    <html>
+      <head>
+        <title>Split Sculptor Print</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+        <style>${getExportStyles()} @page { margin: 12mm; }</style>
+      </head>
+      <body>${buildExportMarkup(panel.innerHTML)}</body>
+    </html>
+  `);
+  doc.close();
+
+  const triggerPrint = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => iframe.remove(), 1200);
+  };
+
+  const images = doc.images ? Array.from(doc.images) : [];
+  if (!images.length) {
+    setTimeout(triggerPrint, 200);
+    return;
+  }
+
+  let pending = images.length;
+  const release = () => {
+    pending -= 1;
+    if (pending <= 0) setTimeout(triggerPrint, 200);
+  };
+  images.forEach((img) => {
+    if (img.complete) {
+      release();
+      return;
+    }
+    img.addEventListener('load', release, { once: true });
+    img.addEventListener('error', release, { once: true });
+  });
+});
+
+document.getElementById('save-png-btn').addEventListener('click', async () => {
+  const canvas = await createExportCanvas();
+  if (!canvas) return;
+
+  const filename = 'chasing-change-split-sculptor-summary.png';
+  const dataUrl = canvas.toDataURL('image/png');
+
+  if (navigator.canShare && navigator.share) {
+    try {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (blob) {
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Chasing Change - Split Sculptor Summary' });
+          return;
+        }
+      }
+    } catch (error) {
+      // Fallback to download when share sheet isn't available or is canceled.
+    }
+  }
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = dataUrl;
+  link.click();
+});
+
+['calories', 'bmr', 'tdee', 'protein', 'carbs', 'fat'].forEach((key) => {
+  const input = document.getElementById(`manual-${key}`);
+  input.addEventListener('input', () => {
+    state.manualTargets[key] = input.value;
+    if (state.step >= 9) buildSummary();
+  });
+});
+
+showStep(1);
+
+const lastUpdatedStamp = document.getElementById('lastUpdatedStamp');
+if (lastUpdatedStamp) {
+  const modified = new Date(document.lastModified);
+  lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
+    ? 'Last updated: unavailable'
+    : `Last updated: ${modified.toLocaleString()}`;
+}
+
+</script>
+</body>
+</html>

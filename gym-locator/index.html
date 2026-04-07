@@ -215,7 +215,21 @@
     </style>
   </head>
   <body class="cc-page">
-    <main class="container">
+    <section id="gymLock" class="container" style="max-width: 680px;">
+      <div class="panel" style="max-height: none; margin-top: 20px;">
+        <p style="margin: 0; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7;">Protected Access</p>
+        <h2 style="margin: 10px 0 0; font-family: var(--heading-font); font-size: 1.9rem;">Gym Locator</h2>
+        <p style="margin: 10px 0 0; opacity: 0.82;">Enter the password to open this tool.</p>
+        <label for="gymPassword" style="display: block; margin-top: 18px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.72;">Password</label>
+        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <input id="gymPassword" type="password" placeholder="Enter password" autocomplete="current-password" style="flex: 1 1 260px;" />
+          <button id="gymUnlockBtn" type="button" class="btn-primary" style="min-width: 120px;">Unlock</button>
+        </div>
+        <p id="gymLockMsg" style="margin: 12px 0 0; font-size: 0.92rem; opacity: 0.82;"></p>
+      </div>
+    </section>
+
+    <main id="gymContent" class="container" style="display: none;">
       <header class="title">
         <div>
           <h1>Gym Locator</h1>
@@ -246,6 +260,42 @@
     </main>
 
     <script>
+      const gymLock = document.getElementById("gymLock");
+      const gymContent = document.getElementById("gymContent");
+      const gymPassword = document.getElementById("gymPassword");
+      const gymUnlockBtn = document.getElementById("gymUnlockBtn");
+      const gymLockMsg = document.getElementById("gymLockMsg");
+      const GYM_LOCK_KEY = "ccGymLocatorUnlocked";
+      const GYM_PASSWORD = "Chasing1228!";
+
+      const unlockGymLocator = () => {
+        if (gymLock) gymLock.style.display = "none";
+        if (gymContent) gymContent.style.display = "block";
+      };
+
+      const tryUnlockGymLocator = () => {
+        if (!gymPassword) return;
+        if (gymPassword.value === GYM_PASSWORD) {
+          localStorage.setItem(GYM_LOCK_KEY, "true");
+          unlockGymLocator();
+          if (gymLockMsg) gymLockMsg.textContent = "Unlocked.";
+          return;
+        }
+        if (gymLockMsg) gymLockMsg.textContent = "Incorrect password. Try again.";
+      };
+
+      if (localStorage.getItem(GYM_LOCK_KEY) === "true") {
+        unlockGymLocator();
+      }
+
+      gymUnlockBtn?.addEventListener("click", tryUnlockGymLocator);
+      gymPassword?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          tryUnlockGymLocator();
+        }
+      });
+
       if (!window.L) {
         document.getElementById("statusText").textContent =
           "Map library failed to load. Please refresh and try again.";
