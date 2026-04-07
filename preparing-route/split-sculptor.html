@@ -201,7 +201,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .split-workout-item.missing { border-color: rgba(196, 48, 48, 0.65); background: rgba(220, 38, 38, 0.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
 .split-workout-main { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; font-size: .88rem; }
 .split-workout-slot { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
-.split-workout-prescription { font-weight: 700; color: var(--text); }
+.split-workout-meta { font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.split-workout-prescription { font-weight: 700; color: var(--text); text-align: right; }
 .split-warning { margin-top: .55rem; border: 1px solid rgba(196, 48, 48, 0.42); border-left: 4px solid #c43030; border-radius: 9px; padding: .52rem .62rem; background: rgba(220, 38, 38, 0.1); color: #7a1515; font-size: .82rem; line-height: 1.55; }
 .summary-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .summary-tab { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .48rem .9rem; cursor: pointer; }
@@ -1491,8 +1492,8 @@ function buildSummary() {
         const targetMuscleLabel = slot.targetMuscle || 'Target not set';
         return `<li class="split-workout-item${missingClass}">
           <div class="split-workout-main">
-            <span><span class="split-workout-slot">${slot.slot} (${targetMuscleLabel})</span> · ${exerciseName || 'Not set'}</span>
-            <span class="split-workout-prescription">${sets} sets × ${reps} reps</span>
+            <span class="split-workout-meta">${slot.slot} | ${targetMuscleLabel}</span>
+            <span class="split-workout-prescription">${exerciseName || 'Not set'} | ${sets} sets × ${reps} reps</span>
           </div>
         </li>`;
       })
