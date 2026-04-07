@@ -1910,9 +1910,11 @@ document.getElementById('back-btn').addEventListener('click', () => {
 function getActiveSummaryPanel() {
   const overviewActive = document.getElementById('overview-summary-panel')?.classList.contains('active');
   if (overviewActive) return document.getElementById('overview-summary-content');
-  const splitActive = document.getElementById('split-workouts-panel')?.classList.contains('active');
-  if (splitActive) return document.getElementById('split-workouts-panel');
-  return null;
+
+  const workoutsPanelActive = document.getElementById('workouts-summary-panel')?.classList.contains('active');
+  if (workoutsPanelActive) return document.getElementById('split-workouts-panel');
+
+  return document.getElementById('overview-summary-content');
 }
 
 function buildExportMarkup(panelHtml) {
@@ -1947,6 +1949,13 @@ function getExportStyles() {
     .week h3 { margin-top: 0; font-family: 'Raleway', sans-serif; }
     .week ul { list-style: none; padding: 0; }
     .week li { border: 1px solid rgba(7,31,53,0.14); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+    .target-grid { display: grid; gap: 10px; margin-top: 10px; }
+    .target-card { background: #fff; border: 1px solid rgba(7,31,53,0.14); border-radius: 10px; padding: 10px 12px; }
+    .target-card.target-protein { background: rgba(119,215,112,0.2); border-color: rgba(89,195,82,0.5); }
+    .target-card.target-carbs { background: rgba(255,209,102,0.26); border-color: rgba(243,176,63,0.45); }
+    .target-card.target-fat { background: rgba(255,138,138,0.2); border-color: rgba(230,106,106,0.45); }
+    .target-label { font-family: 'Raleway', sans-serif; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; font-weight: 700; }
+    .target-value { margin-top: 4px; font-size: 1rem; font-weight: 700; color: #071f35; }
     button { display: none !important; }
   `;
 }
