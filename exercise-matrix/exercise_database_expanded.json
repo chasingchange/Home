@@ -1,0 +1,3889 @@
+[
+  {
+    "exercise_name": "Barbell Back Squat",
+    "alternate_names": [
+      "High Bar Squat",
+      "Low Bar Squat"
+    ],
+    "category": "compound",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Adductors",
+      "Spinal Erectors"
+    ],
+    "movement_pattern": "squat",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "strength",
+    "equipment_required": "barbell, squat rack, plates",
+    "equipment_optional": "lifting belt, heeled shoes",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "J-hooks at mid-chest, safety pins just below bottom depth.",
+    "recommended_sets": "3-6",
+    "recommended_reps_range": "3-10",
+    "recommended_rest_time_seconds": "120-240",
+    "tempo_recommendation": "3-1-1-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Romanian Deadlift",
+      "Hanging Leg Raise"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Goblet Squat",
+      "Box Squat"
+    ],
+    "progression_variations": [
+      "Pause Back Squat",
+      "Tempo Back Squat",
+      "1.5 Rep Squat"
+    ],
+    "setup_instructions": "Set feet shoulder width, grip bar evenly, create upper-back shelf, and unrack with two controlled steps.",
+    "execution_steps": [
+      "Inhale and brace before descent.",
+      "Sit down and slightly back while tracking knees over toes.",
+      "Reach at least parallel hip crease depth.",
+      "Drive through midfoot and stand without hips shooting up first."
+    ],
+    "breathing_pattern": "Inhale and brace before each rep; exhale near lockout.",
+    "bracing_cues": "Ribs down, abs tight 360\u00b0, squeeze bar into your back.",
+    "range_of_motion_target": "Hip crease at or below top of knee with neutral spine.",
+    "common_mistakes": [
+      "Knees collapsing inward",
+      "Losing heel pressure",
+      "Excessive forward torso collapse"
+    ],
+    "safety_notes": "Use safeties; stop set when depth or spinal position is lost.",
+    "spotting_notes_if_needed": "Spotter on each side or use rack safeties for heavy attempts.",
+    "who_this_is_best_for": "Lifters building total lower-body strength and size.",
+    "when_to_use_in_workout": "first lift",
+    "substitute_for_exercises": [
+      "Hack Squat",
+      "Leg Press"
+    ],
+    "complementary_pairing_exercises": [
+      "Leg Curl",
+      "Calf Raise"
+    ],
+    "injury_considerations": "Modify depth for hip impingement or knee pain; use pain-free ROM.",
+    "mobility_requirements": "Ankle dorsiflexion and hip external rotation to hit depth.",
+    "primary_joint_action": "Knee and hip extension",
+    "secondary_joint_actions": [
+      "Ankle plantar/dorsiflexion control"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Upper back",
+      "Hip abductors"
+    ],
+    "spine_loading_level": "high",
+    "fatigue_cost_rating": "high",
+    "coordination_demand_rating": "high",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "leg day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "A",
+    "hypertrophy_priority_rank": "A",
+    "strength_priority_rank": "A",
+    "plain_language_summary": "This exercise trains your legs and hips by sitting down with a bar on your back and standing up strong.",
+    "feel_cue": "You should feel quads and glutes working hard out of the bottom.",
+    "self_check_cue": "If heels lift or knees cave, lower the weight and slow the descent."
+  },
+  {
+    "exercise_name": "Barbell Bench Press",
+    "alternate_names": [
+      "Flat Bench Press"
+    ],
+    "category": "compound",
+    "primary_muscle_group": "Chest",
+    "secondary_muscle_groups": [
+      "Front Delts",
+      "Triceps"
+    ],
+    "movement_pattern": "push horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "strength",
+    "equipment_required": "barbell, flat bench, rack",
+    "equipment_optional": "wrist wraps",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Eyes under bar, feet planted, shoulder blades pinned to bench.",
+    "recommended_sets": "3-6",
+    "recommended_reps_range": "4-12",
+    "recommended_rest_time_seconds": "90-180",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Chest Supported Row",
+      "Face Pull"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Push-Up",
+      "Dumbbell Floor Press"
+    ],
+    "progression_variations": [
+      "Paused Bench Press",
+      "Close-Grip Bench Press",
+      "Spoto Press"
+    ],
+    "setup_instructions": "Set five points of contact: head, upper back, glutes, and both feet.",
+    "execution_steps": [
+      "Unrack with straight wrists and stacked elbows.",
+      "Lower bar to lower chest with forearms vertical.",
+      "Briefly control touch, then press up and back to lockout.",
+      "Keep shoulder blades retracted throughout."
+    ],
+    "breathing_pattern": "Inhale before lowering; exhale through sticking point.",
+    "bracing_cues": "Brace abs and drive feet into floor without lifting glutes.",
+    "range_of_motion_target": "Bar touches lower chest with elbows ~45-75\u00b0 from torso.",
+    "common_mistakes": [
+      "Bouncing bar",
+      "Flaring elbows too early",
+      "Losing upper-back tightness"
+    ],
+    "safety_notes": "Use collars and a competent spotter for near-failure work.",
+    "spotting_notes_if_needed": "Hand-off and spot recommended above ~85% 1RM.",
+    "who_this_is_best_for": "Beginner to advanced lifters needing upper-body press strength.",
+    "when_to_use_in_workout": "first lift",
+    "substitute_for_exercises": [
+      "Machine Chest Press",
+      "Dumbbell Bench Press"
+    ],
+    "complementary_pairing_exercises": [
+      "Single-Arm Row",
+      "Band Pull-Apart"
+    ],
+    "injury_considerations": "Shoulder irritation may improve with neutral-grip dumbbell alternative.",
+    "mobility_requirements": "Thoracic extension and shoulder external rotation tolerance.",
+    "primary_joint_action": "Horizontal shoulder adduction and elbow extension",
+    "secondary_joint_actions": [
+      "Scapular retraction"
+    ],
+    "stabilizers_used": [
+      "Lats",
+      "Rotator cuff",
+      "Leg drive musculature"
+    ],
+    "spine_loading_level": "low",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "A",
+    "hypertrophy_priority_rank": "A",
+    "strength_priority_rank": "A",
+    "plain_language_summary": "This exercise builds chest, shoulder, and triceps strength by pressing a bar away from your chest.",
+    "feel_cue": "You should feel chest and triceps driving the bar off your chest.",
+    "self_check_cue": "If your butt lifts off the bench, reduce load and re-brace."
+  },
+  {
+    "exercise_name": "Incline Dumbbell Press",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Chest",
+    "secondary_muscle_groups": [
+      "Front Delts",
+      "Triceps"
+    ],
+    "movement_pattern": "push horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "adjustable bench, dumbbells",
+    "equipment_optional": "spotter",
+    "environment": "gym, home gym",
+    "setup_requirements": "Bench at 15-30\u00b0 incline.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "6-15",
+    "recommended_rest_time_seconds": "75-120",
+    "tempo_recommendation": "2-0-1-0",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Incline Dumbbell Press",
+      "Paused Incline Dumbbell Press"
+    ],
+    "setup_instructions": "Prepare for Incline Dumbbell Press with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Incline Dumbbell Press.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your chest with support from front delts, triceps.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Weighted Pull-Up",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Back",
+    "secondary_muscle_groups": [
+      "Biceps",
+      "Mid Back"
+    ],
+    "movement_pattern": "pull vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "advanced",
+    "recommended_phase": "strength",
+    "equipment_required": "pull-up bar, dip belt",
+    "equipment_optional": "lifting straps",
+    "environment": "gym, home gym",
+    "setup_requirements": "Start from dead hang with active shoulders.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "3-8",
+    "recommended_rest_time_seconds": "120-180",
+    "tempo_recommendation": "2-1-1-1",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Weighted Pull-Up",
+      "Paused Weighted Pull-Up"
+    ],
+    "setup_instructions": "Prepare for Weighted Pull-Up with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Weighted Pull-Up.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your back using a controlled pull vertical pattern.",
+    "feel_cue": "You should feel it mostly in your back with support from biceps, mid back.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Lat Pulldown",
+    "alternate_names": [],
+    "category": "machine",
+    "primary_muscle_group": "Back",
+    "secondary_muscle_groups": [
+      "Biceps",
+      "Rear Delts"
+    ],
+    "movement_pattern": "pull vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "lat pulldown machine",
+    "equipment_optional": "straps",
+    "environment": "machine circuit, gym",
+    "setup_requirements": "Adjust thigh pad to lock hips.",
+    "recommended_sets": "3-4",
+    "recommended_reps_range": "8-15",
+    "recommended_rest_time_seconds": "60-90",
+    "tempo_recommendation": "2-1-2-0",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Lat Pulldown",
+      "Paused Lat Pulldown"
+    ],
+    "setup_instructions": "Prepare for Lat Pulldown with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Lat Pulldown.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your back using a controlled pull vertical pattern.",
+    "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Seated Cable Row",
+    "alternate_names": [],
+    "category": "cable",
+    "primary_muscle_group": "Back",
+    "secondary_muscle_groups": [
+      "Biceps",
+      "Rear Delts"
+    ],
+    "movement_pattern": "pull horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "cable row station",
+    "equipment_optional": "different handles",
+    "environment": "cable station, gym",
+    "setup_requirements": "Neutral spine seated with slight knee bend.",
+    "recommended_sets": "3-4",
+    "recommended_reps_range": "8-15",
+    "recommended_rest_time_seconds": "60-90",
+    "tempo_recommendation": "2-1-2-0",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Seated Cable Row",
+      "Paused Seated Cable Row"
+    ],
+    "setup_instructions": "Prepare for Seated Cable Row with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Seated Cable Row.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your back using a controlled pull horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Standing Barbell Overhead Press",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Shoulders",
+    "secondary_muscle_groups": [
+      "Triceps",
+      "Upper Chest"
+    ],
+    "movement_pattern": "push vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "strength",
+    "equipment_required": "barbell, rack",
+    "equipment_optional": "lifting belt",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Bar starts at upper chest/clavicle.",
+    "recommended_sets": "3-6",
+    "recommended_reps_range": "3-10",
+    "recommended_rest_time_seconds": "90-180",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Standing Barbell Overhead Press",
+      "Paused Standing Barbell Overhead Press"
+    ],
+    "setup_instructions": "Prepare for Standing Barbell Overhead Press with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Standing Barbell Overhead Press.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your shoulders using a controlled push vertical pattern.",
+    "feel_cue": "You should feel it mostly in your shoulders with support from triceps, upper chest.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Dumbbell Lateral Raise",
+    "alternate_names": [],
+    "category": "isolation",
+    "primary_muscle_group": "Shoulders",
+    "secondary_muscle_groups": [
+      "Upper Traps"
+    ],
+    "movement_pattern": "lateral movement",
+    "plane_of_motion": "frontal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "dumbbells",
+    "equipment_optional": "cables",
+    "environment": "gym, home gym",
+    "setup_requirements": "Soft elbows, slight torso lean.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "10-25",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Dumbbell Lateral Raise",
+      "Paused Dumbbell Lateral Raise"
+    ],
+    "setup_instructions": "Prepare for Dumbbell Lateral Raise with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Dumbbell Lateral Raise.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your shoulders using a controlled lateral movement pattern.",
+    "feel_cue": "You should feel it mostly in your shoulders with support from upper traps.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Barbell Curl",
+    "alternate_names": [],
+    "category": "isolation",
+    "primary_muscle_group": "Biceps",
+    "secondary_muscle_groups": [
+      "Brachialis",
+      "Forearms"
+    ],
+    "movement_pattern": "pull vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "accessory",
+    "equipment_required": "barbell",
+    "equipment_optional": "EZ bar",
+    "environment": "gym, home gym",
+    "setup_requirements": "Stand tall with elbows near torso.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "8-15",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-0",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Barbell Curl",
+      "Paused Barbell Curl"
+    ],
+    "setup_instructions": "Prepare for Barbell Curl with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Barbell Curl.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your biceps using a controlled pull vertical pattern.",
+    "feel_cue": "You should feel it mostly in your biceps with support from brachialis, forearms.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Cable Rope Triceps Pushdown",
+    "alternate_names": [],
+    "category": "cable",
+    "primary_muscle_group": "Triceps",
+    "secondary_muscle_groups": [
+      "Forearms"
+    ],
+    "movement_pattern": "push vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "cable station, rope",
+    "equipment_optional": "straight bar",
+    "environment": "cable station, gym",
+    "setup_requirements": "Elbows pinned to sides.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "10-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Cable Rope Triceps Pushdown",
+      "Paused Cable Rope Triceps Pushdown"
+    ],
+    "setup_instructions": "Prepare for Cable Rope Triceps Pushdown with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Cable Rope Triceps Pushdown.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your triceps using a controlled push vertical pattern.",
+    "feel_cue": "You should feel it mostly in your triceps with support from forearms.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Romanian Deadlift",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Hamstrings",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Spinal Erectors"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "barbell, plates",
+    "equipment_optional": "straps",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Soft knees and long spine.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "5-12",
+    "recommended_rest_time_seconds": "90-150",
+    "tempo_recommendation": "3-1-1-0",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Romanian Deadlift",
+      "Paused Romanian Deadlift"
+    ],
+    "setup_instructions": "Prepare for Romanian Deadlift with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Romanian Deadlift.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your hamstrings using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your hamstrings with support from glutes, spinal erectors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Conventional Deadlift",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Full Body",
+    "secondary_muscle_groups": [
+      "Hamstrings",
+      "Glutes",
+      "Back"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "strength",
+    "equipment_required": "barbell, plates, platform",
+    "equipment_optional": "belt, straps",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Midfoot under bar, shins close.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "2-6",
+    "recommended_rest_time_seconds": "150-300",
+    "tempo_recommendation": "2-1-1-1",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Conventional Deadlift",
+      "Paused Conventional Deadlift"
+    ],
+    "setup_instructions": "Prepare for Conventional Deadlift with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Conventional Deadlift.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "lower",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "pull day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your full body with support from hamstrings, glutes.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Bulgarian Split Squat",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Adductors"
+    ],
+    "movement_pattern": "lunge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "dumbbells, bench",
+    "equipment_optional": "bodyweight",
+    "environment": "gym, home gym",
+    "setup_requirements": "Rear foot elevated on bench.",
+    "recommended_sets": "3-4",
+    "recommended_reps_range": "6-15",
+    "recommended_rest_time_seconds": "60-120",
+    "tempo_recommendation": "3-1-1-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Bulgarian Split Squat",
+      "Paused Bulgarian Split Squat"
+    ],
+    "setup_instructions": "Prepare for Bulgarian Split Squat with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Bulgarian Split Squat.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
+    "feel_cue": "You should feel it mostly in your quads with support from glutes, adductors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Walking Lunge",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Hamstrings"
+    ],
+    "movement_pattern": "lunge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "endurance",
+    "equipment_required": "dumbbells",
+    "equipment_optional": "barbell",
+    "environment": "gym, home gym",
+    "setup_requirements": "Long stride with upright torso.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "10-20 steps/leg",
+    "recommended_rest_time_seconds": "45-90",
+    "tempo_recommendation": "2-0-2-0",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Walking Lunge",
+      "Paused Walking Lunge"
+    ],
+    "setup_instructions": "Prepare for Walking Lunge with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Walking Lunge.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "accessory",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
+    "feel_cue": "You should feel it mostly in your quads with support from glutes, hamstrings.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Barbell Hip Thrust",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Glutes",
+    "secondary_muscle_groups": [
+      "Hamstrings",
+      "Adductors"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "barbell, bench",
+    "equipment_optional": "pad, band",
+    "environment": "gym, home gym",
+    "setup_requirements": "Shoulder blades on bench edge.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "6-15",
+    "recommended_rest_time_seconds": "75-120",
+    "tempo_recommendation": "2-1-1-1",
+    "ideal_frequency_per_week": "2-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Barbell Hip Thrust",
+      "Paused Barbell Hip Thrust"
+    ],
+    "setup_instructions": "Prepare for Barbell Hip Thrust with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Barbell Hip Thrust.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your glutes using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your glutes with support from hamstrings, adductors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Seated Leg Curl",
+    "alternate_names": [],
+    "category": "machine",
+    "primary_muscle_group": "Hamstrings",
+    "secondary_muscle_groups": [
+      "Calves"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "leg curl machine",
+    "equipment_optional": "none",
+    "environment": "machine circuit",
+    "setup_requirements": "Align knee joint with machine axis.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "10-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Seated Leg Curl",
+      "Paused Seated Leg Curl"
+    ],
+    "setup_instructions": "Prepare for Seated Leg Curl with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Seated Leg Curl.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your hamstrings using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your hamstrings with support from calves.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Leg Extension",
+    "alternate_names": [],
+    "category": "machine",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Hip Flexors"
+    ],
+    "movement_pattern": "squat",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "leg extension machine",
+    "equipment_optional": "none",
+    "environment": "machine circuit",
+    "setup_requirements": "Pad sits on lower shin.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "10-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Leg Extension",
+      "Paused Leg Extension"
+    ],
+    "setup_instructions": "Prepare for Leg Extension with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Leg Extension.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your quads using a controlled squat pattern.",
+    "feel_cue": "You should feel it mostly in your quads with support from hip flexors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Standing Calf Raise",
+    "alternate_names": [],
+    "category": "machine",
+    "primary_muscle_group": "Calves",
+    "secondary_muscle_groups": [
+      "Soleus"
+    ],
+    "movement_pattern": "lateral movement",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "calf raise machine",
+    "equipment_optional": "smith machine",
+    "environment": "machine circuit, gym",
+    "setup_requirements": "Balls of feet on platform edge.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "8-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-5",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Standing Calf Raise",
+      "Paused Standing Calf Raise"
+    ],
+    "setup_instructions": "Prepare for Standing Calf Raise with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Standing Calf Raise.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your calves using a controlled lateral movement pattern.",
+    "feel_cue": "You should feel it mostly in your calves with support from soleus.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Ab Wheel Rollout",
+    "alternate_names": [],
+    "category": "bodyweight",
+    "primary_muscle_group": "Core",
+    "secondary_muscle_groups": [
+      "Lats",
+      "Shoulders"
+    ],
+    "movement_pattern": "core extension",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "accessory",
+    "equipment_required": "ab wheel",
+    "equipment_optional": "barbell with plates",
+    "environment": "gym, home gym, bodyweight only",
+    "setup_requirements": "Kneel on pad with neutral pelvis.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "6-15",
+    "recommended_rest_time_seconds": "60-90",
+    "tempo_recommendation": "3-1-1-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Ab Wheel Rollout",
+      "Paused Ab Wheel Rollout"
+    ],
+    "setup_instructions": "Prepare for Ab Wheel Rollout with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Ab Wheel Rollout.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "corrective",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your core using a controlled core extension pattern.",
+    "feel_cue": "You should feel it mostly in your core with support from lats, shoulders.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Dead Bug",
+    "alternate_names": [],
+    "category": "mobility",
+    "primary_muscle_group": "Core",
+    "secondary_muscle_groups": [
+      "Hip Flexors"
+    ],
+    "movement_pattern": "anti-rotation",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "warmup",
+    "equipment_required": "bodyweight",
+    "equipment_optional": "mini band",
+    "environment": "bodyweight only, home gym",
+    "setup_requirements": "Low back gently pressed into floor.",
+    "recommended_sets": "2-3",
+    "recommended_reps_range": "6-12/side",
+    "recommended_rest_time_seconds": "30-45",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "3-6",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Dead Bug",
+      "Paused Dead Bug"
+    ],
+    "setup_instructions": "Prepare for Dead Bug with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Dead Bug.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "activation",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your core using a controlled anti-rotation pattern.",
+    "feel_cue": "You should feel it mostly in your core with support from hip flexors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Pallof Press",
+    "alternate_names": [],
+    "category": "cable",
+    "primary_muscle_group": "Core",
+    "secondary_muscle_groups": [
+      "Obliques",
+      "Glutes"
+    ],
+    "movement_pattern": "anti-rotation",
+    "plane_of_motion": "transverse",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "cable station or band",
+    "equipment_optional": "half-kneeling pad",
+    "environment": "cable station, home gym",
+    "setup_requirements": "Cable at sternum height.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "8-15/side",
+    "recommended_rest_time_seconds": "45-60",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-5",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Pallof Press",
+      "Paused Pallof Press"
+    ],
+    "setup_instructions": "Prepare for Pallof Press with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Pallof Press.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "corrective",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your core using a controlled anti-rotation pattern.",
+    "feel_cue": "You should feel it mostly in your core with support from obliques, glutes.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Russian Twist",
+    "alternate_names": [],
+    "category": "bodyweight",
+    "primary_muscle_group": "Core",
+    "secondary_muscle_groups": [
+      "Hip Flexors"
+    ],
+    "movement_pattern": "rotation",
+    "plane_of_motion": "transverse",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "finisher",
+    "equipment_required": "bodyweight or medicine ball",
+    "equipment_optional": "plate",
+    "environment": "bodyweight only, gym",
+    "setup_requirements": "Lean back with long spine.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "12-30 total",
+    "recommended_rest_time_seconds": "30-60",
+    "tempo_recommendation": "2-0-2-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Russian Twist",
+      "Paused Russian Twist"
+    ],
+    "setup_instructions": "Prepare for Russian Twist with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Russian Twist.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "finisher",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your core using a controlled rotation pattern.",
+    "feel_cue": "You should feel it mostly in your core with support from hip flexors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Farmer's Carry",
+    "alternate_names": [],
+    "category": "carry",
+    "primary_muscle_group": "Forearms",
+    "secondary_muscle_groups": [
+      "Traps",
+      "Core",
+      "Glutes"
+    ],
+    "movement_pattern": "carry",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "finisher",
+    "equipment_required": "heavy dumbbells or farmer handles",
+    "equipment_optional": "straps (advanced only)",
+    "environment": "gym, home gym",
+    "setup_requirements": "Pick implements from deadlift setup.",
+    "recommended_sets": "3-6",
+    "recommended_reps_range": "15-40 meters",
+    "recommended_rest_time_seconds": "60-120",
+    "tempo_recommendation": "controlled walk",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Farmer's Carry",
+      "Paused Farmer's Carry"
+    ],
+    "setup_instructions": "Prepare for Farmer's Carry with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Farmer's Carry.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "full",
+    "movement_slot": "finisher",
+    "compatible_training_days": [
+      "pull day",
+      "full day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your forearms using a controlled carry pattern.",
+    "feel_cue": "You should feel it mostly in your forearms with support from traps, core.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Suitcase Carry",
+    "alternate_names": [],
+    "category": "carry",
+    "primary_muscle_group": "Core",
+    "secondary_muscle_groups": [
+      "Obliques",
+      "Forearms"
+    ],
+    "movement_pattern": "carry",
+    "plane_of_motion": "frontal",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "accessory",
+    "equipment_required": "single dumbbell or kettlebell",
+    "equipment_optional": "none",
+    "environment": "gym, home gym",
+    "setup_requirements": "Stand tall with load in one hand.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "15-30 meters/side",
+    "recommended_rest_time_seconds": "45-90",
+    "tempo_recommendation": "controlled walk",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Suitcase Carry",
+      "Paused Suitcase Carry"
+    ],
+    "setup_instructions": "Prepare for Suitcase Carry with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Suitcase Carry.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "full",
+    "movement_slot": "corrective",
+    "compatible_training_days": [
+      "pull day",
+      "full day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your core using a controlled carry pattern.",
+    "feel_cue": "You should feel it mostly in your core with support from obliques, forearms.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Face Pull",
+    "alternate_names": [],
+    "category": "cable",
+    "primary_muscle_group": "Shoulders",
+    "secondary_muscle_groups": [
+      "Rear Delts",
+      "Mid Traps"
+    ],
+    "movement_pattern": "pull horizontal",
+    "plane_of_motion": "transverse",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "cable station, rope",
+    "equipment_optional": "bands",
+    "environment": "cable station, gym",
+    "setup_requirements": "Set rope at eye level.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "12-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-5",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Face Pull",
+      "Paused Face Pull"
+    ],
+    "setup_instructions": "Prepare for Face Pull with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Face Pull.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "accessory",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your shoulders using a controlled pull horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your shoulders with support from rear delts, mid traps.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Power Clean",
+    "alternate_names": [],
+    "category": "plyometric",
+    "primary_muscle_group": "Full Body",
+    "secondary_muscle_groups": [
+      "Quads",
+      "Glutes",
+      "Traps"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "advanced",
+    "recommended_phase": "athleticism",
+    "equipment_required": "barbell, bumper plates",
+    "equipment_optional": "lifting straps",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Start like deadlift with hook grip.",
+    "recommended_sets": "3-6",
+    "recommended_reps_range": "1-5",
+    "recommended_rest_time_seconds": "120-240",
+    "tempo_recommendation": "explosive",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Power Clean",
+      "Paused Power Clean"
+    ],
+    "setup_instructions": "Prepare for Power Clean with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Power Clean.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "full",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "pull day",
+      "full day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your full body with support from quads, glutes.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Box Jump",
+    "alternate_names": [],
+    "category": "plyometric",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Calves"
+    ],
+    "movement_pattern": "squat",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "athleticism",
+    "equipment_required": "plyo box",
+    "equipment_optional": "none",
+    "environment": "gym, home gym",
+    "setup_requirements": "Use stable non-slip box.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "3-8",
+    "recommended_rest_time_seconds": "60-120",
+    "tempo_recommendation": "explosive",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Box Jump",
+      "Paused Box Jump"
+    ],
+    "setup_instructions": "Prepare for Box Jump with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Box Jump.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your quads using a controlled squat pattern.",
+    "feel_cue": "You should feel it mostly in your quads with support from glutes, calves.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Push-Up",
+    "alternate_names": [],
+    "category": "bodyweight",
+    "primary_muscle_group": "Chest",
+    "secondary_muscle_groups": [
+      "Triceps",
+      "Front Delts",
+      "Core"
+    ],
+    "movement_pattern": "push horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "bodyweight",
+    "equipment_optional": "bands, weight vest",
+    "environment": "bodyweight only, home gym",
+    "setup_requirements": "Hands under shoulders, straight line body.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "6-30",
+    "recommended_rest_time_seconds": "30-90",
+    "tempo_recommendation": "2-0-1-0",
+    "ideal_frequency_per_week": "2-6",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Push-Up",
+      "Paused Push-Up"
+    ],
+    "setup_instructions": "Prepare for Push-Up with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Push-Up.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your chest with support from triceps, front delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Dip",
+    "alternate_names": [],
+    "category": "bodyweight",
+    "primary_muscle_group": "Triceps",
+    "secondary_muscle_groups": [
+      "Chest",
+      "Front Delts"
+    ],
+    "movement_pattern": "push vertical",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "strength",
+    "equipment_required": "dip bars",
+    "equipment_optional": "dip belt",
+    "environment": "gym, bodyweight only",
+    "setup_requirements": "Shoulders depressed at top support.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "5-15",
+    "recommended_rest_time_seconds": "75-150",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Dip",
+      "Paused Dip"
+    ],
+    "setup_instructions": "Prepare for Dip with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Dip.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your triceps using a controlled push vertical pattern.",
+    "feel_cue": "You should feel it mostly in your triceps with support from chest, front delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Inverted Row",
+    "alternate_names": [],
+    "category": "bodyweight",
+    "primary_muscle_group": "Back",
+    "secondary_muscle_groups": [
+      "Biceps",
+      "Rear Delts"
+    ],
+    "movement_pattern": "pull horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "bar in rack or suspension trainer",
+    "equipment_optional": "elevated feet box",
+    "environment": "gym, home gym, bodyweight only",
+    "setup_requirements": "Set bar at hip height.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "6-20",
+    "recommended_rest_time_seconds": "45-90",
+    "tempo_recommendation": "2-1-1-1",
+    "ideal_frequency_per_week": "2-5",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Inverted Row",
+      "Paused Inverted Row"
+    ],
+    "setup_instructions": "Prepare for Inverted Row with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Inverted Row.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your back using a controlled pull horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Neck Flexion (Harness)",
+    "alternate_names": [],
+    "category": "isolation",
+    "primary_muscle_group": "Neck",
+    "secondary_muscle_groups": [
+      "Deep Neck Flexors"
+    ],
+    "movement_pattern": "core flexion",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "advanced",
+    "recommended_phase": "accessory",
+    "equipment_required": "neck harness and plate",
+    "equipment_optional": "band",
+    "environment": "gym, home gym",
+    "setup_requirements": "Use very light load to start.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "12-25",
+    "recommended_rest_time_seconds": "45-60",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Neck Flexion (Harness)",
+      "Paused Neck Flexion (Harness)"
+    ],
+    "setup_instructions": "Prepare for Neck Flexion (Harness) with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Neck Flexion (Harness).",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "corrective",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your neck using a controlled core flexion pattern.",
+    "feel_cue": "You should feel it mostly in your neck with support from deep neck flexors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Wrist Curl",
+    "alternate_names": [],
+    "category": "isolation",
+    "primary_muscle_group": "Forearms",
+    "secondary_muscle_groups": [
+      "Finger Flexors"
+    ],
+    "movement_pattern": "core flexion",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "dumbbells or barbell",
+    "equipment_optional": "fat grips",
+    "environment": "gym, home gym",
+    "setup_requirements": "Forearms supported on bench.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "12-25",
+    "recommended_rest_time_seconds": "30-60",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-5",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Wrist Curl",
+      "Paused Wrist Curl"
+    ],
+    "setup_instructions": "Prepare for Wrist Curl with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Wrist Curl.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "upper",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "pull day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your forearms using a controlled core flexion pattern.",
+    "feel_cue": "You should feel it mostly in your forearms with support from finger flexors.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Copenhagen Plank",
+    "alternate_names": [],
+    "category": "mobility",
+    "primary_muscle_group": "Adductors",
+    "secondary_muscle_groups": [
+      "Obliques",
+      "Glutes"
+    ],
+    "movement_pattern": "anti-rotation",
+    "plane_of_motion": "frontal",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "intermediate",
+    "recommended_phase": "mobility",
+    "equipment_required": "bench or box",
+    "equipment_optional": "none",
+    "environment": "gym, home gym, bodyweight only",
+    "setup_requirements": "Top leg on bench, elbow under shoulder.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "15-45 sec/side",
+    "recommended_rest_time_seconds": "30-60",
+    "tempo_recommendation": "isometric",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Copenhagen Plank",
+      "Paused Copenhagen Plank"
+    ],
+    "setup_instructions": "Prepare for Copenhagen Plank with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Copenhagen Plank.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "corrective",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your adductors using a controlled anti-rotation pattern.",
+    "feel_cue": "You should feel it mostly in your adductors with support from obliques, glutes.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "World's Greatest Stretch",
+    "alternate_names": [],
+    "category": "mobility",
+    "primary_muscle_group": "Mobility",
+    "secondary_muscle_groups": [
+      "Hip Flexors",
+      "Thoracic Spine"
+    ],
+    "movement_pattern": "lunge",
+    "plane_of_motion": "transverse",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "warmup",
+    "equipment_required": "bodyweight",
+    "equipment_optional": "yoga block",
+    "environment": "bodyweight only, home gym",
+    "setup_requirements": "Long lunge stance with back leg extended.",
+    "recommended_sets": "1-3",
+    "recommended_reps_range": "3-6 reps/side",
+    "recommended_rest_time_seconds": "15-30",
+    "tempo_recommendation": "slow controlled",
+    "ideal_frequency_per_week": "4-7",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo World's Greatest Stretch",
+      "Paused World's Greatest Stretch"
+    ],
+    "setup_instructions": "Prepare for World's Greatest Stretch with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for World's Greatest Stretch.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "full",
+    "movement_slot": "mobility prep",
+    "compatible_training_days": [
+      "legs day",
+      "full day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your mobility using a controlled lunge pattern.",
+    "feel_cue": "You should feel it mostly in your mobility with support from hip flexors, thoracic spine.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Banded Glute Bridge",
+    "alternate_names": [],
+    "category": "warmup",
+    "primary_muscle_group": "Glutes",
+    "secondary_muscle_groups": [
+      "Hamstrings",
+      "Core"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "warmup",
+    "equipment_required": "mini band",
+    "equipment_optional": "bodyweight only",
+    "environment": "home gym, bodyweight only, gym",
+    "setup_requirements": "Band above knees, feet flat.",
+    "recommended_sets": "2-3",
+    "recommended_reps_range": "10-20",
+    "recommended_rest_time_seconds": "20-45",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "3-6",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Banded Glute Bridge",
+      "Paused Banded Glute Bridge"
+    ],
+    "setup_instructions": "Prepare for Banded Glute Bridge with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Banded Glute Bridge.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "activation",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your glutes using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your glutes with support from hamstrings, core.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Cat-Camel",
+    "alternate_names": [],
+    "category": "mobility",
+    "primary_muscle_group": "Mobility",
+    "secondary_muscle_groups": [
+      "Spinal Erectors",
+      "Abs"
+    ],
+    "movement_pattern": "core extension",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "mobility",
+    "equipment_required": "bodyweight",
+    "equipment_optional": "none",
+    "environment": "bodyweight only, home gym",
+    "setup_requirements": "Quadruped position with neutral neck.",
+    "recommended_sets": "1-3",
+    "recommended_reps_range": "6-12",
+    "recommended_rest_time_seconds": "15-30",
+    "tempo_recommendation": "slow controlled",
+    "ideal_frequency_per_week": "4-7",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Cat-Camel",
+      "Paused Cat-Camel"
+    ],
+    "setup_instructions": "Prepare for Cat-Camel with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Cat-Camel.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "pull",
+    "upper_lower_category": "full",
+    "movement_slot": "mobility prep",
+    "compatible_training_days": [
+      "pull day",
+      "full day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your mobility using a controlled core extension pattern.",
+    "feel_cue": "You should feel it mostly in your mobility with support from spinal erectors, abs.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Machine Chest Press",
+    "alternate_names": [],
+    "category": "machine",
+    "primary_muscle_group": "Chest",
+    "secondary_muscle_groups": [
+      "Front Delts",
+      "Triceps"
+    ],
+    "movement_pattern": "push horizontal",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "chest press machine",
+    "equipment_optional": "neutral-grip handle",
+    "environment": "machine circuit",
+    "setup_requirements": "Seat so handles line with mid-chest.",
+    "recommended_sets": "2-5",
+    "recommended_reps_range": "6-15",
+    "recommended_rest_time_seconds": "60-120",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Machine Chest Press",
+      "Paused Machine Chest Press"
+    ],
+    "setup_instructions": "Prepare for Machine Chest Press with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Machine Chest Press.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "secondary lift",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your chest with support from front delts, triceps.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Cable Fly",
+    "alternate_names": [],
+    "category": "cable",
+    "primary_muscle_group": "Chest",
+    "secondary_muscle_groups": [
+      "Front Delts"
+    ],
+    "movement_pattern": "push horizontal",
+    "plane_of_motion": "transverse",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "accessory",
+    "equipment_required": "dual cable station",
+    "equipment_optional": "bench",
+    "environment": "cable station",
+    "setup_requirements": "Handles set slightly above shoulder height.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "10-20",
+    "recommended_rest_time_seconds": "45-75",
+    "tempo_recommendation": "2-1-2-1",
+    "ideal_frequency_per_week": "2-4",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Cable Fly",
+      "Paused Cable Fly"
+    ],
+    "setup_instructions": "Prepare for Cable Fly with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Cable Fly.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "push",
+    "upper_lower_category": "upper",
+    "movement_slot": "isolation finisher",
+    "compatible_training_days": [
+      "push day",
+      "upper day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
+    "feel_cue": "You should feel it mostly in your chest with support from front delts.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Trap Bar Deadlift",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Full Body",
+    "secondary_muscle_groups": [
+      "Quads",
+      "Glutes",
+      "Back"
+    ],
+    "movement_pattern": "hinge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "bilateral",
+    "difficulty_level": "novice",
+    "recommended_phase": "strength",
+    "equipment_required": "trap bar, plates",
+    "equipment_optional": "belt",
+    "environment": "gym, barbell platform",
+    "setup_requirements": "Stand centered in trap bar with neutral grip.",
+    "recommended_sets": "3-5",
+    "recommended_reps_range": "3-8",
+    "recommended_rest_time_seconds": "120-210",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "1-2",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Trap Bar Deadlift",
+      "Paused Trap Bar Deadlift"
+    ],
+    "setup_instructions": "Prepare for Trap Bar Deadlift with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Trap Bar Deadlift.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "primary lift",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
+    "feel_cue": "You should feel it mostly in your full body with support from quads, glutes.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  },
+  {
+    "exercise_name": "Step-Up",
+    "alternate_names": [],
+    "category": "compound",
+    "primary_muscle_group": "Quads",
+    "secondary_muscle_groups": [
+      "Glutes",
+      "Calves"
+    ],
+    "movement_pattern": "lunge",
+    "plane_of_motion": "sagittal",
+    "bilateral_or_unilateral": "unilateral",
+    "difficulty_level": "beginner",
+    "recommended_phase": "hypertrophy",
+    "equipment_required": "box and dumbbells",
+    "equipment_optional": "bodyweight",
+    "environment": "gym, home gym",
+    "setup_requirements": "Use box around knee height or lower.",
+    "recommended_sets": "2-4",
+    "recommended_reps_range": "8-15/leg",
+    "recommended_rest_time_seconds": "45-90",
+    "tempo_recommendation": "2-1-1-0",
+    "ideal_frequency_per_week": "1-3",
+    "compatible_superset_pairings": [
+      "Antagonist movement",
+      "Core stability drill"
+    ],
+    "progression_methods": [
+      "add reps",
+      "add load",
+      "tempo control",
+      "pause reps",
+      "range of motion expansion",
+      "unilateral upgrade"
+    ],
+    "regression_options": [
+      "Bodyweight regression",
+      "Machine variation"
+    ],
+    "progression_variations": [
+      "Tempo Step-Up",
+      "Paused Step-Up"
+    ],
+    "setup_instructions": "Prepare for Step-Up with controlled setup and stable alignment.",
+    "execution_steps": [
+      "Start in the prescribed setup for Step-Up.",
+      "Execute the working range with control and target-muscle focus.",
+      "Hold the hardest position briefly.",
+      "Return to start without losing posture."
+    ],
+    "breathing_pattern": "Inhale on the easier phase and exhale through effort.",
+    "bracing_cues": "Brace trunk before each rep and keep ribs stacked over pelvis.",
+    "range_of_motion_target": "Use the largest pain-free range while maintaining joint alignment.",
+    "common_mistakes": [
+      "Using momentum",
+      "Cutting range short",
+      "Losing neutral posture"
+    ],
+    "safety_notes": "Choose loads that preserve form; stop before technical breakdown.",
+    "spotting_notes_if_needed": "Spotter optional unless near-failure with free weights.",
+    "who_this_is_best_for": "Lifters who need a scalable option for this movement pattern.",
+    "when_to_use_in_workout": "accessory block",
+    "substitute_for_exercises": [
+      "Similar pattern alternative"
+    ],
+    "complementary_pairing_exercises": [
+      "Opposite pattern exercise",
+      "Low-fatigue core drill"
+    ],
+    "injury_considerations": "Use pain-free ROM and adjust grips or stance if joint irritation appears.",
+    "mobility_requirements": "Basic joint mobility for the pattern and control at end ranges.",
+    "primary_joint_action": "Prime mover action",
+    "secondary_joint_actions": [
+      "Joint stabilization"
+    ],
+    "stabilizers_used": [
+      "Core",
+      "Scapular stabilizers"
+    ],
+    "spine_loading_level": "moderate",
+    "fatigue_cost_rating": "medium",
+    "coordination_demand_rating": "medium",
+    "push_pull_legs_category": "legs",
+    "upper_lower_category": "lower",
+    "movement_slot": "accessory",
+    "compatible_training_days": [
+      "legs day",
+      "lower day",
+      "full body day"
+    ],
+    "beginner_priority_rank": "B",
+    "hypertrophy_priority_rank": "B",
+    "strength_priority_rank": "B",
+    "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
+    "feel_cue": "You should feel it mostly in your quads with support from glutes, calves.",
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+  }
+]
