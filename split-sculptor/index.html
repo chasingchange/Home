@@ -1488,9 +1488,10 @@ function buildSummary() {
         const sets = slot.sets || getSlotPrescription(slot.slot).sets;
         const reps = slot.reps || getSlotPrescription(slot.slot).reps;
         const missingClass = exerciseName ? '' : ' missing';
+        const targetMuscleLabel = slot.targetMuscle || 'Target not set';
         return `<li class="split-workout-item${missingClass}">
           <div class="split-workout-main">
-            <span><span class="split-workout-slot">${slot.slot}</span> · ${exerciseName || 'Not set'}</span>
+            <span><span class="split-workout-slot">${slot.slot} (${targetMuscleLabel})</span> · ${exerciseName || 'Not set'}</span>
             <span class="split-workout-prescription">${sets} sets × ${reps} reps</span>
           </div>
         </li>`;
