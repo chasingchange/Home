@@ -25,6 +25,27 @@
     Object.entries(accounts || {}).map(([email, account]) => [normalizeEmail(email), ensureAccountShape(account)]),
   );
 
+
+  const getUpdatedAtTime = (account) => {
+    const stamp = new Date(account?.updatedAt || account?.createdAt || 0).getTime();
+    return Number.isFinite(stamp) ? stamp : 0;
+  };
+
+  const mergeAccountStores = (...stores) => {
+    const merged = {};
+    stores
+      .filter((store) => store && typeof store === "object")
+      .forEach((store) => {
+        Object.entries(normalizeAccounts(store)).forEach(([email, account]) => {
+          const current = merged[email];
+          if (!current || getUpdatedAtTime(account) >= getUpdatedAtTime(current)) {
+            merged[email] = ensureAccountShape(account);
+          }
+        });
+      });
+    return merged;
+  };
+
   const readLocalAccounts = () => {
     try {
       return normalizeAccounts(JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}"));
@@ -158,6 +179,16 @@
     await syncAccountsToAllStores(initialAccounts);
     return cloneAccounts(accountsCache);
   })();
+
+
+  const refreshAccountsFromStores = async () => {
+    const remoteAccounts = await readRemoteAccounts();
+    const opfsAccounts = await readOpfsAccounts();
+    const localAccounts = readLocalAccounts();
+    const merged = mergeAccountStores(accountsCache || {}, remoteAccounts || {}, opfsAccounts || {}, localAccounts || {});
+    await syncAccountsToAllStores(merged);
+    return cloneAccounts(accountsCache);
+  };
 
   const whenReady = () => ready;
 
@@ -384,6 +415,7 @@
     getSyncConfig: readSyncConfig,
     setSyncConfig: saveSyncConfig,
     syncNow: () => pendingWrite.then(() => syncAccountsToAllStores(accountsCache || {})),
+    refreshFromStores: () => refreshAccountsFromStores(),
   };
 
   const renderPersistentAccountCard = () => {

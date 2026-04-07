@@ -1620,10 +1620,18 @@ function renderPastSplitSelectors() {
   controls.saveQuarter.innerHTML = saveQuarterOptions || `<option value="${current.quarter}">Q${current.quarter}</option>`;
 }
 
-async function loadSplitArchive() {
+async function loadSplitArchive(options = {}) {
+  const { refresh = false } = options;
   const sessionApi = window.ChasingChangeSession;
   if (!sessionApi?.whenReady) return;
   await sessionApi.whenReady();
+  if (refresh && typeof sessionApi.refreshFromStores === 'function') {
+    try {
+      await sessionApi.refreshFromStores();
+    } catch (error) {
+      console.warn('Unable to refresh account data from stores before loading split archive.', error);
+    }
+  }
   const data = sessionApi.getCalculatorData('splitSculptor') || {};
   splitArchive = data.quarterlySplits || {};
 }
@@ -1756,8 +1764,21 @@ buildPriorityRanker();
 buildFrequencyRule();
 buildGymRule();
 buildWorkoutBuilder();
-loadSplitArchive().finally(syncPastSplitsPanel);
+
+const refreshSplitArchiveUi = () => {
+  loadSplitArchive({ refresh: true }).finally(syncPastSplitsPanel);
+};
+
+refreshSplitArchiveUi();
 document.getElementById('equipment-search').addEventListener('input', renderEquipmentOptions);
+
+window.addEventListener('cc-session-changed', refreshSplitArchiveUi);
+window.addEventListener('focus', refreshSplitArchiveUi);
+window.addEventListener('storage', (event) => {
+  if (!event.key || event.key === 'ccAccounts' || event.key === 'ccSession') {
+    refreshSplitArchiveUi();
+  }
+});
 
 document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -1876,41 +1897,130 @@ function getActiveSummaryPanel() {
   return null;
 }
 
+function buildExportMarkup(panelHtml) {
+  const logoUrl = new URL('../Logo.png', window.location.href).href;
+  return `
+    <div class="export-shell">
+      <div class="export-brand">
+        <img src="${logoUrl}" alt="Chasing Change logo" class="export-logo" />
+        <div class="export-brand-copy">
+          <h1>Chasing Change</h1>
+          <p>Split Sculptor</p>
+        </div>
+      </div>
+      <div class="export-content">${panelHtml}</div>
+    </div>
+  `;
+}
+
+function getExportStyles() {
+  return `
+    body { font-family: 'Muli', Arial, sans-serif; background: #f5f5f7; color: #071f35; margin: 0; padding: 24px; }
+    .export-shell { max-width: 980px; margin: 0 auto; }
+    .export-brand { display: flex; gap: 12px; align-items: center; border: 1px solid rgba(7,31,53,0.14); background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+    .export-logo { width: 58px; height: 58px; border-radius: 12px; border: 1px solid rgba(7,31,53,0.14); }
+    .export-brand-copy h1 { margin: 0; font-family: 'Museo Moderno', sans-serif; font-size: 1.6rem; color: #071f35; line-height: 1.1; }
+    .export-brand-copy p { margin: 4px 0 0; font-family: 'Raleway', sans-serif; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; font-weight: 700; }
+    .summary-card,.week { background: #fff; border: 1px solid rgba(7,31,53,0.14); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .sum-row { display:flex; justify-content:space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid rgba(7,31,53,0.08); }
+    .sum-row:last-child { border-bottom: 0; }
+    .sum-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; }
+    .sum-val { font-weight: 700; text-align: right; }
+    .week h3 { margin-top: 0; font-family: 'Raleway', sans-serif; }
+    .week ul { list-style: none; padding: 0; }
+    .week li { border: 1px solid rgba(7,31,53,0.14); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+    button { display: none !important; }
+  `;
+}
+
+async function createExportCanvas() {
+  const panel = getActiveSummaryPanel();
+  if (!panel || typeof window.html2canvas !== 'function') return null;
+
+  const exportNode = document.createElement('div');
+  exportNode.style.position = 'fixed';
+  exportNode.style.left = '-20000px';
+  exportNode.style.top = '0';
+  exportNode.style.width = '980px';
+  exportNode.style.background = '#f5f5f7';
+  exportNode.style.padding = '24px';
+  exportNode.style.zIndex = '-1';
+  exportNode.innerHTML = `<style>${getExportStyles()}</style>${buildExportMarkup(panel.innerHTML)}`;
+  document.body.appendChild(exportNode);
+
+  try {
+    return await window.html2canvas(exportNode, { backgroundColor: '#f5f5f7', scale: 2, useCORS: true });
+  } finally {
+    exportNode.remove();
+  }
+}
+
 document.getElementById('print-summary-btn').addEventListener('click', () => {
-  const activePanel = getActiveSummaryPanel();
-  if (!activePanel) return;
-  const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1200,height=900');
-  if (!printWindow) return;
-  printWindow.document.write(`
+  const panel = getActiveSummaryPanel();
+  if (!panel) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc || !iframe.contentWindow) {
+    iframe.remove();
+    return;
+  }
+
+  doc.open();
+  doc.write(`
     <html>
       <head>
         <title>Split Sculptor Print</title>
-        <style>
-          body { font-family: 'Muli', Arial, sans-serif; background: #f5f5f7; color: #071f35; padding: 24px; }
-          .summary-card,.week { background: #fff; border: 1px solid rgba(7,31,53,0.14); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-          .sum-row { display:flex; justify-content:space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid rgba(7,31,53,0.08); }
-          .sum-row:last-child { border-bottom: 0; }
-          .sum-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5d6c79; }
-          .sum-val { font-weight: 700; text-align: right; }
-          .week h3 { margin-top: 0; }
-          .week ul { list-style: none; padding: 0; }
-          .week li { border: 1px solid rgba(7,31,53,0.14); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
-          button { display: none !important; }
-        </style>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+        <style>${getExportStyles()} @page { margin: 12mm; }</style>
       </head>
-      <body>${activePanel.innerHTML}</body>
+      <body>${buildExportMarkup(panel.innerHTML)}</body>
     </html>
   `);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+  doc.close();
+
+  const triggerPrint = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => iframe.remove(), 1200);
+  };
+
+  const images = doc.images ? Array.from(doc.images) : [];
+  if (!images.length) {
+    setTimeout(triggerPrint, 200);
+    return;
+  }
+
+  let pending = images.length;
+  const release = () => {
+    pending -= 1;
+    if (pending <= 0) setTimeout(triggerPrint, 200);
+  };
+  images.forEach((img) => {
+    if (img.complete) {
+      release();
+      return;
+    }
+    img.addEventListener('load', release, { once: true });
+    img.addEventListener('error', release, { once: true });
+  });
 });
 
 document.getElementById('save-png-btn').addEventListener('click', async () => {
-  const panel = getActiveSummaryPanel();
-  if (!panel || typeof window.html2canvas !== 'function') return;
-  const canvas = await window.html2canvas(panel, { backgroundColor: '#f5f5f7', scale: 2 });
-  const filename = 'split-sculptor-summary.png';
+  const canvas = await createExportCanvas();
+  if (!canvas) return;
+
+  const filename = 'chasing-change-split-sculptor-summary.png';
   const dataUrl = canvas.toDataURL('image/png');
 
   if (navigator.canShare && navigator.share) {
@@ -1919,7 +2029,7 @@ document.getElementById('save-png-btn').addEventListener('click', async () => {
       if (blob) {
         const file = new File([blob], filename, { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Split Sculptor Summary' });
+          await navigator.share({ files: [file], title: 'Chasing Change - Split Sculptor Summary' });
           return;
         }
       }
