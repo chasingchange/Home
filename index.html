@@ -114,9 +114,161 @@
           </div>
         </details>
       </section>
+
+
+      <section class="mt-6 w-full rounded-3xl bg-cc-panel/95 p-5 shadow-soft ring-1 ring-black/10 sm:p-6" aria-labelledby="recovery-heading">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Performance Support</p>
+            <h2 id="recovery-heading" class="font-heading text-2xl font-extrabold">Recovery</h2>
+          </div>
+          <p class="text-sm text-cc-text/70">Built for runners, lifters, yoga, and hybrid training.</p>
+        </div>
+        <p class="mt-3 max-w-3xl text-sm text-cc-text/75 sm:text-base">
+          Tools that support better training, better movement, and better recovery.
+        </p>
+
+        <div id="recoveryCategories" class="mt-5 space-y-4"></div>
+      </section>
     </main>
 
     <script>
+      const RECOVERY_IMAGE_FALLBACK =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f5f5f7'/%3E%3Crect x='24' y='24' width='552' height='352' rx='24' fill='%23ffffff' stroke='%23071f35' stroke-opacity='0.12'/%3E%3Ctext x='300' y='195' font-family='Raleway%2C%20sans-serif' font-size='28' font-weight='700' text-anchor='middle' fill='%23071f35'%3EChasing Change%3C/text%3E%3Ctext x='300' y='230' font-family='Muli%2C%20sans-serif' font-size='20' text-anchor='middle' fill='%23071f35' fill-opacity='0.74'%3ERecovery Pick%3C/text%3E%3C/svg%3E";
+
+      const recoveryRecommendations = [
+        {
+          category: "Shoes",
+          items: [
+            {
+              name: "FuelCell SuperComp Trainer v3",
+              label: "Long Run Support",
+              description:
+                "Ideal for longer training efforts and cushioned mileage when you need to protect your legs while still moving with intent.",
+              recommendedFor: "Recovery runs, long aerobic work",
+              url: "https://www.newbalance.com/pd/fuelcell-supercomp-trainer-v3/MRCXV4-50691.html",
+              image: "https://nb.scene7.com/is/image/NB/mrcxlf4_nb_02_i?$pdpflexf2$&wid=1320&hei=1320",
+              alt: "FuelCell SuperComp Trainer v3 running shoe in profile view",
+            },
+            {
+              name: "FuelCell Rebel V5",
+              label: "Uptempo Option",
+              description:
+                "Lightweight option for faster sessions or uptempo work when you want speed without beating up your stride.",
+              recommendedFor: "Tempo days, progression runs",
+              url: "https://www.newbalance.com/pd/fuelcell-rebel-v5/MFCXLY5-D-10.html",
+              image: "https://nb.scene7.com/is/image/NB/mfcxlh5_nb_02_i?$pdpflexf2$&wid=1320&hei=1320",
+              alt: "FuelCell Rebel V5 running shoe side view",
+            },
+            {
+              name: "Hoka Clifton 10",
+              label: "Daily Trainer",
+              description:
+                "Dependable daily trainer with comfort and support that helps keep weekly volume consistent across mixed training blocks.",
+              recommendedFor: "Daily mileage, easy days",
+              url: "https://www.hoka.com/en/us/mens-everyday-running-gear/clifton-10/197634750774.html",
+              image: "https://cdn.media.amplience.net/i/hoka/1162030-WWH_1",
+              alt: "Hoka Clifton 10 shoe in white colorway",
+            },
+          ],
+        },
+        {
+          category: "Race Day",
+          items: [
+            {
+              name: "Back Bay Slim Running Belt",
+              label: "Race Day",
+              description:
+                "Carries essentials on race day without adding bulk, bounce, or distraction.",
+              recommendedFor: "Keys, gels, and phone carry",
+              url: "https://www.amazon.com/dp/B088BDJN5M",
+              image: "https://m.media-amazon.com/images/I/71jL7zlXx2L._AC_SL1500_.jpg",
+              alt: "Slim black running belt with zip pocket",
+            },
+          ],
+        },
+        {
+          category: "Gym",
+          items: [
+            {
+              name: "Everyday Holdall Medium",
+              label: "Gym Organization",
+              description:
+                "Keeps gym gear organized and ready to go so you reduce friction and train on schedule.",
+              recommendedFor: "Daily lifting sessions",
+              url: "https://www.gymshark.com/products/gymshark-medium-everyday-holdall-black-ss23",
+              image: "https://cdn.shopify.com/s/files/1/1633/7705/files/EverydayHoldallBlackI3A2A-BB2J-0470_384x.jpg",
+              alt: "Gymshark Everyday Holdall Medium duffel bag",
+            },
+          ],
+        },
+        {
+          category: "At Home Gym",
+          items: [
+            {
+              name: "Ab Roller Wheel",
+              label: "Core Control",
+              description:
+                "Simple core tool for trunk strength and control that carries over to running posture and lifting stability.",
+              recommendedFor: "Core strength and anti-extension work",
+              url: "https://www.amazon.com/Abiarst-Equipment-Abdominal-Strength-Accessories/dp/B0CMP6Z2JV",
+              image: "https://m.media-amazon.com/images/I/61pO2gaP8aL._AC_SL1500_.jpg",
+              alt: "Ab roller wheel with handles for core training",
+            },
+            {
+              name: "Adjustable Kettlebell",
+              label: "Space-Saving Strength",
+              description:
+                "Versatile home strength tool that supports progressive overload without needing a full rack setup.",
+              recommendedFor: "Home strength circuits",
+              url: "https://www.amazon.com/Yes4All-Adjustable-Kettlebell-Space-Saving-Strength/dp/B0855H4ZCR",
+              image: "https://m.media-amazon.com/images/I/71+k8Xp8eSL._AC_SL1500_.jpg",
+              alt: "Adjustable kettlebell used for home workouts",
+            },
+          ],
+        },
+        {
+          category: "Yoga",
+          items: [
+            {
+              name: "Gaim Yoga Mat",
+              label: "Mobility Base",
+              description:
+                "Supports mobility, stretching, and floor work with enough comfort for regular recovery sessions.",
+              recommendedFor: "Daily reset and flexibility work",
+              url: "https://www.amazon.com/dp/B07W62GJFL",
+              image: "https://m.media-amazon.com/images/I/81otobfG35L._AC_SL1500_.jpg",
+              alt: "Gaiam yoga mat rolled out on studio floor",
+            },
+          ],
+        },
+        {
+          category: "Recovery",
+          items: [
+            {
+              name: "Slant Board | For Shin Splints",
+              label: "Mobility + Tissue Prep",
+              description:
+                "Useful for calf work, ankle mobility, and shin-splint prevention work to support better durability.",
+              recommendedFor: "Lower-leg prep before runs",
+              url: "https://www.amazon.com/XCMVCN-Calf-Stretching-Adjustable-Equipment/dp/B0FGXXSL4J",
+              image: "https://m.media-amazon.com/images/I/71XONh2xg0L._AC_SL1500_.jpg",
+              alt: "Adjustable slant board for calf stretching and ankle mobility",
+            },
+            {
+              name: "Diclofenac Gel for Knee and Joint Pain while running",
+              label: "Topical Support",
+              description:
+                "Topical support option for knee and joint discomfort from higher training loads when managed with smart programming.",
+              recommendedFor: "Deload weeks and high-volume blocks",
+              url: "https://www.amazon.com/Amazon-Basic-Care-Arthritis-Diclofenac/dp/B08ZF5LVWQ",
+              image: "https://m.media-amazon.com/images/I/71x6vQKjFdL._AC_SL1500_.jpg",
+              alt: "Tube of diclofenac gel for temporary joint discomfort support",
+            },
+          ],
+        },
+      ];
+
       // ==============================
       // EDITABLE CONFIG AREA
       // ==============================
@@ -315,6 +467,7 @@
       const coreFilterTabs = document.getElementById("coreFilterTabs");
       const coreCardsGrid = document.getElementById("coreCardsGrid");
       const noCoreToolsMessage = document.getElementById("noCoreToolsMessage");
+      const recoveryCategoriesEl = document.getElementById("recoveryCategories");
 
       function normalizeText(value = "") {
         return value
@@ -514,6 +667,47 @@
         coreCardsGrid.innerHTML = coreMatches.map(coreCardTemplate).join("");
       }
 
+      function getRecoveryCard(item) {
+        const fallbackAlt = item.alt || `${item.name} product recommendation`;
+        return `
+          <article class="group rounded-2xl bg-white/95 p-3 shadow-soft ring-1 ring-black/10 transition hover:-translate-y-0.5" aria-label="${item.name}">
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="block">
+              <div class="overflow-hidden rounded-xl bg-cc-bg ring-1 ring-black/5">
+                <img
+                  src="${item.image || RECOVERY_IMAGE_FALLBACK}"
+                  alt="${fallbackAlt}"
+                  loading="lazy"
+                  class="h-44 w-full object-cover sm:h-40"
+                  onerror="this.onerror=null;this.src='${RECOVERY_IMAGE_FALLBACK}';"
+                />
+              </div>
+            </a>
+            <div class="mt-3">
+              <p class="inline-flex rounded-full bg-cc-text/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-cc-text/70">${item.label}</p>
+              <h4 class="mt-2 font-heading text-lg font-extrabold leading-tight text-cc-text">${item.name}</h4>
+              <p class="mt-2 text-sm text-cc-text/75">${item.description}</p>
+              <p class="mt-2 text-xs font-semibold text-cc-text/65">Recommended for: ${item.recommendedFor}</p>
+            </div>
+          </article>
+        `;
+      }
+
+      function renderRecoverySection() {
+        if (!recoveryCategoriesEl) return;
+        recoveryCategoriesEl.innerHTML = recoveryRecommendations
+          .map(
+            (category) => `
+              <section class="rounded-2xl bg-cc-bg/65 p-3 ring-1 ring-black/5 sm:p-4" aria-label="${category.category}">
+                <h3 class="font-heading text-lg font-extrabold text-cc-text">${category.category}</h3>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  ${category.items.map((item) => getRecoveryCard(item)).join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("");
+      }
+
       searchInput.addEventListener("input", (event) => {
         renderResults(event.target.value);
       });
@@ -538,6 +732,7 @@
       renderSuggestions();
       renderCoreTabs("Body");
       renderCoreCards("Body");
+      renderRecoverySection();
     </script>
   </body>
 </html>
