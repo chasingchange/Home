@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gagging the Critic | Chasing Change</title>
+  <meta
+    name="description"
+    content="A guided five-step reflection worksheet from Chasing Change to interrupt negative self-talk and reframe your perspective with clarity."
+  />
+
+  <!-- Tailwind (No build step) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Brand Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@500;700;800&family=Raleway:wght@500;600;700;800&family=Muli:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* --------------------
+      EDITABLE BRAND TOKENS
+      - page colors
+      - core font assignments
+    --------------------- */
+    :root {
+      --cc-bg: #f5f5f7;
+      --cc-text: #071f35;
+      --cc-accent: #77d770;
+      --cc-card: #ffffff;
+      --cc-muted: #516173;
+      --cc-border: #d9dfe7;
+    }
+
+    body {
+      background: var(--cc-bg);
+      color: var(--cc-text);
+      font-family: "Muli", "Mulish", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .font-title { font-family: "MuseoModerno", system-ui, sans-serif; }
+    .font-heading { font-family: "Raleway", "Muli", sans-serif; }
+
+    .focus-ring:focus-visible {
+      outline: 2px solid var(--cc-accent);
+      outline-offset: 2px;
+    }
+
+    .segment-input:checked + .segment-label {
+      background: #eefbea;
+      border-color: #4cb548;
+      color: #0d3b1b;
+      box-shadow: 0 2px 10px rgba(76, 181, 72, 0.15);
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      .print-card {
+        box-shadow: none !important;
+        border: 1px solid #d9dfe7 !important;
+      }
+      textarea {
+        border-color: #c8ced8 !important;
+        min-height: 110px !important;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    <!-- Header / Intro -->
+    <header class="mb-8 sm:mb-10">
+      <p class="text-xs uppercase tracking-[0.22em] font-semibold text-slate-500 mb-3">Chasing Change Tool</p>
+
+      <!-- EDITABLE: Page title + subtitle -->
+      <h1 class="font-title text-4xl sm:text-5xl md:text-6xl leading-tight text-[var(--cc-text)] mb-3">
+        Gagging the Critic
+      </h1>
+      <p class="font-heading text-lg sm:text-xl font-semibold text-slate-700 mb-4">
+        How to quiet the voice in your head long enough to think clearly.
+      </p>
+
+      <!-- EDITABLE: Intro copy -->
+      <p class="max-w-3xl text-base sm:text-lg leading-relaxed text-[var(--cc-muted)]">
+        When your brain starts spiraling, the goal is not to win an argument with yourself.
+        The goal is to slow the thought down, separate fact from feeling, and respond with grounded clarity.
+      </p>
+
+      <p class="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--cc-border)] bg-white/80 px-4 py-2 text-sm text-slate-600">
+        <span class="text-[var(--cc-accent)]">●</span>
+        Ground yourself: breathe, slow down, answer honestly, don’t rush this page.
+      </p>
+    </header>
+
+    <!-- Reflection Tool -->
+    <section aria-labelledby="tool-heading" class="space-y-5">
+      <h2 id="tool-heading" class="font-heading text-2xl sm:text-3xl font-bold mb-3">5-Step Reflection</h2>
+
+      <!-- Step 1 -->
+      <article class="print-card rounded-2xl bg-[var(--cc-card)] shadow-sm border border-[var(--cc-border)] p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Step 1</p>
+        <label for="negativeThought" class="font-heading block text-xl font-bold mb-2">What is the negative thought?</label>
+        <p class="text-sm text-slate-600 mb-3">Write the thought exactly how it sounds in your head. Don’t clean it up.</p>
+        <textarea id="negativeThought" rows="4" class="focus-ring w-full rounded-xl border border-[var(--cc-border)] px-4 py-3 bg-white resize-y" placeholder="Example: I'm going to mess this up and prove I'm not good enough."></textarea>
+      </article>
+
+      <!-- Step 2 -->
+      <article class="print-card rounded-2xl bg-[var(--cc-card)] shadow-sm border border-[var(--cc-border)] p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Step 2</p>
+        <p id="factFeelingLabel" class="font-heading block text-xl font-bold mb-2">Are you basing the thought on fact or feeling?</p>
+        <p class="text-sm text-slate-600 mb-4">Sometimes a thought feels true before it is true. Name what is actually happening.</p>
+
+        <fieldset aria-labelledby="factFeelingLabel" class="mb-4">
+          <legend class="sr-only">Fact or feeling</legend>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <input class="segment-input sr-only" type="radio" name="factFeeling" id="fact" value="Mostly fact" />
+              <label for="fact" class="segment-label focus-ring block cursor-pointer rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-center font-semibold transition">
+                Mostly fact
+              </label>
+            </div>
+            <div>
+              <input class="segment-input sr-only" type="radio" name="factFeeling" id="feeling" value="Mostly feeling" />
+              <label for="feeling" class="segment-label focus-ring block cursor-pointer rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-center font-semibold transition">
+                Mostly feeling
+              </label>
+            </div>
+            <div>
+              <input class="segment-input sr-only" type="radio" name="factFeeling" id="mix" value="A mix of both" />
+              <label for="mix" class="segment-label focus-ring block cursor-pointer rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-center font-semibold transition">
+                A mix of both
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <label for="evidence" class="block text-sm font-semibold text-slate-700 mb-2">What evidence do you actually have? <span class="text-slate-500 font-normal">(optional)</span></label>
+        <textarea id="evidence" rows="3" class="focus-ring w-full rounded-xl border border-[var(--cc-border)] px-4 py-3 bg-white resize-y" placeholder="Facts, patterns, context, or proof that support your current belief."></textarea>
+      </article>
+
+      <!-- Step 3 -->
+      <article class="print-card rounded-2xl bg-[var(--cc-card)] shadow-sm border border-[var(--cc-border)] p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Step 3</p>
+        <label for="worstCase" class="font-heading block text-xl font-bold mb-2">If this worry comes true, what is the worst that could happen?</label>
+        <p class="text-sm text-slate-600 mb-3">Let the fear speak plainly. Don’t dramatize it more than necessary, but don’t avoid it either.</p>
+        <textarea id="worstCase" rows="4" class="focus-ring w-full rounded-xl border border-[var(--cc-border)] px-4 py-3 bg-white resize-y" placeholder="Name the feared outcome directly."></textarea>
+      </article>
+
+      <!-- Step 4 -->
+      <article class="print-card rounded-2xl bg-[var(--cc-card)] shadow-sm border border-[var(--cc-border)] p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Step 4</p>
+        <label for="likelyCase" class="font-heading block text-xl font-bold mb-2">If this worry comes true, what is likely to happen?</label>
+        <p class="text-sm text-slate-600 mb-3">Now answer like an adult, not a panic spiral. What is the more realistic outcome?</p>
+        <textarea id="likelyCase" rows="4" class="focus-ring w-full rounded-xl border border-[var(--cc-border)] px-4 py-3 bg-white resize-y" placeholder="What’s the probable reality, including what you could handle?"></textarea>
+      </article>
+
+      <!-- Step 5 -->
+      <article class="print-card rounded-2xl bg-[var(--cc-card)] shadow-sm border border-[var(--cc-border)] p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Step 5</p>
+        <label for="wiserResponse" class="font-heading block text-xl font-bold mb-2">What advice would you give to someone in this situation?</label>
+        <p class="text-sm text-slate-600 mb-3">Step outside yourself. If a friend came to you with this exact thought, what would you say?</p>
+        <textarea id="wiserResponse" rows="4" class="focus-ring w-full rounded-xl border border-[var(--cc-border)] px-4 py-3 bg-white resize-y" placeholder="Write the advice you’d trust if someone you care about asked for it."></textarea>
+      </article>
+    </section>
+
+    <!-- Summary -->
+    <section aria-labelledby="summary-heading" class="mt-8 sm:mt-10">
+      <div class="print-card rounded-2xl border border-[var(--cc-border)] bg-white shadow-sm p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 id="summary-heading" class="font-heading text-2xl sm:text-3xl font-bold">Perspective Shift</h2>
+          <button id="generateSummaryBtn" class="no-print focus-ring rounded-xl bg-[var(--cc-text)] text-white px-4 py-2.5 text-sm font-semibold hover:opacity-95 transition">
+            See My Perspective Shift
+          </button>
+        </div>
+
+        <p id="summaryNudge" class="text-sm text-slate-600 mb-4">Start with Step 1 and Step 4 for the fastest clarity reset.</p>
+
+        <dl id="summaryContent" class="space-y-4">
+          <div>
+            <dt class="font-heading font-bold text-sm uppercase tracking-[0.12em] text-slate-500">The Thought</dt>
+            <dd id="summaryThought" class="mt-1 text-base leading-relaxed"></dd>
+          </div>
+          <div>
+            <dt class="font-heading font-bold text-sm uppercase tracking-[0.12em] text-slate-500">What’s Real</dt>
+            <dd id="summaryReal" class="mt-1 text-base leading-relaxed"></dd>
+          </div>
+          <div>
+            <dt class="font-heading font-bold text-sm uppercase tracking-[0.12em] text-slate-500">Worst Case</dt>
+            <dd id="summaryWorst" class="mt-1 text-base leading-relaxed"></dd>
+          </div>
+          <div>
+            <dt class="font-heading font-bold text-sm uppercase tracking-[0.12em] text-slate-500">Likely Case</dt>
+            <dd id="summaryLikely" class="mt-1 text-base leading-relaxed"></dd>
+          </div>
+          <div>
+            <dt class="font-heading font-bold text-sm uppercase tracking-[0.12em] text-slate-500">Wiser Response</dt>
+            <dd id="summaryWise" class="mt-1 text-base leading-relaxed"></dd>
+          </div>
+        </dl>
+
+        <p id="closingLine" class="mt-5 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm sm:text-base text-emerald-900"></p>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="no-print mt-6 flex flex-col sm:flex-row gap-3">
+      <button id="copyBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Copy Summary</button>
+      <button id="printBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Print / Save PDF</button>
+      <button id="resetBtn" class="focus-ring rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 hover:bg-rose-100 transition">Reset</button>
+    </section>
+
+    <footer class="mt-10 pt-4 border-t border-[var(--cc-border)] text-sm text-slate-600 space-y-3">
+      <!-- EDITABLE: Back link URL -->
+      <a href="/" class="no-print inline-block underline underline-offset-4 hover:text-[var(--cc-text)]">Explore More Chasing Change Tools</a>
+      <p>This tool is for reflection and perspective, not professional mental health care.</p>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    /* --------------------
+      EDITABLE SETTINGS
+      - localStorage key
+      - closing line variants
+    --------------------- */
+    const STORAGE_KEY = "cc_gagging_critic_v1";
+    const CLOSING_LINES = [
+      "Your first thought is rarely your best thought. Clarity usually shows up after you slow down.",
+      "When the panic voice gets quieter, your wiser voice gets louder.",
+      "You don’t need perfect certainty to move well. You just need a clearer next thought.",
+      "Pressure talks fast. Perspective talks true. Keep choosing perspective."
+    ];
+
+    const fields = {
+      negativeThought: document.getElementById("negativeThought"),
+      evidence: document.getElementById("evidence"),
+      worstCase: document.getElementById("worstCase"),
+      likelyCase: document.getElementById("likelyCase"),
+      wiserResponse: document.getElementById("wiserResponse")
+    };
+
+    const summaryEls = {
+      thought: document.getElementById("summaryThought"),
+      real: document.getElementById("summaryReal"),
+      worst: document.getElementById("summaryWorst"),
+      likely: document.getElementById("summaryLikely"),
+      wise: document.getElementById("summaryWise"),
+      nudge: document.getElementById("summaryNudge"),
+      closingLine: document.getElementById("closingLine")
+    };
+
+    const buttons = {
+      generate: document.getElementById("generateSummaryBtn"),
+      copy: document.getElementById("copyBtn"),
+      print: document.getElementById("printBtn"),
+      reset: document.getElementById("resetBtn")
+    };
+
+    function getFactFeelingValue() {
+      const selected = document.querySelector('input[name="factFeeling"]:checked');
+      return selected ? selected.value : "";
+    }
+
+    function getState() {
+      return {
+        negativeThought: fields.negativeThought.value.trim(),
+        factFeeling: getFactFeelingValue(),
+        evidence: fields.evidence.value.trim(),
+        worstCase: fields.worstCase.value.trim(),
+        likelyCase: fields.likelyCase.value.trim(),
+        wiserResponse: fields.wiserResponse.value.trim()
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+    }
+
+    function loadSavedState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      try {
+        const data = JSON.parse(raw);
+        fields.negativeThought.value = data.negativeThought || "";
+        fields.evidence.value = data.evidence || "";
+        fields.worstCase.value = data.worstCase || "";
+        fields.likelyCase.value = data.likelyCase || "";
+        fields.wiserResponse.value = data.wiserResponse || "";
+
+        if (data.factFeeling) {
+          const option = document.querySelector(`input[name="factFeeling"][value="${data.factFeeling}"]`);
+          if (option) option.checked = true;
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    function renderValue(el, value) {
+      el.textContent = value || "";
+      el.classList.toggle("text-slate-400", !value);
+      el.classList.toggle("italic", !value);
+
+      if (!value) {
+        el.textContent = "Add your response above to shape this section.";
+      }
+    }
+
+    function buildWhatsRealText(state) {
+      if (!state.factFeeling && !state.evidence) return "";
+      if (state.factFeeling && state.evidence) {
+        return `${state.factFeeling}. Evidence noted: ${state.evidence}`;
+      }
+      if (state.factFeeling) return state.factFeeling;
+      return `Evidence noted: ${state.evidence}`;
+    }
+
+    function getCompletionScore(state) {
+      const keys = ["negativeThought", "factFeeling", "worstCase", "likelyCase", "wiserResponse"];
+      return keys.reduce((count, key) => (state[key] ? count + 1 : count), 0);
+    }
+
+    function selectClosingLine(state) {
+      const seed = `${state.negativeThought}${state.likelyCase}${state.wiserResponse}`.length;
+      return CLOSING_LINES[seed % CLOSING_LINES.length];
+    }
+
+    function updateSummary() {
+      const state = getState();
+      const completion = getCompletionScore(state);
+
+      renderValue(summaryEls.thought, state.negativeThought);
+      renderValue(summaryEls.real, buildWhatsRealText(state));
+      renderValue(summaryEls.worst, state.worstCase);
+      renderValue(summaryEls.likely, state.likelyCase);
+      renderValue(summaryEls.wise, state.wiserResponse);
+
+      if (completion === 0) {
+        summaryEls.nudge.textContent = "Start with Step 1 and Step 4 for the fastest clarity reset.";
+      } else if (completion < 3) {
+        summaryEls.nudge.textContent = "Good start. Keep going—your perspective gets clearer as you complete more steps.";
+      } else {
+        summaryEls.nudge.textContent = "Solid reflection. Read your summary once, then choose one practical next action.";
+      }
+
+      summaryEls.closingLine.textContent = selectClosingLine(state);
+    }
+
+    function buildCopyText() {
+      const state = getState();
+      const perspectiveShift = [
+        state.wiserResponse || state.likelyCase,
+        state.wiserResponse && state.likelyCase ? `Likely outcome: ${state.likelyCase}` : ""
+      ].filter(Boolean).join("\n");
+
+      return [
+        "Gagging the Critic",
+        "",
+        "Negative Thought:",
+        state.negativeThought || "",
+        "",
+        "Fact or Feeling:",
+        state.factFeeling || "",
+        "",
+        "Evidence:",
+        state.evidence || "",
+        "",
+        "Worst Case:",
+        state.worstCase || "",
+        "",
+        "Likely Case:",
+        state.likelyCase || "",
+        "",
+        "Advice I’d Give Someone Else:",
+        state.wiserResponse || "",
+        "",
+        "Perspective Shift:",
+        perspectiveShift || "",
+        "",
+        `Closing Line: ${selectClosingLine(state)}`
+      ].join("\n");
+    }
+
+    async function copySummary() {
+      const text = buildCopyText();
+      try {
+        await navigator.clipboard.writeText(text);
+        buttons.copy.textContent = "Copied";
+        setTimeout(() => (buttons.copy.textContent = "Copy Summary"), 1500);
+      } catch {
+        buttons.copy.textContent = "Copy failed";
+        setTimeout(() => (buttons.copy.textContent = "Copy Summary"), 1800);
+      }
+    }
+
+    function resetTool() {
+      Object.values(fields).forEach((field) => {
+        field.value = "";
+      });
+      document.querySelectorAll('input[name="factFeeling"]').forEach((input) => {
+        input.checked = false;
+      });
+      localStorage.removeItem(STORAGE_KEY);
+      updateSummary();
+    }
+
+    function printPage() {
+      window.print();
+    }
+
+    function bindEvents() {
+      Object.values(fields).forEach((field) => {
+        field.addEventListener("input", () => {
+          saveState();
+          updateSummary();
+        });
+      });
+
+      document.querySelectorAll('input[name="factFeeling"]').forEach((radio) => {
+        radio.addEventListener("change", () => {
+          saveState();
+          updateSummary();
+        });
+      });
+
+      buttons.generate.addEventListener("click", () => {
+        updateSummary();
+        document.getElementById("summary-heading").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      buttons.copy.addEventListener("click", copySummary);
+      buttons.print.addEventListener("click", printPage);
+      buttons.reset.addEventListener("click", resetTool);
+    }
+
+    function init() {
+      loadSavedState();
+      bindEvents();
+      updateSummary();
+    }
+
+    init();
+  </script>
+</body>
+</html>
