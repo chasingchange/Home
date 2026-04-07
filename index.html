@@ -95,21 +95,23 @@
       </section>
 
       <section class="mt-12 w-full" aria-labelledby="explore-tools-heading">
-        <div class="rounded-3xl bg-cc-panel/90 p-5 shadow-soft ring-1 ring-black/10 sm:p-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <details class="group rounded-3xl bg-cc-panel/90 p-5 shadow-soft ring-1 ring-black/10 sm:p-6">
+          <summary class="flex cursor-pointer list-none flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Tool Database</p>
               <h2 id="explore-tools-heading" class="font-heading text-2xl font-extrabold">Explore All Tools</h2>
             </div>
-            <p class="text-sm text-cc-text/70">Browse by core if you don’t want to search first.</p>
-          </div>
+            <p class="text-sm text-cc-text/70">Tap to expand and browse by core.</p>
+          </summary>
 
-          <div id="coreFilterTabs" class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Browse tools by core"></div>
-          <div id="coreCardsGrid" class="mt-5 grid gap-3 sm:grid-cols-2"></div>
-          <p id="noCoreToolsMessage" class="mt-5 hidden rounded-xl border border-dashed border-black/20 bg-white/75 p-4 text-sm text-cc-text/75">
-            No tools are published for this core yet. Try another core to explore what is live.
-          </p>
-        </div>
+          <div class="mt-4 border-t border-black/10 pt-4">
+            <div id="coreFilterTabs" class="flex flex-wrap gap-2" role="tablist" aria-label="Browse tools by core"></div>
+            <div id="coreCardsGrid" class="mt-5 grid gap-3 sm:grid-cols-2"></div>
+            <p id="noCoreToolsMessage" class="mt-5 hidden rounded-xl border border-dashed border-black/20 bg-white/75 p-4 text-sm text-cc-text/75">
+              No tools are published for this core yet. Try another core to explore what is live.
+            </p>
+          </div>
+        </details>
       </section>
     </main>
 
@@ -189,8 +191,8 @@
           type: "Framework",
           core: "Mind",
           description: "Challenge self-sabotage loops and build a stronger inner operating voice.",
-          url: "/field-guide/gagging-the-critic.html",
-          status: "coming_soon",
+          url: "./gagging-the-critic/index.html",
+          status: "live",
           tags: ["mind", "confidence"],
           keywords: ["self doubt", "inner critic", "peace", "anxiety"],
           triggers: ["im chasing peace", "i feel stuck"],
@@ -266,20 +268,6 @@
           triggers: ["i need help", "im stuck"],
           featured: false,
           priority: 6,
-        },
-        {
-          id: "start-line-homepage",
-          title: "Start Line | Chasing Change Homepage",
-          type: "Homepage",
-          core: "Life",
-          description: "Browse the full site experience with offers, tools, and testimonials.",
-          url: START_LINE_URL,
-          status: "live",
-          tags: ["home", "start"],
-          keywords: ["homepage", "main site", "start line"],
-          triggers: ["show everything", "browse site"],
-          featured: false,
-          priority: 5,
         },
       ];
 
