@@ -1209,16 +1209,34 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
     .map((step) => step.trim())
     .filter(Boolean)
     .slice(0, 3);
-  const beginnerGuide = [
-    `Setup: set the equipment first, then stand or sit in a stable position with your core tight and feet planted.`,
-    `Execution: move slowly through the full range of motion, then stop the set the moment your form breaks down.`,
-    `Breathing: inhale before the hard part, exhale while you push or pull, and keep your ribs down instead of over-arching.`,
-    `Coaching cue: keep tension on your ${primary.toLowerCase()} muscles so momentum does not take over.`,
-    `Safety check: choose a weight that lets you finish every rep with control before adding load next session.`
+  const beginnerGuideByTopic = [
+    { topic: 'setup', text: `Setup: set the equipment first, then stand or sit in a stable position with your core tight and feet planted.` },
+    { topic: 'execution', text: `Execution: move slowly through the full range of motion, then stop the set the moment your form breaks down.` },
+    { topic: 'breathing', text: `Breathing: inhale before the hard part, exhale while you push or pull, and keep your ribs down instead of over-arching.` },
+    { topic: 'coaching', text: `Coaching cue: keep tension on your ${primary.toLowerCase()} muscles so momentum does not take over.` },
+    { topic: 'safety', text: `Safety check: choose a weight that lets you finish every rep with control before adding load next session.` }
   ];
+  const topicKeywords = {
+    setup: ['set up', 'setup', 'stance', 'position', 'brace'],
+    execution: ['range of motion', 'tempo', 'control', 'rep', 'drive', 'lower', 'press', 'pull'],
+    breathing: ['inhale', 'exhale', 'breath', 'breathe', 'bracing'],
+    coaching: ['cue', 'tension', 'target', 'muscle', 'squeeze'],
+    safety: ['safety', 'form', 'load', 'weight', 'pain', 'stop']
+  };
+  const hasTopicInInstruction = (topic) => {
+    const keywords = topicKeywords[topic] || [];
+    return instructionSteps.some((step) => {
+      const lower = step.toLowerCase();
+      return keywords.some((keyword) => lower.includes(keyword));
+    });
+  };
+  const beginnerGuide = beginnerGuideByTopic
+    .filter((item) => !hasTopicInInstruction(item.topic))
+    .map((item) => item.text);
+  const allInstructionLines = [...instructionSteps.map((step) => `${step}.`), ...beginnerGuide];
   instructions.innerHTML = `
     <span class="label">How to perform (beginner-friendly)</span>
-    <ul>${instructionSteps.map((step) => `<li>${step}.</li>`).join('')}${beginnerGuide.map((step) => `<li>${step}</li>`).join('')}</ul>
+    <ul>${allInstructionLines.map((step) => `<li>${step}</li>`).join('')}</ul>
   `;
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
