@@ -93,6 +93,24 @@
           Start Line | Chasing Change Homepage
         </a>
       </section>
+
+      <section class="mt-12 w-full" aria-labelledby="explore-tools-heading">
+        <div class="rounded-3xl bg-cc-panel/90 p-5 shadow-soft ring-1 ring-black/10 sm:p-6">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Tool Database</p>
+              <h2 id="explore-tools-heading" class="font-heading text-2xl font-extrabold">Explore All Tools</h2>
+            </div>
+            <p class="text-sm text-cc-text/70">Browse by core if you don’t want to search first.</p>
+          </div>
+
+          <div id="coreFilterTabs" class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Browse tools by core"></div>
+          <div id="coreCardsGrid" class="mt-5 grid gap-3 sm:grid-cols-2"></div>
+          <p id="noCoreToolsMessage" class="mt-5 hidden rounded-xl border border-dashed border-black/20 bg-white/75 p-4 text-sm text-cc-text/75">
+            No tools are published for this core yet. Try another core to explore what is live.
+          </p>
+        </div>
+      </section>
     </main>
 
     <script>
@@ -270,12 +288,16 @@
       // ==============================
 
       const MAX_RESULTS = 6;
+      const CORE_ORDER = ["Body", "Art", "Mind", "Soul", "Career", "Life"];
 
       const searchInput = document.getElementById("searchInput");
       const resultsPanel = document.getElementById("resultsPanel");
       const suggestionsContainer = document.getElementById("suggestions");
       const startLineButton = document.getElementById("startLineButton");
       startLineButton.href = START_LINE_URL;
+      const coreFilterTabs = document.getElementById("coreFilterTabs");
+      const coreCardsGrid = document.getElementById("coreCardsGrid");
+      const noCoreToolsMessage = document.getElementById("noCoreToolsMessage");
 
       function normalizeText(value = "") {
         return value
@@ -325,21 +347,6 @@
           if (keywords.some((keyword) => keyword.includes(token))) score += 20;
           if (title.includes(token)) score += 18;
         });
-
-            <a id="roadmapToolCard" href="./physique-roadmap/index.html" data-core="body" data-section="programming" class="core-card group hidden rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">Physique Roadmap</h2>
-              <p class="mt-2 text-sm opacity-80">Track body stats, 1RM trends, PR milestones, running performance, and split comparisons in one dashboard.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open roadmap →</p>
-            </a>
-
-            <a href="./career-core/index.html" data-core="career" data-section="clarity" class="core-card group rounded-3xl bg-cc-card p-5 ring-1 ring-black/10 shadow-soft hover:-translate-y-1 hover:shadow-neon transition">
-              <h2 class="mt-4 text-2xl font-extrabold font-heading">5Ps Career Fit Calculator</h2>
-              <p class="mt-2 text-sm opacity-80">Evaluate role alignment across Passion, Place, Problem, People, and Pay before you commit.</p>
-              <p class="mt-5 text-sm font-extrabold text-cc-text group-hover:text-cc-outline transition">Open calculator →</p>
-            </a>
-          </div>
-                    <p id="noToolsMessage" class="hidden mt-4 rounded-xl border border-dashed border-black/20 bg-white/70 p-4 text-sm">No tools are published for this core yet. Try another core to explore what is live.</p>
-        </section>
 
         // Broad-intent routing boosts
         const intentBoosts = [
@@ -451,6 +458,45 @@
           .join("");
       }
 
+      function coreCardTemplate(resource) {
+        const isLive = resource.status === "live";
+        const wrapperClasses = "group rounded-2xl border border-black/10 bg-white/85 p-4 transition hover:-translate-y-0.5 hover:border-cc-accent/70 hover:bg-white";
+        const innerHtml = `
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-cc-text/55">${resource.type}</p>
+          <h3 class="mt-1 font-heading text-lg font-bold text-cc-text">${resource.title}</h3>
+          <p class="mt-2 text-sm text-cc-text/75">${resource.description}</p>
+          <p class="mt-3 text-sm font-semibold ${isLive ? "text-cc-text" : "text-cc-text/60"}">${isLive ? "Open Tool" : "Coming Soon"}</p>
+        `;
+
+        if (!isLive) {
+          return `<article class="${wrapperClasses}">${innerHtml}</article>`;
+        }
+
+        return `<a href="${resource.url}" class="${wrapperClasses}">${innerHtml}</a>`;
+      }
+
+      function renderCoreTabs(activeCore) {
+        coreFilterTabs.innerHTML = CORE_ORDER.map((core) => {
+          const isActive = core === activeCore;
+          const classes = isActive
+            ? "rounded-full border border-cc-accent bg-cc-accent/20 px-3 py-1.5 text-xs font-bold tracking-wide text-cc-text"
+            : "rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold tracking-wide text-cc-text/75 transition hover:border-cc-accent hover:bg-white";
+          return `<button type="button" role="tab" aria-selected="${isActive}" data-core="${core}" class="${classes}">${core}</button>`;
+        }).join("");
+      }
+
+      function renderCoreCards(activeCore) {
+        const coreMatches = resources.filter((resource) => normalizeText(resource.core) === normalizeText(activeCore));
+        if (!coreMatches.length) {
+          coreCardsGrid.innerHTML = "";
+          noCoreToolsMessage.classList.remove("hidden");
+          return;
+        }
+
+        noCoreToolsMessage.classList.add("hidden");
+        coreCardsGrid.innerHTML = coreMatches.map(coreCardTemplate).join("");
+      }
+
       searchInput.addEventListener("input", (event) => {
         renderResults(event.target.value);
       });
@@ -463,8 +509,18 @@
         renderResults(button.dataset.suggestion);
       });
 
+      coreFilterTabs.addEventListener("click", (event) => {
+        const tab = event.target.closest("button[data-core]");
+        if (!tab) return;
+        const selectedCore = tab.dataset.core;
+        renderCoreTabs(selectedCore);
+        renderCoreCards(selectedCore);
+      });
+
       // initial render: minimal UI + elegant suggestions
       renderSuggestions();
+      renderCoreTabs("Body");
+      renderCoreCards("Body");
     </script>
   </body>
 </html>
