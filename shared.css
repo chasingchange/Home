@@ -655,20 +655,9 @@ h3 {
   display: flex;
   align-items: flex-end;
   border-radius: 2rem;
-  background:
-    linear-gradient(180deg, rgba(7, 31, 53, 0.10), rgba(7, 31, 53, 0.45)),
-    radial-gradient(circle at top right, rgba(119, 215, 112, 0.30), transparent 35%),
-    repeating-linear-gradient(
-      -12deg,
-      #991b1b 0,
-      #991b1b 38px,
-      #f9d2d2 38px,
-      #f9d2d2 42px,
-      #b91c1c 42px,
-      #b91c1c 82px,
-      #f9d2d2 82px,
-      #f9d2d2 86px
-    );
+  background: linear-gradient(145deg, #ffffff 0%, #f9fbf9 100%);
+  border: 1px solid rgba(7, 31, 53, 0.11);
+  box-shadow: 0 16px 38px rgba(7, 31, 53, 0.09);
 }
 
 .race-card-track::before,
@@ -699,7 +688,7 @@ h3 {
 .race-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, rgba(7, 31, 53, 0.22) 5%, rgba(7, 31, 53, 0.06) 35%, rgba(7, 31, 53, 0.60) 100%);
+  background: linear-gradient(110deg, rgba(7, 31, 53, 0.03) 5%, rgba(7, 31, 53, 0.02) 35%, rgba(7, 31, 53, 0.1) 100%);
 }
 
 .race-card-kicker {
@@ -714,7 +703,7 @@ h3 {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--cc-text);
 }
 
 
@@ -834,4 +823,109 @@ a:focus-visible {
 
 ::placeholder {
   color: rgba(7, 31, 53, 0.48);
+}
+
+/* ===== Site-wide visual normalization (search homepage authority) ===== */
+.cc-page {
+  background: var(--cc-bg);
+}
+
+.cc-page-shell,
+main[class*="max-w-"],
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+}
+
+.cc-title-block,
+.cc-account-card,
+.cc-modal-shell,
+.cc-auth-modal__panel,
+.cc-cta-block {
+  border: 1px solid rgba(7, 31, 53, 0.1);
+  border-radius: 1.5rem;
+  background: #fff;
+  box-shadow: 0 14px 45px rgba(7, 31, 53, 0.08);
+}
+
+.cc-title-block {
+  box-shadow: 0 14px 45px rgba(7, 31, 53, 0.08);
+}
+
+.cc-title-name {
+  text-transform: none;
+  letter-spacing: 0.015em;
+}
+
+.cc-title-subline {
+  font-style: normal;
+  opacity: 0.72;
+}
+
+.cc-title-home,
+.cc-home-icon-link,
+.cc-link-chip {
+  background: #fff;
+  border: 1px solid rgba(7, 31, 53, 0.12);
+}
+
+.cc-title-coaching,
+.cc-btn-primary {
+  background: #071f35;
+  color: #f5f5f7;
+  border-color: #071f35;
+}
+
+.cc-title-coaching:hover,
+.cc-btn-primary:hover {
+  border-color: #77d770;
+}
+
+.cc-cta-coaching {
+  background: #071f35;
+}
+
+.cc-cta-reset {
+  background: rgba(7, 31, 53, 0.06);
+}
+
+.cc-page .shadow-soft,
+.cc-page .shadow-sm,
+.cc-page .shadow-md,
+.cc-page .shadow-lg {
+  box-shadow: 0 14px 45px rgba(7, 31, 53, 0.08) !important;
+}
+
+.cc-page .bg-white,
+.cc-page .bg-cc-card,
+.cc-page .bg-cc-panel {
+  border: 1px solid rgba(7, 31, 53, 0.1);
+}
+
+.cc-page .rounded-3xl {
+  border-radius: 1.5rem !important;
+}
+
+.cc-page .rounded-2xl {
+  border-radius: 1rem !important;
+}
+
+.cc-page button,
+.cc-page [type="button"],
+.cc-page [type="submit"],
+.cc-page a[class*="rounded"],
+.cc-page .score-pill,
+.cc-page .work-mode-btn,
+.cc-page .industry-btn {
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.cc-page input,
+.cc-page select,
+.cc-page textarea {
+  background: #fff;
+  border: 1px solid rgba(7, 31, 53, 0.15);
+  border-radius: 0.9rem;
 }
