@@ -328,13 +328,21 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s5">
     <div class="step-eyebrow">STEP 5 · TRAINING DAYS</div>
     <h2 class="step-title">How many days can you train each week?</h2>
-    <p class="step-sub">Set your weekly frequency first, then we'll guide your priority selection so it divides your week appropriately.</p>
+    <p class="step-sub">Set your weekly frequency and your session time limit first, then we'll guide your priority selection so it divides your week appropriately.</p>
     <div class="chips" id="freq-chips">
       <div class="chip" data-v="2">2 days</div>
       <div class="chip on" data-v="3">3 days</div>
       <div class="chip" data-v="4">4 days</div>
       <div class="chip" data-v="5">5 days</div>
       <div class="chip" data-v="6">6 days</div>
+    </div>
+    <h3 class="step-title" style="margin-top:.2rem;">What is your usual session cap?</h3>
+    <div class="chips" id="session-time-chips">
+      <div class="chip" data-v="30">30 minutes</div>
+      <div class="chip on" data-v="45">45 minutes</div>
+      <div class="chip" data-v="60">1 hour</div>
+      <div class="chip" data-v="90">1.5 hours</div>
+      <div class="chip" data-v="120">2 hours</div>
     </div>
     <div class="rule" id="freq-rule"></div>
     <div class="rank-help" id="freq-priority-guide"></div>
@@ -343,7 +351,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · PRIORITY</div>
     <h2 class="step-title">How should we prioritize your week?</h2>
-    <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. Pull days with Back priority auto-assign Biceps for the other compound, machine, and isolated slots.</p>
+    <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. The first compound, first machine, and first isolated slot each auto-target that day’s selected priority muscle.</p>
     <div class="priority-rank-list" id="priority-rank-list">
     </div>
     <div class="rank-help" id="priority-rank-help"></div>
@@ -511,6 +519,7 @@ const state = {
   gymType: 'Commercial Gym',
   homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
   activeBuilderDay: 1,
+  sessionMinutes: 45,
   viewYear: currentQuarter.year,
   viewQuarter: currentQuarter.quarter,
   freq: 3,
@@ -606,7 +615,7 @@ const HOME_EQUIPMENT_OPTIONS = [
   'Landmine', 'TRX / Suspension Trainer', 'Row Machine', 'Assault Bike'
 ];
 
-const slotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
+const baseSlotPattern = ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated', 'Isolated'];
 
 const setOptions = ['', '2', '3', '4', '5', '6'];
 const repOptions = ['', '3 - 5', '4 - 6', '6 - 8', '8 - 10', '10 - 12', '12 - 15', '15 - 20'];
@@ -767,9 +776,14 @@ function oneChip(groupId, key, isNum = false) {
       applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
     }
+    if (key === 'sessionMinutes') {
+      ensureDayPlan();
+      buildFrequencyRule();
+      applyPriorityTargetsToBaseRows();
+    }
     if (key === 'gymType') buildGymRule();
     if (key === 'meso' && state.step >= 8) renderDayCards();
-    if (key === 'freq' || key === 'priority' || key === 'gymType') buildWorkoutBuilder();
+    if (key === 'freq' || key === 'priority' || key === 'gymType' || key === 'sessionMinutes') buildWorkoutBuilder();
     if (state.step >= 9) buildSummary();
   });
 }
@@ -874,14 +888,19 @@ function buildNutritionChips() {
 
 function buildFrequencyRule() {
   document.getElementById('freq-rule').textContent = freqRule[state.freq];
+  const minutes = Number(state.sessionMinutes) || 45;
+  const sessionLabel = minutes < 60 ? `${minutes} minutes` : (minutes === 60 ? '1 hour' : `${minutes / 60} hours`);
+  const timeContext = minutes <= 45
+    ? `Time cap: ${sessionLabel}. One isolated slot is automatically removed from each day for faster sessions.`
+    : `Time cap: ${sessionLabel}. Full base slot layout is available each day.`;
   const guide = document.getElementById('freq-priority-guide');
   if (!guide) return;
   if (state.freq === 2) {
-    guide.textContent = 'Priority guidance: choose exactly 2 day priorities (one for each day). Any muscle is allowed.';
+    guide.textContent = `${timeContext} Priority guidance: choose exactly 2 day priorities (one for each day). Any muscle is allowed.`;
   } else if (state.freq === 3) {
-    guide.textContent = 'Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L).';
+    guide.textContent = `${timeContext} Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L).`;
   } else {
-    guide.textContent = `Priority guidance: choose ${state.freq} day priorities, one per training day based on that day focus.`;
+    guide.textContent = `${timeContext} Priority guidance: choose ${state.freq} day priorities, one per training day based on that day focus.`;
   }
 }
 
@@ -1058,17 +1077,18 @@ function getPriorityTargetForDay(dayIndex) {
   return state.dayPriorities[`d${dayIndex + 1}`] || state.priority || 'Back';
 }
 
+function getSlotPatternForSession() {
+  const minutes = Number(state.sessionMinutes) || 45;
+  if (minutes <= 45) return ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated'];
+  return [...baseSlotPattern];
+}
+
 function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
+  const slotPattern = getSlotPatternForSession();
   const primarySlotIndex = slotPattern.indexOf(slotType);
   if (primarySlotIndex < 0) return '';
   const isPrimarySlot = slotIndex === primarySlotIndex;
-  const normalizedPriority = (dayPriority || '').toLowerCase();
-  const secondaryOptions = getDayFocusMuscles(dayFocus).filter((muscle) => muscle !== dayPriority);
-
   if (isPrimarySlot) return dayPriority || '';
-  if (dayFocus === 'Pull' && normalizedPriority === 'back') return 'Biceps';
-  if (normalizedPriority === 'chest' && secondaryOptions.length === 1) return secondaryOptions[0];
-  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(normalizedPriority)) return '';
   return '';
 }
 
@@ -1077,6 +1097,7 @@ function getResolvedTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
 }
 
 function applyPriorityTargetsToBaseRows() {
+  const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
   if (!state.customDays[state.freq]) return;
   split.forEach((line, i) => {
@@ -1092,6 +1113,7 @@ function applyPriorityTargetsToBaseRows() {
 }
 
 function ensureDayPlan() {
+  const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
   if (state.activeBuilderDay > split.length) state.activeBuilderDay = 1;
   if (!state.customDays[state.freq]) state.customDays[state.freq] = {};
@@ -1109,6 +1131,20 @@ function ensureDayPlan() {
         reps: getSlotPrescription(slot).reps
       }));
     } else {
+      const normalizedRows = state.customDays[state.freq][dayKey].slice(0, slotPattern.length);
+      while (normalizedRows.length < slotPattern.length) {
+        const idx = normalizedRows.length;
+        const slot = slotPattern[idx];
+        normalizedRows.push({
+          slot,
+          name: '',
+          id: '',
+          targetMuscle: getResolvedTargetMuscle(slot, idx, dayPriority, dayFocus),
+          sets: getSlotPrescription(slot).sets,
+          reps: getSlotPrescription(slot).reps
+        });
+      }
+      state.customDays[state.freq][dayKey] = normalizedRows;
       state.customDays[state.freq][dayKey].forEach((item, idx) => {
         if (!item.targetMuscle) item.targetMuscle = getResolvedTargetMuscle(item.slot, idx, dayPriority, dayFocus);
         if (typeof item.sets !== 'string' || !item.sets) item.sets = getSlotPrescription(item.slot).sets;
@@ -1339,6 +1375,7 @@ function closeExerciseDetailModal() {
 }
 
 function renderDayCards() {
+  const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
   const dayState = state.customDays[state.freq];
   const tabs = document.getElementById('builder-day-tabs');
@@ -1624,6 +1661,7 @@ function getSerializableState() {
     dayPriorities: { ...state.dayPriorities },
     gymType: state.gymType,
     homeEquipment: [...state.homeEquipment],
+    sessionMinutes: Number(state.sessionMinutes) || 45,
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
     manualTargets: { ...state.manualTargets },
@@ -1644,6 +1682,7 @@ function restoreState(payload) {
   state.dayPriorities = payload.dayPriorities && typeof payload.dayPriorities === 'object' ? payload.dayPriorities : state.dayPriorities;
   state.gymType = payload.gymType || state.gymType;
   state.homeEquipment = Array.isArray(payload.homeEquipment) ? payload.homeEquipment : state.homeEquipment;
+  state.sessionMinutes = Number(payload.sessionMinutes) || state.sessionMinutes;
   state.freq = Number(payload.freq) || state.freq;
   state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
   state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
@@ -1687,6 +1726,7 @@ function refreshSelectionsFromState() {
   syncChip('macro-calc-chips', state.macroPlan);
   syncChip('gym-chips', state.gymType);
   syncChip('freq-chips', state.freq);
+  syncChip('session-time-chips', state.sessionMinutes);
 }
 
 function getArchiveControls() {
@@ -1861,6 +1901,7 @@ oneChip('nutrition-chips', 'nutrition');
 oneChip('macro-calc-chips', 'macroPlan');
 oneChip('gym-chips', 'gymType');
 oneChip('freq-chips', 'freq', true);
+oneChip('session-time-chips', 'sessionMinutes', true);
 
 buildTimeline();
 buildMesoChips();
