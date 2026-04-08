@@ -375,6 +375,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="ask-out" id="agent-out">Ask a question and I’ll suggest swaps, progressions, and time-efficient adjustments.</div>
       <div class="quick-link-row">
         <a class="btn" href="../1RM Calculator/Index.html" target="_blank" rel="noopener noreferrer">Open 1RM Calculator for Working Weights</a>
+        <a class="btn" href="../exercise-matrix/index.html" target="_blank" rel="noopener noreferrer">Open Exercise Matrix (Body Core Tool)</a>
       </div>
     </div>
     <div class="builder-layout">
@@ -649,9 +650,18 @@ const EXERCISES = (window.EXERCISE_MATRIX || []).map((exercise) => {
   return {
     id: buildExerciseId(exercise),
     name: exercise.name,
+    aliases: exercise.aliases || [],
     equipment: equipment || 'Bodyweight',
     category,
+    matrixCategory: (exercise.category || '').toLowerCase(),
     primaryMuscle: exercise.primaryMuscle || 'Full Body',
+    secondaryMuscles: exercise.secondaryMuscles || [],
+    movementPattern: exercise.movementPattern || '',
+    angle: exercise.angle || '',
+    laterality: exercise.laterality || '',
+    beginnerFriendly: typeof exercise.beginnerFriendly === 'boolean' ? exercise.beginnerFriendly : true,
+    fatigue: exercise.fatigue || 'medium',
+    tags: exercise.tags || [],
     movementType: exercise.movementType || '',
     instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.'
   };
@@ -990,7 +1000,9 @@ function normalizeType(exercise) {
 }
 
 function matchesSlotType(exercise, slotType) {
-  if (slotType === 'Machine') return exercise.category === 'Machines' || exercise.equipment === 'Machine' || exercise.equipment === 'Smith Machine';
+  if (slotType === 'Machine') return normalizeType(exercise) === 'Machine' || exercise.matrixCategory === 'machine';
+  if (slotType === 'Isolated') return normalizeType(exercise) === 'Isolated' || exercise.matrixCategory === 'isolation';
+  if (slotType === 'Compound') return normalizeType(exercise) === 'Compound' || exercise.matrixCategory === 'compound';
   return normalizeType(exercise) === slotType;
 }
 
@@ -1158,7 +1170,77 @@ function describeSlotIntent(slotType) {
   return 'Best for isolating one muscle and accumulating targeted volume.';
 }
 
-function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
+function equipmentBucket(equipment = '') {
+  const normalized = equipment.toLowerCase();
+  if (normalized.includes('barbell')) return 'barbell';
+  if (normalized.includes('dumbbell')) return 'dumbbell';
+  if (normalized.includes('smith')) return 'smith';
+  if (normalized.includes('machine')) return 'machine';
+  if (normalized.includes('cable')) return 'cable';
+  if (normalized.includes('bodyweight')) return 'bodyweight';
+  return normalized || 'other';
+}
+
+function getStarredSuggestions(slotPool, item, dayRows, rowIndex) {
+  const targetPool = item.targetMuscle
+    ? slotPool.filter((option) => muscleMatchesTarget(getMuscle(option), item.targetMuscle))
+    : slotPool;
+  const fallbackPool = targetPool.length ? targetPool : slotPool;
+  const previousSelections = dayRows.slice(0, rowIndex)
+    .map((entry) => EXERCISES.find((exercise) => exercise.id === entry.id))
+    .filter(Boolean);
+
+  const scored = fallbackPool.map((exercise) => {
+    let score = 0;
+    if (item.targetMuscle && muscleMatchesTarget(getMuscle(exercise), item.targetMuscle)) score += 140;
+    if (matchesSlotType(exercise, item.slot)) score += 120;
+    if (exercise.beginnerFriendly) score += 6;
+
+    const samePatternCount = previousSelections.filter((sel) => (sel.movementPattern || '') === (exercise.movementPattern || '')).length;
+    const sameAngleCount = previousSelections.filter((sel) => (sel.angle || '') && sel.angle === exercise.angle).length;
+    const sameEquipmentCount = previousSelections.filter((sel) => equipmentBucket(sel.equipment) === equipmentBucket(exercise.equipment)).length;
+    const fatigueBias = previousSelections.some((sel) => sel.fatigue === 'high') && exercise.fatigue === 'low';
+
+    score -= samePatternCount * 24;
+    score -= sameAngleCount * 16;
+    score -= sameEquipmentCount * 12;
+    if (fatigueBias) score += 18;
+    if (previousSelections.some((sel) => sel.name === exercise.name)) score -= 70;
+
+    return { exercise, score };
+  }).sort((a, b) => b.score - a.score);
+
+  const picks = [];
+  const seenNames = new Set();
+  const seenPatterns = new Set();
+  const seenEquipment = new Set();
+
+  for (const entry of scored) {
+    const nameKey = canonicalExerciseName(entry.exercise.name);
+    const pattern = entry.exercise.movementPattern || 'none';
+    const equip = equipmentBucket(entry.exercise.equipment);
+    if (seenNames.has(nameKey)) continue;
+    if (picks.length >= 1 && seenPatterns.has(pattern) && seenEquipment.has(equip) && scored.length > 3) continue;
+    picks.push(entry.exercise);
+    seenNames.add(nameKey);
+    seenPatterns.add(pattern);
+    seenEquipment.add(equip);
+    if (picks.length === 3) break;
+  }
+
+  if (picks.length < 3) {
+    for (const entry of scored) {
+      if (picks.some((pick) => pick.id === entry.exercise.id)) continue;
+      picks.push(entry.exercise);
+      if (picks.length === 3) break;
+    }
+  }
+
+  while (picks.length < 3 && fallbackPool.length) picks.push(fallbackPool[picks.length % fallbackPool.length]);
+  return picks.slice(0, 3);
+}
+
+function buildSlotChoiceGuide(item, starredSuggestions, dayMuscles) {
   if (!item.targetMuscle) {
     return `<div class="slot-choice-guide">
       <span class="slot-choice-guide-title">How to choose</span>
@@ -1168,7 +1250,7 @@ function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
       </ul>
     </div>`;
   }
-  if (!slotOptionsByMuscle.length) {
+  if (!starredSuggestions.length) {
     return `<div class="slot-choice-guide">
       <span class="slot-choice-guide-title">How to choose</span>
       <ul>
@@ -1177,7 +1259,7 @@ function buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles) {
       </ul>
     </div>`;
   }
-  const topRecommendations = slotOptionsByMuscle.slice(0, 3)
+  const topRecommendations = starredSuggestions.slice(0, 3)
     .map((option) => `<li><strong>${option.name}</strong> — ${getMuscle(option)} focus · ${option.equipment || 'Bodyweight'} · ${normalizeType(option)} movement.</li>`)
     .join('');
   return `<div class="slot-choice-guide">
@@ -1278,7 +1360,10 @@ function renderDayCards() {
     const rows = dayState[dayKey].map((item, rowIndex) => {
       const slotPool = getExercisesForSlot(item.slot).filter((exercise) => isExerciseInFocusMuscles(exercise, dayMuscles));
       const slotOptionsByMuscle = slotPool.filter((option) => item.targetMuscle && muscleMatchesTarget(getMuscle(option), item.targetMuscle));
-      const slotOptions = item.targetMuscle ? slotOptionsByMuscle : slotPool;
+      const starredSuggestions = getStarredSuggestions(slotPool, item, dayState[dayKey], rowIndex);
+      const suggestedIds = starredSuggestions.map((option) => option.id);
+      const suggestionSet = new Set(suggestedIds);
+      const slotOptions = [...starredSuggestions, ...slotPool.filter((option) => !suggestionSet.has(option.id))];
       const exercise = EXERCISES.find((x) => x.id === item.id);
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
       const hasSets = !!item.sets;
@@ -1300,7 +1385,6 @@ function renderDayCards() {
           const label = muscle || 'Select Muscle';
           return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
         }).join('');
-      const suggestedIds = slotOptionsByMuscle.slice(0, 3).map((option) => option.id);
       const movementOptions = [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
         const selected = item.id === option.id ? ' selected' : '';
         const isSuggested = suggestedIds.includes(option.id);
@@ -1321,8 +1405,8 @@ function renderDayCards() {
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
-      <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
-      ${buildSlotChoiceGuide(item, slotOptionsByMuscle, dayMuscles)}
+      <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(item.targetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Smart-match options available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
+      ${buildSlotChoiceGuide(item, starredSuggestions, dayMuscles)}
     </div>`;
     }).join('');
     return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
