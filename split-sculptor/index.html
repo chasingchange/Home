@@ -2142,7 +2142,12 @@ document.getElementById('print-summary-btn').addEventListener('click', () => {
         <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
         <style>${getExportStyles()} @page { margin: 12mm; }</style>
       </head>
-      <body>${buildExportMarkup(panel.innerHTML)}</body>
+      <body>${buildExportMarkup(panel.innerHTML)}
+    <footer class="w-full px-5 pb-5 sm:px-8">
+      <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
+    </footer>
+
+  </body>
     </html>
   `);
   doc.close();
