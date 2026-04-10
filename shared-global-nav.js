@@ -11,6 +11,8 @@
     return `${pathname.slice(0, lastSlash + 1)}`;
   }
 
+  removeLegacyTitleCards();
+
   const existingCoreTopBar = document.getElementById("coreTopBar");
   if (existingCoreTopBar) return;
 
