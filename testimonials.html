@@ -84,28 +84,23 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-6 sm:pt-5 sm:pb-7">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <div class="absolute inset-0 -z-10 pointer-events-none">
         <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
         <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
       </div>
 
-      <header class="cc-global-header mb-4 sm:mb-5">
-        <nav class="cc-global-nav" aria-label="Global navigation">
-          <a href="./index.html" aria-label="Go to Start Line search page" class="cc-nav-logo">
-            <img src="./Logo.png" alt="Chasing Change logo" />
-          </a>
-          <button type="button" class="cc-mobile-toggle" aria-expanded="false" aria-controls="globalNavLinks">☰</button>
-          <div id="globalNavLinks" class="cc-global-nav-links">
-            <a href="./testimonials.html" class="cc-signature-nav">Testimonials</a>
-            <a href="./about/index.html" class="cc-signature-nav">About</a>
-            <a href="https://tally.so/r/w5JXKE" data-apply-coaching class="cc-signature-nav">Apply for Coaching</a>
-            <a href="./contact/index.html" class="cc-signature-nav">Contact</a>
+      <header class="cc-title-block mb-6 sm:mb-8">
+        <div class="cc-title-block-inner">
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
+
+          <div class="cc-title-block-top">
+            <div class="cc-title-brand">
+              <img src="./Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
+              <h1 class="cc-title-name">Chasing Change</h1>
+            </div>
           </div>
-        </nav>
-        <div class="cc-global-title">
-          <h1 class="cc-global-title-name">Chasing Change</h1>
-          <p class="cc-global-title-subline">Pursuing Peace, Pursuing Purpose</p>
+          <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
         </div>
       </header>
 
@@ -133,12 +128,19 @@
           </div>
         </section>
 
-      <p class="mt-5 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
+      <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
 
       </main>
     </div>
 
     <script>
+      const menuToggle = document.getElementById("menuToggle");
+      const mobileMenu = document.getElementById("mobileMenu");
+      menuToggle?.addEventListener("click", () => {
+        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!expanded));
+        mobileMenu.classList.toggle("hidden");
+      });
 
       const testimonialGrid = document.getElementById("testimonialGrid");
 
@@ -289,6 +291,5 @@
 
       bindCardInteractions();
     </script>
-      <script src="./shared-global-nav.js"></script>
   </body>
 </html>
