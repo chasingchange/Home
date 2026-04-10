@@ -15,8 +15,8 @@
     window.removeLegacyTitleCards();
   }
 
-  const existingCoreTopBar = document.getElementById("coreTopBar");
-  if (existingCoreTopBar) return;
+  const existingGlobalNav = document.getElementById("ccGlobalNav");
+  if (existingGlobalNav) return;
 
   const root = getSiteRootPath();
   const nav = document.createElement("header");
