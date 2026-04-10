@@ -41,23 +41,28 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-6 sm:pt-5 sm:pb-7">
       <div class="absolute inset-0 -z-10 pointer-events-none">
         <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
         <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
       </div>
 
-      <header class="cc-title-block mb-6 sm:mb-8">
-        <div class="cc-title-block-inner">
-          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
-
-          <div class="cc-title-block-top">
-            <div class="cc-title-brand">
-              <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
-              <h1 class="cc-title-name">Chasing Change</h1>
-            </div>
+      <header class="cc-global-header mb-4 sm:mb-5">
+        <nav class="cc-global-nav" aria-label="Global navigation">
+          <a href="../index.html" aria-label="Go to Start Line search page" class="cc-nav-logo">
+            <img src="../Logo.png" alt="Chasing Change logo" />
+          </a>
+          <button type="button" class="cc-mobile-toggle" aria-expanded="false" aria-controls="globalNavLinks">☰</button>
+          <div id="globalNavLinks" class="cc-global-nav-links">
+            <a href="../testimonials.html" class="cc-signature-nav">Testimonials</a>
+            <a href="../about/index.html" class="cc-signature-nav">About</a>
+            <a href="https://tally.so/r/w5JXKE" data-apply-coaching class="cc-signature-nav">Apply for Coaching</a>
+            <a href="../contact/index.html" class="cc-signature-nav">Contact</a>
           </div>
-          <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
+        </nav>
+        <div class="cc-global-title">
+          <h1 class="cc-global-title-name">Chasing Change</h1>
+          <p class="cc-global-title-subline">Pursuing Peace, Pursuing Purpose</p>
         </div>
       </header>
 
@@ -75,32 +80,6 @@
         </section>
 
         <section id="routeContent" class="hidden rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
-          <nav>
-            <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-              <a href="../index.html" class="cc-signature-nav">Start Line</a>
-              <a href="../testimonials.html" class="cc-signature-nav">Testimonials</a>
-              <a href="../about/index.html" class="cc-signature-nav">About</a>
-              <a href="../apply-for-coaching/index.html" class="cc-signature-nav">Apply for Coaching</a>
-              <a href="../contact/index.html" class="cc-signature-nav">Contact</a>
-            </div>
-
-            <div class="md:hidden">
-              <button id="menuToggle" type="button" class="cc-signature-nav" aria-expanded="false" aria-controls="mobileMenu">
-                <span>Menu</span>
-                <span class="text-lg leading-none">☰</span>
-              </button>
-              <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-                <div class="grid gap-1">
-                  <a href="../index.html" class="cc-signature-nav justify-start">Start Line</a>
-                  <a href="../testimonials.html" class="cc-signature-nav justify-start">Testimonials</a>
-                  <a href="../about/index.html" class="cc-signature-nav justify-start">About</a>
-                  <a href="../apply-for-coaching/index.html" class="cc-signature-nav justify-start">Apply for Coaching</a>
-                  <a href="../contact/index.html" class="cc-signature-nav justify-start">Contact</a>
-                </div>
-              </div>
-            </div>
-          </nav>
-
           <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
             <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to Chase Change?</p>
             <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
@@ -195,8 +174,6 @@
     </div>
 
     <script>
-      const menuToggle = document.getElementById("menuToggle");
-      const mobileMenu = document.getElementById("mobileMenu");
       const lastUpdatedStamp = document.getElementById("lastUpdatedStamp");
       const routeLock = document.getElementById("routeLock");
       const routeContent = document.getElementById("routeContent");
@@ -233,17 +210,14 @@
           tryUnlockRoute();
         }
       });
+
       if (lastUpdatedStamp) {
         const modified = new Date(document.lastModified);
         lastUpdatedStamp.textContent = Number.isNaN(modified.getTime())
           ? "Last updated: unavailable"
           : `Last updated: ${modified.toLocaleString()}`;
       }
-      menuToggle?.addEventListener("click", () => {
-        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-        menuToggle.setAttribute("aria-expanded", String(!expanded));
-        mobileMenu.classList.toggle("hidden");
-      });
     </script>
+    <script src="../shared-global-nav.js"></script>
   </body>
 </html>
