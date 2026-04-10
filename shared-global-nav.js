@@ -11,7 +11,9 @@
     return `${pathname.slice(0, lastSlash + 1)}`;
   }
 
-  removeLegacyTitleCards();
+  if (typeof window.removeLegacyTitleCards === "function") {
+    window.removeLegacyTitleCards();
+  }
 
   const existingCoreTopBar = document.getElementById("coreTopBar");
   if (existingCoreTopBar) return;
