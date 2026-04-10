@@ -21,32 +21,43 @@
 
     <style>
       .testimonial-card {
-        cursor: pointer;
+        background: #ffffff;
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 8px 24px rgba(7, 31, 53, 0.06);
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
       }
 
       .testimonial-content {
-        max-height: 0;
+        height: 0;
         overflow: hidden;
         opacity: 0;
-        transform: translateY(-0.25rem);
-        margin-top: 0;
-        padding-top: 0;
+        margin-top: 0.35rem;
         border-top: 0 solid transparent;
-        transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.25s ease, margin-top 0.25s ease, padding-top 0.25s ease;
+        transition: height 0.35s ease, opacity 0.25s ease, border-color 0.25s ease;
       }
 
       .testimonial-card.is-open .testimonial-content {
-        max-height: 80rem;
-        opacity: 0.95;
-        transform: translateY(0);
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
+        opacity: 1;
+        margin-top: 0.85rem;
         border-top: 1px solid rgba(7, 31, 53, 0.12);
       }
 
       .testimonial-card.is-open {
-        background: #ffffff;
-        transform: translateY(-2px);
+        border-color: rgba(119, 215, 112, 0.9);
+        box-shadow: 0 12px 28px rgba(7, 31, 53, 0.08);
+      }
+
+      .testimonial-copy {
+        padding-top: 0.8rem;
+      }
+
+      .testimonial-trigger svg {
+        transition: transform 0.25s ease;
+      }
+
+      .testimonial-card.is-open .testimonial-trigger svg {
+        transform: rotate(180deg);
       }
     </style>
 
@@ -99,14 +110,14 @@
       </header>
 
       <main data-admin-edit-root>
-        <section class="rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-5 sm:p-7">
-          <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
-            <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to Chase Change?</p>
-            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
+        <section class="rounded-3xl bg-white/90 ring-1 ring-black/10 p-5 sm:p-7 shadow-soft">
+          <div class="mt-4 rounded-2xl border border-cc-outline/50 bg-cc-outline/10 p-4 sm:p-5">
+            <p class="text-xs sm:text-sm font-semibold uppercase tracking-[0.14em] text-cc-text/70">Ready to Chase Change?</p>
+            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl border border-cc-outline/60 bg-cc-outline/90 px-4 py-2 text-sm font-extrabold text-cc-text hover:bg-cc-outline transition">Book a Free Transformation Call</a>
           </div>
 
-          <h2 class="mt-6 text-2xl sm:text-3xl font-extrabold font-heading">Testimonials</h2>
-          <p class="mt-2 text-sm sm:text-base opacity-80">Click a name (or tap on mobile) to expand, and click again to collapse.</p>
+          <h2 class="mt-7 font-heading text-3xl sm:text-4xl font-extrabold tracking-tight">Testimonials</h2>
+          <p class="mt-2 text-sm sm:text-base text-cc-text/70">Click a name to expand and read the full testimonial.</p>
 
           <div id="testimonialAdminPanel" class="hidden mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4">
             <h3 class="text-lg font-extrabold font-heading">Add testimonial</h3>
@@ -117,8 +128,8 @@
               <button type="submit" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-bold text-cc-text">Add testimonial</button>
             </form>
           </div>
-          <h3 class="mt-5 text-sm font-extrabold uppercase tracking-[0.16em] opacity-70">2025 Cohort</h3>
-          <div id="testimonialGrid" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <h3 class="mt-6 text-xs sm:text-sm font-heading font-bold uppercase tracking-[0.2em] text-cc-text/60">2025 Cohort</h3>
+          <div id="testimonialGrid" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 items-start auto-rows-auto">
           </div>
         </section>
 
@@ -134,28 +145,45 @@
       const createTestimonialCard = (testimonial) => {
         const article = document.createElement("article");
         article.className =
-          "testimonial-card group relative rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 transition-all duration-300 hover:ring-cc-outline/80 hover:shadow-neon";
-        article.tabIndex = 0;
+          "testimonial-card group relative p-5 sm:p-6";
+
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className =
+          "testimonial-trigger flex w-full items-start justify-between gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-outline/90 rounded-lg";
+        trigger.setAttribute("aria-expanded", "false");
 
         const heading = document.createElement("h3");
-        heading.className = "text-base sm:text-lg font-extrabold font-heading";
-        heading.append(document.createTextNode(testimonial.name + " "));
+        heading.className = "text-base sm:text-lg font-heading font-extrabold leading-tight";
+        heading.append(document.createTextNode(testimonial.name));
         const cohort = document.createElement("span");
-        cohort.className = "block text-xs font-bold uppercase tracking-wide opacity-70";
+        cohort.className = "mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/60";
         cohort.textContent = `${testimonial.year} Cohort`;
         heading.appendChild(cohort);
 
+        const indicator = document.createElement("span");
+        indicator.className = "mt-1 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-cc-text/65";
+        indicator.innerHTML =
+          '<span>Read more</span><svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
         const content = document.createElement("div");
-        content.className = "testimonial-content mt-4 text-sm sm:text-base leading-relaxed opacity-90";
+        content.className = "testimonial-content text-sm sm:text-base leading-relaxed text-cc-text/90";
+        content.setAttribute("aria-hidden", "true");
+
+        const copy = document.createElement("div");
+        copy.className = "testimonial-copy";
 
         testimonial.paragraphs.forEach((paragraph, index) => {
           const p = document.createElement("p");
           p.className = index === 0 ? "" : "mt-3";
           p.textContent = paragraph;
-          content.appendChild(p);
+          copy.appendChild(p);
         });
 
-        article.appendChild(heading);
+        content.appendChild(copy);
+        trigger.appendChild(heading);
+        trigger.appendChild(indicator);
+        article.appendChild(trigger);
         article.appendChild(content);
         return article;
       };
@@ -169,35 +197,72 @@
 
       const bindCardInteractions = () => {
         const testimonialCards = document.querySelectorAll(".testimonial-card");
-        const syncCardHeights = () => {
+        const closeCard = (card) => {
+          const content = card.querySelector(".testimonial-content");
+          const copy = card.querySelector(".testimonial-copy");
+          const trigger = card.querySelector(".testimonial-trigger");
+          if (!content || !copy || !trigger) return;
+          content.style.height = `${copy.scrollHeight}px`;
+          requestAnimationFrame(() => {
+            card.classList.remove("is-open");
+            trigger.setAttribute("aria-expanded", "false");
+            content.setAttribute("aria-hidden", "true");
+            content.style.height = "0px";
+          });
+        };
+
+        const openCard = (card) => {
+          const content = card.querySelector(".testimonial-content");
+          const copy = card.querySelector(".testimonial-copy");
+          const trigger = card.querySelector(".testimonial-trigger");
+          if (!content || !copy || !trigger) return;
+          card.classList.add("is-open");
+          trigger.setAttribute("aria-expanded", "true");
+          content.setAttribute("aria-hidden", "false");
+          content.style.height = `${copy.scrollHeight}px`;
+        };
+
+        const syncOpenHeights = () => {
           testimonialCards.forEach((card) => {
+            if (!card.classList.contains("is-open")) return;
             const content = card.querySelector(".testimonial-content");
-            if (!content) return;
-            if (card.classList.contains("is-open")) {
-              content.style.maxHeight = `${content.scrollHeight}px`;
-            } else {
-              content.style.maxHeight = "0px";
-            }
+            const copy = card.querySelector(".testimonial-copy");
+            if (!content || !copy) return;
+            content.style.height = `${copy.scrollHeight}px`;
           });
         };
 
         testimonialCards.forEach((card) => {
-          card.addEventListener("click", () => {
+          const trigger = card.querySelector(".testimonial-trigger");
+          if (!trigger) return;
+
+          trigger.addEventListener("click", () => {
             const isOpen = card.classList.contains("is-open");
-            testimonialCards.forEach((item) => item.classList.remove("is-open"));
-            if (!isOpen) card.classList.add("is-open");
-            syncCardHeights();
+            testimonialCards.forEach((item) => {
+              if (item !== card && item.classList.contains("is-open")) {
+                closeCard(item);
+              }
+            });
+            if (isOpen) {
+              closeCard(card);
+            } else {
+              openCard(card);
+            }
           });
 
-          card.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              card.click();
+          const content = card.querySelector(".testimonial-content");
+          content?.addEventListener("transitionend", (event) => {
+            if (event.propertyName !== "height" || !card.classList.contains("is-open")) return;
+            const copy = card.querySelector(".testimonial-copy");
+            if (!copy) return;
+            const measuredHeight = copy.scrollHeight;
+            if (measuredHeight > 0) {
+              content.style.height = `${measuredHeight}px`;
             }
           });
         });
-        window.addEventListener("resize", syncCardHeights);
-        syncCardHeights();
+        window.addEventListener("resize", syncOpenHeights);
+        syncOpenHeights();
       };
 
 
