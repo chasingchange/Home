@@ -48,10 +48,22 @@
       };
     </script>
   </head>
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page flex flex-col">
-    <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-5 py-14 sm:px-8">
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page">
+    <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-5 py-14 sm:px-8">
+      <header class="mb-8 w-full">
+        <nav aria-label="Primary" class="rounded-full bg-white/90 p-2 ring-1 ring-black/10 shadow-soft">
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <a href="./index.html" class="cc-signature-nav bg-cc-text text-white">Start Line</a>
+            <a href="./testimonials.html" class="cc-signature-nav">Testimonials</a>
+            <a href="./about/index.html" class="cc-signature-nav">About</a>
+            <a href="./apply-for-coaching/index.html" class="cc-signature-nav">Apply for Coaching</a>
+            <a href="./contact/index.html" class="cc-signature-nav">Contact</a>
+          </div>
+        </nav>
+      </header>
+
       <!-- Minimal brand label -->
-      <p class="mb-10 text-center font-brand text-2xl font-bold tracking-[0.08em] text-cc-text sm:text-3xl">Chasing Change</p>
+      <p class="mb-8 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
 
       <section class="w-full text-center" aria-labelledby="hero-heading">
         <!-- EDIT HERO COPY HERE -->
@@ -86,13 +98,34 @@
           <div id="resultsPanel" class="mt-4 hidden rounded-2xl bg-cc-panel p-2 shadow-soft ring-1 ring-black/10" role="region" aria-live="polite" aria-label="Search results"></div>
         </div>
 
-        <a
-          id="startLineButton"
-          href="#"
-          class="cc-signature-nav mt-10"
-        >
-          Start Line | Chasing Change Homepage
-        </a>
+        <a id="startLineButton" href="#brandHub" class="cc-signature-nav mt-10">Not sure where to go? Start Here</a>
+      </section>
+
+      <section id="brandHub" class="mt-6 w-full rounded-3xl bg-cc-panel/95 p-5 shadow-soft ring-1 ring-black/10 sm:p-6" aria-labelledby="brand-hub-heading">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Brand Hub</p>
+            <h2 id="brand-hub-heading" class="font-heading text-2xl font-extrabold">Beyond Start Line</h2>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <a href="./testimonials.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Testimonials</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Read race stories from people building momentum.</p>
+          </a>
+          <a href="./about/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">About</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Learn the mission and the six-core framework.</p>
+          </a>
+          <a href="./apply-for-coaching/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Apply for Coaching</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Take the next step when you're ready for support.</p>
+          </a>
+          <a href="./contact/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Contact</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Reach out directly with questions and context.</p>
+          </a>
+        </div>
       </section>
 
 
@@ -127,7 +160,7 @@
       // ==============================
 
       // 1) EDIT START LINE URL HERE
-      const START_LINE_URL = "./about/index.html";
+      const START_LINE_URL = "#brandHub";
 
       // 2) EDIT SUGGESTED PILLS HERE (keep short for minimal UI)
       const suggestedSearches = ["Body", "Career", "Sleep", "Focus", "Routine"];
