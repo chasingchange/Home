@@ -49,33 +49,39 @@
     </script>
   </head>
   <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page">
-    <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-5 py-14 sm:px-8">
-      <header class="mb-10 w-full border-b border-black/10 pb-4">
-        <nav id="coreTopBar" aria-label="Primary and tool navigation" class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] font-semibold tracking-[0.08em] text-cc-text/70">
-          <a href="./index.html" class="text-sm font-semibold tracking-normal text-cc-text">Start Line</a>
-          <a href="./testimonials.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Testimonials</a>
-          <a href="./about/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">About</a>
-          <a href="./apply-for-coaching/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Apply for Coaching</a>
-          <a href="./contact/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Contact</a>
-          <button type="button" data-core="Body" class="core-top-link transition hover:text-cc-text">BODY</button>
-          <button type="button" data-core="Art" class="core-top-link transition hover:text-cc-text">ART</button>
-          <button type="button" data-core="Mind" class="core-top-link transition hover:text-cc-text">MIND</button>
-          <button type="button" data-core="Soul" class="core-top-link transition hover:text-cc-text">SOUL</button>
-          <button type="button" data-core="Career" class="core-top-link transition hover:text-cc-text">CAREER</button>
-          <button type="button" data-core="Life" class="core-top-link transition hover:text-cc-text">LIFE</button>
+    <main class="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-start px-5 pt-4 pb-7 sm:px-8 sm:pt-5">
+      <header class="cc-global-header mb-6 w-full">
+        <nav id="coreTopBar" aria-label="Primary and tool navigation" class="cc-global-nav">
+          <a href="./index.html" aria-label="Go to Start Line search page" class="cc-nav-logo">
+            <img src="./Logo.png" alt="Chasing Change logo" />
+          </a>
+          <button type="button" class="cc-mobile-toggle" aria-expanded="false" aria-controls="globalNavLinks">☰</button>
+          <div id="globalNavLinks" class="cc-global-nav-links">
+            <a href="./testimonials.html" class="cc-signature-nav">Testimonials</a>
+            <a href="./about/index.html" class="cc-signature-nav">About</a>
+            <a href="https://tally.so/r/w5JXKE" data-apply-coaching class="cc-signature-nav">Apply for Coaching</a>
+            <a href="./contact/index.html" class="cc-signature-nav">Contact</a>
+            <button type="button" data-core="Body" class="cc-signature-nav core-top-link">Body</button>
+            <button type="button" data-core="Art" class="cc-signature-nav core-top-link">Art</button>
+            <button type="button" data-core="Mind" class="cc-signature-nav core-top-link">Mind</button>
+            <button type="button" data-core="Soul" class="cc-signature-nav core-top-link">Soul</button>
+            <button type="button" data-core="Career" class="cc-signature-nav core-top-link">Career</button>
+            <button type="button" data-core="Life" class="cc-signature-nav core-top-link">Life</button>
+          </div>
         </nav>
+        <div class="cc-global-title">
+          <h1 class="cc-global-title-name">Chasing Change</h1>
+          <p class="cc-global-title-subline">Pursuing Peace, Pursuing Purpose</p>
+        </div>
         <div id="coreMegaMenu" class="mt-3 hidden rounded-2xl bg-white/65 p-4">
           <p id="coreMegaMenuTitle" class="font-heading text-xl font-extrabold"></p>
           <div id="coreMegaMenuItems" class="mt-3 grid gap-2"></div>
         </div>
       </header>
 
-      <!-- Minimal brand label -->
-      <p class="mb-8 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
-
       <section class="w-full text-center" aria-labelledby="hero-heading">
         <!-- EDIT HERO COPY HERE -->
-        <h1 id="hero-heading" class="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">What are you chasing?</h1>
+        <h2 id="hero-heading" class="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">What are you chasing?</h2>
         <p class="mx-auto mt-4 max-w-2xl text-sm text-cc-text/70 sm:text-base">
           Start with a goal, problem, or question. We’ll point you in the right direction.
         </p>
@@ -109,10 +115,11 @@
       </section>
 
     </main>
-    <footer class="w-full px-5 pb-8 sm:px-8">
+    <footer class="w-full px-5 pb-4 sm:px-8">
       <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
     </footer>
 
+    <script src="./shared-global-nav.js"></script>
     <script>
 
       // ==============================
@@ -313,7 +320,7 @@
           type: "Application",
           core: "Career",
           description: "Apply for direct coaching support and personalized strategy.",
-          url: "./apply-for-coaching/index.html",
+          url: "https://tally.so/r/w5JXKE",
           status: "live",
           tags: ["coaching", "support"],
           keywords: ["help", "mentor", "coach", "apply"],
@@ -535,28 +542,32 @@
         renderResults(button.dataset.suggestion);
       });
 
-      coreTopBar.addEventListener("mouseover", (event) => {
+      let activeCoreTab = null;
+      coreTopBar.addEventListener("click", (event) => {
         const tab = event.target.closest("button[data-core]");
         if (!tab) return;
-        renderCoreMegaMenu(tab.dataset.core);
+        if (activeCoreTab === tab.dataset.core) {
+          activeCoreTab = null;
+          coreMegaMenu.classList.add("hidden");
+        } else {
+          activeCoreTab = tab.dataset.core;
+          renderCoreMegaMenu(tab.dataset.core);
+        }
         coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
-          btn.classList.toggle("text-cc-text", btn === tab);
-          btn.classList.toggle("underline", btn === tab);
-          btn.classList.toggle("underline-offset-4", btn === tab);
+          const isActive = activeCoreTab === btn.dataset.core;
+          btn.classList.toggle("bg-cc-text", isActive);
+          btn.classList.toggle("text-white", isActive);
         });
       });
 
-      coreTopBar.addEventListener("focusin", (event) => {
-        const tab = event.target.closest("button[data-core]");
-        if (!tab) return;
-        renderCoreMegaMenu(tab.dataset.core);
-      });
-
-      coreTopBar.addEventListener("mouseleave", () => {
-        coreMegaMenu.classList.add("hidden");
-        coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
-          btn.classList.remove("text-cc-text", "underline", "underline-offset-4");
-        });
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest("#coreTopBar") && !event.target.closest("#coreMegaMenu")) {
+          activeCoreTab = null;
+          coreMegaMenu.classList.add("hidden");
+          coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
+            btn.classList.remove("bg-cc-text", "text-white");
+          });
+        }
       });
 
       // initial render: minimal UI + elegant suggestions
