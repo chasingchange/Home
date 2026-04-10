@@ -435,7 +435,7 @@
           <span class="cc-title-home-label">LOG IN | CREATE ACCOUNT</span>
         </a>
         <a id="ccAccountStartLine" href="#" class="cc-title-home cc-account-start-line" hidden>
-          <span class="cc-title-home-label">START LINE CHASING CHANGE HOME</span>
+          <span class="cc-title-home-label">BACK TO START LINE</span>
         </a>
         <button id="ccAccountLogoutBtn" type="button" class="cc-title-home cc-account-start-line cc-account-logout-action" hidden>
           <span class="cc-title-home-label">LOG OUT</span>

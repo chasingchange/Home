@@ -50,8 +50,35 @@
   </head>
   <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page">
     <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-5 py-14 sm:px-8">
+      <header class="mb-8 w-full">
+        <nav aria-label="Primary" class="rounded-full bg-white/90 p-2 ring-1 ring-black/10 shadow-soft">
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <a href="./index.html" class="cc-signature-nav bg-cc-text text-white">Start Line</a>
+            <a href="./testimonials.html" class="cc-signature-nav">Testimonials</a>
+            <a href="./about/index.html" class="cc-signature-nav">About</a>
+            <a href="./apply-for-coaching/index.html" class="cc-signature-nav">Apply for Coaching</a>
+            <a href="./contact/index.html" class="cc-signature-nav">Contact</a>
+          </div>
+        </nav>
+        <div class="mt-3 rounded-3xl bg-white/95 p-3 ring-1 ring-black/10 shadow-soft">
+          <p class="px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-cc-text/55">Explore All Tools</p>
+          <nav id="coreTopBar" aria-label="Tool cores" class="mt-2 flex flex-wrap items-center gap-2 px-2">
+            <button type="button" data-core="Body" class="cc-signature-nav core-top-link">BODY</button>
+            <button type="button" data-core="Art" class="cc-signature-nav core-top-link">ART</button>
+            <button type="button" data-core="Mind" class="cc-signature-nav core-top-link">MIND</button>
+            <button type="button" data-core="Soul" class="cc-signature-nav core-top-link">SOUL</button>
+            <button type="button" data-core="Career" class="cc-signature-nav core-top-link">CAREER</button>
+            <button type="button" data-core="Life" class="cc-signature-nav core-top-link">LIFE</button>
+          </nav>
+          <div id="coreMegaMenu" class="mt-3 hidden rounded-2xl bg-cc-bg/90 p-4 ring-1 ring-black/10">
+            <p id="coreMegaMenuTitle" class="font-heading text-xl font-extrabold"></p>
+            <div id="coreMegaMenuItems" class="mt-3 grid gap-2"></div>
+          </div>
+        </div>
+      </header>
+
       <!-- Minimal brand label -->
-      <p class="mb-10 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
+      <p class="mb-8 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
 
       <section class="w-full text-center" aria-labelledby="hero-heading">
         <!-- EDIT HERO COPY HERE -->
@@ -86,35 +113,36 @@
           <div id="resultsPanel" class="mt-4 hidden rounded-2xl bg-cc-panel p-2 shadow-soft ring-1 ring-black/10" role="region" aria-live="polite" aria-label="Search results"></div>
         </div>
 
-        <a
-          id="startLineButton"
-          href="#"
-          class="cc-signature-nav mt-10"
-        >
-          Start Line | Chasing Change Homepage
-        </a>
+        <a id="startLineButton" href="#brandHub" class="cc-signature-nav mt-10">Not sure where to go? Start Here</a>
       </section>
 
-
-      <section class="mt-6 w-full" aria-labelledby="explore-tools-heading">
-        <details class="group rounded-3xl bg-cc-panel/90 p-5 shadow-soft ring-1 ring-black/10 sm:p-6">
-          <summary class="flex cursor-pointer list-none flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Tool Database</p>
-              <h2 id="explore-tools-heading" class="font-heading text-2xl font-extrabold">Explore All Tools</h2>
-            </div>
-            <p class="text-sm text-cc-text/70">Tap to expand and browse by core.</p>
-          </summary>
-
-          <div class="mt-4 border-t border-black/10 pt-4">
-            <div id="coreFilterTabs" class="flex flex-wrap gap-2" role="tablist" aria-label="Browse tools by core"></div>
-            <div id="coreCardsGrid" class="mt-5 grid gap-3 sm:grid-cols-2"></div>
-            <p id="noCoreToolsMessage" class="mt-5 hidden rounded-xl border border-dashed border-black/20 bg-white/75 p-4 text-sm text-cc-text/75">
-              No tools are published for this core yet. Try another core to explore what is live.
-            </p>
+      <section id="brandHub" class="mt-6 w-full rounded-3xl bg-cc-panel/95 p-5 shadow-soft ring-1 ring-black/10 sm:p-6" aria-labelledby="brand-hub-heading">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Brand Hub</p>
+            <h2 id="brand-hub-heading" class="font-heading text-2xl font-extrabold">Beyond Start Line</h2>
           </div>
-        </details>
+        </div>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <a href="./testimonials.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Testimonials</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Read race stories from people building momentum.</p>
+          </a>
+          <a href="./about/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">About</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Learn the mission and the six-core framework.</p>
+          </a>
+          <a href="./apply-for-coaching/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Apply for Coaching</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Take the next step when you're ready for support.</p>
+          </a>
+          <a href="./contact/index.html" class="rounded-2xl bg-white p-4 ring-1 ring-black/10 transition hover:-translate-y-0.5 hover:shadow-soft">
+            <h3 class="font-heading text-lg font-extrabold">Contact</h3>
+            <p class="mt-1 text-sm text-cc-text/70">Reach out directly with questions and context.</p>
+          </a>
+        </div>
       </section>
+
     </main>
 
     <script>
@@ -124,7 +152,7 @@
       // ==============================
 
       // 1) EDIT START LINE URL HERE
-      const START_LINE_URL = "./about/index.html";
+      const START_LINE_URL = "#brandHub";
 
       // 2) EDIT SUGGESTED PILLS HERE (keep short for minimal UI)
       const suggestedSearches = ["Body", "Career", "Sleep", "Focus", "Routine"];
@@ -335,16 +363,16 @@
       // ==============================
 
       const MAX_RESULTS = 6;
-      const CORE_ORDER = ["Body", "Art", "Mind", "Soul", "Career", "Life"];
 
       const searchInput = document.getElementById("searchInput");
       const resultsPanel = document.getElementById("resultsPanel");
       const suggestionsContainer = document.getElementById("suggestions");
       const startLineButton = document.getElementById("startLineButton");
       startLineButton.href = START_LINE_URL;
-      const coreFilterTabs = document.getElementById("coreFilterTabs");
-      const coreCardsGrid = document.getElementById("coreCardsGrid");
-      const noCoreToolsMessage = document.getElementById("noCoreToolsMessage");
+      const coreTopBar = document.getElementById("coreTopBar");
+      const coreMegaMenu = document.getElementById("coreMegaMenu");
+      const coreMegaMenuTitle = document.getElementById("coreMegaMenuTitle");
+      const coreMegaMenuItems = document.getElementById("coreMegaMenuItems");
 
       function normalizeText(value = "") {
         return value
@@ -505,43 +533,30 @@
           .join("");
       }
 
-      function coreCardTemplate(resource) {
-        const isLive = resource.status === "live";
-        const wrapperClasses = "group rounded-2xl border border-black/10 bg-white/85 p-4 transition hover:-translate-y-0.5 hover:border-cc-accent/70 hover:bg-white";
-        const innerHtml = `
-          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-cc-text/55">${resource.type}</p>
-          <h3 class="mt-1 font-heading text-lg font-bold text-cc-text">${resource.title}</h3>
-          <p class="mt-2 text-sm text-cc-text/75">${resource.description}</p>
-          <p class="mt-3 text-sm font-semibold ${isLive ? "text-cc-text" : "text-cc-text/60"}">${isLive ? "Open Tool" : "Coming Soon"}</p>
-        `;
-
-        if (!isLive) {
-          return `<article class="${wrapperClasses}">${innerHtml}</article>`;
-        }
-
-        return `<a href="${resource.url}" class="${wrapperClasses}">${innerHtml}</a>`;
+      function briefDescription(description = "") {
+        return description.split(".")[0].trim();
       }
 
-      function renderCoreTabs(activeCore) {
-        coreFilterTabs.innerHTML = CORE_ORDER.map((core) => {
-          const isActive = core === activeCore;
-          const classes = isActive
-            ? "rounded-full border border-cc-accent bg-cc-accent/20 px-3 py-1.5 text-xs font-bold tracking-wide text-cc-text"
-            : "rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold tracking-wide text-cc-text/75 transition hover:border-cc-accent hover:bg-white";
-          return `<button type="button" role="tab" aria-selected="${isActive}" data-core="${core}" class="${classes}">${core}</button>`;
-        }).join("");
-      }
+      function renderCoreMegaMenu(activeCore) {
+        const coreMatches = resources
+          .filter((resource) => normalizeText(resource.core) === normalizeText(activeCore))
+          .sort((a, b) => a.title.localeCompare(b.title));
 
-      function renderCoreCards(activeCore) {
-        const coreMatches = resources.filter((resource) => normalizeText(resource.core) === normalizeText(activeCore));
         if (!coreMatches.length) {
-          coreCardsGrid.innerHTML = "";
-          noCoreToolsMessage.classList.remove("hidden");
+          coreMegaMenu.classList.add("hidden");
           return;
         }
 
-        noCoreToolsMessage.classList.add("hidden");
-        coreCardsGrid.innerHTML = coreMatches.map(coreCardTemplate).join("");
+        coreMegaMenuTitle.textContent = `Explore ${activeCore}`;
+        coreMegaMenuItems.innerHTML = coreMatches.map((resource) => {
+          const descriptor = briefDescription(resource.description);
+          const itemClasses = "block rounded-xl px-2 py-1.5 transition hover:bg-white/90";
+          if (resource.status !== "live") {
+            return `<article class="${itemClasses}"><p class="font-heading text-[1.55rem] font-extrabold leading-tight text-cc-text">${resource.title} <span class="text-sm font-semibold text-cc-text/55">| ${descriptor} (Coming Soon)</span></p></article>`;
+          }
+          return `<a href="${resource.url}" class="${itemClasses}"><p class="font-heading text-[1.55rem] font-extrabold leading-tight text-cc-text">${resource.title} <span class="text-sm font-semibold text-cc-text/55">| ${descriptor}</span></p></a>`;
+        }).join("");
+        coreMegaMenu.classList.remove("hidden");
       }
 
 
@@ -557,18 +572,31 @@
         renderResults(button.dataset.suggestion);
       });
 
-      coreFilterTabs.addEventListener("click", (event) => {
+      coreTopBar.addEventListener("mouseover", (event) => {
         const tab = event.target.closest("button[data-core]");
         if (!tab) return;
-        const selectedCore = tab.dataset.core;
-        renderCoreTabs(selectedCore);
-        renderCoreCards(selectedCore);
+        renderCoreMegaMenu(tab.dataset.core);
+        coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
+          btn.classList.toggle("bg-cc-text", btn === tab);
+          btn.classList.toggle("text-white", btn === tab);
+        });
+      });
+
+      coreTopBar.addEventListener("focusin", (event) => {
+        const tab = event.target.closest("button[data-core]");
+        if (!tab) return;
+        renderCoreMegaMenu(tab.dataset.core);
+      });
+
+      coreTopBar.addEventListener("mouseleave", () => {
+        coreMegaMenu.classList.add("hidden");
+        coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
+          btn.classList.remove("bg-cc-text", "text-white");
+        });
       });
 
       // initial render: minimal UI + elegant suggestions
       renderSuggestions();
-      renderCoreTabs("Body");
-      renderCoreCards("Body");
     </script>
   </body>
 </html>
