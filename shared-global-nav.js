@@ -1,19 +1,14 @@
 (function () {
-  function removeLegacyTitleCards() {
-    document.querySelectorAll(".cc-title-block").forEach((node) => node.remove());
-    document.querySelectorAll(".cc-title-logo").forEach((node) => node.remove());
-    document.querySelectorAll(".cc-title-name, .cc-title-subline").forEach((node) => node.remove());
-    document.querySelectorAll('img[alt="Chasing Change logo"]').forEach((node) => node.remove());
-  }
+  function getSiteRootPath() {
+    const scriptSrc = document.currentScript?.src;
+    if (scriptSrc) {
+      const scriptUrl = new URL(scriptSrc, window.location.href);
+      return scriptUrl.pathname.replace(/\/shared-global-nav\.js$/, "/");
+    }
 
-  function getRootPrefix() {
-    const pathname = window.location.pathname.replace(/\/+$/, "");
-    const segments = pathname.split("/").filter(Boolean);
-    if (!segments.length) return "./";
-    const last = segments[segments.length - 1] || "";
-    const isFile = last.includes(".");
-    const depth = Math.max(0, segments.length - (isFile ? 1 : 0));
-    return depth ? "../".repeat(depth) : "./";
+    const pathname = window.location.pathname;
+    const lastSlash = pathname.lastIndexOf("/");
+    return `${pathname.slice(0, lastSlash + 1)}`;
   }
 
   removeLegacyTitleCards();
@@ -21,7 +16,7 @@
   const existingCoreTopBar = document.getElementById("coreTopBar");
   if (existingCoreTopBar) return;
 
-  const root = getRootPrefix();
+  const root = getSiteRootPath();
   const nav = document.createElement("header");
   nav.className = "cc-global-nav-wrap";
   nav.innerHTML = `
