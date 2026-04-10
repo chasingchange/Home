@@ -40,27 +40,47 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-6 sm:pt-5 sm:pb-7">
-      <header class="cc-global-header mb-4 sm:mb-5">
-        <nav class="cc-global-nav" aria-label="Global navigation">
-          <a href="../index.html" aria-label="Go to Start Line search page" class="cc-nav-logo">
-            <img src="../Logo.png" alt="Chasing Change logo" />
-          </a>
-          <button type="button" class="cc-mobile-toggle" aria-expanded="false" aria-controls="globalNavLinks">☰</button>
-          <div id="globalNavLinks" class="cc-global-nav-links">
-            <a href="../testimonials.html" class="cc-signature-nav">Testimonials</a>
-            <a href="../about/index.html" class="cc-signature-nav">About</a>
-            <a href="https://tally.so/r/w5JXKE" data-apply-coaching class="cc-signature-nav">Apply for Coaching</a>
-            <a href="../contact/index.html" class="cc-signature-nav">Contact</a>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <header class="cc-title-block mb-6 sm:mb-8">
+        <div class="cc-title-block-inner">
+          <div class="cc-title-block-top">
+            <div class="cc-title-brand">
+              <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
+              <h1 class="cc-title-name">Chasing Change</h1>
+            </div>
           </div>
-        </nav>
-        <div class="cc-global-title">
-          <h1 class="cc-global-title-name">Chasing Change</h1>
-          <p class="cc-global-title-subline">Pursuing Peace, Pursuing Purpose</p>
+          <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
         </div>
       </header>
 
       <main data-admin-edit-root class="space-y-6">
+        <section class="rounded-3xl bg-white/95 ring-1 ring-black/10 shadow-soft p-4 sm:p-5">
+          <nav>
+            <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+              <a href="../index.html" class="cc-signature-nav">Start Line</a>
+              <a href="../testimonials.html" class="cc-signature-nav">Testimonials</a>
+              <a href="./index.html" class="cc-signature-nav bg-cc-text text-white">About</a>
+              <a href="../apply-for-coaching/index.html" class="cc-signature-nav">Apply for Coaching</a>
+              <a href="../contact/index.html" class="cc-signature-nav">Contact</a>
+            </div>
+
+            <div class="md:hidden">
+              <button id="menuToggle" type="button" class="cc-signature-nav" aria-expanded="false" aria-controls="mobileMenu">
+                <span>Menu</span>
+                <span class="text-lg leading-none">☰</span>
+              </button>
+              <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
+                <div class="grid gap-1">
+                  <a href="../index.html" class="cc-signature-nav justify-start">Start Line</a>
+                  <a href="../testimonials.html" class="cc-signature-nav justify-start">Testimonials</a>
+                  <a href="./index.html" class="cc-signature-nav justify-start bg-cc-text text-white">About</a>
+                  <a href="../apply-for-coaching/index.html" class="cc-signature-nav justify-start">Apply for Coaching</a>
+                  <a href="../contact/index.html" class="cc-signature-nav justify-start">Contact</a>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </section>
 
         <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Welcome to Your Race</p>
@@ -97,10 +117,18 @@
           </article>
         </section>
 
-        <p class="mt-5 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
+        <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
       </main>
     </div>
 
-      <script src="../shared-global-nav.js"></script>
+    <script>
+      const menuToggle = document.getElementById("menuToggle");
+      const mobileMenu = document.getElementById("mobileMenu");
+      menuToggle?.addEventListener("click", () => {
+        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!expanded));
+        mobileMenu.classList.toggle("hidden");
+      });
+    </script>
   </body>
 </html>
