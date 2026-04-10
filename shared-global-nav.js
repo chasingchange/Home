@@ -1,18 +1,20 @@
 (function () {
-  function getRootPrefix() {
-    const pathname = window.location.pathname.replace(/\/+$/, "");
-    const segments = pathname.split("/").filter(Boolean);
-    if (!segments.length) return "./";
-    const last = segments[segments.length - 1] || "";
-    const isFile = last.includes(".");
-    const depth = Math.max(0, segments.length - (isFile ? 1 : 0));
-    return depth ? "../".repeat(depth) : "./";
+  function getSiteRootPath() {
+    const scriptSrc = document.currentScript?.src;
+    if (scriptSrc) {
+      const scriptUrl = new URL(scriptSrc, window.location.href);
+      return scriptUrl.pathname.replace(/\/shared-global-nav\.js$/, "/");
+    }
+
+    const pathname = window.location.pathname;
+    const lastSlash = pathname.lastIndexOf("/");
+    return `${pathname.slice(0, lastSlash + 1)}`;
   }
 
   const existingCoreTopBar = document.getElementById("coreTopBar");
   if (existingCoreTopBar) return;
 
-  const root = getRootPrefix();
+  const root = getSiteRootPath();
   const nav = document.createElement("header");
   nav.className = "cc-global-nav-wrap";
   nav.innerHTML = `

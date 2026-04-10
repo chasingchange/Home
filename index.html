@@ -51,26 +51,6 @@
   </head>
   <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page">
     <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-start px-5 pt-4 pb-6 sm:px-8">
-      <header class="mb-10 w-full border-b border-black/10 pb-4">
-        <nav id="coreTopBar" aria-label="Primary and tool navigation" class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] font-semibold tracking-[0.08em] text-cc-text/70">
-          <a href="./index.html" class="text-sm font-semibold tracking-normal text-cc-text">Start Line</a>
-          <a href="./testimonials.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Testimonials</a>
-          <a href="./about/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">About</a>
-          <a href="./apply-for-coaching/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Apply for Coaching</a>
-          <a href="./contact/index.html" class="text-sm font-medium tracking-normal hover:text-cc-text transition">Contact</a>
-          <button type="button" data-core="Body" class="core-top-link transition hover:text-cc-text">BODY</button>
-          <button type="button" data-core="Art" class="core-top-link transition hover:text-cc-text">ART</button>
-          <button type="button" data-core="Mind" class="core-top-link transition hover:text-cc-text">MIND</button>
-          <button type="button" data-core="Soul" class="core-top-link transition hover:text-cc-text">SOUL</button>
-          <button type="button" data-core="Career" class="core-top-link transition hover:text-cc-text">CAREER</button>
-          <button type="button" data-core="Life" class="core-top-link transition hover:text-cc-text">LIFE</button>
-        </nav>
-        <div id="coreMegaMenu" class="mt-3 hidden rounded-2xl bg-white/65 p-4">
-          <p id="coreMegaMenuTitle" class="font-heading text-xl font-extrabold"></p>
-          <div id="coreMegaMenuItems" class="mt-3 grid gap-2"></div>
-        </div>
-      </header>
-
       <!-- Minimal brand label -->
       <p class="mb-8 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
 
@@ -333,10 +313,6 @@
       const searchInput = document.getElementById("searchInput");
       const resultsPanel = document.getElementById("resultsPanel");
       const suggestionsContainer = document.getElementById("suggestions");
-      const coreTopBar = document.getElementById("coreTopBar");
-      const coreMegaMenu = document.getElementById("coreMegaMenu");
-      const coreMegaMenuTitle = document.getElementById("coreMegaMenuTitle");
-      const coreMegaMenuItems = document.getElementById("coreMegaMenuItems");
 
       function normalizeText(value = "") {
         return value
@@ -497,33 +473,6 @@
           .join("");
       }
 
-      function briefDescription(description = "") {
-        return description.split(".")[0].trim();
-      }
-
-      function renderCoreMegaMenu(activeCore) {
-        const coreMatches = resources
-          .filter((resource) => normalizeText(resource.core) === normalizeText(activeCore))
-          .sort((a, b) => a.title.localeCompare(b.title));
-
-        if (!coreMatches.length) {
-          coreMegaMenu.classList.add("hidden");
-          return;
-        }
-
-        coreMegaMenuTitle.textContent = `Explore ${activeCore}`;
-        coreMegaMenuItems.innerHTML = coreMatches.map((resource) => {
-          const descriptor = briefDescription(resource.description);
-          const itemClasses = "block rounded-xl px-2 py-1.5 transition hover:bg-white/90";
-          if (resource.status !== "live") {
-            return `<article class="${itemClasses}"><p class="font-heading text-[1.55rem] font-extrabold leading-tight text-cc-text">${resource.title} <span class="text-sm font-semibold text-cc-text/55">| ${descriptor} (Coming Soon)</span></p></article>`;
-          }
-          return `<a href="${resource.url}" class="${itemClasses}"><p class="font-heading text-[1.55rem] font-extrabold leading-tight text-cc-text">${resource.title} <span class="text-sm font-semibold text-cc-text/55">| ${descriptor}</span></p></a>`;
-        }).join("");
-        coreMegaMenu.classList.remove("hidden");
-      }
-
-
       searchInput.addEventListener("input", (event) => {
         renderResults(event.target.value);
       });
@@ -534,43 +483,6 @@
         searchInput.value = button.dataset.suggestion;
         searchInput.focus();
         renderResults(button.dataset.suggestion);
-      });
-
-      function setActiveCoreTab(activeTab) {
-        coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
-          btn.classList.toggle("text-cc-text", btn === activeTab);
-          btn.classList.toggle("underline", btn === activeTab);
-          btn.classList.toggle("underline-offset-4", btn === activeTab);
-          btn.setAttribute("aria-expanded", btn === activeTab ? "true" : "false");
-        });
-      }
-
-      coreTopBar.addEventListener("click", (event) => {
-        const tab = event.target.closest("button[data-core]");
-        if (!tab) return;
-
-        const isActive = tab.getAttribute("aria-expanded") === "true";
-        if (isActive) {
-          coreMegaMenu.classList.add("hidden");
-          setActiveCoreTab(null);
-          return;
-        }
-
-        renderCoreMegaMenu(tab.dataset.core);
-        setActiveCoreTab(tab);
-      });
-
-      coreTopBar.addEventListener("focusin", (event) => {
-        const tab = event.target.closest("button[data-core]");
-        if (!tab) return;
-        renderCoreMegaMenu(tab.dataset.core);
-        setActiveCoreTab(tab);
-      });
-
-      document.addEventListener("click", (event) => {
-        if (coreTopBar.contains(event.target) || coreMegaMenu.contains(event.target)) return;
-        coreMegaMenu.classList.add("hidden");
-        setActiveCoreTab(null);
       });
 
       // initial render: minimal UI + elegant suggestions

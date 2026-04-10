@@ -1009,9 +1009,10 @@ main[class*="max-w-"],
   justify-content: center;
   gap: 0.5rem 1.25rem;
   color: rgba(7, 31, 53, 0.7);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: clamp(1rem, 0.9rem + 0.3vw, 1.1rem);
+  font-weight: 500;
+  letter-spacing: normal;
+  font-family: var(--cc-body-font);
 }
 
 .cc-global-nav-link,
@@ -1025,9 +1026,9 @@ main[class*="max-w-"],
 }
 
 .cc-global-nav-link {
-  font-size: clamp(1rem, 0.9rem + 0.3vw, 1.1rem);
-  letter-spacing: normal;
-  font-weight: 500;
+  font-size: inherit;
+  letter-spacing: inherit;
+  font-weight: inherit;
 }
 
 .cc-global-nav-link--home {
@@ -1035,17 +1036,17 @@ main[class*="max-w-"],
   font-weight: 600;
 }
 
-.cc-global-nav-link:hover,
-.cc-global-nav-core:hover {
+.cc-global-nav-link:hover {
   color: #071f35;
 }
 
 .cc-global-nav-core {
-  border: 1px solid rgba(7, 31, 53, 0.25);
-  border-radius: 999px;
-  padding: 0.15rem 0.45rem;
-  font-size: clamp(0.88rem, 0.8rem + 0.25vw, 0.95rem);
-  letter-spacing: 0.08em;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+  letter-spacing: inherit;
+  font-weight: inherit;
 }
 
 .cc-global-nav-core.is-active {
