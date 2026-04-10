@@ -22,9 +22,10 @@
   nav.innerHTML = `
     <nav id="ccGlobalNav" aria-label="Primary and tool navigation" class="cc-global-nav">
       <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Start Line</a>
+      <a href="${root}index.html" class="cc-global-nav-link">Tools</a>
       <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
       <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
-      <a href="${root}apply-for-coaching/index.html" class="cc-global-nav-link">Apply for Coaching</a>
+      <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
       <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
       <button type="button" data-core="Body" class="cc-global-nav-core">BODY</button>
       <button type="button" data-core="Art" class="cc-global-nav-core">ART</button>
