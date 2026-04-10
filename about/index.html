@@ -31,8 +31,7 @@
               brand: ["Museo Moderno", "Raleway", "sans-serif"],
             },
             boxShadow: {
-              soft: "0 10px 30px rgba(7,31,53,0.10)",
-              neon: "0 24px 80px rgba(119,215,112,0.30)",
+              soft: "0 14px 45px rgba(7,31,53,0.08)",
             },
           },
         },
@@ -41,15 +40,9 @@
   </head>
 
   <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div class="absolute inset-0 -z-10 pointer-events-none">
-        <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
-        <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
-      </div>
-
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <header class="cc-title-block mb-6 sm:mb-8">
         <div class="cc-title-block-inner">
-          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cc-outline/20 blur-3xl"></div>
           <div class="cc-title-block-top">
             <div class="cc-title-brand">
               <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
@@ -60,43 +53,61 @@
         </div>
       </header>
 
-      <main data-admin-edit-root>
-        <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
+      <main data-admin-edit-root class="space-y-6">
+        <section class="rounded-3xl bg-white/95 ring-1 ring-black/10 shadow-soft p-4 sm:p-5">
           <nav>
             <div class="hidden md:inline-flex gap-2 p-1 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
-              <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Tools</a>
-              <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Testimonials</a>
-              <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">About</a>
-              <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Apply for Coaching</a>
-              <a href="../contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Contact</a>
-              <a href="../preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold text-cc-text hover:bg-white transition">Preparing the Route</a>
+              <a href="../index.html" class="cc-signature-nav">Start Line</a>
+              <a href="../testimonials.html" class="cc-signature-nav">Testimonials</a>
+              <a href="./index.html" class="cc-signature-nav bg-cc-text text-white">About</a>
+              <a href="../apply-for-coaching/index.html" class="cc-signature-nav">Apply for Coaching</a>
+              <a href="../contact/index.html" class="cc-signature-nav">Contact</a>
             </div>
 
             <div class="md:hidden">
-              <button id="menuToggle" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text" aria-expanded="false" aria-controls="mobileMenu">
+              <button id="menuToggle" type="button" class="cc-signature-nav" aria-expanded="false" aria-controls="mobileMenu">
                 <span>Menu</span>
                 <span class="text-lg leading-none">☰</span>
               </button>
               <div id="mobileMenu" class="hidden mt-2 p-2 rounded-xl bg-cc-text/5 ring-1 ring-black/10">
                 <div class="grid gap-1">
-                  <a href="../index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Tools</a>
-                  <a href="../testimonials.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Testimonials</a>
-                  <a href="./index.html" class="px-4 py-2 rounded-lg text-sm font-bold bg-cc-outline text-cc-text">About</a>
-                  <a href="../apply-for-coaching/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Apply for Coaching</a>
-                  <a href="../contact/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Contact</a>
-                  <a href="../preparing-route/index.html" class="px-4 py-2 rounded-lg text-sm font-bold hover:bg-white transition">Preparing the Route</a>
+                  <a href="../index.html" class="cc-signature-nav justify-start">Start Line</a>
+                  <a href="../testimonials.html" class="cc-signature-nav justify-start">Testimonials</a>
+                  <a href="./index.html" class="cc-signature-nav justify-start bg-cc-text text-white">About</a>
+                  <a href="../apply-for-coaching/index.html" class="cc-signature-nav justify-start">Apply for Coaching</a>
+                  <a href="../contact/index.html" class="cc-signature-nav justify-start">Contact</a>
                 </div>
               </div>
             </div>
           </nav>
+        </section>
 
-          <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
-            <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to Chase Change?</p>
-            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
+        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55">Welcome to Your Race</p>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold font-heading">The Chasing Change Hub</h2>
+          <p class="mt-3 max-w-3xl text-sm sm:text-base text-cc-text/75">You came in through Start Line. This hub is where you choose your lane, take action, and keep building momentum.</p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a href="../index.html" class="cc-signature-nav">Back to Start Line</a>
+            <a href="../index.html#coreTopBar" class="cc-signature-nav">Search the Chasing Change Ecosystem</a>
+            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="cc-signature-nav">Book a Free Transformation Call</a>
           </div>
+        </section>
 
-          <h2 class="mt-6 text-2xl sm:text-3xl font-extrabold font-heading">About the Founder</h2>
-          <article class="mt-4 rounded-2xl bg-white ring-1 ring-black/10 p-5 sm:p-6 space-y-3 text-sm sm:text-base">
+        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+          <h3 class="text-xl sm:text-2xl font-extrabold font-heading">Quick Links to the Six Cores</h3>
+          <div class="mt-4 grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <a href="../index.html#coreTopBar" class="rounded-2xl bg-cc-bg p-4 ring-1 ring-black/10"><span class="category-chip is-active" style="--chip-color:#77d770">BODY</span><p class="mt-2 text-sm text-cc-text/75">Nutrition, fitness, recovery, and equipment tools.</p></a>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4"><span class="category-chip" style="--chip-color:#ffbd59">ART</span><p class="mt-2 text-sm text-cc-text/75">Inspiration and creative expression systems.</p></article>
+            <a href="../career-core/index.html" class="rounded-2xl bg-cc-bg p-4 ring-1 ring-black/10"><span class="category-chip" style="--chip-color:#f02348">CAREER</span><p class="mt-2 text-sm text-cc-text/75">Clarity, wealth, and career progress.</p></a>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4"><span class="category-chip" style="--chip-color:#e46702">LIFE</span><p class="mt-2 text-sm text-cc-text/75">Identity, relationships, environment, experiences.</p></article>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4"><span class="category-chip" style="--chip-color:#4d96ff">MIND</span><p class="mt-2 text-sm text-cc-text/75">Focus, mindset, and emotional stamina.</p></article>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-4"><span class="category-chip" style="--chip-color:#8e6dff">SPIRIT</span><p class="mt-2 text-sm text-cc-text/75">Purpose, peace, and deeper alignment.</p></article>
+          </div>
+        </section>
+
+        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+          <h3 class="text-xl sm:text-2xl font-extrabold font-heading">About the Founder</h3>
+          <article class="mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6 space-y-3 text-sm sm:text-base">
             <p>Growing up gay, I always felt outside the room.</p>
             <p>Not straight enough for the straight world.</p>
             <p>Not attractive enough for the gay world.</p>
@@ -104,48 +115,6 @@
             <p>Now I teach it.</p>
             <p class="font-bold">— Tyler Wade, Founder of Chasing Change</p>
           </article>
-
-          <section class="mt-6 rounded-2xl bg-white ring-1 ring-black/10 p-5 sm:p-6">
-            <h3 class="text-xl sm:text-2xl font-extrabold font-heading">The Science of Chasing Change</h3>
-            <p class="mt-3 text-sm sm:text-base">Newsletter updates coming soon.</p>
-          </section>
-
-          <h3 class="mt-6 text-xl sm:text-2xl font-extrabold font-heading">The Core Definitions</h3>
-          <div class="mt-3 grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            <article class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
-              <span class="category-chip is-active" style="--chip-color:#77d770">BODY</span>
-              <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
-                <li>Nutrition</li>
-                <li>Fitness</li>
-                <li>Recovery</li>
-                <li>Equipment</li>
-              </ul>
-            </article>
-            <article class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
-              <span class="category-chip" style="--chip-color:#ffbd59">ART</span>
-              <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
-                <li>Inspiration</li>
-                <li>Creation</li>
-              </ul>
-            </article>
-            <article class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
-              <span class="category-chip" style="--chip-color:#f02348">CAREER</span>
-              <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
-                <li>Wealth</li>
-                <li>Job</li>
-                <li>Enterprise</li>
-              </ul>
-            </article>
-            <article class="rounded-2xl bg-white ring-1 ring-black/10 p-4">
-              <span class="category-chip" style="--chip-color:#e46702">LIFE</span>
-              <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
-                <li>Identity</li>
-                <li>Relationships</li>
-                <li>Environment</li>
-                <li>Experiences</li>
-              </ul>
-            </article>
-          </div>
         </section>
 
         <p class="mt-8 text-center text-xs sm:text-sm opacity-70">© 2026 Chasing Change — 1% better every day.</p>
