@@ -1062,6 +1062,7 @@ function getPriorityTargetForDay(dayIndex) {
 
 function getSlotPatternForSession() {
   const minutes = Number(state.sessionMinutes) || 45;
+  if (minutes <= 30) return ['Compound', 'Compound', 'Machine', 'Machine'];
   if (minutes <= 45) return ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated'];
   return [...baseSlotPattern];
 }
@@ -1546,7 +1547,7 @@ function answerAgent(question) {
     return `For ${state.gymType}, prioritize ${firstDay.slice(0, 2).map((x) => x.name).join(' and ')}. Swap machine work for dumbbell/bodyweight alternatives from your auto-built list.`;
   }
   if (q.includes('30') || q.includes('time') || q.includes('quick')) {
-    return 'Run 3 lifts per day: 1 priority movement, 1 secondary compound, 1 isolation finisher. Keep rests 60–90s for accessory work.';
+    return 'Run 4 lifts per day: 2 compounds + 2 machine movements. Skip isolation work and keep rests 60–90s so the session stays inside 30 minutes.';
   }
   if (q.includes('progress') || q.includes('overload') || q.includes('heavier')) {
     return 'Progression target: add 1 rep per set weekly until top of range, then increase load 2.5–5% and repeat.';
