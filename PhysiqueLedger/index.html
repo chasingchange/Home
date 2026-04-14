@@ -500,8 +500,7 @@
       <header>
         <h1 class="title">Physique Ledger</h1>
         <p class="subtitle">Build your daily breakfast meal plan, track calories/macros, and hit your targets.</p>
-        <a href="../index.html" class="cc-signature-nav" style="margin-top:10px;">← Back to Tool Database</a>
-      </header>
+</header>
 
       <div class="layout">
         <div class="tabs" role="tablist" aria-label="Physique Ledger tabs">
@@ -515,7 +514,7 @@
             <h2>Recipe Library</h2>
             <p class="muted">Search and filter recipes. Tap any recipe card to open full details.</p>
           </div>
-          <div id="mealCards" class="meal-cards"></div>
+          
 
           <div class="library-widget">
             <div class="row" style="align-items:center; margin-bottom:.45rem;">
@@ -523,11 +522,11 @@
               <button id="goToPlan" type="button" class="alt">View Full Meal Plan</button>
             </div>
             <p class="muted" style="margin:0 0 .55rem; font-size:.8rem;">Tap <strong>Add</strong> on any recipe to see these rings update instantly.</p>
-            <div id="quickRings" class="rings"></div>
+            
             <div class="row" style="align-items:center; margin:.8rem 0 .35rem;">
               <h3 id="quickWeekTitle">Work Week 1 Picks</h3>
             </div>
-            <div id="quickMeals" class="meal-items"></div>
+            
           </div>
 
           <div class="controls">
@@ -536,7 +535,7 @@
             <select id="cuisineFilter"></select>
           </div>
 
-          <div id="recipeList" class="recipe-list"></div>
+          
         </section>
 
         <section class="panel tab-panel" data-panel="plan">
@@ -565,7 +564,7 @@
                   </div>
                 </div>
               </details>
-              <div class="day-pills no-print" id="dayPills" style="margin:.5rem 0 .2rem;"></div>
+              
               <p id="importStatus" class="muted no-print" style="margin: 0 0 .45rem; font-size:.8rem;">Use this to pull targets saved from the Macro Calculator.</p>
               <div class="targets">
                 <label>Calories<input id="targetCalories" type="number" min="0" value="2200" /></label>
@@ -574,13 +573,13 @@
                 <label>Fat (g)<input id="targetFat" type="number" min="0" value="70" /></label>
               </div>
 
-              <div id="rings" class="rings"></div>
+              
 
               <h3 id="selectedMealsTitle" style="text-align:center; margin-top:1rem;">Selected Meals</h3>
               <div class="row no-print" style="margin-top:.45rem; justify-content:flex-end;">
                 <button id="clearDay" class="alt" type="button">Clear day</button>
               </div>
-              <div id="mealItems" class="meal-items"></div>
+              
             </div>
           </div>
 
@@ -600,7 +599,7 @@
               </select>
             </div>
             <p id="grocerySummary" class="muted" style="margin:.45rem 0;">0 items</p>
-            <div id="groceryItems" class="meal-items"></div>
+            
           </div>
         </section>
       </div>
@@ -1100,7 +1099,7 @@
         const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0;
         return `
           <div class="ring">
-            <div class="ring-chart" style="--pct:${pct.toFixed(1)}"></div>
+            
             <div>
               <strong>${label}</strong>
               <small>${Math.round(current)} / ${target}</small>
@@ -1295,7 +1294,7 @@
             <span>${grocery.length} items • ${checkedCount} checked • scaled ${prepDays}×</span>
             ${checkedCount ? '<button id="clearChecks" class="alt" type="button">Clear checks</button>' : ""}
           </div>
-          <div class="progress-track" style="margin-top:.55rem;"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="progress-track" style="margin-top:.55rem;"></div>
           <div class="muted" style="margin-top:.35rem;">Shopping progress: ${pct}%</div>
         `;
         if (!grocery.length) {
