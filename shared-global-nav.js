@@ -23,7 +23,7 @@
   nav.className = "cc-global-nav-wrap";
   nav.innerHTML = `
     <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
-      <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Start Line</a>
+      <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
       <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
       <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
       <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
@@ -107,4 +107,23 @@
     coreMegaMenu.classList.add("cc-is-hidden");
     setActiveCoreTab(null);
   });
+
+  const hasBottomCta = document.querySelector(".cc-bottom-coaching-wrap");
+  if (!hasBottomCta) {
+    const footer = document.querySelector("footer");
+    const copyrightLine = Array.from(document.querySelectorAll("p")).find((p) => /©\s*\d{4}\s*Chasing Change/i.test((p.textContent || "").trim()));
+    const anchor = footer || copyrightLine?.closest("footer") || copyrightLine;
+    const container = anchor?.parentElement;
+
+    if (anchor && container) {
+      const ctaWrap = document.createElement("section");
+      ctaWrap.className = "cc-bottom-coaching-wrap";
+      ctaWrap.innerHTML = `
+        <a href="https://tally.so/r/w5JXKE" class="cc-title-coaching cc-bottom-coaching" target="_blank" rel="noopener noreferrer">
+          Want this dialed in? Apply for coaching →
+        </a>
+      `;
+      container.insertBefore(ctaWrap, anchor);
+    }
+  }
 })();
