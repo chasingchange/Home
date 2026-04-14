@@ -92,6 +92,74 @@ const BASE_EXERCISE_MATRIX = [
 
 const CATEGORY_TO_MOVEMENT = { compound: "Compound", machine: "Machine", isolation: "Isolated" };
 
+function toEquipmentNeeded(equipment) {
+  return equipment || "Bodyweight";
+}
+
+function toDifficultyLevel(exercise) {
+  if (exercise.beginnerFriendly && exercise.fatigue === "low") return "Beginner";
+  if (!exercise.beginnerFriendly && exercise.fatigue === "high") return "Advanced";
+  return exercise.beginnerFriendly ? "Beginner" : "Intermediate";
+}
+
+function toMovementSummary(exercise) {
+  const byName = {
+    "Barbell Bench Press": "Press a barbell away from your chest while lying flat on a bench.",
+    "Cable Fly": "Bring cable handles inward in a wide hugging motion to train the chest.",
+    "Bulgarian Split Squat": "Lower into a split squat with your back foot elevated behind you."
+  };
+  if (byName[exercise.name]) return byName[exercise.name];
+
+  const pattern = exercise.movementPattern;
+  if (pattern === "press") return `Press the weight away from your body in a controlled ${exercise.angle} path.`;
+  if (pattern === "fly") return "Move your arms in a wide arc and bring them together under control.";
+  if (pattern === "dip") return "Lower your body between supports and press back up with control.";
+  if (pattern === "row") return "Pull the weight toward your torso and squeeze your upper back.";
+  if (pattern === "vertical pull") return "Pull from overhead down toward your upper chest without swinging.";
+  if (pattern === "pulldown") return "Pull the handle down with straight or mostly straight arms to train your back.";
+  if (pattern === "pullover") return "Move the weight in an arc from overhead toward your torso to train your lats.";
+  if (pattern === "upright row") return "Pull the handle upward close to your body to raise your elbows.";
+  if (pattern === "raise") return "Lift your arms out to the side with control, then lower slowly.";
+  if (pattern === "rear fly") return "Open your arms backward to train the rear shoulder and upper back.";
+  if (pattern === "squat") return "Lower into a squat and stand back up while keeping your balance and control.";
+  if (pattern === "lunge") return "Step into a split stance, lower down, and drive back up through the lead leg.";
+  if (pattern === "extension") return "Straighten the target joint against resistance to isolate the working muscle.";
+  if (pattern === "hinge") return "Push your hips back, keep your spine neutral, and drive hips forward to stand tall.";
+  if (pattern === "curl") return "Bend your knees or elbows against resistance and lower with control.";
+  if (pattern === "hip thrust") return "Drive your hips upward from a supported position and squeeze at the top.";
+  if (pattern === "abduction") return "Move your legs outward against resistance to train the side glutes.";
+  if (pattern === "calf raise") return "Press through the balls of your feet to rise onto your toes, then lower slowly.";
+  if (pattern === "dorsiflexion") return "Lift your toes toward your shins under control to train the front of your lower legs.";
+  return "Perform the movement with controlled tempo through a full comfortable range.";
+}
+
+function toWhenToChoose(exercise) {
+  if (exercise.category === "machine") return "Choose this when you want more stability and easier setup while still training hard.";
+  if (exercise.category === "isolation") return "Choose this when you want to focus on one muscle with less whole-body fatigue.";
+  if (exercise.laterality === "unilateral") return "Choose this when you want to fix side-to-side strength gaps and improve balance.";
+  if (exercise.beginnerFriendly) return "Choose this when you want a reliable main movement that is easy to learn and progress.";
+  return "Choose this when you want a demanding strength movement and can maintain strong technique.";
+}
+
+function toSimpleExecutionCue(exercise) {
+  const pattern = exercise.movementPattern;
+  if (pattern === "press") return "Keep your wrists stacked, control the lowering phase, and press smoothly without bouncing.";
+  if (pattern === "fly") return "Keep a soft bend in your elbows and move through a smooth arc.";
+  if (pattern === "dip") return "Stay tall through your chest, lower under control, and avoid crashing into the bottom.";
+  if (pattern === "row") return "Brace your core, pull with your elbows, and avoid jerking the weight.";
+  if (pattern === "vertical pull" || pattern === "pulldown") return "Pull your elbows down without swinging, then return with control.";
+  if (pattern === "pullover") return "Keep ribs down and move from your shoulders, not your lower back.";
+  if (pattern === "raise" || pattern === "upright row" || pattern === "rear fly") return "Use a light enough load to stay smooth and avoid shrugging hard.";
+  if (pattern === "squat" || pattern === "lunge") return "Keep your full foot planted, knees tracking over toes, and chest controlled.";
+  if (pattern === "hinge") return "Hinge from your hips with a neutral spine and keep the load close to your body.";
+  if (pattern === "extension" || pattern === "curl") return "Move slowly, pause briefly at peak tension, and avoid momentum.";
+  if (pattern === "hip thrust") return "Tuck your ribs, drive through your heels, and fully squeeze at the top.";
+  if (pattern === "abduction") return "Stay upright, move through control, and do not bounce the weight.";
+  if (pattern === "calf raise" || pattern === "dorsiflexion") return "Use full range, pause at the top, and lower slowly each rep.";
+  return "Control each rep and stop before your form breaks down.";
+}
+
+
 function getExerciseInstructions(exercise) {
   const equipment = exercise.equipment || "available equipment";
   return `Set up ${exercise.name} with ${equipment}, brace your trunk, control the lowering phase, and stop 1-2 reps before form breaks.`;
@@ -99,6 +167,11 @@ function getExerciseInstructions(exercise) {
 
 window.EXERCISE_MATRIX = BASE_EXERCISE_MATRIX.map((exercise) => ({
   ...exercise,
+  movement_summary: toMovementSummary(exercise),
+  when_to_choose: toWhenToChoose(exercise),
+  simple_execution_cue: toSimpleExecutionCue(exercise),
+  equipment_needed: toEquipmentNeeded(exercise.equipment),
+  difficulty_level: toDifficultyLevel(exercise),
   movementType: CATEGORY_TO_MOVEMENT[exercise.category] || "Compound",
   instructions: exercise.instructions || getExerciseInstructions(exercise)
 }));
