@@ -1027,10 +1027,37 @@ function muscleMatchesTarget(muscle, targetMuscle) {
 function canonicalExerciseName(name) {
   return (name || '')
     .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/['’]/g, '')
     .replace(/\b(abductors|abductor)\b/g, 'abductor')
     .replace(/\b(adductors|adductor)\b/g, 'adductor')
+    .replace(/\bdb\b/g, 'dumbbell')
+    .replace(/\bbw\b/g, 'bodyweight')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
+}
+
+const EXERCISE_BY_ID = new Map(EXERCISES.map((exercise) => [exercise.id, exercise]));
+const EXERCISE_BY_CANONICAL_NAME = new Map();
+
+EXERCISES.forEach((exercise) => {
+  const keys = [exercise.name, ...(exercise.aliases || [])].map(canonicalExerciseName).filter(Boolean);
+  keys.forEach((key) => {
+    if (!EXERCISE_BY_CANONICAL_NAME.has(key)) EXERCISE_BY_CANONICAL_NAME.set(key, exercise);
+  });
+});
+
+function resolveExerciseByEntry(entry = {}) {
+  if (entry.id && EXERCISE_BY_ID.has(entry.id)) return EXERCISE_BY_ID.get(entry.id);
+  const byName = EXERCISE_BY_CANONICAL_NAME.get(canonicalExerciseName(entry.name || ''));
+  if (!byName) return null;
+  if (entry.targetMuscle && getMuscle(byName) !== entry.targetMuscle) {
+    const aligned = EXERCISES.find((exercise) =>
+      canonicalExerciseName(exercise.name) === canonicalExerciseName(entry.name || '')
+      && getMuscle(exercise) === entry.targetMuscle);
+    return aligned || byName;
+  }
+  return byName;
 }
 
 function getExercisesForSlot(slotType) {
@@ -1300,16 +1327,25 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
-  title.textContent = 'View';
+  title.textContent = exercise.name || 'Exercise Help';
   sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
+  const movementSummary = (exercise.movement_summary || '').trim();
+  const whenToChoose = (exercise.when_to_choose || '').trim();
+  const simpleCue = (exercise.simple_execution_cue || '').trim();
+  const equipmentNeeded = (exercise.equipment_needed || exercise.equipment || 'Bodyweight').trim();
+  const difficultyLevel = (exercise.difficulty_level || '').trim();
+  const hasStructuredHelp = !!(movementSummary || whenToChoose || simpleCue || difficultyLevel);
+  console.debug('[Split Sculptor] exercise help lookup', { exerciseId: exercise.id, metadataFound: hasStructuredHelp });
   const cards = [
-    { k: 'Targets', v: primary },
-    { k: 'Slot Type', v: slotType || movementType },
-    { k: 'Movement Class', v: movementType },
-    { k: 'Equipment', v: exercise.equipment || 'Bodyweight' }
+    { k: 'Movement summary', v: movementSummary || 'Description coming soon.' },
+    { k: 'When to choose', v: whenToChoose || 'Description coming soon.' },
+    { k: 'Execution cue', v: simpleCue || 'Description coming soon.' },
+    { k: 'Equipment needed', v: equipmentNeeded || 'Bodyweight' },
+    { k: 'Difficulty level', v: difficultyLevel || 'Description coming soon.' },
+    { k: 'Slot type', v: slotType || movementType }
   ];
   grid.innerHTML = cards.map((item) => `<div class="exercise-detail-card"><span class="k">${item.k}</span><span class="v">${item.v}</span></div>`).join('');
-  const instructionSteps = (exercise.instructions || '')
+  const instructionSteps = (exercise.instructions || simpleCue || '')
     .split('.')
     .map((step) => step.trim())
     .filter(Boolean)
@@ -1346,7 +1382,9 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
     : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
-  note.textContent = `${exercise.name}: ${targetLine} ${describeSlotIntent(slotType)}`;
+  note.textContent = hasStructuredHelp
+    ? `${exercise.name}: ${targetLine} ${describeSlotIntent(slotType)}`
+    : `${exercise.name}: Description coming soon. ${targetLine} Equipment: ${equipmentNeeded}.`;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -1387,7 +1425,7 @@ function renderDayCards() {
       const suggestedIds = starredSuggestions.map((option) => option.id);
       const suggestionSet = new Set(suggestedIds);
       const slotOptions = [...starredSuggestions, ...slotPool.filter((option) => !suggestionSet.has(option.id))];
-      const exercise = EXERCISES.find((x) => x.id === item.id);
+      const exercise = resolveExerciseByEntry(item);
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!item.targetMuscle || getMuscle(exercise) === item.targetMuscle);
       const hasSets = !!item.sets;
       const hasReps = !!item.reps;
@@ -1524,8 +1562,8 @@ function renderDayCards() {
     btn.onclick = () => {
       const [day, row] = btn.dataset.viewEx.split(':');
       const entry = state.customDays[state.freq][day][parseInt(row, 10)];
-      if (!entry?.id) return;
-      const selectedExercise = EXERCISES.find((item) => item.id === entry.id);
+      const selectedExercise = resolveExerciseByEntry(entry);
+      if (!selectedExercise) return;
       openExerciseDetailModal(selectedExercise, entry.slot, entry.targetMuscle);
     };
   });
@@ -1674,9 +1712,8 @@ function restoreState(payload) {
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
-        if (row.id && !EXERCISES.some((item) => item.id === row.id)) {
-          const migrated = EXERCISES.find((item) => item.name === row.name && (!row.targetMuscle || getMuscle(item) === row.targetMuscle))
-            || EXERCISES.find((item) => item.name === row.name);
+        if (!row.id || !EXERCISES.some((item) => item.id === row.id)) {
+          const migrated = resolveExerciseByEntry(row);
           row.id = migrated?.id || '';
           row.name = migrated?.name || row.name || '';
         }
