@@ -28,12 +28,13 @@
       <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
       <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
       <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
-      <button type="button" data-core="Body" class="cc-global-nav-core">BODY</button>
-      <button type="button" data-core="Art" class="cc-global-nav-core">ART</button>
-      <button type="button" data-core="Mind" class="cc-global-nav-core">MIND</button>
-      <button type="button" data-core="Soul" class="cc-global-nav-core">SOUL</button>
-      <button type="button" data-core="Career" class="cc-global-nav-core">CAREER</button>
-      <button type="button" data-core="Life" class="cc-global-nav-core">LIFE</button>
+      <span class="cc-global-nav-separator" aria-hidden="true">|</span>
+      <button type="button" data-core="Body" class="cc-global-nav-core">Body</button>
+      <button type="button" data-core="Art" class="cc-global-nav-core">Art</button>
+      <button type="button" data-core="Mind" class="cc-global-nav-core">Mind</button>
+      <button type="button" data-core="Soul" class="cc-global-nav-core">Soul</button>
+      <button type="button" data-core="Career" class="cc-global-nav-core">Career</button>
+      <button type="button" data-core="Life" class="cc-global-nav-core">Life</button>
     </nav>
     <section id="ccGlobalMegaMenu" class="cc-global-mega cc-is-hidden" aria-live="polite">
       <p id="ccGlobalMegaTitle" class="cc-global-mega-title"></p>
