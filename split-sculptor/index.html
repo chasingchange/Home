@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
 <script src="../exercise-matrix/data.js"></script>
 <script src="../shared-admin.js" defer></script>
-<script src="../shared-title-block.js" defer></script>
 <link rel="stylesheet" href="../shared.css" />
 <script src="../shared-global-nav.js" defer></script>
 <script src="../shared-session.js"></script>
@@ -224,8 +223,6 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .group-pill.vision { color: #2f5b2f; }
 .group-pill.diet { color: #7d5313; }
 .group-pill.fitness { color: #204a7a; }
-.cc-title-logo { width: 182px; height: 182px; }
-.cc-title-brand { gap: .08rem; }
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .input-grid { grid-template-columns: 1fr; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: .5rem; } }
@@ -234,28 +231,13 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </head>
 <body class="cc-page">
 <div class="page-shell" data-admin-edit-root>
-  <header class="cc-title-block">
-    <div class="cc-title-block-inner">
-      <div class="cc-title-block-top">
-        <div class="cc-title-brand">
-          <img src="../Logo.png" alt="Chasing Change logo" class="cc-title-logo" />
-          <div>
-            <h1 class="cc-title-name">Chasing Change</h1>
-          </div>
-        </div>
-      </div>
-      <p class="cc-title-subline">Pursuing Peace, Pursuing Purpose</p>
-      <div class="cc-page-title">Split Sculptor</div>
-      <div style="text-align:center; margin-top: 0.55rem;">
-        <a href="../index.html" class="cc-signature-nav">← Back to Tool Database</a>
-      </div>
-      <div style="text-align:center;">
-        <a href="https://tally.so/r/w5JXKE" data-coaching-popup-url="https://tally.so/r/w5JXKE" class="cc-title-coaching">
-          Want this dialed in? Apply for coaching →
-        </a>
-      </div>
-    </div>
-  </header>
+  <header class="mb-4">
+  <div class="cc-page-title">Split Sculptor</div>
+  <div style="text-align:center; margin-top: 0.55rem; display:flex; justify-content:center; gap:.65rem; flex-wrap:wrap;">
+    <a href="../index.html" class="cc-signature-nav">← Back to Tool Database</a>
+    <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noreferrer" class="cc-title-coaching">Want this dialed in? Apply for coaching →</a>
+  </div>
+</header>
 
 <div class="app">
   <div class="header">
