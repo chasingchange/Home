@@ -242,19 +242,21 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     
     <div class="step-counter" id="step-counter">STEP 1 OF 9</div>
   </div>
-  <div class="progress-track"></div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
 
   <div class="focus-pill-row">
     <div class="focus-pill vision">Vision</div>
     <div class="focus-pill diet">Diet</div>
     <div class="focus-pill fitness">Fitness</div>
   </div>
-  
+
+  <div class="timeline" id="timeline"></div>
 
   <div class="screen active" id="s1">
     <div class="step-eyebrow">STEP 1 · MACROCYCLE</div>
     <h1 class="step-title">What do you want to improve this quarter?</h1>
     <p class="step-sub">Choose one primary outcome so every other decision supports a clear target.</p>
+    <div class="startup-choice-card" id="startup-macrocycle-card"></div>
     
     <div class="chips" id="macro-chips">
       <div class="chip on" data-v="Build Visible Muscle">Build Visible Muscle</div>
@@ -269,16 +271,16 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 2 · MESOCYCLE</div>
     <h2 class="step-title">What strategy are you running this month?</h2>
     <p class="step-sub">Use the strategy that best matches your macrocycle goal.</p>
-    
-    
+    <div class="chips" id="meso-chips"></div>
+    <div class="rule" id="meso-rule"></div>
   </div>
 
   <div class="screen" id="s3">
     <div class="step-eyebrow">STEP 3 · NUTRITION</div>
     <h2 class="step-title">What do you need to eat to support your goal?</h2>
     <p class="step-sub">Select the calorie direction that fits your goal. Protein anchor: ~0.9–1.0g per lb bodyweight.</p>
-    
-    
+    <div class="chips" id="nutrition-chips"></div>
+    <div class="rule" id="nutrition-rule"></div>
   </div>
 
   <div class="screen" id="s4">
@@ -303,7 +305,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
         <div class="manual-field soft-pink"><label for="manual-fat">Fat (g)</label><input id="manual-fat" type="number" min="0" placeholder="e.g. 60" /></div>
       </div>
     </div>
-    
+    <div class="rule" id="macro-calc-rule"></div>
   </div>
 
   <div class="screen" id="s5">
@@ -317,6 +319,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="5">5 days</div>
       <div class="chip" data-v="6">6 days</div>
     </div>
+    <div class="rule" id="freq-rule"></div>
     <h3 class="step-title" style="margin-top:.2rem;">What is your usual session cap?</h3>
     <div class="chips" id="session-time-chips">
       <div class="chip" data-v="30">30 minutes</div>
@@ -325,16 +328,15 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="90">1.5 hours</div>
       <div class="chip" data-v="120">2 hours</div>
     </div>
-    
-    
+    <p class="step-sub" id="freq-priority-guide"></p>
   </div>
 
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · PRIORITY</div>
     <h2 class="step-title">How should we prioritize your week?</h2>
     <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. The first compound, first machine, and first isolated slot each auto-target that day’s selected priority muscle.</p>
-    
-    
+    <div class="priority-rank-list" id="priority-rank-list"></div>
+    <p class="rank-help" id="priority-rank-help"></p>
   </div>
 
   <div class="screen" id="s7">
@@ -346,10 +348,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <div class="chip" data-v="Apartment Gym">Apartment Gym</div>
       <div class="chip" data-v="Home Gym">Home Gym</div>
     </div>
-    
+    <div class="rule" id="gym-rule"></div>
     <div class="equipment-wrap" id="equipment-wrap">
       <input id="equipment-search" class="equipment-search" type="text" placeholder="Search equipment (e.g. bench, cable, pull-up bar)" />
-      
+      <div class="equipment-list" id="equipment-list"></div>
     </div>
   </div>
 
@@ -370,10 +372,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       </div>
     </div>
     <div class="builder-layout">
-      
-      
+      <div class="builder-day-tabs" id="builder-day-tabs"></div>
+      <div class="day-grid" id="builder-out"></div>
     </div>
-    
+    <p class="step-sub" id="builder-validation-msg"></p>
   </div>
 
   <div class="screen" id="s9">
@@ -387,10 +389,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
           <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
         </div>
         <div class="summary-panel active" id="overview-summary-panel">
-          
+          <div id="overview-summary-content"></div>
         </div>
         <div class="summary-panel" id="workouts-summary-panel">
-          
+          <div id="split-workouts-panel"></div>
         </div>
       </div>
       <aside class="summary-side" id="summary-save-card">
@@ -412,7 +414,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
               <button class="btn btn-p" type="button" id="save-selected-split-btn">Save / Overwrite Quarter</button>
             </div>
             <p class="split-warning">Warning: saving a Split Sculptor view to a quarter replaces any previously saved split data for that same year + quarter.</p>
-            
+            <p class="past-split-msg" id="summary-save-msg"></p>
           </div>
           <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
         </div>
@@ -438,7 +440,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
             <div class="past-split-actions">
               <button class="btn" type="button" id="load-selected-split-btn">Load Selected Split</button>
             </div>
-            
+            <p class="past-split-msg" id="past-split-msg"></p>
           </div>
         </div>
       </aside>
@@ -452,7 +454,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="nav">
     <button class="btn" id="back-btn" disabled>Back</button>
     <button class="btn btn-p" id="next-btn">Next</button>
-    
+    <div class="dots" id="dot-row"></div>
   </div>
 </div>
 </div>
@@ -466,9 +468,9 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
     </div>
-    
-    
-    
+    <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
+    <div class="exercise-detail-instructions" id="exercise-detail-instructions"></div>
+    <div class="exercise-detail-note" id="exercise-detail-note"></div>
   </div>
 </div>
 <p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
