@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
     <script src="../shared-session.js"></script>
+    <script src="../shared-coach.js"></script>
 
     <script>
       tailwind.config = {
@@ -138,6 +139,63 @@
           </div>
           <p id="viewAsMeta" class="mt-2 text-xs opacity-60">No account selected.</p>
           <div id="viewAsError" class="hidden mt-3 rounded-xl bg-red-50 ring-1 ring-red-200 px-4 py-3 text-sm font-semibold text-red-700"></div>
+        </section>
+
+        <!-- Coach dashboard -->
+        <section class="mb-6 rounded-3xl bg-white ring-1 ring-black/5 shadow-soft p-6 sm:p-8">
+          <div class="mb-4 h-1.5 w-12 rounded-full bg-cc-outline/70"></div>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-extrabold font-heading">Coach Dashboard</h2>
+              <p class="mt-1 text-sm opacity-60">Manage client profiles and saved tool records.</p>
+            </div>
+            <a href="../macro/index.html" class="rounded-xl bg-cc-bg px-3 py-1.5 text-xs font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Open Macro Calculator</a>
+          </div>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <input id="coachClientSearch" type="text" placeholder="Search clients by name, email, phone, notes…"
+              class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+            <button id="coachRefreshBtn" type="button"
+              class="rounded-xl bg-cc-outline px-5 py-3 text-sm font-extrabold text-cc-text transition hover:brightness-95">Refresh</button>
+          </div>
+
+          <div class="mt-4 grid gap-4 lg:grid-cols-2">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wide opacity-60">Client List</h3>
+              <div id="coachClientList" class="mt-2 grid gap-2"></div>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wide opacity-60">Client Profile</h3>
+              <form id="coachClientForm" class="mt-2 grid gap-2">
+                <input id="coachClientName" type="text" placeholder="Full name"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                <input id="coachClientEmail" type="email" placeholder="Email (optional)"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                <input id="coachClientPhone" type="text" placeholder="Phone (optional)"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
+                <textarea id="coachClientNotes" rows="3" placeholder="Coach notes"
+                  class="w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 transition focus:outline-none focus:ring-2 focus:ring-cc-outline/70"></textarea>
+                <input id="coachClientId" type="hidden" />
+                <div class="flex flex-wrap gap-2">
+                  <button id="coachCreateClientBtn" type="button" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text transition hover:brightness-95">Create Client</button>
+                  <button id="coachUpdateClientBtn" type="button" class="rounded-xl bg-cc-bg px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Update Client</button>
+                  <button id="coachArchiveClientBtn" type="button" class="rounded-xl bg-cc-bg px-4 py-2 text-sm font-extrabold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Archive Client</button>
+                </div>
+                <p id="coachClientFormMsg" class="text-xs font-semibold opacity-70"></p>
+              </form>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-4 lg:grid-cols-2">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wide opacity-60">Recently Updated</h3>
+              <div id="coachRecentUpdates" class="mt-2 grid gap-2"></div>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wide opacity-60">Tool Records</h3>
+              <div id="coachToolRecords" class="mt-2 grid gap-2"></div>
+            </div>
+          </div>
         </section>
 
         <!-- Create account (password optional) -->
@@ -264,6 +322,7 @@
       // ================================================================
 
       const sessionApi = window.ChasingChangeSession;
+      const coachApi = window.ChasingChangeCoach;
 
       // ── Toast ─────────────────────────────────────────────────────
       let toastTimer = null;
@@ -281,12 +340,14 @@
       }
 
       let cachedAccounts = [];
+      let selectedCoachClientId = "";
 
       function showAdminPanel() {
         document.getElementById("adminGate").classList.add("hidden");
         document.getElementById("adminPanel").classList.remove("hidden");
         refreshSessionStatus();
         refreshAccountDirectory();
+        renderCoachDashboard();
       }
 
       // Check on load
@@ -294,6 +355,7 @@
       sessionApi?.whenReady?.().then(() => {
         refreshSessionStatus();
         refreshAccountDirectory();
+        renderCoachDashboard();
       });
 
       // Gate form
@@ -404,6 +466,125 @@
         viewAsMeta.textContent = `${match.name} • ${match.email}`;
         showToast(`Now viewing the site as ${match.name}.`);
       });
+
+      function fillCoachClientForm(client = null) {
+        document.getElementById("coachClientId").value = client?.id || "";
+        document.getElementById("coachClientName").value = client?.name || "";
+        document.getElementById("coachClientEmail").value = client?.email || "";
+        document.getElementById("coachClientPhone").value = client?.phone || "";
+        document.getElementById("coachClientNotes").value = client?.notes || "";
+        selectedCoachClientId = client?.id || "";
+        if (client?.id) coachApi?.setActiveClientId?.(client.id);
+      }
+
+      function setCoachFormMessage(message, isError = false) {
+        const el = document.getElementById("coachClientFormMsg");
+        el.textContent = message || "";
+        el.classList.toggle("text-red-700", !!isError);
+        el.classList.toggle("opacity-70", !isError);
+      }
+
+      function renderCoachDashboard() {
+        if (!coachApi) return;
+        const search = document.getElementById("coachClientSearch")?.value || "";
+        const clients = coachApi.listClients({ search }) || [];
+        const listEl = document.getElementById("coachClientList");
+        const recentEl = document.getElementById("coachRecentUpdates");
+        const toolsEl = document.getElementById("coachToolRecords");
+        const activeClientId = selectedCoachClientId || coachApi.getActiveClientId();
+
+        listEl.innerHTML = clients.length
+          ? clients.map((client) => {
+            const toolCount = Object.keys(client.toolData || {}).length;
+            return `<button type="button" data-client-id="${client.id}" class="text-left rounded-xl px-3 py-2 ring-1 transition ${activeClientId === client.id ? "bg-cc-outline/20 ring-cc-outline/50" : "bg-cc-bg ring-black/10 hover:bg-black/5"}">
+              <p class="text-sm font-extrabold">${client.name}</p>
+              <p class="text-xs opacity-70">${client.email || "No email"} · ${toolCount} tool records</p>
+            </button>`;
+          }).join("")
+          : `<p class="rounded-xl bg-cc-bg px-3 py-2 text-sm opacity-70 ring-1 ring-black/10">No clients found. Create one to start saving tool data.</p>`;
+
+        const recent = [...clients].slice(0, 5);
+        recentEl.innerHTML = recent.length
+          ? recent.map((client) => `<div class="rounded-xl bg-cc-bg px-3 py-2 ring-1 ring-black/10">
+              <p class="text-sm font-bold">${client.name}</p>
+              <p class="text-xs opacity-70">Updated ${new Date(client.updatedAt).toLocaleString()}</p>
+            </div>`).join("")
+          : `<p class="rounded-xl bg-cc-bg px-3 py-2 text-sm opacity-70 ring-1 ring-black/10">No recent updates yet.</p>`;
+
+        const active = clients.find((client) => client.id === activeClientId) || coachApi.getClientById(activeClientId);
+        const toolEntries = Object.entries(active?.toolData || {});
+        toolsEl.innerHTML = active && toolEntries.length
+          ? toolEntries.map(([toolKey, value]) => `<div class="rounded-xl bg-cc-bg px-3 py-2 ring-1 ring-black/10">
+              <p class="text-sm font-extrabold">${toolKey}</p>
+              <p class="text-xs opacity-70">Last updated ${new Date(value.updatedAt).toLocaleString()}</p>
+            </div>`).join("")
+          : `<p class="rounded-xl bg-cc-bg px-3 py-2 text-sm opacity-70 ring-1 ring-black/10">Select a client to view tool records.</p>`;
+
+        listEl.querySelectorAll("[data-client-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const client = coachApi.getClientById(btn.dataset.clientId);
+            fillCoachClientForm(client);
+            renderCoachDashboard();
+          });
+        });
+
+        if (active) fillCoachClientForm(active);
+      }
+
+      document.getElementById("coachRefreshBtn")?.addEventListener("click", renderCoachDashboard);
+      document.getElementById("coachClientSearch")?.addEventListener("input", renderCoachDashboard);
+      document.getElementById("coachCreateClientBtn")?.addEventListener("click", () => {
+        const result = coachApi?.createClient?.({
+          name: document.getElementById("coachClientName").value,
+          email: document.getElementById("coachClientEmail").value,
+          phone: document.getElementById("coachClientPhone").value,
+          notes: document.getElementById("coachClientNotes").value,
+        });
+        if (!result?.ok) {
+          setCoachFormMessage(result?.error || "Unable to create client.", true);
+          return;
+        }
+        setCoachFormMessage(`Created ${result.client.name}.`);
+        fillCoachClientForm(result.client);
+        renderCoachDashboard();
+      });
+
+      document.getElementById("coachUpdateClientBtn")?.addEventListener("click", () => {
+        const clientId = document.getElementById("coachClientId").value;
+        const result = coachApi?.updateClient?.(clientId, {
+          name: document.getElementById("coachClientName").value,
+          email: document.getElementById("coachClientEmail").value,
+          phone: document.getElementById("coachClientPhone").value,
+          notes: document.getElementById("coachClientNotes").value,
+        });
+        if (!result?.ok) {
+          setCoachFormMessage(result?.error || "Unable to update client.", true);
+          return;
+        }
+        setCoachFormMessage(`Updated ${result.client.name}.`);
+        fillCoachClientForm(result.client);
+        renderCoachDashboard();
+      });
+
+      document.getElementById("coachArchiveClientBtn")?.addEventListener("click", () => {
+        const clientId = document.getElementById("coachClientId").value;
+        if (!clientId) {
+          setCoachFormMessage("Choose a client first.", true);
+          return;
+        }
+        const confirmed = window.confirm("Archive this client? Tool records remain available in storage if needed.");
+        if (!confirmed) return;
+        const result = coachApi?.deleteOrArchiveClient?.(clientId);
+        if (!result?.ok) {
+          setCoachFormMessage(result?.error || "Unable to archive client.", true);
+          return;
+        }
+        setCoachFormMessage("Client archived.");
+        fillCoachClientForm(null);
+        renderCoachDashboard();
+      });
+
+      window.addEventListener("cc-coach-clients-changed", renderCoachDashboard);
 
       // ── Admin Create Account ──────────────────────────────────────
       let acHeightUnit = "imperial";

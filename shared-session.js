@@ -488,6 +488,7 @@
       const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
       const isRoadmapPage = normalizedPath.includes("/physique-roadmap/index.html");
       const isLoggedIn = !!getCurrentUserEmail();
+      const isCoachMode = sessionStorage.getItem("ccAdminAuthed") === "1";
 
       card.hidden = isCreateAccountPage;
       if (isCreateAccountPage) return;
@@ -504,7 +505,10 @@
 
       const message = isLoggedIn ? "Welcome to Your Race, Tyler Wade" : "Welcome to Your Race";
       statusEl.textContent = message;
-      if (subStatusEl) subStatusEl.textContent = isLoggedIn ? "Your account is ready. Let's get to work." : "Log in to access your personalized dashboard.";
+      if (subStatusEl) {
+        if (isCoachMode) subStatusEl.textContent = "Coach/Admin mode is active. Client save and dashboard controls are unlocked.";
+        else subStatusEl.textContent = isLoggedIn ? "Your account is ready. Let's get to work." : "Log in to access your personalized dashboard.";
+      }
       card.classList.toggle("is-logged-in", isLoggedIn);
 
       if (accountLogoutBtn) {
