@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="../shared.css" />
 <script src="../shared-global-nav.js" defer></script>
 <script src="../shared-session.js"></script>
+<script src="../shared-coach.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root {
@@ -443,6 +444,25 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
             <p class="past-split-msg" id="past-split-msg"></p>
           </div>
         </div>
+        <div id="coachSplitCard" class="week" style="display:none;">
+          <h3>Coach Client Record</h3>
+          <p class="step-sub" style="margin-bottom:.6rem;">Save/load this split under a specific client profile.</p>
+          <div class="past-split-controls" style="grid-template-columns:1fr;">
+            <div>
+              <label for="coach-split-client-select">Client</label>
+              <select id="coach-split-client-select"></select>
+            </div>
+          </div>
+          <div class="past-split-actions">
+            <button class="btn" type="button" id="coach-split-load-btn">Load Client Data</button>
+            <button class="btn btn-p" type="button" id="coach-split-save-btn">Save to Client</button>
+          </div>
+          <input id="coach-split-new-client-name" type="text" placeholder="New client full name" style="margin-top:.55rem;" />
+          <button class="btn" type="button" id="coach-split-create-client-btn" style="margin-top:.45rem;">Create Client</button>
+          <textarea id="coach-split-notes" rows="2" placeholder="Coach notes for this split save (optional)" style="margin-top:.55rem;"></textarea>
+          <p class="past-split-msg" id="coach-split-msg"></p>
+          <a class="btn" href="../admin/index.html" style="margin-top:.45rem;display:inline-flex;">Open Admin Dashboard</a>
+        </div>
       </aside>
     </div>
     <div class="nav" style="border-top:0;padding-top:.2rem;">
@@ -509,6 +529,8 @@ const state = {
   manualTargets: {}
 };
 let splitArchive = {};
+const coachApi = window.ChasingChangeCoach;
+const COACH_SPLIT_TOOL_KEY = 'split_sculptor';
 
 function quarterKey(year, quarter) {
   return `${year}-Q${quarter}`;
@@ -1825,6 +1847,100 @@ function syncPastSplitsPanel() {
   controls.saveMsg.textContent = '';
   if (isLoggedIn) renderPastSplitSelectors();
   renderStartupMacrocycleCard();
+  syncCoachSplitPanel();
+}
+
+function setCoachSplitMessage(message, isError = false) {
+  const el = document.getElementById('coach-split-msg');
+  if (!el) return;
+  el.textContent = message || '';
+  el.style.color = isError ? '#b91c1c' : '';
+}
+
+function syncCoachSplitPanel() {
+  const card = document.getElementById('coachSplitCard');
+  if (!card || !coachApi) return;
+  const isCoach = coachApi.isCoachMode?.();
+  card.style.display = isCoach ? 'block' : 'none';
+  if (!isCoach) return;
+
+  const clients = coachApi.listClients?.() || [];
+  const select = document.getElementById('coach-split-client-select');
+  const activeClientId = coachApi.getActiveClientId?.();
+  select.innerHTML = clients.length
+    ? clients.map((client) => `<option value="${client.id}"${client.id === activeClientId ? ' selected' : ''}>${client.name}</option>`).join('')
+    : '<option value=\"\">No clients yet</option>';
+}
+
+function getCoachSplitClientId() {
+  return document.getElementById('coach-split-client-select')?.value || '';
+}
+
+function saveSplitToCoachClient() {
+  const clientId = getCoachSplitClientId();
+  if (!clientId) {
+    setCoachSplitMessage('Choose a client first.', true);
+    return;
+  }
+  const payload = {
+    summary: {
+      macro: state.macro,
+      meso: state.meso,
+      nutrition: state.nutrition,
+      priority: state.priority,
+      freq: state.freq,
+      updatedAt: new Date().toISOString(),
+    },
+    splitState: getSerializableState(),
+    macroTargets: readMacroTargets(),
+  };
+  const notes = document.getElementById('coach-split-notes')?.value?.trim() || '';
+  const result = coachApi.saveToolData?.(clientId, COACH_SPLIT_TOOL_KEY, {
+    savedValues: payload,
+    coachNotes: notes,
+  });
+  if (!result?.ok) {
+    setCoachSplitMessage(result?.error || 'Unable to save split for this client.', true);
+    return;
+  }
+  coachApi.setActiveClientId?.(clientId);
+  setCoachSplitMessage(`Saved split data to ${result.client.name}.`);
+  syncCoachSplitPanel();
+}
+
+function loadSplitFromCoachClient() {
+  const clientId = getCoachSplitClientId();
+  if (!clientId) {
+    setCoachSplitMessage('Choose a client first.', true);
+    return;
+  }
+  const toolRecord = coachApi.loadToolData?.(clientId, COACH_SPLIT_TOOL_KEY);
+  const payload = toolRecord?.savedValues;
+  if (!payload?.splitState) {
+    setCoachSplitMessage('No saved split data found for this client.', true);
+    return;
+  }
+  restoreState(payload.splitState);
+  buildSummary();
+  setCoachSplitMessage(`Loaded split data saved ${formatSavedAt(toolRecord.updatedAt)}.`);
+}
+
+function createCoachClientFromSplit() {
+  const input = document.getElementById('coach-split-new-client-name');
+  const name = input?.value?.trim() || '';
+  if (!name) {
+    setCoachSplitMessage('Enter a full name to create a client.', true);
+    return;
+  }
+  const result = coachApi.createClient?.({ name });
+  if (!result?.ok) {
+    setCoachSplitMessage(result?.error || 'Unable to create client.', true);
+    return;
+  }
+  if (input) input.value = '';
+  coachApi.setActiveClientId?.(result.client.id);
+  syncCoachSplitPanel();
+  setCoachSplitMessage(`Created client ${result.client.name}.`);
 }
 
 function getSavedSplitEntries() {
@@ -1941,9 +2057,10 @@ refreshSplitArchiveUi();
 document.getElementById('equipment-search').addEventListener('input', renderEquipmentOptions);
 
 window.addEventListener('cc-session-changed', refreshSplitArchiveUi);
+window.addEventListener('cc-coach-clients-changed', syncCoachSplitPanel);
 window.addEventListener('focus', refreshSplitArchiveUi);
 window.addEventListener('storage', (event) => {
-  if (!event.key || event.key === 'ccAccounts' || event.key === 'ccSession') {
+  if (!event.key || event.key === 'ccAccounts' || event.key === 'ccSession' || event.key === 'ccCoachClients' || event.key === 'ccAdminAuthed') {
     refreshSplitArchiveUi();
   }
 });
@@ -2026,6 +2143,12 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
 
 document.getElementById('agent-btn').addEventListener('click', () => {
   document.getElementById('agent-out').textContent = answerAgent(document.getElementById('agent-q').value);
+});
+document.getElementById('coach-split-save-btn')?.addEventListener('click', saveSplitToCoachClient);
+document.getElementById('coach-split-load-btn')?.addEventListener('click', loadSplitFromCoachClient);
+document.getElementById('coach-split-create-client-btn')?.addEventListener('click', createCoachClientFromSplit);
+document.getElementById('coach-split-client-select')?.addEventListener('change', (event) => {
+  coachApi?.setActiveClientId?.(event.target.value);
 });
 document.getElementById('agent-q').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
