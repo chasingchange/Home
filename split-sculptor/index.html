@@ -158,6 +158,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .day-type-control { min-width: 180px; }
 .day-type-control label { display: block; margin-bottom: .25rem; font-family: 'Raleway', sans-serif; font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
 .day-type-control select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .4rem .48rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.btn-compact { padding: .55rem .8rem; white-space: nowrap; }
 .equipment-wrap { display: none; margin-top: .8rem; border: 1px solid var(--border); border-radius: 12px; padding: .7rem; background: #fff; }
 .equipment-wrap.show { display: block; }
 .equipment-search { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; margin-bottom: .55rem; }
@@ -1474,6 +1475,34 @@ function closeExerciseDetailModal() {
   modal.setAttribute('aria-hidden', 'true');
 }
 
+function removeMicrocycleDay(dayNumber) {
+  const dayCount = getSplitForFreq().length;
+  if (dayCount <= 1) return;
+  const keys = Array.from({ length: dayCount }, (_, index) => `d${index + 1}`);
+  const nextCustomDays = {};
+  const nextDayTypes = {};
+  const nextDayPriorities = {};
+  const customDaysForFreq = state.customDays[state.freq] || {};
+  const dayTypesForFreq = state.dayTypes[state.freq] || {};
+
+  keys.forEach((sourceKey, sourceIndex) => {
+    const sourceDay = sourceIndex + 1;
+    if (sourceDay === dayNumber) return;
+    const targetIndex = sourceDay < dayNumber ? sourceIndex : sourceIndex - 1;
+    const targetKey = `d${targetIndex + 1}`;
+    if (customDaysForFreq[sourceKey]) nextCustomDays[targetKey] = customDaysForFreq[sourceKey];
+    if (dayTypesForFreq[sourceKey]) nextDayTypes[targetKey] = dayTypesForFreq[sourceKey];
+    if (state.dayPriorities[sourceKey]) nextDayPriorities[targetKey] = state.dayPriorities[sourceKey];
+  });
+
+  state.customDays[state.freq] = nextCustomDays;
+  state.dayTypes[state.freq] = nextDayTypes;
+  state.dayPriorities = nextDayPriorities;
+  state.activeBuilderDay = Math.min(state.activeBuilderDay, Math.max(1, dayCount - 1));
+  applyPriorityProfileForFrequency();
+  applyPriorityTargetsToBaseRows();
+}
+
 function renderDayCards() {
   const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
@@ -1561,14 +1590,17 @@ function renderDayCards() {
           </select>
         </div>`
       : `<span class="day-type-badge">${dayFocus}</span>`;
-    return `<div class="day-card"><div class="day-heading-row"><h4>Day ${i + 1} · Priority Target: ${dayTarget}</h4>${dayTypeControl}</div>${rows}
-      <div class="slot-controls" style="grid-template-columns:1fr 170px;">
-        <button type="button" class="btn" data-add-slot="${dayKey}">＋ Add movement</button>
+    const deleteDayButton = split.length > 1
+      ? `<button type="button" class="btn btn-compact" data-remove-day="${i + 1}">Delete Day</button>`
+      : '';
+    return `<div class="day-card"><div class="day-heading-row"><h4>Day ${i + 1} · Priority Target: ${dayTarget}</h4><div style="display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;">${dayTypeControl}${deleteDayButton}</div></div>${rows}
+      <div class="slot-controls" style="grid-template-columns:minmax(0,1fr) 132px;">
         <select class="slot-select" data-add-type="${dayKey}">
           <option value="Compound">Compound</option>
           <option value="Machine">Machine</option>
           <option value="Isolated" selected>Isolated</option>
         </select>
+        <button type="button" class="btn btn-compact" data-add-slot="${dayKey}">＋ Add</button>
       </div>
     </div>`;
   }).join('')}`;
@@ -1594,6 +1626,15 @@ function renderDayCards() {
       applyPriorityProfileForFrequency();
       applyPriorityTargetsToBaseRows();
       renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  out.querySelectorAll('[data-remove-day]').forEach((btn) => {
+    btn.onclick = () => {
+      const dayNumber = parseInt(btn.dataset.removeDay, 10);
+      removeMicrocycleDay(dayNumber);
+      renderDayCards();
+      buildPriorityRanker();
       if (state.step >= 9) buildSummary();
     };
   });
