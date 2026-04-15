@@ -152,6 +152,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
 .builder-day-tab.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); }
+.builder-day-actions { display: flex; justify-content: flex-end; margin-bottom: .65rem; }
+.day-heading-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .55rem; }
+.day-type-badge { border: 1px solid rgba(89,195,82,.45); background: rgba(119,215,112,.16); border-radius: 999px; padding: .22rem .6rem; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text); font-weight: 800; }
+.day-type-control { min-width: 180px; }
+.day-type-control label { display: block; margin-bottom: .25rem; font-family: 'Raleway', sans-serif; font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.day-type-control select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .4rem .48rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
 .equipment-wrap { display: none; margin-top: .8rem; border: 1px solid var(--border); border-radius: 12px; padding: .7rem; background: #fff; }
 .equipment-wrap.show { display: block; }
 .equipment-search { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; margin-bottom: .55rem; }
@@ -335,7 +341,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s6">
     <div class="step-eyebrow">STEP 6 · PRIORITY</div>
     <h2 class="step-title">How should we prioritize your week?</h2>
-    <p class="step-sub">Pick your primary muscle for each training day in Push → Pull → Legs order. The first compound, first machine, and first isolated slot each auto-target that day’s selected priority muscle.</p>
+    <p class="step-sub">Pick your primary muscle for each training day. For plans over 3 days, each day can use its own split type (Push, Pull, Legs, Upper, Lower). The first compound, first machine, and first isolated slot each auto-target that day’s selected priority muscle.</p>
     <div class="priority-rank-list" id="priority-rank-list"></div>
     <p class="rank-help" id="priority-rank-help"></p>
   </div>
@@ -359,7 +365,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s8">
     <div class="step-eyebrow">STEP 8 · MICROCYCLE BUILDER</div>
     <h2 class="step-title">Build each training day</h2>
-    <p class="step-sub">Choose each slot’s target muscle + movement, then select sets and reps. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower).</p>
+    <p class="step-sub">Choose each slot’s target muscle + movement, then select sets and reps. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower). You can also add extra training days here if your week expands.</p>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
@@ -526,6 +532,7 @@ const state = {
   viewQuarter: currentQuarter.quarter,
   freq: 3,
   customDays: {},
+  dayTypes: {},
   manualTargets: {}
 };
 let splitArchive = {};
@@ -592,6 +599,7 @@ const splitByFreq = {
   5: ['Push (Priority First)', 'Pull', 'Legs', 'Upper', 'Lower'],
   6: ['Push (Priority First)', 'Pull', 'Legs', 'Push', 'Pull', 'Legs']
 };
+const DAY_TYPE_OPTIONS = ['Push', 'Pull', 'Legs', 'Upper', 'Lower'];
 
 const freqRule = {
   2: '2 days → Full Body x2.',
@@ -705,7 +713,36 @@ function getPriorityFocus() {
 }
 
 function getSplitForFreq() {
-  return splitByFreq[state.freq] ? [...splitByFreq[state.freq]] : [...splitByFreq[3]];
+  const dayTypes = getMicrocycleDayTypes();
+  return dayTypes.map((type, index) => `${type}${index === 0 ? ' (Priority First)' : ''}`);
+}
+
+function getBaseSplitTypesForFreq(freq = state.freq) {
+  const template = splitByFreq[freq] ? [...splitByFreq[freq]] : [...splitByFreq[3]];
+  return template.map((line) => extractFocusName(line));
+}
+
+function getMicrocycleDayTypes() {
+  const baseTypes = getBaseSplitTypesForFreq(state.freq);
+  const customDaysForFreq = state.customDays[state.freq] || {};
+  const customCount = Object.keys(customDaysForFreq).length;
+  if (!state.dayTypes[state.freq]) state.dayTypes[state.freq] = {};
+  const dayTypesForFreq = state.dayTypes[state.freq];
+  const dayTypeCount = Object.keys(dayTypesForFreq).length;
+  const totalDays = Math.max(baseTypes.length, customCount, dayTypeCount);
+  const fallbackType = baseTypes[baseTypes.length - 1] || 'Upper';
+  const sequenceFallback = ['Push', 'Pull', 'Legs', 'Upper', 'Lower'];
+  const dayTypes = [];
+  for (let index = 0; index < totalDays; index += 1) {
+    const dayKey = `d${index + 1}`;
+    const mapped = dayTypesForFreq[dayKey];
+    const resolved = DAY_TYPE_OPTIONS.includes(mapped)
+      ? mapped
+      : (baseTypes[index] || fallbackType || sequenceFallback[index % sequenceFallback.length]);
+    dayTypes.push(resolved);
+    dayTypesForFreq[dayKey] = resolved;
+  }
+  return dayTypes;
 }
 
 const explicitMovementTypeByName = {
@@ -822,17 +859,37 @@ function applyPriorityProfileForFrequency() {
 function buildPriorityRanker() {
   const list = document.getElementById('priority-rank-list');
   const split = getSplitForFreq();
+  const showDayTypeSelector = split.length > 3;
   list.innerHTML = split.map((line, i) => {
     const dayKey = `d${i + 1}`;
     const focus = extractFocusName(line);
     const options = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
     const selected = state.dayPriorities[dayKey] || options[0] || '';
     const opts = options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
+    const dayTypeSelect = showDayTypeSelector
+      ? `<select class="priority-rank-select" data-day-type="${dayKey}">
+          ${DAY_TYPE_OPTIONS.map((type) => `<option value="${type}"${focus === type ? ' selected' : ''}>${type}</option>`).join('')}
+        </select>`
+      : '';
     return `<div class="priority-rank-item">
       <div class="priority-rank-label">Day ${i + 1} · ${focus}</div>
-      <select class="priority-rank-select" data-day-priority="${dayKey}">${opts}</select>
+      <div style="display:grid;gap:.45rem;">
+        ${dayTypeSelect}
+        <select class="priority-rank-select" data-day-priority="${dayKey}">${opts}</select>
+      </div>
     </div>`;
   }).join('');
+  list.querySelectorAll('[data-day-type]').forEach((select) => {
+    select.onchange = () => {
+      if (!state.dayTypes[state.freq]) state.dayTypes[state.freq] = {};
+      state.dayTypes[state.freq][select.dataset.dayType] = select.value;
+      applyPriorityProfileForFrequency();
+      applyPriorityTargetsToBaseRows();
+      buildPriorityRanker();
+      buildWorkoutBuilder();
+      if (state.step >= 9) buildSummary();
+    };
+  });
   list.querySelectorAll('[data-day-priority]').forEach((select) => {
     select.onchange = () => {
       state.dayPriorities[select.dataset.dayPriority] = select.value;
@@ -900,11 +957,11 @@ function buildFrequencyRule() {
   const guide = document.getElementById('freq-priority-guide');
   if (!guide) return;
   if (state.freq === 2) {
-    guide.textContent = `${timeContext} Priority guidance: choose exactly 2 day priorities (one for each day). Any muscle is allowed.`;
+    guide.textContent = `${timeContext} Priority guidance: choose at least 2 day priorities (one for each day). Any muscle is allowed, and you can still add extra days later in the builder.`;
   } else if (state.freq === 3) {
-    guide.textContent = `${timeContext} Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L).`;
+    guide.textContent = `${timeContext} Priority guidance: choose 1 push muscle, 1 pull muscle, and 1 leg muscle (P/P/L). You can still add extra days later in the builder if needed.`;
   } else {
-    guide.textContent = `${timeContext} Priority guidance: choose ${state.freq} day priorities, one per training day based on that day focus.`;
+    guide.textContent = `${timeContext} Priority guidance: choose one priority per current training day based on each day focus. Additional days can be added in the builder with their own day type + priority.`;
   }
 }
 
@@ -1421,10 +1478,11 @@ function renderDayCards() {
   const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
   const dayState = state.customDays[state.freq];
+  const showDayTypeSelector = split.length > 3;
   const tabs = document.getElementById('builder-day-tabs');
   tabs.innerHTML = split.map((line, i) => {
     const day = i + 1;
-    return `<button type="button" class="builder-day-tab${state.activeBuilderDay === day ? ' on' : ''}" data-day-tab="${day}">Day ${day}</button>`;
+    return `<button type="button" class="builder-day-tab${state.activeBuilderDay === day ? ' on' : ''}" data-day-tab="${day}">Day ${day} · ${extractFocusName(line)}</button>`;
   }).join('');
   tabs.querySelectorAll('[data-day-tab]').forEach((btn) => {
     btn.onclick = () => {
@@ -1433,7 +1491,10 @@ function renderDayCards() {
     };
   });
   const out = document.getElementById('builder-out');
-  out.innerHTML = split.map((line, i) => {
+  const addDayAction = split.length < 7
+    ? `<div class="builder-day-actions"><button type="button" class="btn" id="builder-add-day-btn">＋ Add Day</button></div>`
+    : '';
+  out.innerHTML = `${addDayAction}${split.map((line, i) => {
     if (state.activeBuilderDay !== i + 1) return '';
     const namedLine = line.replace(' (Priority First)', '');
     const dayFocus = extractFocusName(namedLine);
@@ -1492,7 +1553,15 @@ function renderDayCards() {
       ${buildSlotChoiceGuide(item, starredSuggestions, dayMuscles)}
     </div>`;
     }).join('');
-    return `<div class="day-card"><h4>Day ${i + 1} · ${namedLine} · Priority Target: ${dayTarget}</h4>${rows}
+    const dayTypeControl = showDayTypeSelector
+      ? `<div class="day-type-control">
+          <label for="day-type-${dayKey}">Day Type</label>
+          <select id="day-type-${dayKey}" data-day-type-builder="${dayKey}">
+            ${DAY_TYPE_OPTIONS.map((type) => `<option value="${type}"${dayFocus === type ? ' selected' : ''}>${type}</option>`).join('')}
+          </select>
+        </div>`
+      : `<span class="day-type-badge">${dayFocus}</span>`;
+    return `<div class="day-card"><div class="day-heading-row"><h4>Day ${i + 1} · Priority Target: ${dayTarget}</h4>${dayTypeControl}</div>${rows}
       <div class="slot-controls" style="grid-template-columns:1fr 170px;">
         <button type="button" class="btn" data-add-slot="${dayKey}">＋ Add movement</button>
         <select class="slot-select" data-add-type="${dayKey}">
@@ -1502,7 +1571,32 @@ function renderDayCards() {
         </select>
       </div>
     </div>`;
-  }).join('');
+  }).join('')}`;
+  const addDayButton = document.getElementById('builder-add-day-btn');
+  if (addDayButton) {
+    addDayButton.onclick = () => {
+      const nextDay = split.length + 1;
+      const dayKey = `d${nextDay}`;
+      if (!state.dayTypes[state.freq]) state.dayTypes[state.freq] = {};
+      state.dayTypes[state.freq][dayKey] = DAY_TYPE_OPTIONS[(nextDay - 1) % DAY_TYPE_OPTIONS.length];
+      applyPriorityProfileForFrequency();
+      ensureDayPlan();
+      state.activeBuilderDay = nextDay;
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  }
+  out.querySelectorAll('[data-day-type-builder]').forEach((select) => {
+    select.onchange = () => {
+      const dayKey = select.dataset.dayTypeBuilder;
+      if (!state.dayTypes[state.freq]) state.dayTypes[state.freq] = {};
+      state.dayTypes[state.freq][dayKey] = select.value;
+      applyPriorityProfileForFrequency();
+      applyPriorityTargetsToBaseRows();
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+  });
   out.querySelectorAll('[data-muscle]').forEach((select) => {
     select.onchange = () => {
       const { day, row } = select.dataset;
@@ -1650,6 +1744,7 @@ function buildSummary() {
     : '<p>No saved macro targets yet. Open Step 4, run the calculator, and save targets to Split Sculptor.</p>';
   const splitRows = getSplitForFreq().map((line, i) => {
     const dayKey = `d${i + 1}`;
+    const dayType = extractFocusName(line);
     const rows = state.customDays[state.freq][dayKey]
       .map((slot) => {
         const exerciseName = slot.name || '';
@@ -1665,7 +1760,7 @@ function buildSummary() {
         </li>`;
       })
       .join('');
-    return `<li class="split-day-card"><strong>Day ${i + 1} | ${line.replace('Priority First', `${state.priority} Priority`)}</strong><ul class="split-workout-list">${rows}</ul></li>`;
+    return `<li class="split-day-card"><strong>Day ${i + 1} | ${dayType} | Priority Target: ${state.dayPriorities[dayKey] || state.priority}</strong><ul class="split-workout-list">${rows}</ul></li>`;
   }).join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
@@ -1707,6 +1802,7 @@ function getSerializableState() {
     sessionMinutes: Number(state.sessionMinutes) || 45,
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
+    dayTypes: JSON.parse(JSON.stringify(state.dayTypes)),
     manualTargets: { ...state.manualTargets },
     viewYear: Number(state.viewYear) || getCurrentQuarterInfo().year,
     viewQuarter: Number(state.viewQuarter) || getCurrentQuarterInfo().quarter,
@@ -1728,6 +1824,7 @@ function restoreState(payload) {
   state.sessionMinutes = Number(payload.sessionMinutes) || state.sessionMinutes;
   state.freq = Number(payload.freq) || state.freq;
   state.customDays = payload.customDays && typeof payload.customDays === 'object' ? payload.customDays : state.customDays;
+  state.dayTypes = payload.dayTypes && typeof payload.dayTypes === 'object' ? payload.dayTypes : state.dayTypes;
   state.manualTargets = payload.manualTargets && typeof payload.manualTargets === 'object' ? payload.manualTargets : state.manualTargets;
   state.viewYear = Number(payload.viewYear) || state.viewYear;
   state.viewQuarter = Number(payload.viewQuarter) || state.viewQuarter;
