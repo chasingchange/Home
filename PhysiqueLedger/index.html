@@ -18,6 +18,8 @@
 
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../shared-coach-export.js"></script>
 
     <style>
       :root {
@@ -551,6 +553,7 @@
                 <button id="printPlan" type="button" class="alt">Print</button>
                 <button id="savePlanPng" type="button" class="alt">Save PNG</button>
               </div>
+              <div id="ledgerExportActions" class="no-print"></div>
               <div class="row" style="align-items:center; margin-bottom:.45rem;">
                 <h3>Daily Targets</h3>
                 <button id="importMacroTargets" type="button" class="alt no-print">Import Macro Targets</button>
@@ -1478,6 +1481,30 @@
       renderGrocery();
       importMacroTargets();
       showAdminTools(false);
+      window.CCCoachExport?.registerTool({
+        toolName: "Physique Ledger",
+        toolSlug: "physique-ledger-plan",
+        buttonTarget: "#ledgerExportActions",
+        emailButtonClass: "alt",
+        downloadButtonClass: "alt",
+        extract: () => ({
+          sections: [
+            {
+              title: "Daily Targets",
+              fields: [
+                { label: "Calories", value: targetInputs.calories.value || "0" },
+                { label: "Protein (g)", value: targetInputs.protein.value || "0" },
+                { label: "Carbs (g)", value: targetInputs.carbs.value || "0" },
+                { label: "Fat (g)", value: targetInputs.fat.value || "0" },
+              ],
+            },
+            {
+              title: "Meal Plan Snapshot",
+              paragraphs: [planExportArea?.innerText || "No meal plan generated yet."],
+            },
+          ],
+        }),
+      });
     </script>
   
     <footer class="w-full px-5 pb-5 sm:px-8">

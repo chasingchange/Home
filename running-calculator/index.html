@@ -19,6 +19,8 @@
 
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../shared-coach-export.js"></script>
 
     <script>
       tailwind.config = {
@@ -130,6 +132,7 @@
         <div id="results" class="rounded-3xl bg-white shadow-soft ring-1 ring-black/5 p-5 sm:p-6">
           <h2 class="font-heading text-2xl font-extrabold">Runner Report</h2>
           <p class="mt-2 text-sm opacity-75">Submit the intake form to generate level assessment, race predictions, and a training plan.</p>
+          <div id="runnerExportActions"></div>
         </div>
       </section>
     </main>
@@ -360,6 +363,39 @@
             </div>
           </div>
         `;
+      });
+
+      window.CCCoachExport?.registerTool({
+        toolName: "The Runner",
+        toolSlug: "runner-report",
+        buttonTarget: "#runnerExportActions",
+        emailButtonClass: "rounded-xl bg-cc-accent px-4 py-2 text-sm font-extrabold text-cc-text",
+        downloadButtonClass: "rounded-xl border border-black/15 bg-cc-bg px-4 py-2 text-sm font-bold",
+        extract: () => ({
+          sections: [
+            {
+              title: "Runner Inputs",
+              fields: [
+                "weeklyMileage",
+                "longestRun",
+                "prMile",
+                "pr5k",
+                "pr10k",
+                "prHalf",
+                "prFull",
+                "prUltra",
+                "ultraDistance",
+                "goalPace",
+                "goalDate",
+                "trainingWeeks",
+              ].map((id) => ({ label: id, value: document.getElementById(id)?.value || "—" })),
+            },
+            {
+              title: "Generated Report",
+              paragraphs: [document.getElementById("results")?.innerText || "No report generated yet."],
+            },
+          ],
+        }),
       });
     </script>
   
