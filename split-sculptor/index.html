@@ -217,6 +217,15 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .summary-tab.on { background: var(--accent-dim); color: var(--text); border-color: #59c352; }
 .summary-panel { display: none; }
 .summary-panel.active { display: block; }
+.info-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; margin-bottom: .95rem; box-shadow: 0 10px 24px rgba(7,31,53,0.08); }
+.info-card h3 { font-family: 'Raleway', sans-serif; font-size: 1.05rem; color: var(--text); margin-bottom: .4rem; }
+.info-card .lead { font-size: .9rem; color: var(--muted); margin-bottom: .65rem; line-height: 1.55; }
+.info-card .evidence { font-size: .84rem; color: rgba(7,31,53,0.86); line-height: 1.55; margin-bottom: .6rem; }
+.volume-framework { display: grid; gap: .55rem; margin: .7rem 0; }
+.volume-tier { border: 1px solid rgba(119,215,112,0.42); border-radius: 10px; background: rgba(119,215,112,0.12); padding: .6rem .7rem; }
+.volume-tier strong { display: block; font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .04em; color: var(--text); margin-bottom: .2rem; }
+.volume-tier span { display: block; font-weight: 700; color: #1f4a1f; margin-bottom: .2rem; }
+.volume-tier p { margin: 0; font-size: .84rem; line-height: 1.5; color: rgba(7,31,53,0.9); }
 .summary-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: .8rem; align-items: start; }
 .summary-main { min-width: 0; }
 .summary-side { min-width: 0; }
@@ -367,6 +376,29 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 8 · MICROCYCLE BUILDER</div>
     <h2 class="step-title">Build each training day</h2>
     <p class="step-sub">Choose each slot’s target muscle + movement, then select sets and reps. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower). You can also add extra training days here if your week expands.</p>
+    <div class="info-card">
+      <h3>How Much Training Volume Do You Actually Need to Build Muscle?</h3>
+      <p class="lead">Most people either do too little or way too much. Muscle growth isn’t about guessing. It’s about hitting the right number of high-quality sets per muscle each week based on your training experience.</p>
+      <p class="evidence">Research consistently shows muscle growth improves as weekly training volume increases, with the strongest hypertrophy results occurring around 10–20 hard sets per muscle group per week (Schoenfeld et al., 2017; Baz-Valle et al., 2022).</p>
+      <p class="step-sub" style="margin-bottom:.45rem;">Here’s the framework we use inside Chasing Change:</p>
+      <div class="volume-framework">
+        <div class="volume-tier">
+          <strong>Beginner (0–1 year lifting)</strong>
+          <span>6–10 sets per muscle per week</span>
+          <p>Focus: learning technique, building consistency, and recovering well between sessions.</p>
+        </div>
+        <div class="volume-tier">
+          <strong>Intermediate (1–3 years lifting)</strong>
+          <span>10–15 sets per muscle per week</span>
+          <p>Focus: progressive overload, balanced programming, and visible physique changes.</p>
+        </div>
+        <div class="volume-tier">
+          <strong>Advanced (3+ years lifting)</strong>
+          <span>12–20 sets per muscle per week</span>
+          <p>Focus: specialization, symmetry, and targeted muscle development.</p>
+        </div>
+      </div>
+    </div>
     <div class="agent">
       <h3>Split Sculptor Agent</h3>
       <div class="input-grid">
