@@ -632,7 +632,13 @@ const splitByFreq = {
   5: ['Push (Priority First)', 'Pull', 'Legs', 'Upper', 'Lower'],
   6: ['Push (Priority First)', 'Pull', 'Legs', 'Push', 'Pull', 'Legs']
 };
-const DAY_TYPE_OPTIONS = ['Push', 'Pull', 'Legs', 'Upper', 'Lower'];
+const DAY_TYPE_OPTIONS = ['Full Body', 'Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Isolated Muscle Group'];
+
+function getDayTypeOptionsForFrequency(freq = state.freq) {
+  if (freq <= 2) return ['Full Body'];
+  if (freq === 3) return DAY_TYPE_OPTIONS.filter((type) => ['Push', 'Pull', 'Legs'].includes(type));
+  return DAY_TYPE_OPTIONS.filter((type) => type !== 'Full Body');
+}
 
 const freqRule = {
   2: '2 days → Full Body x2.',
@@ -839,12 +845,13 @@ function getMicrocycleDayTypes() {
   const dayTypeCount = Object.keys(dayTypesForFreq).length;
   const totalDays = Math.max(baseTypes.length, customCount, dayTypeCount);
   const fallbackType = baseTypes[baseTypes.length - 1] || 'Upper';
-  const sequenceFallback = ['Push', 'Pull', 'Legs', 'Upper', 'Lower'];
+  const dayTypeOptions = getDayTypeOptionsForFrequency(state.freq);
+  const sequenceFallback = dayTypeOptions.length ? dayTypeOptions : ['Push', 'Pull', 'Legs'];
   const dayTypes = [];
   for (let index = 0; index < totalDays; index += 1) {
     const dayKey = `d${index + 1}`;
     const mapped = dayTypesForFreq[dayKey];
-    const resolved = DAY_TYPE_OPTIONS.includes(mapped)
+    const resolved = dayTypeOptions.includes(mapped)
       ? mapped
       : (baseTypes[index] || fallbackType || sequenceFallback[index % sequenceFallback.length]);
     dayTypes.push(resolved);
@@ -967,18 +974,16 @@ function applyPriorityProfileForFrequency() {
 function buildPriorityRanker() {
   const list = document.getElementById('priority-rank-list');
   const split = getSplitForFreq();
-  const showDayTypeSelector = split.length > 3;
+  const dayTypeOptions = getDayTypeOptionsForFrequency(state.freq);
   list.innerHTML = split.map((line, i) => {
     const dayKey = `d${i + 1}`;
     const focus = extractFocusName(line);
     const options = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
     const selected = state.dayPriorities[dayKey] || options[0] || '';
     const opts = options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
-    const dayTypeSelect = showDayTypeSelector
-      ? `<select class="priority-rank-select" data-day-type="${dayKey}">
-          ${DAY_TYPE_OPTIONS.map((type) => `<option value="${type}"${focus === type ? ' selected' : ''}>${type}</option>`).join('')}
-        </select>`
-      : '';
+    const dayTypeSelect = `<select class="priority-rank-select" data-day-type="${dayKey}">
+        ${dayTypeOptions.map((type) => `<option value="${type}"${focus === type ? ' selected' : ''}>${type}</option>`).join('')}
+      </select>`;
     return `<div class="priority-rank-item">
       <div class="priority-rank-label">Day ${i + 1} · ${focus}</div>
       <div style="display:grid;gap:.45rem;">
@@ -1127,6 +1132,7 @@ function buildMacroRule() {
 }
 
 function extractFocusName(line) {
+  if (line.startsWith('Isolated Muscle Group')) return 'Isolated Muscle Group';
   if (line.startsWith('Push')) return 'Push';
   if (line.startsWith('Pull')) return 'Pull';
   if (line.startsWith('Legs')) return 'Legs';
@@ -1142,6 +1148,7 @@ function getDayFocusMuscles(focus) {
     Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
     Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
     Lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    'Isolated Muscle Group': getPriorityMuscles(),
     'Full Body': ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Calves']
   };
   return map[focus] || map['Full Body'];
@@ -1666,7 +1673,7 @@ function renderDayCards() {
   const slotPattern = getSlotPatternForSession();
   const split = getSplitForFreq();
   const dayState = state.customDays[state.freq];
-  const showDayTypeSelector = split.length > 3;
+  const dayTypeOptions = getDayTypeOptionsForFrequency(state.freq);
   const tabs = document.getElementById('builder-day-tabs');
   tabs.innerHTML = split.map((line, i) => {
     const day = i + 1;
@@ -1755,14 +1762,12 @@ function renderDayCards() {
       ${buildSlotChoiceGuide({ ...item, targetMuscle: resolvedTargetMuscle }, starredSuggestions, dayFocusMuscles)}
     </div>`;
     }).join('');
-    const dayTypeControl = showDayTypeSelector
-      ? `<div class="day-type-control">
-          <label for="day-type-${dayKey}">Day Type</label>
-          <select id="day-type-${dayKey}" data-day-type-builder="${dayKey}">
-            ${DAY_TYPE_OPTIONS.map((type) => `<option value="${type}"${dayFocus === type ? ' selected' : ''}>${type}</option>`).join('')}
-          </select>
-        </div>`
-      : `<span class="day-type-badge">${dayFocus}</span>`;
+    const dayTypeControl = `<div class="day-type-control">
+        <label for="day-type-${dayKey}">Day Type</label>
+        <select id="day-type-${dayKey}" data-day-type-builder="${dayKey}">
+          ${dayTypeOptions.map((type) => `<option value="${type}"${dayFocus === type ? ' selected' : ''}>${type}</option>`).join('')}
+        </select>
+      </div>`;
     const deleteDayButton = split.length > 1
       ? `<button type="button" class="btn btn-compact" data-remove-day="${i + 1}">Delete Day</button>`
       : '';
@@ -1783,7 +1788,8 @@ function renderDayCards() {
       const nextDay = split.length + 1;
       const dayKey = `d${nextDay}`;
       if (!state.dayTypes[state.freq]) state.dayTypes[state.freq] = {};
-      state.dayTypes[state.freq][dayKey] = DAY_TYPE_OPTIONS[(nextDay - 1) % DAY_TYPE_OPTIONS.length];
+      const options = getDayTypeOptionsForFrequency(state.freq);
+      state.dayTypes[state.freq][dayKey] = options[(nextDay - 1) % options.length];
       applyPriorityProfileForFrequency();
       ensureDayPlan();
       state.activeBuilderDay = nextDay;
