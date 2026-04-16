@@ -32,8 +32,7 @@
               brand: ["Museo Moderno", "Raleway", "sans-serif"],
             },
             boxShadow: {
-              soft: "0 10px 30px rgba(7,31,53,0.10)",
-              neon: "0 24px 80px rgba(119,215,112,0.30)",
+              soft: "0 14px 45px rgba(7, 31, 53, 0.08)",
             },
           },
         },
@@ -41,31 +40,57 @@
     </script>
   </head>
 
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div class="absolute inset-0 -z-10 pointer-events-none">
-        <div class="absolute -top-16 right-8 w-72 h-72 bg-cc-outline/30 blur-3xl rounded-full"></div>
-        <div class="absolute top-40 -left-12 w-72 h-72 bg-cc-text/15 blur-3xl rounded-full"></div>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page antialiased">
+    <div class="relative mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
+      <div class="pointer-events-none absolute inset-0 -z-10">
+        <div class="absolute -top-16 right-8 h-72 w-72 rounded-full bg-cc-outline/25 blur-3xl"></div>
+        <div class="absolute top-44 -left-12 h-72 w-72 rounded-full bg-cc-text/10 blur-3xl"></div>
       </div>
 
-      <main data-admin-edit-root>
-        <section class="rounded-3xl bg-white/90 ring-1 ring-black/5 shadow-soft p-5 sm:p-6">
-
-          <div class="mt-4 rounded-2xl border border-cc-outline/40 bg-cc-outline/15 p-4 sm:p-5">
-            <p class="text-xs sm:text-sm font-bold uppercase tracking-wide opacity-70">Ready to Chase Change?</p>
-            <a href="https://calendly.com/tywadebusiness/chasing-change" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex rounded-xl bg-cc-outline px-4 py-2 text-sm font-extrabold text-cc-text hover:brightness-95 transition">Book a Free Transformation Call</a>
+      <main data-admin-edit-root class="mx-auto w-full max-w-3xl space-y-6 sm:space-y-8">
+        <section class="rounded-3xl border border-cc-outline/50 bg-white/95 p-6 shadow-soft sm:p-8">
+          <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cc-text/65">Ready to Chase Change?</p>
+          <h1 class="mt-3 font-heading text-3xl font-extrabold leading-tight sm:text-4xl">READY TO CHASE CHANGE?</h1>
+          <p class="mt-4 max-w-2xl text-base text-cc-text/80 sm:text-lg">
+            If you're serious about building structure in your body, art, career, or life, the fastest next step is a transformation call.
+          </p>
+          <div class="mt-7 flex justify-center">
+            <a
+              href="https://tally.so/r/w5JXKE"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[3.2rem] items-center justify-center rounded-xl bg-cc-outline px-7 py-3 text-center font-heading text-base font-extrabold text-cc-text transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cc-text/25"
+              >Book a Free Transformation Call</a
+            >
           </div>
-
-          <h2 class="mt-5 text-2xl sm:text-3xl font-extrabold font-heading">Contact</h2>
-          <p class="mt-3 text-base opacity-85">Questions about coaching? Reach out directly by email.</p>
-          <a href="mailto:tywadebusiness@gmail.com" class="mt-5 inline-flex items-center rounded-xl bg-cc-outline px-5 py-3 text-sm font-bold text-cc-text hover:brightness-95 transition">
-            tywadebusiness@gmail.com
-          </a>
         </section>
 
+        <section class="rounded-3xl border border-black/10 bg-white/95 p-6 shadow-soft sm:p-8">
+          <h2 class="font-heading text-2xl font-extrabold sm:text-3xl">Who this is for</h2>
+          <ul class="mt-5 space-y-3 text-sm text-cc-text/85 sm:text-base">
+            <li class="flex gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-cc-outline"></span><span>People stuck between knowing what to do and actually doing it</span></li>
+            <li class="flex gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-cc-outline"></span><span>Lifters who want structure instead of guessing</span></li>
+            <li class="flex gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-cc-outline"></span><span>Creatives trying to build consistency</span></li>
+            <li class="flex gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-cc-outline"></span><span>Professionals redesigning their direction</span></li>
+            <li class="flex gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-cc-outline"></span><span>Anyone ready for real accountability</span></li>
+          </ul>
+          <p class="mt-5 text-sm font-semibold text-cc-text/75 sm:text-base">If that sounds like you, start with the call above.</p>
+        </section>
+
+        <section class="rounded-3xl border border-black/10 bg-white/80 p-6 shadow-soft sm:p-8">
+          <h2 class="font-heading text-2xl font-extrabold sm:text-3xl">Prefer email?</h2>
+          <p class="mt-3 text-sm text-cc-text/80 sm:text-base">For partnerships, media, speaking requests, or general questions:</p>
+          <a
+            href="mailto:tywadebusiness@gmail.com"
+            class="mt-5 inline-flex items-center rounded-xl border border-black/15 bg-white px-5 py-3 font-heading text-sm font-bold text-cc-text transition hover:border-cc-outline/70 hover:bg-cc-outline/10 sm:text-base"
+            >tywadebusiness@gmail.com</a
+          >
+        </section>
       </main>
-      <footer class="w-full px-5 pb-5 sm:px-8">
-        <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
+
+      <footer class="mx-auto mt-10 w-full max-w-3xl px-2 pb-5 text-center sm:mt-12">
+        <p class="text-sm text-cc-text/70">Chasing Change is a structured transformation system built across six cores: Body. Art. Mind. Soul. Career. Life.</p>
+        <p class="mt-4 text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day</p>
       </footer>
     </div>
   </body>
