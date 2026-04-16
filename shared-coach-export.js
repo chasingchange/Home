@@ -46,13 +46,19 @@
     ].join("\n");
 
     const mailto = `mailto:${BRAND.coachEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
+    const link = document.createElement("a");
+    link.href = mailto;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return { mailto, subject, body };
   }
 
   // Future direct-send hook. Replace this function later with EmailJS/Resend/SendGrid.
   async function sendCoachEmail(payload) {
-    openCoachMailDraft(payload.toolName);
-    return { ok: true, mode: "mailto" };
+    const draft = openCoachMailDraft(payload.toolName);
+    return { ok: true, mode: "mailto", draft };
   }
 
   function getPdfLib() {
@@ -191,7 +197,9 @@
     if (config.messageTarget) {
       const target = typeof config.messageTarget === "string" ? document.querySelector(config.messageTarget) : config.messageTarget;
       if (target) {
-        target.textContent = "Your PDF has been downloaded. Attach it to the email draft that just opened.";
+        target.textContent = mode === "email"
+          ? "Your PDF was downloaded. We opened your default email app with a draft to tywadebusiness@gmail.com. Attach the PDF before sending."
+          : "Your PDF has been downloaded.";
       }
     }
   }
@@ -230,13 +238,62 @@
     messageEl.style.fontSize = "0.85rem";
     messageEl.style.color = BRAND.colors.muted;
 
+    const helperNote = document.createElement("p");
+    helperNote.className = "cc-coach-export-helper";
+    helperNote.textContent = "Opens your default email app.";
+    helperNote.style.marginTop = "8px";
+    helperNote.style.marginBottom = "0";
+    helperNote.style.fontSize = "0.8rem";
+    helperNote.style.color = BRAND.colors.muted;
+
+    const fallbackWrap = document.createElement("div");
+    fallbackWrap.className = "cc-coach-export-fallback";
+    fallbackWrap.style.display = "none";
+    fallbackWrap.style.marginTop = "10px";
+    fallbackWrap.style.padding = "10px 12px";
+    fallbackWrap.style.background = "#fff";
+    fallbackWrap.style.border = "1px solid rgba(7,31,53,0.15)";
+    fallbackWrap.style.borderRadius = "10px";
+
+    const fallbackMsg = document.createElement("p");
+    fallbackMsg.style.margin = "0 0 8px 0";
+    fallbackMsg.style.fontSize = "0.85rem";
+    fallbackMsg.style.color = BRAND.colors.text;
+    fallbackMsg.textContent = "If your email draft didn’t open, send your PDF to:";
+
+    const emailText = document.createElement("p");
+    emailText.style.margin = "0 0 8px 0";
+    emailText.style.fontSize = "0.9rem";
+    emailText.style.fontWeight = "700";
+    emailText.style.color = BRAND.colors.text;
+    emailText.textContent = BRAND.coachEmail;
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.textContent = "Copy Email Address";
+    copyBtn.className = config.downloadButtonClass || "btn";
+
+    const copyStatus = document.createElement("p");
+    copyStatus.style.margin = "8px 0 0 0";
+    copyStatus.style.fontSize = "0.8rem";
+    copyStatus.style.color = BRAND.colors.muted;
+
+    fallbackWrap.appendChild(fallbackMsg);
+    fallbackWrap.appendChild(emailText);
+    fallbackWrap.appendChild(copyBtn);
+    fallbackWrap.appendChild(copyStatus);
+
     container.appendChild(wrap);
+    container.appendChild(helperNote);
     container.appendChild(messageEl);
+    container.appendChild(fallbackWrap);
 
     const runtimeConfig = { ...config, messageTarget: messageEl };
 
     emailBtn.addEventListener("click", async () => {
       await runExport(runtimeConfig, "email");
+      fallbackWrap.style.display = "block";
+      copyStatus.textContent = "";
     });
 
     downloadBtn.addEventListener("click", async () => {
@@ -244,7 +301,28 @@
       messageEl.textContent = "Your PDF has been downloaded.";
     });
 
-    return { emailBtn, downloadBtn, messageEl };
+    copyBtn.addEventListener("click", async () => {
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(BRAND.coachEmail);
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = BRAND.coachEmail;
+          textArea.setAttribute("readonly", "");
+          textArea.style.position = "absolute";
+          textArea.style.left = "-9999px";
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          textArea.remove();
+        }
+        copyStatus.textContent = "Email address copied.";
+      } catch (error) {
+        copyStatus.textContent = `Copy failed. Please manually copy: ${BRAND.coachEmail}`;
+      }
+    });
+
+    return { emailBtn, downloadBtn, messageEl, copyBtn };
   }
 
   window.CCCoachExport = {
