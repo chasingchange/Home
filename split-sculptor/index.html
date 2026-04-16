@@ -385,7 +385,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
   <div class="screen" id="s8">
     <div class="step-eyebrow">STEP 8 · MICROCYCLE BUILDER</div>
     <h2 class="step-title">Build each training day</h2>
-    <p class="step-sub">The first Compound, Machine, and Isolated anchor slots auto-target your day priority; choose muscles manually for every remaining slot. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower). You can also add extra training days here if your week expands.</p>
+    <p class="step-sub">The first Compound, Machine, and Isolated slots default to your day priority (still editable), while remaining slots are manual. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower). You can also add extra training days here if your week expands.</p>
     <div class="info-card">
       <h3>How Much Training Volume Do You Actually Need to Build Muscle?</h3>
       <p class="lead">Most people either do too little or way too much. Muscle growth isn’t about guessing. It’s about hitting the right number of high-quality sets per muscle each week based on your training experience.</p>
@@ -1215,13 +1215,14 @@ function resolveExerciseByEntry(entry = {}) {
 
 function getSlotExerciseOptions({ slotCategory, selectedMuscle, trainingEnvironment, daySplit }) {
   const allowed = allowedCategories[trainingEnvironment] || allowedCategories[state.gymType];
+  const dayFocusMuscles = getDayFocusMuscles(daySplit || 'Full Body');
   const seen = new Set();
   const filtered = EXERCISES.filter((exercise) => {
     if (!allowed.includes(exercise.category)) return false;
     if (!matchesSlotType(exercise, slotCategory)) return false;
     if (!equipmentAllowsExercise(exercise)) return false;
+    if (daySplit && !dayFocusMuscles.includes(getMuscle(exercise))) return false;
     if (selectedMuscle && getMuscle(exercise) !== selectedMuscle) return false;
-    if (daySplit && !selectedMuscle && daySplit === 'Lower' && ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'].includes(getMuscle(exercise))) return false;
     const dedupeKey = `${canonicalExerciseName(exercise.name)}|${getMuscle(exercise)}|${exercise.equipment}`;
     if (seen.has(dedupeKey)) return false;
     seen.add(dedupeKey);
@@ -1687,10 +1688,10 @@ function renderDayCards() {
     const dayFocus = extractFocusName(namedLine);
     const dayTarget = getPriorityTargetForDay(i);
     const dayKey = `d${i + 1}`;
+    const dayFocusMuscles = getDayFocusMuscles(dayFocus);
     const rows = dayState[dayKey].map((item, rowIndex) => {
       const anchorSlot = isAnchorSlot(dayState[dayKey], rowIndex);
-      const resolvedTargetMuscle = anchorSlot ? dayTarget : (item.targetMuscle || '');
-      if (anchorSlot && item.targetMuscle !== dayTarget) item.targetMuscle = dayTarget;
+      const resolvedTargetMuscle = item.targetMuscle || (anchorSlot ? dayTarget : '');
       const slotPool = getSlotExerciseOptions({
         slotCategory: item.slot,
         selectedMuscle: resolvedTargetMuscle,
@@ -1718,10 +1719,11 @@ function renderDayCards() {
         : (hasPartialPrescription ? 'Partially complete — finish selecting exercise, sets, and reps' : 'No selections yet');
       const matchStatus = hasExercise ? (matches ? 'Exercise matches this slot' : 'Exercise does not match this slot') : 'No exercise selected';
       const isCustomRow = rowIndex >= slotPattern.length;
-      const muscleOptions = ['', ...Array.from(new Set(EXERCISES.map((entry) => getMuscle(entry)).filter(Boolean))).sort((a, b) => a.localeCompare(b))]
+      const muscleOptions = ['', ...dayFocusMuscles]
         .map((muscle) => {
           const label = muscle || 'Select muscle';
-          return `<option value="${muscle}"${item.targetMuscle === muscle ? ' selected' : ''}>${label}</option>`;
+          const selectedValue = resolvedTargetMuscle;
+          return `<option value="${muscle}"${selectedValue === muscle ? ' selected' : ''}>${label}</option>`;
         }).join('');
       const movementOptions = !resolvedTargetMuscle && !anchorSlot
         ? [`<option value="">Select muscle first</option>`]
@@ -1733,10 +1735,8 @@ function renderDayCards() {
             return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${marker}${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
           })]
           : [`<option value="">No matching exercises for this muscle/category/environment.</option>`]);
-      const muscleLabel = anchorSlot ? `${resolvedTargetMuscle || 'Priority muscle'} · Priority muscle` : (resolvedTargetMuscle || 'Select muscle');
-      const muscleControl = anchorSlot
-        ? `<div class="slot-select" style="background:rgba(119,215,112,.18);font-weight:700;" title="Auto-selected from day priority">${resolvedTargetMuscle || 'Priority muscle'} · Auto-selected from day priority</div>`
-        : `<select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>`;
+      const muscleLabel = anchorSlot ? `${resolvedTargetMuscle || dayTarget} · Priority default` : (resolvedTargetMuscle || 'Select muscle');
+      const muscleControl = `<select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>`;
       return `<div class="slot-row ${prescriptionClass}">
       <div class="slot-meta">
         <div class="slot-label">${item.slot} | ${muscleLabel}</div>
@@ -1752,7 +1752,7 @@ function renderDayCards() {
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
       <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(resolvedTargetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Smart-match options available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
-      ${buildSlotChoiceGuide({ ...item, targetMuscle: resolvedTargetMuscle }, starredSuggestions, getDayFocusMuscles(dayFocus))}
+      ${buildSlotChoiceGuide({ ...item, targetMuscle: resolvedTargetMuscle }, starredSuggestions, dayFocusMuscles)}
     </div>`;
     }).join('');
     const dayTypeControl = showDayTypeSelector
