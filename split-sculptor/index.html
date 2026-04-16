@@ -14,6 +14,8 @@
 <script src="../shared-session.js"></script>
 <script src="../shared-coach.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../shared-coach-export.js"></script>
 <style>
 :root {
   --bg: #f5f5f7;
@@ -505,6 +507,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <button class="btn" id="print-summary-btn" type="button">Print</button>
       <button class="btn btn-p" id="save-png-btn" type="button">Save Image</button>
     </div>
+    <div id="splitExportActions"></div>
   </div>
 
   <div class="nav">
@@ -1813,6 +1816,7 @@ function renderDayCards() {
       const { day, row } = select.dataset;
       const rowIndex = parseInt(row, 10);
       const dayRows = state.customDays[state.freq][day];
+      if (isAnchorSlot(dayRows, rowIndex)) return;
       dayRows[rowIndex].targetMuscle = select.value;
       renderDayCards();
       if (state.step >= 9) buildSummary();
@@ -2636,6 +2640,32 @@ if (lastUpdatedStamp) {
     ? 'Last updated: unavailable'
     : `Last updated: ${modified.toLocaleString()}`;
 }
+
+window.CCCoachExport?.registerTool({
+  toolName: "Split Sculptor",
+  toolSlug: "split-sculptor-plan",
+  buttonTarget: "#splitExportActions",
+  extract: () => {
+    const panel = getActiveSummaryPanel();
+    return {
+      sections: [
+        {
+          title: "Plan Snapshot",
+          fields: [
+            { label: "Goal", value: state.goal || "—" },
+            { label: "Split Type", value: state.split || "—" },
+            { label: "Days", value: String(state.days || "—") },
+            { label: "Equipment", value: (state.homeEquipment || []).join(", ") || "—" },
+          ],
+        },
+        {
+          title: "Active Summary",
+          paragraphs: [panel?.innerText || "No summary generated yet."],
+        },
+      ],
+    };
+  },
+});
 
 </script>
 </body>

@@ -24,6 +24,8 @@
     <script src="../shared-global-nav.js" defer></script>
     <script src="../shared-session.js"></script>
     <script src="../shared-coach.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../shared-coach-export.js"></script>
 
     <script>
       tailwind.config = {
@@ -484,6 +486,7 @@
 
                 <!-- Results -->
                 <div id="results" class="hidden mt-6 space-y-4">
+                  <div id="macroExportActions" class="rounded-2xl p-4 ring-1 ring-black/10 bg-white"></div>
                   <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-cc-outline/10">
                     <p class="text-sm font-semibold">Send these targets to Split Sculptor</p>
                     <p id="ledgerSyncStatus" class="text-xs opacity-75 mt-1">Calculate first, then save and open the ledger.</p>
@@ -1463,6 +1466,38 @@ const proteinPerLb =
       });
       restoreSessionData();
       updateIdealBodyWeightPreview();
+
+      window.CCCoachExport?.registerTool({
+        toolName: "Macro Calculator",
+        toolSlug: "macro-checkin",
+        buttonTarget: "#macroExportActions",
+        emailButtonClass: "rounded-xl px-4 py-2 font-bold bg-cc-outline text-cc-text hover:opacity-90 transition",
+        downloadButtonClass: "rounded-xl px-4 py-2 font-bold bg-cc-bg ring-1 ring-black/10 hover:bg-black/5 transition",
+        extract: () => {
+          const snapshot = collectStoredMacroData();
+          return {
+            sections: [
+              {
+                title: "Profile",
+                fields: [
+                  { label: "Goal", value: snapshot.profile.goal },
+                  { label: "Goal Mode", value: snapshot.profile.goalMode },
+                  { label: "Units", value: snapshot.profile.unit },
+                  { label: "Macro Style", value: snapshot.profile.macroStyle },
+                ],
+              },
+              {
+                title: "Inputs",
+                fields: Object.entries(snapshot.inputs || {}).map(([label, value]) => ({ label, value: String(value || "—") })),
+              },
+              {
+                title: "Calculated Outputs",
+                fields: Object.entries(snapshot.outputs || {}).map(([label, value]) => ({ label, value: String(value || "—") })),
+              },
+            ],
+          };
+        },
+      });
     </script>
   
     <footer class="w-full px-5 pb-5 sm:px-8">

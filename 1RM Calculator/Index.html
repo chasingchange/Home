@@ -24,6 +24,8 @@
     <script src="../shared-global-nav.js" defer></script>
     <script src="../shared-session.js"></script>
     <script src="../exercise-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../shared-coach-export.js"></script>
 
     <!-- Tailwind theme + brand tokens -->
     <script>
@@ -281,6 +283,7 @@
                 <span id="sexFactorBadge" class="badge">Sex factor: —</span>
                 <span id="current1rmBadge" class="badge bg-cc-outline/25 border-cc-outline/50 text-cc-text font-extrabold">Current 1RM: —</span>
               </div>
+              <div id="oneRmExportActions"></div>
             </div>
 
             <!-- Tiers -->
@@ -777,6 +780,36 @@
           pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
         }
         renderAll();
+        window.CCCoachExport?.registerTool({
+          toolName: "1 Rep Max Calculator",
+          toolSlug: "1rm-calculator",
+          buttonTarget: "#oneRmExportActions",
+          emailButtonClass: "rounded-2xl bg-cc-outline px-4 py-2 font-extrabold text-sm hover:opacity-90 transition",
+          downloadButtonClass: "rounded-2xl bg-white px-4 py-2 text-sm font-bold ring-1 ring-black/10",
+          extract: () => {
+            const tiers = Array.from(document.querySelectorAll("#tiersBody tr")).map((row) => ({
+              label: row.children[0]?.textContent?.trim() || "Tier",
+              value: row.innerText.replace(/\s+/g, " ").trim(),
+            }));
+            const working = Array.from(document.querySelectorAll("#workBody tr")).map((row) => row.innerText.replace(/\s+/g, " ").trim());
+            return {
+              sections: [
+                {
+                  title: "Inputs",
+                  fields: [
+                    { label: "Sex", value: $("sex").value },
+                    { label: "Age", value: $("age").value },
+                    { label: "Weight", value: $("weight").value + " " + $("units").value },
+                    { label: "Height", value: `${$("heightFt").value}ft ${$("heightIn").value}in` },
+                    { label: "Exercise", value: $("exercise").selectedOptions[0]?.textContent || "—" },
+                  ],
+                },
+                { title: "Tier Targets", fields: tiers },
+                { title: "Working Weights", paragraphs: working.length ? working : ["No working weights generated yet."] },
+              ],
+            };
+          },
+        });
       }
 
       init();

@@ -68,6 +68,8 @@
   </style>
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../shared-coach-export.js"></script>
   </head>
 <body class="antialiased cc-page">
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -192,6 +194,9 @@
       <button id="copyBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Copy Summary</button>
       <button id="printBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Print / Save PDF</button>
       <button id="resetBtn" class="focus-ring rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 hover:bg-rose-100 transition">Reset</button>
+    </section>
+    <section class="no-print mt-3">
+      <div id="criticExportActions"></div>
     </section>
 
 </main>
@@ -419,6 +424,29 @@
       loadSavedState();
       bindEvents();
       updateSummary();
+      window.CCCoachExport?.registerTool({
+        toolName: "Gagging the Critic",
+        toolSlug: "gagging-the-critic",
+        buttonTarget: "#criticExportActions",
+        emailButtonClass: "focus-ring rounded-xl bg-[var(--cc-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--cc-text)]",
+        downloadButtonClass: "focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-2.5 text-sm font-semibold",
+        extract: () => {
+          const state = getState();
+          const perspectiveShift = summaryEls.nudge.textContent || "";
+          return {
+            sections: [
+              {
+                title: "Reflection Inputs",
+                fields: Object.entries(state).map(([label, value]) => ({ label, value: value || "—" })),
+              },
+              {
+                title: "Perspective Shift",
+                paragraphs: [perspectiveShift, summaryEls.closingLine.textContent || ""],
+              },
+            ],
+          };
+        },
+      });
     }
 
     init();

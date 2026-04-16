@@ -26,6 +26,7 @@
       <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
       <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
       <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
+      <a href="${root}science-of-chasing-change/index.html" class="cc-global-nav-link">Science of Chasing Change</a>
       <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
       <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
       <span class="cc-global-nav-separator" aria-hidden="true">|</span>
@@ -62,6 +63,30 @@
   const coreMegaMenu = nav.querySelector("#ccGlobalMegaMenu");
   const coreMegaMenuTitle = nav.querySelector("#ccGlobalMegaTitle");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
+
+  function normalizePath(path) {
+    if (!path) return "/";
+    return path.replace(/\/index\.html$/i, "/").replace(/\/+$/, "") || "/";
+  }
+
+  function setActivePrimaryLink() {
+    const currentPath = normalizePath(window.location.pathname);
+    coreTopBar.querySelectorAll("a.cc-global-nav-link").forEach((link) => {
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("http")) return;
+      const linkPath = normalizePath(new URL(href, window.location.origin).pathname);
+      const isScienceLink = /\/science-of-chasing-change$/i.test(linkPath);
+      const isActive = isScienceLink ? currentPath.startsWith("/science-of-chasing-change") : currentPath === linkPath;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) {
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  setActivePrimaryLink();
 
   function setActiveCoreTab(activeTab) {
     coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
