@@ -136,11 +136,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-custom-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
 .slot-custom-error { font-size: .78rem; color: #b91c1c; font-weight: 700; }
 .slot-custom-note { font-size: .76rem; color: var(--muted); font-weight: 700; }
-.slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
-.slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
+.slot-help-trigger-wrap { display: flex; align-items: center; justify-content: flex-start; min-height: 32px; }
+.slot-help-icon { border: 0; background: #fff; border-radius: 999px; border: 1px solid rgba(7,31,53,.1); color: var(--text); font-size: .75rem; font-weight: 700; width: 1.25rem; height: 1.25rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.slot-help-icon:hover { border-color: #59c352; }
 .exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
 .exercise-detail-modal.open { display: flex; }
-.exercise-detail-panel { width: min(640px, 100%); background: #fff; border: 1px solid rgba(7,31,53,.16); border-radius: 16px; box-shadow: 0 24px 60px rgba(7,31,53,.3); padding: 1.1rem; }
+.exercise-detail-panel { width: min(640px, 100%); background: #fff; border: 1px solid rgba(7,31,53,.05); border-radius: 24px; box-shadow: 0 16px 34px rgba(7,31,53,.16); padding: 1.5rem; }
 .exercise-detail-head { display: flex; justify-content: space-between; gap: .75rem; align-items: start; }
 .exercise-detail-title { font-family: 'Raleway', sans-serif; font-size: 1.05rem; font-weight: 800; line-height: 1.3; color: var(--text); }
 .exercise-detail-sub { margin-top: .2rem; color: var(--muted); font-size: .84rem; }
@@ -150,6 +151,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .exercise-detail-card .k { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .exercise-detail-card .v { display: block; margin-top: .2rem; font-size: .9rem; font-weight: 700; color: var(--text); }
 .exercise-detail-note { margin-top: .7rem; border: 1px solid rgba(119,215,112,.35); border-left: 4px solid #59c352; border-radius: 10px; background: rgba(119,215,112,.12); padding: .68rem .78rem; color: var(--text); font-size: .88rem; line-height: 1.58; }
+.exercise-detail-list-wrap { margin-top: .7rem; display: grid; gap: .55rem; }
+.exercise-detail-list-card { border: 1px solid rgba(7,31,53,.1); border-radius: 12px; background: #f5f5f7; padding: .65rem .75rem; }
+.exercise-detail-list-card h4 { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+.exercise-detail-list-card ol,
+.exercise-detail-list-card ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .25rem; }
+.exercise-detail-list-card li { font-size: .86rem; line-height: 1.45; color: var(--text); }
 .builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
 .builder-day-tab.on { background: var(--accent-dim); border-color: #59c352; color: var(--text); }
@@ -545,16 +552,17 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 </div>
 
 <div class="exercise-detail-modal" id="exercise-detail-modal" aria-hidden="true">
-  <div class="exercise-detail-panel" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
+  <div class="exercise-detail-panel rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 p-6" role="dialog" aria-modal="true" aria-labelledby="exercise-detail-title">
     <div class="exercise-detail-head">
       <div>
-        <div class="exercise-detail-title" id="exercise-detail-title">View</div>
+        <div class="exercise-detail-title" id="exercise-detail-title">Exercise Help</div>
         <div class="exercise-detail-sub" id="exercise-detail-sub">Select a movement to inspect details.</div>
       </div>
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
     </div>
     <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
     <div class="exercise-detail-note" id="exercise-detail-note"></div>
+    <div class="exercise-detail-list-wrap" id="exercise-detail-list-wrap"></div>
   </div>
 </div>
 <p id="lastUpdatedStamp" style="text-align:center;margin:1rem 0 1.4rem;font-size:.78rem;opacity:.7;">Last updated: —</p>
@@ -1668,6 +1676,32 @@ function buildSlotChoiceGuide(item, starredSuggestions, dayMuscles) {
   </div>`;
 }
 
+function buildPerformanceSteps(exercise, slotType) {
+  const movementType = normalizeType(exercise);
+  const setupCue = exercise.equipment
+    ? `Set up your ${exercise.equipment.toLowerCase()} and lock in a stable base before each rep.`
+    : 'Set your stance and brace before each rep.';
+  const intentCue = movementType === 'Isolation'
+    ? `Drive the ${getMuscle(exercise).toLowerCase()} through a controlled full range without using momentum.`
+    : `Move with control and focus on the ${getMuscle(exercise).toLowerCase()} as the prime mover.`;
+  const finishCue = slotType
+    ? `Finish each set with the ${slotType.toLowerCase()} tempo prescribed in your slot.`
+    : 'Finish each set with controlled tempo and full-body tension.';
+  return [setupCue, intentCue, finishCue];
+}
+
+function buildCommonMistakes(exercise) {
+  const mistakes = [
+    'Rushing reps and sacrificing consistent tempo.',
+    `Letting other muscles take over instead of loading the ${getMuscle(exercise).toLowerCase()} target.`,
+    'Stopping short of a safe, repeatable full range of motion.'
+  ];
+  if (normalizeType(exercise) === 'Compound') {
+    mistakes[1] = `Losing bracing and shifting tension away from the ${getMuscle(exercise).toLowerCase()} target.`;
+  }
+  return mistakes;
+}
+
 function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   if (!exercise) return;
   const modal = document.getElementById('exercise-detail-modal');
@@ -1675,30 +1709,39 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const sub = document.getElementById('exercise-detail-sub');
   const grid = document.getElementById('exercise-detail-grid');
   const note = document.getElementById('exercise-detail-note');
+  const listWrap = document.getElementById('exercise-detail-list-wrap');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
   title.textContent = exercise.name || 'Exercise Help';
-  sub.textContent = `${primary} focus · ${exercise.equipment || 'General equipment'} · ${movementType}`;
-  const movementSummary = (exercise.movement_summary || '').trim();
-  const whenToChoose = (exercise.when_to_choose || '').trim();
+  sub.textContent = `${movementType} movement`;
   const equipmentNeeded = (exercise.equipment_needed || exercise.equipment || 'Bodyweight').trim();
   const difficultyLevel = (exercise.difficulty || '').trim();
-  const hasStructuredHelp = !!(movementSummary || whenToChoose || difficultyLevel);
-  console.debug('[Split Sculptor] exercise help lookup', { exerciseId: exercise.id, metadataFound: hasStructuredHelp });
+  const secondaryMuscles = Array.isArray(exercise.secondaryMuscles) && exercise.secondaryMuscles.length
+    ? exercise.secondaryMuscles.join(', ')
+    : 'None listed';
+  const performanceSteps = buildPerformanceSteps(exercise, slotType);
+  const commonMistakes = buildCommonMistakes(exercise);
   const cards = [
-    { k: 'Movement summary', v: movementSummary || 'Description coming soon.' },
-    { k: 'When to choose', v: whenToChoose || 'Description coming soon.' },
-    { k: 'Equipment needed', v: equipmentNeeded || 'Bodyweight' },
-    { k: 'Difficulty', v: difficultyLevel || 'Novice' },
-    { k: 'Slot type', v: slotType || movementType }
+    { k: 'Primary muscles', v: primary },
+    { k: 'Secondary muscles', v: secondaryMuscles },
+    { k: 'Equipment type', v: equipmentNeeded || 'Bodyweight' },
+    { k: 'Difficulty level', v: difficultyLevel || 'Novice' }
   ];
   grid.innerHTML = cards.map((item) => `<div class="exercise-detail-card"><span class="k">${item.k}</span><span class="v">${item.v}</span></div>`).join('');
-  const targetLine = targetMuscle
-    ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
-    : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
-  note.textContent = hasStructuredHelp
-    ? `${exercise.name}: ${targetLine} ${describeSlotIntent(slotType)}`
-    : `${exercise.name}: Description coming soon. ${targetLine} Equipment: ${equipmentNeeded}.`;
+  const targetLine = targetMuscle && targetMuscle === primary
+    ? `Match confirmed for your selected target muscle (${targetMuscle}).`
+    : (targetMuscle ? `Your selected target is ${targetMuscle}; this exercise primarily loads ${primary}.` : `No target muscle selected yet.`);
+  note.textContent = `${describeSlotIntent(slotType)} ${targetLine}`;
+  listWrap.innerHTML = `
+    <div class="exercise-detail-list-card">
+      <h4>3-step performance instructions</h4>
+      <ol>${performanceSteps.map((step) => `<li>${step}</li>`).join('')}</ol>
+    </div>
+    <div class="exercise-detail-list-card">
+      <h4>3 common mistakes</h4>
+      <ul>${commonMistakes.map((mistake) => `<li>${mistake}</li>`).join('')}</ul>
+    </div>
+  `;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -1827,7 +1870,7 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions.join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${(exercise && !customSelected) ? '' : 'disabled'}>View</button>
+        <div class="slot-help-trigger-wrap">${(exercise && !customSelected) ? `<button type="button" class="slot-help-icon rounded-full ring-1 ring-black/10 hover:ring-cc-outline text-xs font-bold w-5 h-5 flex items-center justify-center cursor-pointer" data-view-ex="${dayKey}:${rowIndex}" aria-label="Open exercise help" title="Exercise help">?</button>` : ''}</div>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
