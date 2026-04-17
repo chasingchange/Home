@@ -1432,16 +1432,20 @@ function getVolumeInsight(rows) {
   return 'Add movements and set counts to start building your weekly volume profile.';
 }
 
-function renderWeeklyVolumeSummary() {
-  const mount = document.getElementById('weekly-volume-summary');
-  if (!mount) return;
+function getWeeklyVolumeRows() {
   const ranges = getVolumeGoalRanges();
   const totals = calculateWeeklyVolumeTotals();
-  const rows = VOLUME_MUSCLE_GROUPS.map((muscle) => {
+  return VOLUME_MUSCLE_GROUPS.map((muscle) => {
     const range = ranges[muscle];
     const total = totals[muscle] || 0;
     return { muscle, range, total, status: getVolumeStatus(total, range) };
   });
+}
+
+function renderWeeklyVolumeSummary() {
+  const mount = document.getElementById('weekly-volume-summary');
+  if (!mount) return;
+  const rows = getWeeklyVolumeRows();
   mount.innerHTML = `
     <div class="weekly-volume-card">
       <div class="weekly-volume-head">
@@ -2038,27 +2042,13 @@ function buildSummary() {
       .join('');
     return `<li class="split-day-card"><strong>Day ${i + 1} | ${dayType} | Priority Target: ${state.dayPriorities[dayKey] || state.priority}</strong><ul class="split-workout-list">${rows}</ul></li>`;
   }).join('');
-  const condensedSplitRows = getSplitForFreq().map((line, i) => {
-    const dayKey = `d${i + 1}`;
-    const dayType = extractFocusName(line);
-    const condensedLines = state.customDays[state.freq][dayKey]
-      .map((slot) => {
-        const resolvedExerciseName = getExerciseLabel(slot);
-        const exerciseName = resolvedExerciseName || 'Not set';
-        const sets = slot.sets || getSlotPrescription(slot.slot).sets;
-        const reps = slot.reps || getSlotPrescription(slot.slot).reps;
-        const missingClass = resolvedExerciseName ? '' : ' missing';
-        return `<div class="summary-workout-line${missingClass}">
-          <span class="lift">${exerciseName}</span>
-          <span class="prescription">${sets}x${reps}</span>
-        </div>`;
-      })
-      .join('');
-    return `<li>
-      <div class="summary-workout-day"><strong>Day ${i + 1} · ${dayType}</strong><span>Priority: ${state.dayPriorities[dayKey] || state.priority}</span></div>
-      <div class="summary-workout-lines">${condensedLines}</div>
-    </li>`;
-  }).join('');
+  const volumeRows = getWeeklyVolumeRows();
+  const condensedVolumeRows = volumeRows
+    .map((row) => `<li>
+      <span>${row.muscle}</span>
+      <span>${row.total} sets • ${row.range ? `${row.range[0]}–${row.range[1]} target` : 'No target'} • ${row.status.label}</span>
+    </li>`)
+    .join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
       <div class="sum-row"><span class="sum-label">VIEWING PERIOD</span><span class="sum-val">${formatViewPeriod(state.viewYear, state.viewQuarter)}</span></div>
@@ -2076,9 +2066,10 @@ function buildSummary() {
       ${targetMarkup}
     </div>
     <div class="week">
-      <h3>Workout Sets Snapshot</h3>
-      <p class="step-sub">Condensed workout view for print: exercise + sets/reps in one page with vision and macros.</p>
-      <ul class="summary-workout-condensed">${condensedSplitRows}</ul>
+      <h3>Weekly Volume Snapshot</h3>
+      <p class="step-sub">Condensed version of your weekly volume summary for this macro overview.</p>
+      <ul class="weekly-volume-list">${condensedVolumeRows}</ul>
+      <p class="weekly-volume-insight">${getVolumeInsight(volumeRows)}</p>
     </div>
   `;
   document.getElementById('split-workouts-panel').innerHTML = `
