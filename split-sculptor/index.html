@@ -227,6 +227,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .info-card h3 { font-family: 'Raleway', sans-serif; font-size: 1.05rem; color: var(--text); margin-bottom: .4rem; }
 .info-card .lead { font-size: .9rem; color: var(--muted); margin-bottom: .65rem; line-height: 1.55; }
 .info-card .evidence { font-size: .84rem; color: rgba(7,31,53,0.86); line-height: 1.55; margin-bottom: .6rem; }
+.exercise-guide-card { margin-bottom: .95rem; }
+.exercise-guide-card h3 { margin-bottom: .45rem; }
+.exercise-guide-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .28rem; }
+.exercise-guide-list li { font-size: .84rem; line-height: 1.5; color: var(--text); }
 .volume-framework { display: grid; gap: .55rem; margin: .7rem 0; }
 .volume-tier { border: 1px solid rgba(119,215,112,0.42); border-radius: 10px; background: rgba(119,215,112,0.12); padding: .6rem .7rem; }
 .volume-tier strong { display: block; font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .04em; color: var(--text); margin-bottom: .2rem; }
@@ -397,6 +401,17 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="step-eyebrow">STEP 8 · MICROCYCLE BUILDER</div>
     <h2 class="step-title">Build each training day</h2>
     <p class="step-sub">The first Compound, Machine, and Isolated slots default to your day priority (still editable), while remaining slots are manual. Suggestions auto-adjust to your mesocycle (for example: hypertrophy biases 10+ reps, compounds often around 4 sets, isolations slightly lower). You can also add extra training days here if your week expands.</p>
+    <div class="info-card exercise-guide-card">
+      <h3>Exercise Guide</h3>
+      <ul class="exercise-guide-list">
+        <li>★ = Recommended exercise for this muscle group based on your selected priority</li>
+        <li>! = Beginner movement</li>
+        <li>!! = Novice movement</li>
+        <li>!!! = Intermediate movement</li>
+        <li>!!!! = Advanced movement</li>
+        <li>!!!!! = Athlete-level movement</li>
+      </ul>
+    </div>
     <div class="info-card">
       <h3>How Much Training Volume Do You Actually Need to Build Muscle?</h3>
       <p class="lead">Most people either do too little or way too much. Muscle growth isn’t about guessing. It’s about hitting the right number of high-quality sets per muscle each week based on your training experience.</p>
@@ -732,7 +747,7 @@ function buildExerciseId(exercise) {
 const VALID_MATRIX_CATEGORIES = new Set(['compound', 'machine', 'isolation']);
 const VALID_EQUIPMENT = new Set(['Barbell', 'Dumbbell', 'Machine', 'Cable', 'Smith Machine', 'Bodyweight']);
 const VALID_PRIMARY_MUSCLES = new Set(['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Triceps', 'Biceps', 'Calves', 'Abs']);
-const VALID_DIFFICULTIES = ['Beginner', 'Novice', 'Intermediate', 'Athlete'];
+const VALID_DIFFICULTIES = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Athlete'];
 const DEBUG_MODE = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.search.includes('debug=1');
 
 const CANONICAL_MUSCLE_MAP = {
@@ -754,6 +769,31 @@ function normalizePrimaryMuscle(muscle) {
   return CANONICAL_MUSCLE_MAP[normalized.toLowerCase()] || normalized;
 }
 
+function assignFallbackDifficulty(exercise = {}) {
+  if (exercise.fatigue === 'low') return 'Beginner';
+  if (exercise.fatigue === 'high') return exercise.matrixCategory === 'compound' ? 'Advanced' : 'Intermediate';
+  if (exercise.matrixCategory === 'compound' && exercise.laterality === 'unilateral') return 'Advanced';
+  return 'Novice';
+}
+
+function formatDifficulty(difficulty) {
+  const map = {
+    beginner: '!',
+    novice: '!!',
+    intermediate: '!!!',
+    advanced: '!!!!',
+    athlete: '!!!!!'
+  };
+  return map[difficulty?.toLowerCase()] || '';
+}
+
+function formatExerciseLabel(exercise, isRecommended) {
+  const stars = isRecommended ? '★ ' : '';
+  const difficulty = formatDifficulty(exercise.difficulty);
+  const spacer = difficulty ? `${difficulty} ` : '';
+  return `${stars}${spacer}${exercise.name}`.trim();
+}
+
 function normalizeExerciseRecord(exercise) {
   const equipment = (exercise.equipment || '').trim() || 'Bodyweight';
   const matrixCategory = String(exercise.category || '').toLowerCase().trim();
@@ -762,9 +802,7 @@ function normalizeExerciseRecord(exercise) {
   else if (equipment === 'Dumbbell') category = 'Dumbbell';
   else if (equipment === 'Machine' || equipment === 'Cable' || equipment === 'Smith Machine') category = 'Machines';
   const rawDifficulty = String(exercise.difficulty || '').trim();
-  const fallbackDifficulty = rawDifficulty === 'Advanced'
-    ? 'Athlete'
-    : (exercise.fatigue === 'low' ? 'Beginner' : exercise.fatigue === 'high' ? 'Intermediate' : 'Novice');
+  const fallbackDifficulty = assignFallbackDifficulty({ ...exercise, matrixCategory });
   const difficulty = VALID_DIFFICULTIES.includes(rawDifficulty) ? rawDifficulty : fallbackDifficulty;
   return {
     id: buildExerciseId(exercise),
@@ -1773,8 +1811,8 @@ function renderDayCards() {
           ? [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
             const selected = selection.source === 'matrix' && selection.value === option.id ? ' selected' : '';
             const isSuggested = suggestedIds.includes(option.id);
-            const marker = isSuggested ? '★ ' : '';
-            return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${marker}${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
+            const label = formatExerciseLabel(option, isSuggested);
+            return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${label}</option>`;
           }), `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]
           : [`<option value="">No matching exercises for this muscle/category/environment.</option>`, `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]);
       const muscleLabel = anchorSlot ? `${resolvedTargetMuscle || dayTarget} · Priority default` : (resolvedTargetMuscle || 'Select muscle');
