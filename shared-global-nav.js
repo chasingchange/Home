@@ -22,6 +22,22 @@
   const nav = document.createElement("header");
   nav.className = "cc-global-nav-wrap";
   nav.innerHTML = `
+    <div class="cc-global-nav-mobile-bar">
+      <button
+        id="ccGlobalNavToggle"
+        type="button"
+        class="cc-global-nav-toggle"
+        aria-expanded="false"
+        aria-controls="ccGlobalNav"
+        aria-label="Open navigation menu"
+      >
+        <span class="cc-global-nav-toggle-box" aria-hidden="true">
+          <span class="cc-global-nav-toggle-line"></span>
+          <span class="cc-global-nav-toggle-line"></span>
+          <span class="cc-global-nav-toggle-line"></span>
+        </span>
+      </button>
+    </div>
     <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
       <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
       <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
@@ -60,9 +76,11 @@
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");
+  const mobileToggle = nav.querySelector("#ccGlobalNavToggle");
   const coreMegaMenu = nav.querySelector("#ccGlobalMegaMenu");
   const coreMegaMenuTitle = nav.querySelector("#ccGlobalMegaTitle");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
+  const MOBILE_BREAKPOINT = 640;
 
   function normalizePath(path) {
     if (!path) return "/";
@@ -87,6 +105,26 @@
   }
 
   setActivePrimaryLink();
+
+  function isMobileViewport() {
+    return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+  }
+
+  function setMobileMenuState(isOpen) {
+    nav.classList.toggle("cc-mobile-nav-open", isOpen);
+    mobileToggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    mobileToggle?.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+  }
+
+  function closeMobileMenu() {
+    if (!isMobileViewport()) return;
+    setMobileMenuState(false);
+  }
+
+  mobileToggle?.addEventListener("click", () => {
+    const isOpen = mobileToggle.getAttribute("aria-expanded") === "true";
+    setMobileMenuState(!isOpen);
+  });
 
   function setActiveCoreTab(activeTab) {
     coreTopBar.querySelectorAll("button[data-core]").forEach((btn) => {
@@ -114,6 +152,14 @@
   }
 
   coreTopBar.addEventListener("click", (event) => {
+    const link = event.target.closest("a.cc-global-nav-link");
+    if (link && isMobileViewport()) {
+      closeMobileMenu();
+      coreMegaMenu.classList.add("cc-is-hidden");
+      setActiveCoreTab(null);
+      return;
+    }
+
     const tab = event.target.closest("button[data-core]");
     if (!tab) return;
 
@@ -129,9 +175,24 @@
   });
 
   document.addEventListener("click", (event) => {
-    if (coreTopBar.contains(event.target) || coreMegaMenu.contains(event.target)) return;
+    const clickedInsideNav = nav.contains(event.target);
+    if (!clickedInsideNav) {
+      coreMegaMenu.classList.add("cc-is-hidden");
+      setActiveCoreTab(null);
+      closeMobileMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
     coreMegaMenu.classList.add("cc-is-hidden");
     setActiveCoreTab(null);
+    closeMobileMenu();
+  });
+
+  window.addEventListener("resize", () => {
+    if (isMobileViewport()) return;
+    setMobileMenuState(false);
   });
 
   const hasBottomCta = document.querySelector(".cc-bottom-coaching-wrap");
