@@ -265,7 +265,7 @@
       ctaWrap.className = "cc-bottom-coaching-wrap";
       ctaWrap.innerHTML = `
         <a href="https://tally.so/r/w5JXKE" class="cc-title-coaching cc-bottom-coaching" target="_blank" rel="noopener noreferrer">
-          Want this dialed in? Apply for coaching →
+          Ready to Chase Change? Apply for Coaching.
         </a>
       `;
       container.insertBefore(ctaWrap, anchor);
