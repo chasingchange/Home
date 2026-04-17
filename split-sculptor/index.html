@@ -203,6 +203,16 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .workout-line { margin-bottom: .35rem; }
 .split-day-card { border: 1px solid rgba(7,31,53,0.12); border-radius: 12px; padding: .75rem .85rem; background: #fff; margin-bottom: .6rem; }
 .split-day-card strong { font-family: 'Raleway', sans-serif; font-size: .86rem; letter-spacing: .03em; display: block; margin-bottom: .5rem; color: var(--text); }
+.summary-workout-condensed { list-style: none; padding: 0; margin: .55rem 0 0; display: grid; gap: .5rem; }
+.summary-workout-condensed li { border: 1px solid rgba(7,31,53,0.1); border-radius: 10px; background: #fff; padding: .5rem .6rem; }
+.summary-workout-day { display: flex; justify-content: space-between; align-items: baseline; gap: .4rem; font-family: 'Raleway', sans-serif; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+.summary-workout-day strong { color: var(--text); font-size: .8rem; letter-spacing: .03em; text-transform: none; font-weight: 700; margin-bottom: 0; }
+.summary-workout-lines { display: grid; gap: .25rem; }
+.summary-workout-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .45rem; font-size: .8rem; color: var(--text); line-height: 1.35; }
+.summary-workout-line .lift { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.summary-workout-line .prescription { font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; color: rgba(7,31,53,.82); font-weight: 700; white-space: nowrap; }
+.summary-workout-line.missing .lift,
+.summary-workout-line.missing .prescription { color: #8a1f1f; }
 .split-workout-list { list-style: none; padding-left: 0; display: grid; gap: .4rem; }
 .split-workout-item { border: 1px solid rgba(7,31,53,0.1); border-radius: 10px; background: #f8fafc; padding: .48rem .58rem; }
 .split-workout-item.missing { border-color: rgba(196, 48, 48, 0.65); background: rgba(220, 38, 38, 0.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
@@ -257,7 +267,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: .5rem; } }
-@media (max-width: 640px) { .slot-controls { grid-template-columns: 1fr; } .exercise-detail-grid { grid-template-columns: 1fr; } .split-workout-main { grid-template-columns: 1fr; } .split-workout-prescription { text-align: left; justify-self: start; white-space: normal; } .weekly-volume-layout { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .slot-controls { grid-template-columns: 1fr; } .exercise-detail-grid { grid-template-columns: 1fr; } .split-workout-main { grid-template-columns: 1fr; } .split-workout-prescription { text-align: left; justify-self: start; white-space: normal; } .weekly-volume-layout { grid-template-columns: 1fr; } .summary-workout-line { grid-template-columns: 1fr; } .summary-workout-line .lift { white-space: normal; } }
 </style>
 </head>
 <body class="cc-page">
@@ -2028,6 +2038,27 @@ function buildSummary() {
       .join('');
     return `<li class="split-day-card"><strong>Day ${i + 1} | ${dayType} | Priority Target: ${state.dayPriorities[dayKey] || state.priority}</strong><ul class="split-workout-list">${rows}</ul></li>`;
   }).join('');
+  const condensedSplitRows = getSplitForFreq().map((line, i) => {
+    const dayKey = `d${i + 1}`;
+    const dayType = extractFocusName(line);
+    const condensedLines = state.customDays[state.freq][dayKey]
+      .map((slot) => {
+        const resolvedExerciseName = getExerciseLabel(slot);
+        const exerciseName = resolvedExerciseName || 'Not set';
+        const sets = slot.sets || getSlotPrescription(slot.slot).sets;
+        const reps = slot.reps || getSlotPrescription(slot.slot).reps;
+        const missingClass = resolvedExerciseName ? '' : ' missing';
+        return `<div class="summary-workout-line${missingClass}">
+          <span class="lift">${exerciseName}</span>
+          <span class="prescription">${sets}x${reps}</span>
+        </div>`;
+      })
+      .join('');
+    return `<li>
+      <div class="summary-workout-day"><strong>Day ${i + 1} · ${dayType}</strong><span>Priority: ${state.dayPriorities[dayKey] || state.priority}</span></div>
+      <div class="summary-workout-lines">${condensedLines}</div>
+    </li>`;
+  }).join('');
   document.getElementById('overview-summary-content').innerHTML = `
     <div class="summary-card">
       <div class="sum-row"><span class="sum-label">VIEWING PERIOD</span><span class="sum-val">${formatViewPeriod(state.viewYear, state.viewQuarter)}</span></div>
@@ -2043,6 +2074,11 @@ function buildSummary() {
     <div class="week">
       <h3>Calorie + Macro Targets</h3>
       ${targetMarkup}
+    </div>
+    <div class="week">
+      <h3>Workout Sets Snapshot</h3>
+      <p class="step-sub">Condensed workout view for print: exercise + sets/reps in one page with vision and macros.</p>
+      <ul class="summary-workout-condensed">${condensedSplitRows}</ul>
     </div>
   `;
   document.getElementById('split-workouts-panel').innerHTML = `
