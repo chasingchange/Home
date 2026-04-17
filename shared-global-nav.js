@@ -32,9 +32,10 @@
         aria-label="Open navigation menu"
       >
         <span class="cc-global-nav-toggle-box" aria-hidden="true">
-          <span class="cc-global-nav-toggle-line"></span>
-          <span class="cc-global-nav-toggle-line"></span>
-          <span class="cc-global-nav-toggle-line"></span>
+          <span class="cc-global-nav-toggle-antler cc-global-nav-toggle-antler--left"></span>
+          <span class="cc-global-nav-toggle-antler cc-global-nav-toggle-antler--right"></span>
+          <span class="cc-global-nav-toggle-tine cc-global-nav-toggle-tine--left"></span>
+          <span class="cc-global-nav-toggle-tine cc-global-nav-toggle-tine--right"></span>
         </span>
       </button>
     </div>
@@ -81,6 +82,8 @@
   const coreMegaMenuTitle = nav.querySelector("#ccGlobalMegaTitle");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
   const MOBILE_BREAKPOINT = 640;
+  const MOBILE_CLOSE_STAGGER_MS = 170;
+  let mobileCloseTimer = null;
 
   function normalizePath(path) {
     if (!path) return "/";
@@ -111,7 +114,12 @@
   }
 
   function setMobileMenuState(isOpen) {
+    if (mobileCloseTimer) {
+      clearTimeout(mobileCloseTimer);
+      mobileCloseTimer = null;
+    }
     nav.classList.toggle("cc-mobile-nav-open", isOpen);
+    nav.classList.remove("cc-mobile-nav-closing");
     document.body.classList.toggle("cc-mobile-nav-scroll-lock", isOpen && isMobileViewport());
     mobileToggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
     mobileToggle?.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
@@ -119,12 +127,24 @@
 
   function closeMobileMenu() {
     if (!isMobileViewport()) return;
-    setMobileMenuState(false);
+    if (!nav.classList.contains("cc-mobile-nav-open")) return;
+    nav.classList.add("cc-mobile-nav-closing");
+    mobileToggle?.setAttribute("aria-expanded", "false");
+    mobileToggle?.setAttribute("aria-label", "Open navigation menu");
+    document.body.classList.remove("cc-mobile-nav-scroll-lock");
+    mobileCloseTimer = window.setTimeout(() => {
+      setMobileMenuState(false);
+    }, MOBILE_CLOSE_STAGGER_MS);
   }
 
   mobileToggle?.addEventListener("click", () => {
-    const isOpen = mobileToggle.getAttribute("aria-expanded") === "true";
-    setMobileMenuState(!isOpen);
+    const isOpen = nav.classList.contains("cc-mobile-nav-open");
+    const isClosing = nav.classList.contains("cc-mobile-nav-closing");
+    if (isOpen && !isClosing) {
+      closeMobileMenu();
+      return;
+    }
+    setMobileMenuState(true);
   });
 
   function setActiveCoreTab(activeTab) {
