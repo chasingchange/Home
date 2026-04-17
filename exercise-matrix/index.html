@@ -63,6 +63,12 @@
               <option value="all">All types</option>
             </select>
           </label>
+          <label class="grid gap-1 text-sm font-semibold">
+            Difficulty
+            <select id="difficultyFilter" class="rounded-xl border border-black/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cc-accent">
+              <option value="all">All difficulty</option>
+            </select>
+          </label>
         </div>
         <p id="resultCount" class="mt-4 text-sm font-semibold opacity-75"></p>
 
@@ -75,6 +81,7 @@
                 <th class="px-4 py-3">Movement Type</th>
                 <th class="px-4 py-3">Pattern / Angle</th>
                 <th class="px-4 py-3">Equipment</th>
+                <th class="px-4 py-3">Difficulty</th>
               </tr>
             </thead>
             <tbody id="matrixBody" class="bg-white"></tbody>
@@ -89,6 +96,7 @@
       const muscleFilter = document.getElementById("muscleFilter");
       const equipmentFilter = document.getElementById("equipmentFilter");
       const movementTypeFilter = document.getElementById("movementTypeFilter");
+      const difficultyFilter = document.getElementById("difficultyFilter");
       const matrixBody = document.getElementById("matrixBody");
       const resultCount = document.getElementById("resultCount");
       const pageLoginStatus = document.getElementById("pageLoginStatus");
@@ -98,6 +106,14 @@
       }
 
       function hydrateFilters() {
+        const difficultyOrder = ["Beginner", "Novice", "Intermediate", "Athlete"];
+        difficultyOrder.filter((value) => DATA.some((item) => item.difficulty === value)).forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          difficultyFilter.appendChild(option);
+        });
+
         uniqueValues("primaryMuscle").forEach((value) => {
           const option = document.createElement("option");
           option.value = value;
@@ -125,6 +141,7 @@
         const muscle = muscleFilter.value;
         const equipment = equipmentFilter.value;
         const movementType = movementTypeFilter.value;
+        const difficulty = difficultyFilter.value;
 
         const filtered = DATA.filter((row) => {
           const searchBlob = [
@@ -142,7 +159,8 @@
           const matchMuscle = muscle === "all" || row.primaryMuscle === muscle;
           const matchEquipment = equipment === "all" || row.equipment === equipment;
           const matchMovementType = movementType === "all" || row.movementType === movementType;
-          return matchSearch && matchMuscle && matchEquipment && matchMovementType;
+          const matchDifficulty = difficulty === "all" || row.difficulty === difficulty;
+          return matchSearch && matchMuscle && matchEquipment && matchMovementType && matchDifficulty;
         });
 
         resultCount.textContent = `${filtered.length} exercise${filtered.length === 1 ? "" : "s"} shown`;
@@ -156,13 +174,14 @@
                 <td class="px-4 py-3">${row.movementType}<div class="text-xs opacity-70 mt-1 uppercase">${row.category || 'n/a'}</div></td>
                 <td class="px-4 py-3">${row.movementPattern || '—'}<div class="text-xs opacity-70 mt-1">${row.angle || '—'} · ${row.laterality || '—'}</div></td>
                 <td class="px-4 py-3">${row.equipment}</td>
+                <td class="px-4 py-3"><span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold ${row.difficulty === 'Athlete' ? 'bg-red-100 text-red-800' : row.difficulty === 'Intermediate' ? 'bg-amber-100 text-amber-800' : row.difficulty === 'Novice' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'}">${row.difficulty || 'Novice'}</span></td>
               </tr>
             `
           )
           .join("");
 
         if (!filtered.length) {
-          matrixBody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-sm opacity-70">No exercises match your current filters.</td></tr>';
+          matrixBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm opacity-70">No exercises match your current filters.</td></tr>';
         }
       }
 
@@ -172,7 +191,7 @@
         pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
       }
       render();
-      [searchInput, muscleFilter, equipmentFilter, movementTypeFilter].forEach((el) => el.addEventListener("input", render));
+      [searchInput, muscleFilter, equipmentFilter, movementTypeFilter, difficultyFilter].forEach((el) => el.addEventListener("input", render));
     </script>
   
     <footer class="w-full px-5 pb-5 sm:px-8">
