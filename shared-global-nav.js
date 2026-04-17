@@ -112,6 +112,7 @@
 
   function setMobileMenuState(isOpen) {
     nav.classList.toggle("cc-mobile-nav-open", isOpen);
+    document.body.classList.toggle("cc-mobile-nav-scroll-lock", isOpen && isMobileViewport());
     mobileToggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
     mobileToggle?.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
   }
@@ -191,8 +192,13 @@
   });
 
   window.addEventListener("resize", () => {
-    if (isMobileViewport()) return;
-    setMobileMenuState(false);
+    if (!isMobileViewport()) {
+      setMobileMenuState(false);
+      return;
+    }
+
+    const isOpen = mobileToggle?.getAttribute("aria-expanded") === "true";
+    document.body.classList.toggle("cc-mobile-nav-scroll-lock", Boolean(isOpen));
   });
 
   const hasBottomCta = document.querySelector(".cc-bottom-coaching-wrap");
