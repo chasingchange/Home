@@ -704,19 +704,19 @@ const mesoPrescription = {
   }
 };
 
-const VOLUME_MUSCLE_GROUPS = ['Chest', 'Back', 'Quads', 'Hamstrings', 'Glutes', 'Shoulders', 'Biceps', 'Triceps', 'Calves'];
+const VOLUME_MUSCLE_GROUPS = ['Chest', 'Back', 'Quads', 'Hamstrings', 'Glutes', 'Shoulders', 'Biceps', 'Triceps', 'Calves', 'Abs'];
 const WEEKLY_VOLUME_RANGES_BY_GOAL = {
   'Hypertrophy': {
-    Chest: [10, 20], Back: [10, 20], Quads: [10, 18], Hamstrings: [8, 15], Glutes: [8, 16], Shoulders: [8, 16], Biceps: [6, 12], Triceps: [6, 12], Calves: [6, 12]
+    Chest: [10, 20], Back: [10, 20], Quads: [10, 18], Hamstrings: [8, 15], Glutes: [8, 16], Shoulders: [8, 16], Biceps: [6, 12], Triceps: [6, 12], Calves: [6, 12], Abs: [6, 14]
   },
   'Progressive Overload / Strength Training': {
-    Chest: [6, 12], Back: [6, 12], Quads: [6, 12], Hamstrings: [5, 10], Glutes: [5, 10], Shoulders: [5, 10], Biceps: [4, 8], Triceps: [4, 8], Calves: [4, 8]
+    Chest: [6, 12], Back: [6, 12], Quads: [6, 12], Hamstrings: [5, 10], Glutes: [5, 10], Shoulders: [5, 10], Biceps: [4, 8], Triceps: [4, 8], Calves: [4, 8], Abs: [4, 10]
   },
   'Fat Loss / Conditioning': {
-    Chest: [6, 12], Back: [6, 12], Quads: [6, 12], Hamstrings: [6, 10], Glutes: [6, 12], Shoulders: [5, 10], Biceps: [4, 8], Triceps: [4, 8], Calves: [4, 8]
+    Chest: [6, 12], Back: [6, 12], Quads: [6, 12], Hamstrings: [6, 10], Glutes: [6, 12], Shoulders: [5, 10], Biceps: [4, 8], Triceps: [4, 8], Calves: [4, 8], Abs: [6, 12]
   },
   'Performance': {
-    Chest: [4, 10], Back: [6, 12], Quads: [6, 12], Hamstrings: [5, 10], Glutes: [6, 12], Shoulders: [4, 8], Biceps: [3, 6], Triceps: [3, 6], Calves: [4, 8]
+    Chest: [4, 10], Back: [6, 12], Quads: [6, 12], Hamstrings: [5, 10], Glutes: [6, 12], Shoulders: [4, 8], Biceps: [3, 6], Triceps: [3, 6], Calves: [4, 8], Abs: [4, 10]
   }
 };
 
@@ -735,12 +735,23 @@ const VALID_PRIMARY_MUSCLES = new Set(['Chest', 'Back', 'Shoulders', 'Quads', 'H
 const VALID_DIFFICULTIES = ['Beginner', 'Novice', 'Intermediate', 'Athlete'];
 const DEBUG_MODE = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.search.includes('debug=1');
 
+const CANONICAL_MUSCLE_MAP = {
+  chest: 'Chest', pec: 'Chest', pecs: 'Chest',
+  back: 'Back', lats: 'Back', 'upper back': 'Back', 'lower back': 'Back',
+  shoulders: 'Shoulders', shoulder: 'Shoulders', delts: 'Shoulders', delt: 'Shoulders', 'rear delts': 'Shoulders', 'front delts': 'Shoulders',
+  biceps: 'Biceps', bicep: 'Biceps',
+  triceps: 'Triceps', tricep: 'Triceps',
+  quads: 'Quads', quadriceps: 'Quads',
+  hamstrings: 'Hamstrings', hamstring: 'Hamstrings',
+  glutes: 'Glutes', glute: 'Glutes',
+  calves: 'Calves', calf: 'Calves',
+  abs: 'Abs', core: 'Abs', abdominals: 'Abs'
+};
+
 function normalizePrimaryMuscle(muscle) {
   const normalized = (muscle || '').trim();
-  if (normalized === 'Rear Delts') return 'Shoulders';
-  if (normalized === 'Lower Back') return 'Back';
-  if (normalized === 'Core') return 'Abs';
-  return normalized;
+  if (!normalized) return '';
+  return CANONICAL_MUSCLE_MAP[normalized.toLowerCase()] || normalized;
 }
 
 function normalizeExerciseRecord(exercise) {
@@ -961,12 +972,13 @@ function oneChip(groupId, key, isNum = false) {
 }
 
 function getPriorityMuscles() {
-  return ['Back', 'Biceps', 'Calves', 'Chest', 'Glutes', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps'];
+  return ['Back', 'Biceps', 'Calves', 'Chest', 'Glutes', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps', 'Abs'];
 }
 
 function muscleBucket(muscle) {
   if (['Chest', 'Shoulders', 'Triceps'].includes(muscle)) return 'Push';
   if (['Back', 'Biceps'].includes(muscle)) return 'Pull';
+  if (muscle === 'Abs') return 'Core';
   return 'Legs';
 }
 
@@ -1161,11 +1173,11 @@ function getDayFocusMuscles(focus) {
   const map = {
     Push: ['Chest', 'Shoulders', 'Triceps'],
     Pull: ['Back', 'Biceps'],
-    Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
-    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
-    Lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    Legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs'],
+    Upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Abs'],
+    Lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs'],
     'Isolated Muscle Group': getPriorityMuscles(),
-    'Full Body': ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Calves']
+    'Full Body': ['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Biceps', 'Triceps', 'Calves', 'Abs']
   };
   return map[focus] || map['Full Body'];
 }
@@ -1530,12 +1542,14 @@ function equipmentBucket(equipment = '') {
 }
 
 function getStarredSuggestions(slotPool, item, dayRows, rowIndex) {
+  if (!slotPool.length) return [];
   const targetPool = item.targetMuscle
     ? slotPool.filter((option) => muscleMatchesTarget(getMuscle(option), item.targetMuscle))
     : slotPool;
+  if (item.targetMuscle && !targetPool.length) return [];
   const fallbackPool = targetPool.length ? targetPool : slotPool;
   const previousSelections = dayRows.slice(0, rowIndex)
-    .map((entry) => EXERCISES.find((exercise) => exercise.id === entry.id))
+    .map((entry) => resolveExerciseByEntry(entry))
     .filter(Boolean);
 
   const scored = fallbackPool.map((exercise) => {
@@ -1585,7 +1599,6 @@ function getStarredSuggestions(slotPool, item, dayRows, rowIndex) {
     }
   }
 
-  while (picks.length < 3 && fallbackPool.length) picks.push(fallbackPool[picks.length % fallbackPool.length]);
   return picks.slice(0, 3);
 }
 
