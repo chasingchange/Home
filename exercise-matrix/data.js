@@ -1,162 +1,164 @@
-const BASE_EXERCISE_MATRIX = [
-  { name: "Barbell Bench Press", aliases:["Flat Bench Press"], primaryMuscle:"Chest", secondaryMuscles:["Front Delts","Triceps"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["horizontal-press","free-weight"] },
-  { name: "Incline Dumbbell Press", aliases:["Incline DB Press"], primaryMuscle:"Chest", secondaryMuscles:["Front Delts","Triceps"], category:"compound", equipment:"Dumbbell", movementPattern:"press", angle:"incline", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["horizontal-press","free-weight"] },
-  { name: "Weighted Chest Dip", primaryMuscle:"Chest", secondaryMuscles:["Triceps","Front Delts"], category:"compound", equipment:"Bodyweight", movementPattern:"dip", angle:"decline", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["bodyweight","deep-stretch"] },
-  { name: "Machine Chest Press", primaryMuscle:"Chest", secondaryMuscles:["Triceps","Front Delts"], category:"machine", equipment:"Machine", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["horizontal-press","stable"] },
-  { name: "Incline Chest Press Machine", primaryMuscle:"Chest", secondaryMuscles:["Front Delts","Triceps"], category:"machine", equipment:"Machine", movementPattern:"press", angle:"incline", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["horizontal-press","stable"] },
-  { name: "Smith Incline Press", primaryMuscle:"Chest", secondaryMuscles:["Front Delts","Triceps"], category:"machine", equipment:"Smith Machine", movementPattern:"press", angle:"incline", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["horizontal-press","stable"] },
-  { name: "Cable Fly", aliases:["Cable Crossover"], primaryMuscle:"Chest", secondaryMuscles:["Front Delts"], category:"isolation", equipment:"Cable", movementPattern:"fly", angle:"flat", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["stretch-biased"] },
-  { name: "Pec Deck", primaryMuscle:"Chest", secondaryMuscles:["Front Delts"], category:"isolation", equipment:"Machine", movementPattern:"fly", angle:"flat", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened-biased"] },
-  { name: "Incline Cable Fly", primaryMuscle:"Chest", secondaryMuscles:["Front Delts"], category:"isolation", equipment:"Cable", movementPattern:"fly", angle:"incline", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["upper-chest"] },
-  { name: "Decline Barbell Bench Press", primaryMuscle:"Chest", secondaryMuscles:["Triceps","Front Delts"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"decline", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["horizontal-press","lower-chest"] },
-  { name: "Flat Dumbbell Bench Press", primaryMuscle:"Chest", secondaryMuscles:["Triceps","Front Delts"], category:"compound", equipment:"Dumbbell", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["horizontal-press"] },
-  { name: "Plate-Loaded Chest Press", primaryMuscle:"Chest", secondaryMuscles:["Triceps","Front Delts"], category:"machine", equipment:"Machine", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Single Arm Cable Fly", primaryMuscle:"Chest", secondaryMuscles:["Front Delts"], category:"isolation", equipment:"Cable", movementPattern:"fly", angle:"flat", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["constant-tension"] },
+const NORMALIZED_EXERCISE_MATRIX = [
+  { "Exercise": "Barbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Incline Dumbbell Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "incline · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Decline Barbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "decline · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Flat Dumbbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Weighted Chest Dip", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "decline · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Machine Chest Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Incline Chest Press Machine", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "machine", "Pattern / Angle": "incline · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Plate-Loaded Chest Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "isolation", "Pattern / Angle": "flat · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Incline Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "isolation", "Pattern / Angle": "incline · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Pec Deck", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
 
-  { name: "Pull Up", primaryMuscle:"Back", secondaryMuscles:["Biceps","Rear Delts"], category:"compound", equipment:"Bodyweight", movementPattern:"vertical pull", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["lats","bodyweight"] },
-  { name: "Barbell Row", primaryMuscle:"Back", secondaryMuscles:["Biceps","Rear Delts"], category:"compound", equipment:"Barbell", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["free-weight"] },
-  { name: "Single Arm Dumbbell Row", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"compound", equipment:"Dumbbell", movementPattern:"row", angle:"horizontal", laterality:"unilateral", difficulty:"Novice", fatigue:"medium", tags:["unilateral"] },
-  { name: "Lat Pulldown", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"machine", equipment:"Cable", movementPattern:"vertical pull", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["lats"] },
-  { name: "Chest Supported Row Machine", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"machine", equipment:"Machine", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Seated Cable Row", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"machine", equipment:"Cable", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Straight Arm Pulldown", primaryMuscle:"Back", secondaryMuscles:["Core"], category:"isolation", equipment:"Cable", movementPattern:"pulldown", angle:"vertical", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lat-isolation"] },
-  { name: "Machine Pullover", primaryMuscle:"Back", secondaryMuscles:["Triceps Long Head"], category:"isolation", equipment:"Machine", movementPattern:"pullover", angle:"vertical", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lat-isolation"] },
-  { name: "Dumbbell Pullover", primaryMuscle:"Back", secondaryMuscles:["Chest"], category:"isolation", equipment:"Dumbbell", movementPattern:"pullover", angle:"flat", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lat-isolation"] },
-  { name: "T-Bar Row", primaryMuscle:"Back", secondaryMuscles:["Biceps","Rear Delts"], category:"compound", equipment:"Barbell", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Intermediate", fatigue:"high", tags:["mid-back"] },
-  { name: "Neutral-Grip Pull Up", primaryMuscle:"Back", secondaryMuscles:["Biceps","Rear Delts"], category:"compound", equipment:"Bodyweight", movementPattern:"vertical pull", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["lats"] },
-  { name: "Iso-Lateral Row Machine", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"machine", equipment:"Machine", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Single Arm Cable Lat Pulldown", primaryMuscle:"Back", secondaryMuscles:["Biceps"], category:"isolation", equipment:"Cable", movementPattern:"pulldown", angle:"vertical", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["lat-isolation"] },
+  { "Exercise": "Pull-Up", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Weighted Chin-Up", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, forearms", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Neutral-Grip Pull-Up", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Lat Pulldown", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "vertical · bilateral", "Equipment": "Cable", "Difficulty": "Novice" },
+  { "Exercise": "Single-Arm Cable Lat Pulldown", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps", "Movement Type": "isolation", "Pattern / Angle": "vertical · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Barbell Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
+  { "Exercise": "T-Bar Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Barbell", "Difficulty": "Intermediate" },
+  { "Exercise": "Single-Arm Dumbbell Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · unilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Seated Cable Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Cable", "Difficulty": "Novice" },
+  { "Exercise": "Chest Supported Row Machine", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Iso-Lateral Row Machine", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Straight-Arm Pulldown", "Primary Muscle": "Back", "Secondary Muscle(s)": "Abs", "Movement Type": "isolation", "Pattern / Angle": "vertical · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
 
-  { name: "Standing Overhead Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps","Upper Chest"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["vertical-press"] },
-  { name: "Seated Dumbbell Shoulder Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps"], category:"compound", equipment:"Dumbbell", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["vertical-press"] },
-  { name: "Arnold Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps"], category:"compound", equipment:"Dumbbell", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["front-delt"] },
-  { name: "Machine Shoulder Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps"], category:"machine", equipment:"Machine", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Smith Overhead Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps"], category:"machine", equipment:"Smith Machine", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Cable Upright Row", primaryMuscle:"Shoulders", secondaryMuscles:["Upper Traps"], category:"machine", equipment:"Cable", movementPattern:"upright row", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["delts"] },
-  { name: "Dumbbell Lateral Raise", primaryMuscle:"Shoulders", secondaryMuscles:["Upper Traps"], category:"isolation", equipment:"Dumbbell", movementPattern:"raise", angle:"lateral", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["middle-delt"] },
-  { name: "Cable Lateral Raise", primaryMuscle:"Shoulders", secondaryMuscles:["Upper Traps"], category:"isolation", equipment:"Cable", movementPattern:"raise", angle:"lateral", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["middle-delt","constant-tension"] },
-  { name: "Reverse Pec Deck", primaryMuscle:"Shoulders", secondaryMuscles:["Upper Back"], category:"isolation", equipment:"Machine", movementPattern:"rear fly", angle:"horizontal", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["rear-delt"] },
-  { name: "Push Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps","Upper Chest"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["power"] },
-  { name: "Behind-The-Neck Smith Press", primaryMuscle:"Shoulders", secondaryMuscles:["Triceps"], category:"machine", equipment:"Smith Machine", movementPattern:"press", angle:"vertical", laterality:"bilateral", difficulty:"Intermediate", fatigue:"medium", tags:["stable"] },
-  { name: "Cable Rear Delt Fly", primaryMuscle:"Shoulders", secondaryMuscles:["Upper Back"], category:"isolation", equipment:"Cable", movementPattern:"rear fly", angle:"horizontal", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["rear-delt"] },
+  { "Exercise": "Standing Overhead Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "compound", "Pattern / Angle": "overhead · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
+  { "Exercise": "Seated Dumbbell Shoulder Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "compound", "Pattern / Angle": "overhead · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Arnold Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "compound", "Pattern / Angle": "overhead · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Machine Shoulder Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "machine", "Pattern / Angle": "overhead · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Smith Overhead Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "machine", "Pattern / Angle": "overhead · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Dumbbell Lateral Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper traps", "Movement Type": "isolation", "Pattern / Angle": "lateral · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Cable Lateral Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper traps", "Movement Type": "isolation", "Pattern / Angle": "lateral · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Reverse Pec Deck", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper back", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Cable Rear Delt Fly", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper back", "Movement Type": "isolation", "Pattern / Angle": "horizontal · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
 
-  { name: "Barbell Back Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes","Adductors"], category:"compound", equipment:"Barbell", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["knee-dominant"] },
-  { name: "Front Squat", primaryMuscle:"Quads", secondaryMuscles:["Core","Glutes"], category:"compound", equipment:"Barbell", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["knee-dominant"] },
-  { name: "Bulgarian Split Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes"], category:"compound", equipment:"Dumbbell", movementPattern:"lunge", angle:"upright", laterality:"unilateral", difficulty:"Novice", fatigue:"high", tags:["unilateral"] },
-  { name: "Hack Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes"], category:"machine", equipment:"Machine", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["knee-dominant","stable"] },
-  { name: "Leg Press", primaryMuscle:"Quads", secondaryMuscles:["Glutes"], category:"machine", equipment:"Machine", movementPattern:"squat", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["knee-dominant","stable"] },
-  { name: "Smith Split Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes"], category:"machine", equipment:"Smith Machine", movementPattern:"lunge", angle:"upright", laterality:"unilateral", difficulty:"Novice", fatigue:"medium", tags:["unilateral","stable"] },
-  { name: "Leg Extension", primaryMuscle:"Quads", secondaryMuscles:["None"], category:"isolation", equipment:"Machine", movementPattern:"extension", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-extension"] },
-  { name: "Sissy Squat", primaryMuscle:"Quads", secondaryMuscles:["Hip Flexors"], category:"isolation", equipment:"Bodyweight", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Intermediate", fatigue:"medium", tags:["knee-extension"] },
-  { name: "Cable Leg Extension", primaryMuscle:"Quads", secondaryMuscles:["None"], category:"isolation", equipment:"Cable", movementPattern:"extension", angle:"seated", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-extension"] },
-  { name: "High-Bar Back Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes","Adductors"], category:"compound", equipment:"Barbell", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["knee-dominant"] },
-  { name: "Pendulum Squat", primaryMuscle:"Quads", secondaryMuscles:["Glutes"], category:"machine", equipment:"Machine", movementPattern:"squat", angle:"upright", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["knee-dominant","stable"] },
-  { name: "Bodyweight Spanish Squat", primaryMuscle:"Quads", secondaryMuscles:["None"], category:"isolation", equipment:"Bodyweight", movementPattern:"extension", angle:"upright", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-extension"] },
+  { "Exercise": "Barbell Back Squat", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, adductors", "Movement Type": "compound", "Pattern / Angle": "upright · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
+  { "Exercise": "Front Squat", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, abs", "Movement Type": "compound", "Pattern / Angle": "upright · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
+  { "Exercise": "Bulgarian Split Squat", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, adductors", "Movement Type": "compound", "Pattern / Angle": "upright · unilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Smith Split Squat", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, adductors", "Movement Type": "machine", "Pattern / Angle": "upright · unilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Hack Squat", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, adductors", "Movement Type": "machine", "Pattern / Angle": "upright · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Leg Press", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Glutes, adductors", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Leg Extension", "Primary Muscle": "Quads", "Secondary Muscle(s)": "Hip flexors", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
 
-  { name: "Romanian Deadlift", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes","Lower Back"], category:"compound", equipment:"Barbell", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["posterior-chain"] },
-  { name: "Dumbbell Romanian Deadlift", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes"], category:"compound", equipment:"Dumbbell", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["posterior-chain"] },
-  { name: "Good Morning", primaryMuscle:"Hamstrings", secondaryMuscles:["Lower Back","Glutes"], category:"compound", equipment:"Barbell", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["posterior-chain"] },
-  { name: "Lying Leg Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Calves"], category:"machine", equipment:"Machine", movementPattern:"curl", angle:"prone", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-flexion"] },
-  { name: "Seated Leg Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Calves"], category:"machine", equipment:"Machine", movementPattern:"curl", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-flexion"] },
-  { name: "Cable Pull Through", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes"], category:"machine", equipment:"Cable", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["posterior-chain"] },
-  { name: "Nordic Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes"], category:"isolation", equipment:"Bodyweight", movementPattern:"curl", angle:"kneeling", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["eccentric"] },
-  { name: "Stability Ball Leg Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes","Core"], category:"isolation", equipment:"Bodyweight", movementPattern:"curl", angle:"supine", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["knee-flexion"] },
-  { name: "Cable Hamstring Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Calves"], category:"isolation", equipment:"Cable", movementPattern:"curl", angle:"standing", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-flexion"] },
-  { name: "Stiff-Leg Deadlift", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes","Lower Back"], category:"compound", equipment:"Barbell", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Intermediate", fatigue:"high", tags:["posterior-chain"] },
-  { name: "Glute-Ham Raise", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes"], category:"machine", equipment:"Machine", movementPattern:"curl", angle:"prone", laterality:"bilateral", difficulty:"Intermediate", fatigue:"medium", tags:["knee-flexion"] },
-  { name: "Slider Leg Curl", primaryMuscle:"Hamstrings", secondaryMuscles:["Glutes","Core"], category:"isolation", equipment:"Bodyweight", movementPattern:"curl", angle:"supine", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["knee-flexion"] },
+  { "Exercise": "Romanian Deadlift", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Glutes, lower back", "Movement Type": "compound", "Pattern / Angle": "hip-hinge · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Dumbbell Romanian Deadlift", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Glutes, lower back", "Movement Type": "compound", "Pattern / Angle": "hip-hinge · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Stiff-Leg Deadlift", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Glutes, lower back", "Movement Type": "compound", "Pattern / Angle": "hip-hinge · bilateral", "Equipment": "Barbell", "Difficulty": "Intermediate" },
+  { "Exercise": "Lying Leg Curl", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Calves", "Movement Type": "machine", "Pattern / Angle": "prone · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Seated Leg Curl", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Calves", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Glute-Ham Raise", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Glutes, calves", "Movement Type": "machine", "Pattern / Angle": "prone · bilateral", "Equipment": "Machine", "Difficulty": "Intermediate" },
+  { "Exercise": "Nordic Curl", "Primary Muscle": "Hamstrings", "Secondary Muscle(s)": "Glutes, calves", "Movement Type": "isolation", "Pattern / Angle": "kneeling · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
 
-  { name: "Barbell Hip Thrust", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"compound", equipment:"Barbell", movementPattern:"hip thrust", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"high", tags:["glute-max"] },
-  { name: "Dumbbell Hip Thrust", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"compound", equipment:"Dumbbell", movementPattern:"hip thrust", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["glute-max"] },
-  { name: "Reverse Lunge", primaryMuscle:"Glutes", secondaryMuscles:["Quads","Hamstrings"], category:"compound", equipment:"Dumbbell", movementPattern:"lunge", angle:"upright", laterality:"unilateral", difficulty:"Novice", fatigue:"medium", tags:["unilateral"] },
-  { name: "Smith Hip Thrust", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"machine", equipment:"Smith Machine", movementPattern:"hip thrust", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["glute-max","stable"] },
-  { name: "Cable Glute Pull Through", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"machine", equipment:"Cable", movementPattern:"hinge", angle:"hip-hinge", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["glute-max"] },
-  { name: "Hip Abduction Machine", primaryMuscle:"Glutes", secondaryMuscles:["Glute Med"], category:"machine", equipment:"Machine", movementPattern:"abduction", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["glute-med"] },
-  { name: "Cable Glute Kickback", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"isolation", equipment:"Cable", movementPattern:"extension", angle:"standing", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["glute-max"] },
-  { name: "Frog Pump", primaryMuscle:"Glutes", secondaryMuscles:["Adductors"], category:"isolation", equipment:"Bodyweight", movementPattern:"hip thrust", angle:"supine", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
-  { name: "Machine Glute Kickback", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"isolation", equipment:"Machine", movementPattern:"extension", angle:"standing", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["glute-max"] },
-  { name: "Barbell Glute Bridge", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings"], category:"compound", equipment:"Barbell", movementPattern:"hip thrust", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["glute-max"] },
-  { name: "Machine Reverse Hyperextension", primaryMuscle:"Glutes", secondaryMuscles:["Hamstrings","Lower Back"], category:"machine", equipment:"Machine", movementPattern:"extension", angle:"prone", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["posterior-chain"] },
-  { name: "Banded Glute Bridge", primaryMuscle:"Glutes", secondaryMuscles:["None"], category:"isolation", equipment:"Bodyweight", movementPattern:"hip thrust", angle:"supine", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
+  { "Exercise": "Barbell Hip Thrust", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Dumbbell Hip Thrust", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Smith Hip Thrust", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Barbell Glute Bridge", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "compound", "Pattern / Angle": "supine · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Reverse Lunge", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Quads, hamstrings", "Movement Type": "compound", "Pattern / Angle": "upright · unilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Hip Abduction Machine", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Tensor fasciae latae", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Cable Glute Kickback", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "isolation", "Pattern / Angle": "standing · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Machine Glute Kickback", "Primary Muscle": "Glutes", "Secondary Muscle(s)": "Hamstrings", "Movement Type": "machine", "Pattern / Angle": "standing · unilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
 
-  { name: "Close-Grip Bench Press", primaryMuscle:"Triceps", secondaryMuscles:["Chest","Shoulders"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["lockout"] },
-  { name: "Weighted Parallel Dip", primaryMuscle:"Triceps", secondaryMuscles:["Chest","Shoulders"], category:"compound", equipment:"Bodyweight", movementPattern:"dip", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["lockout"] },
-  { name: "JM Press", primaryMuscle:"Triceps", secondaryMuscles:["Chest"], category:"compound", equipment:"Barbell", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Intermediate", fatigue:"medium", tags:["long-head"] },
-  { name: "Cable Pressdown", primaryMuscle:"Triceps", secondaryMuscles:["Forearms"], category:"machine", equipment:"Cable", movementPattern:"extension", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lateral-head"] },
-  { name: "Machine Dip", primaryMuscle:"Triceps", secondaryMuscles:["Chest"], category:"machine", equipment:"Machine", movementPattern:"dip", angle:"vertical", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Smith Close-Grip Press", primaryMuscle:"Triceps", secondaryMuscles:["Chest"], category:"machine", equipment:"Smith Machine", movementPattern:"press", angle:"flat", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stable"] },
-  { name: "Overhead Cable Triceps Extension", primaryMuscle:"Triceps", secondaryMuscles:["None"], category:"isolation", equipment:"Cable", movementPattern:"extension", angle:"overhead", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["long-head"] },
-  { name: "Skullcrusher", primaryMuscle:"Triceps", secondaryMuscles:["None"], category:"isolation", equipment:"Barbell", movementPattern:"extension", angle:"flat", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["long-head"] },
-  { name: "Single Arm Cable Pressdown", primaryMuscle:"Triceps", secondaryMuscles:["None"], category:"isolation", equipment:"Cable", movementPattern:"extension", angle:"standing", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["lateral-head"] },
-  { name: "Dip Bar Bench Dip (Weighted)", primaryMuscle:"Triceps", secondaryMuscles:["Chest","Shoulders"], category:"compound", equipment:"Bodyweight", movementPattern:"dip", angle:"decline", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["lockout"] },
-  { name: "Rope Pressdown", primaryMuscle:"Triceps", secondaryMuscles:["Forearms"], category:"machine", equipment:"Cable", movementPattern:"extension", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lateral-head"] },
-  { name: "Single Arm Overhead Cable Extension", primaryMuscle:"Triceps", secondaryMuscles:["None"], category:"isolation", equipment:"Cable", movementPattern:"extension", angle:"overhead", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["long-head"] },
+  { "Exercise": "Close-Grip Bench Press", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
+  { "Exercise": "Weighted Parallel Dip", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Machine Dip", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "machine", "Pattern / Angle": "vertical · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Smith Close-Grip Press", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Cable Pressdown", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Rope Pressdown", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Overhead Cable Triceps Extension", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Abs", "Movement Type": "isolation", "Pattern / Angle": "overhead · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Single-Arm Overhead Cable Extension", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Abs", "Movement Type": "isolation", "Pattern / Angle": "overhead · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Skullcrusher", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Beginner" },
 
-  { name: "Weighted Chin Up", primaryMuscle:"Biceps", secondaryMuscles:["Back"], category:"compound", equipment:"Bodyweight", movementPattern:"vertical pull", angle:"vertical", laterality:"bilateral", difficulty:"Athlete", fatigue:"high", tags:["supinated"] },
-  { name: "Supinated Grip Inverted Row", primaryMuscle:"Biceps", secondaryMuscles:["Back"], category:"compound", equipment:"Bodyweight", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["supinated"] },
-  { name: "Supinated Cable Row", primaryMuscle:"Biceps", secondaryMuscles:["Back"], category:"compound", equipment:"Cable", movementPattern:"row", angle:"horizontal", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["supinated"] },
-  { name: "Machine Preacher Curl", primaryMuscle:"Biceps", secondaryMuscles:["Brachialis"], category:"machine", equipment:"Machine", movementPattern:"curl", angle:"preacher", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
-  { name: "Cable Bayesian Curl", primaryMuscle:"Biceps", secondaryMuscles:["Brachialis"], category:"machine", equipment:"Cable", movementPattern:"curl", angle:"behind-body", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["lengthened"] },
-  { name: "Cable EZ Curl", primaryMuscle:"Biceps", secondaryMuscles:["Forearms"], category:"machine", equipment:"Cable", movementPattern:"curl", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["constant-tension"] },
-  { name: "Dumbbell Incline Curl", primaryMuscle:"Biceps", secondaryMuscles:["Forearms"], category:"isolation", equipment:"Dumbbell", movementPattern:"curl", angle:"incline", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["lengthened"] },
-  { name: "Hammer Curl", primaryMuscle:"Biceps", secondaryMuscles:["Brachialis","Forearms"], category:"isolation", equipment:"Dumbbell", movementPattern:"curl", angle:"neutral", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["brachialis"] },
-  { name: "Concentration Curl", primaryMuscle:"Biceps", secondaryMuscles:["Forearms"], category:"isolation", equipment:"Dumbbell", movementPattern:"curl", angle:"seated", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
-  { name: "EZ-Bar Curl", primaryMuscle:"Biceps", secondaryMuscles:["Forearms"], category:"compound", equipment:"Barbell", movementPattern:"curl", angle:"standing", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["supinated"] },
-  { name: "Cable Preacher Curl", primaryMuscle:"Biceps", secondaryMuscles:["Brachialis"], category:"machine", equipment:"Cable", movementPattern:"curl", angle:"preacher", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
-  { name: "Spider Curl", primaryMuscle:"Biceps", secondaryMuscles:["Forearms"], category:"isolation", equipment:"Dumbbell", movementPattern:"curl", angle:"prone", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shortened"] },
+  { "Exercise": "EZ-Bar Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Hammer Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Brachialis, forearms", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Dumbbell Incline Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "incline · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Concentration Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "seated · unilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Cable EZ Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Cable Preacher Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Machine Preacher Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
 
-  { name: "Standing Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"compound", equipment:"Dumbbell", movementPattern:"calf raise", angle:"standing", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["gastrocnemius"] },
-  { name: "Standing Calf Raise (Weighted Plate)", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"isolation", equipment:"Weight Plate", movementPattern:"calf raise", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["gastrocnemius"] },
-  { name: "Smith Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"compound", equipment:"Smith Machine", movementPattern:"calf raise", angle:"standing", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["gastrocnemius"] },
-  { name: "Donkey Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"compound", equipment:"Machine", movementPattern:"calf raise", angle:"hip-hinged", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["stretch-biased"] },
-  { name: "Leg Press Calf Press", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"machine", equipment:"Machine", movementPattern:"calf raise", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["stable"] },
-  { name: "Seated Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"machine", equipment:"Machine", movementPattern:"calf raise", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["soleus"] },
-  { name: "Smith Seated Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"machine", equipment:"Smith Machine", movementPattern:"calf raise", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["soleus"] },
-  { name: "Single-Leg Bodyweight Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"isolation", equipment:"Bodyweight", movementPattern:"calf raise", angle:"standing", laterality:"unilateral", difficulty:"Beginner", fatigue:"low", tags:["unilateral"] },
-  { name: "Tibialis Raise", primaryMuscle:"Calves", secondaryMuscles:["Tibialis"], category:"isolation", equipment:"Bodyweight", movementPattern:"dorsiflexion", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["shin"] },
-  { name: "Seated Dumbbell Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"isolation", equipment:"Dumbbell", movementPattern:"calf raise", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["soleus"] },
-  { name: "Standing Barbell Calf Raise", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"compound", equipment:"Barbell", movementPattern:"calf raise", angle:"standing", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["gastrocnemius"] },
-  { name: "Calf Raise Machine", primaryMuscle:"Calves", secondaryMuscles:["Soleus"], category:"machine", equipment:"Machine", movementPattern:"calf raise", angle:"standing", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["stable"] },
+  { "Exercise": "Standing Calf Raise", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Standing Calf Raise (Weight Plate)", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Weight Plate", "Difficulty": "Beginner" },
+  { "Exercise": "Smith Calf Raise", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Seated Calf Raise", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Leg Press Calf Press", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Calf Raise Machine", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
+  { "Exercise": "Single-Leg Bodyweight Calf Raise", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Soleus", "Movement Type": "isolation", "Pattern / Angle": "standing · unilateral", "Equipment": "Bodyweight", "Difficulty": "Beginner" },
+  { "Exercise": "Tibialis Raise", "Primary Muscle": "Calves", "Secondary Muscle(s)": "Extensor digitorum longus", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Bodyweight", "Difficulty": "Beginner" },
 
-  { name: "Hanging Knee Raise", primaryMuscle:"Abs", secondaryMuscles:["Hip Flexors"], category:"compound", equipment:"Bodyweight", movementPattern:"flexion", angle:"hanging", laterality:"bilateral", difficulty:"Novice", fatigue:"medium", tags:["core"] },
-  { name: "Ab Wheel Rollout", primaryMuscle:"Abs", secondaryMuscles:["Lats","Shoulders"], category:"compound", equipment:"Bodyweight", movementPattern:"anti-extension", angle:"kneeling", laterality:"bilateral", difficulty:"Intermediate", fatigue:"medium", tags:["core"] },
-  { name: "Cable Crunch", primaryMuscle:"Abs", secondaryMuscles:["None"], category:"machine", equipment:"Cable", movementPattern:"flexion", angle:"kneeling", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["rectus-abdominis"] },
-  { name: "Machine Crunch", primaryMuscle:"Abs", secondaryMuscles:["None"], category:"machine", equipment:"Machine", movementPattern:"flexion", angle:"seated", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["rectus-abdominis"] },
-  { name: "Decline Bench Sit-Up", primaryMuscle:"Abs", secondaryMuscles:["Hip Flexors"], category:"isolation", equipment:"Bodyweight", movementPattern:"flexion", angle:"decline", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["rectus-abdominis"] },
-  { name: "Dead Bug", primaryMuscle:"Abs", secondaryMuscles:["None"], category:"isolation", equipment:"Bodyweight", movementPattern:"anti-extension", angle:"supine", laterality:"bilateral", difficulty:"Beginner", fatigue:"low", tags:["core-stability"] }
+  { "Exercise": "Hanging Knee Raise", "Primary Muscle": "Abs", "Secondary Muscle(s)": "Hip flexors", "Movement Type": "compound", "Pattern / Angle": "hanging · bilateral", "Equipment": "Bodyweight", "Difficulty": "Novice" },
+  { "Exercise": "Ab Wheel Rollout", "Primary Muscle": "Abs", "Secondary Muscle(s)": "Lats, shoulders", "Movement Type": "compound", "Pattern / Angle": "kneeling · bilateral", "Equipment": "Bodyweight", "Difficulty": "Intermediate" },
+  { "Exercise": "Cable Crunch", "Primary Muscle": "Abs", "Secondary Muscle(s)": "Obliques", "Movement Type": "machine", "Pattern / Angle": "kneeling · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Machine Crunch", "Primary Muscle": "Abs", "Secondary Muscle(s)": "Obliques", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" }
 ];
 
-const CATEGORY_TO_MOVEMENT = { compound: "Compound", machine: "Machine", isolation: "Isolated" };
+const COLUMN_ORDER = [
+  "Exercise",
+  "Primary Muscle",
+  "Secondary Muscle(s)",
+  "Movement Type",
+  "Pattern / Angle",
+  "Equipment",
+  "Difficulty"
+];
 
-function toEquipmentNeeded(equipment) {
-  return equipment || "Bodyweight";
+function splitPatternAngle(patternAngle = "") {
+  const [angle = "standing", laterality = "bilateral"] = String(patternAngle).split("·").map((part) => part.trim().toLowerCase());
+  return { angle, laterality };
 }
 
-function toMovementSummary(exercise) {
-  const byName = {
-    "Barbell Bench Press": "Press a barbell away from your chest while lying flat on a bench.",
-    "Cable Fly": "Bring cable handles inward in a wide hugging motion to train the chest.",
-    "Bulgarian Split Squat": "Lower into a split squat with your back foot elevated behind you."
-  };
-  if (byName[exercise.name]) return byName[exercise.name];
+function inferMovementPattern(exerciseName = "") {
+  const name = exerciseName.toLowerCase();
+  if (name.includes("press") && name.includes("calf")) return "calf raise";
+  if (name.includes("bench") || name.includes("press") || name.includes("dip")) return "press";
+  if (name.includes("fly")) return name.includes("rear") ? "rear fly" : "fly";
+  if (name.includes("pull-up") || name.includes("chin-up") || name.includes("pulldown")) return "vertical pull";
+  if (name.includes("row")) return "row";
+  if (name.includes("squat")) return "squat";
+  if (name.includes("lunge") || name.includes("split squat")) return "lunge";
+  if (name.includes("deadlift") || name.includes("hip thrust") || name.includes("glute bridge")) return "hinge";
+  if (name.includes("curl")) return "curl";
+  if (name.includes("extension") || name.includes("kickback")) return "extension";
+  if (name.includes("abduction")) return "abduction";
+  if (name.includes("calf")) return "calf raise";
+  if (name.includes("tibialis")) return "dorsiflexion";
+  if (name.includes("crunch") || name.includes("knee raise")) return "flexion";
+  if (name.includes("rollout")) return "anti-extension";
+  return "movement";
+}
 
+const BASE_EXERCISE_MATRIX = NORMALIZED_EXERCISE_MATRIX.map((row) => {
+  const parsed = splitPatternAngle(row["Pattern / Angle"]);
+  const movementPattern = inferMovementPattern(row.Exercise);
+  return {
+    name: row.Exercise,
+    primaryMuscle: row["Primary Muscle"],
+    secondaryMuscles: row["Secondary Muscle(s)"].split(",").map((muscle) => muscle.trim()).filter(Boolean),
+    category: row["Movement Type"],
+    movementType: row["Movement Type"] === "compound" ? "Compound" : row["Movement Type"] === "machine" ? "Machine" : "Isolated",
+    angle: parsed.angle,
+    laterality: parsed.laterality,
+    movementPattern,
+    equipment: row.Equipment,
+    equipment_needed: row.Equipment,
+    difficulty: row.Difficulty,
+    fatigue: row.Difficulty === "Athlete" ? "high" : row.Difficulty === "Intermediate" ? "medium" : "low",
+    tags: []
+  };
+});
+
+function toMovementSummary(exercise) {
   const pattern = exercise.movementPattern;
   if (pattern === "press") return `Press the weight away from your body in a controlled ${exercise.angle} path.`;
   if (pattern === "fly") return "Move your arms in a wide arc and bring them together under control.";
-  if (pattern === "dip") return "Lower your body between supports and press back up with control.";
+  if (pattern === "rear fly") return "Open your arms backward to train the rear shoulder and upper back.";
   if (pattern === "row") return "Pull the weight toward your torso and squeeze your upper back.";
   if (pattern === "vertical pull") return "Pull from overhead down toward your upper chest without swinging.";
-  if (pattern === "pulldown") return "Pull the handle down with straight or mostly straight arms to train your back.";
-  if (pattern === "pullover") return "Move the weight in an arc from overhead toward your torso to train your lats.";
-  if (pattern === "upright row") return "Pull the handle upward close to your body to raise your elbows.";
-  if (pattern === "raise") return "Lift your arms out to the side with control, then lower slowly.";
-  if (pattern === "rear fly") return "Open your arms backward to train the rear shoulder and upper back.";
   if (pattern === "squat") return "Lower into a squat and stand back up while keeping your balance and control.";
   if (pattern === "lunge") return "Step into a split stance, lower down, and drive back up through the lead leg.";
   if (pattern === "extension") return "Straighten the target joint against resistance to isolate the working muscle.";
   if (pattern === "hinge") return "Push your hips back, keep your spine neutral, and drive hips forward to stand tall.";
   if (pattern === "curl") return "Bend your knees or elbows against resistance and lower with control.";
-  if (pattern === "hip thrust") return "Drive your hips upward from a supported position and squeeze at the top.";
   if (pattern === "abduction") return "Move your legs outward against resistance to train the side glutes.";
   if (pattern === "calf raise") return "Press through the balls of your feet to rise onto your toes, then lower slowly.";
   if (pattern === "dorsiflexion") return "Lift your toes toward your shins under control to train the front of your lower legs.";
@@ -169,15 +171,14 @@ function toWhenToChoose(exercise) {
   if (exercise.category === "machine") return "Choose this when you want more stability and easier setup while still training hard.";
   if (exercise.category === "isolation") return "Choose this when you want to focus on one muscle with less whole-body fatigue.";
   if (exercise.laterality === "unilateral") return "Choose this when you want to fix side-to-side strength gaps and improve balance.";
-  if (exercise.difficulty === "Beginner") return "Choose this when you want a reliable main movement that is easy to learn and progress.";
+  if (exercise.difficulty === "Beginner") return "Choose this when you want a reliable movement that is easy to learn and progress.";
   return "Choose this when you want a demanding strength movement and can maintain strong technique.";
 }
 
+window.SPLIT_SCULPTOR_NORMALIZED_COLUMNS = COLUMN_ORDER;
+window.SPLIT_SCULPTOR_NORMALIZED_MATRIX = NORMALIZED_EXERCISE_MATRIX;
 window.EXERCISE_MATRIX = BASE_EXERCISE_MATRIX.map((exercise) => ({
   ...exercise,
   movement_summary: toMovementSummary(exercise),
-  when_to_choose: toWhenToChoose(exercise),
-  equipment_needed: toEquipmentNeeded(exercise.equipment),
-  movementType: CATEGORY_TO_MOVEMENT[exercise.category] || "Compound",
-  difficulty: exercise.difficulty
+  when_to_choose: toWhenToChoose(exercise)
 }));
