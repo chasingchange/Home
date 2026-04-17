@@ -133,6 +133,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-choice-guide ul { margin: 0; padding-left: 1rem; display: grid; gap: .22rem; }
 .slot-choice-guide li { font-size: .8rem; line-height: 1.45; color: var(--text); }
 .slot-select option[data-suggested="1"] { font-weight: 700; }
+.slot-custom-wrap { display: grid; gap: .35rem; margin-top: .35rem; }
+.slot-custom-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .46rem .55rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.slot-custom-error { font-size: .78rem; color: #b91c1c; font-weight: 700; }
+.slot-custom-note { font-size: .76rem; color: var(--muted); font-weight: 700; }
 .slot-detail-btn { border: 1px solid rgba(7,31,53,.18); background: #fff; border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .02em; text-transform: none; line-height: 1.25; padding: .55rem .65rem; cursor: pointer; font-weight: 800; white-space: nowrap; }
 .slot-detail-btn:hover { border-color: #59c352; background: rgba(119,215,112,.14); }
 .exercise-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(7,31,53,.45); z-index: 60; padding: 1rem; }
@@ -1029,6 +1033,56 @@ function canonicalExerciseName(name) {
     .trim();
 }
 
+const EXERCISE_BY_ID = new Map(EXERCISES.map((exercise) => [exercise.id, exercise]));
+const EXERCISE_BY_CANONICAL_NAME = new Map();
+EXERCISES.forEach((exercise) => {
+  const keys = [exercise.name, ...(exercise.aliases || [])].map(canonicalExerciseName).filter(Boolean);
+  keys.forEach((key) => {
+    if (!EXERCISE_BY_CANONICAL_NAME.has(key)) EXERCISE_BY_CANONICAL_NAME.set(key, exercise);
+  });
+});
+
+function resolveExerciseByEntry(entry = {}) {
+  if (entry.exercise?.source === 'custom') return null;
+  if (entry.exercise?.source === 'matrix' && entry.exercise.value && EXERCISE_BY_ID.has(entry.exercise.value)) return EXERCISE_BY_ID.get(entry.exercise.value);
+  if (entry.id && EXERCISE_BY_ID.has(entry.id)) return EXERCISE_BY_ID.get(entry.id);
+  const byName = EXERCISE_BY_CANONICAL_NAME.get(canonicalExerciseName(entry.name || ''));
+  if (!byName) return null;
+  if (entry.targetMuscle && getMuscle(byName) !== entry.targetMuscle) {
+    const aligned = EXERCISES.find((exercise) =>
+      canonicalExerciseName(exercise.name) === canonicalExerciseName(entry.name || '')
+      && getMuscle(exercise) === entry.targetMuscle);
+    return aligned || byName;
+  }
+  return byName;
+}
+
+function normalizeExerciseSelection(entry = {}) {
+  if (entry.exercise && typeof entry.exercise === 'object') {
+    const source = entry.exercise.source === 'custom' ? 'custom' : 'matrix';
+    const value = String(entry.exercise.value || '').trim();
+    return { source, value };
+  }
+  if (entry.id && EXERCISE_BY_ID.has(entry.id)) return { source: 'matrix', value: entry.id };
+  const fallbackName = String(entry.name || '').trim();
+  if (!fallbackName) return { source: 'matrix', value: '' };
+  const resolved = resolveExerciseByEntry(entry);
+  if (resolved?.id) return { source: 'matrix', value: resolved.id };
+  return { source: 'custom', value: fallbackName };
+}
+
+function getExerciseLabel(entry = {}) {
+  const selection = normalizeExerciseSelection(entry);
+  if (selection.source === 'custom') return selection.value;
+  return resolveExerciseByEntry({ ...entry, exercise: selection })?.name || entry.name || '';
+}
+
+function getCustomPlaceholder(slotType) {
+  if (slotType === 'Compound') return 'Enter custom compound movement';
+  if (slotType === 'Machine') return 'Enter custom machine movement';
+  return 'Enter custom isolated movement';
+}
+
 function getSlotExerciseOptions({ slotCategory, selectedMuscle, trainingEnvironment, daySplit, constrainToDayFocus = false }) {
   const allowed = allowedCategories[trainingEnvironment] || allowedCategories[state.gymType];
   const dayFocusMuscles = getDayFocusMuscles(daySplit || 'Full Body');
@@ -1107,6 +1161,7 @@ function ensureDayPlan() {
         slot,
         name: '',
         id: '',
+        exercise: { source: 'matrix', value: '' },
         targetMuscle: getAutoTargetMuscle(slot, idx, dayPriority, dayFocus) || '',
         sets: getSlotPrescription(slot).sets,
         reps: getSlotPrescription(slot).reps
@@ -1305,11 +1360,16 @@ function renderDayCards() {
       });
       const slotOptionsByMuscle = slotPool;
       const slotOptions = slotPool;
-      const exercise = EXERCISES.find((x) => x.id === item.id);
+      const selection = normalizeExerciseSelection(item);
+      item.exercise = selection;
+      const exercise = resolveExerciseByEntry(item);
       const matches = !!exercise && matchesSlotType(exercise, item.slot) && (!resolvedTargetMuscle || getMuscle(exercise) === resolvedTargetMuscle);
+      const customSelected = selection.source === 'custom';
+      const customValue = customSelected ? selection.value : '';
+      const customError = customSelected && !customValue ? 'Enter an exercise name' : '';
       const hasSets = !!item.sets;
       const hasReps = !!item.reps;
-      const hasExercise = !!exercise;
+      const hasExercise = customSelected ? !!customValue : !!exercise;
       const hasAnySelection = hasExercise || hasSets || hasReps;
       const hasCompletePrescription = hasExercise && hasSets && hasReps;
       const hasPartialPrescription = hasAnySelection && !hasCompletePrescription;
@@ -1329,15 +1389,15 @@ function renderDayCards() {
         }).join('');
       const suggestedIds = slotOptionsByMuscle.slice(0, 3).map((option) => option.id);
       const movementOptions = !resolvedTargetMuscle && !anchorSlot
-        ? [`<option value="">Select muscle first</option>`]
+        ? [`<option value="">Select muscle first</option>`, `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]
         : (slotOptions.length
           ? [`<option value="">Select ${item.slot} movement</option>`, ...slotOptions.map((option) => {
-            const selected = item.id === option.id ? ' selected' : '';
+            const selected = selection.source === 'matrix' && selection.value === option.id ? ' selected' : '';
             const isSuggested = suggestedIds.includes(option.id);
             const marker = isSuggested ? '★ ' : '';
             return `<option value="${option.id}"${selected} data-suggested="${isSuggested ? '1' : '0'}">${marker}${option.name} | ${getMuscle(option)} | ${option.equipment}</option>`;
-          })]
-          : [`<option value="">No matching exercises for this muscle/category/environment.</option>`]);
+          }), `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]
+          : [`<option value="">No matching exercises for this muscle/category/environment.</option>`, `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]);
       debugSlotFilters('slot-render', {
         dayKey,
         rowIndex,
@@ -1356,10 +1416,15 @@ function renderDayCards() {
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-ex="1">${movementOptions.join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-sets="1">${setOptions.map((value) => `<option value="${value}"${item.sets === value ? ' selected' : ''}>${value ? `${value} sets` : `Sets`}</option>`).join('')}</select>
         <select class="slot-select" data-day="${dayKey}" data-row="${rowIndex}" data-select-reps="1">${repOptions.map((value) => `<option value="${value}"${item.reps === value ? ' selected' : ''}>${value ? `${value} reps` : `Reps`}</option>`).join('')}</select>
-        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${exercise ? '' : 'disabled'}>View</button>
+        <button type="button" class="slot-detail-btn" data-view-ex="${dayKey}:${rowIndex}" ${(exercise && !customSelected) ? '' : 'disabled'}>View</button>
         <button type="button" data-clear="${dayKey}:${rowIndex}">✕</button>
         ${isCustomRow ? `<button type="button" data-remove-row="${dayKey}:${rowIndex}" title="Delete this row">🗑</button>` : ''}
       </div>
+      ${customSelected ? `<div class="slot-custom-wrap">
+        <input class="slot-custom-input" data-day="${dayKey}" data-row="${rowIndex}" data-custom-ex-input="1" type="text" placeholder="${getCustomPlaceholder(item.slot)}" value="${customValue.replace(/"/g, '&quot;')}" />
+        ${customError ? `<div class="slot-custom-error">${customError}</div>` : ''}
+        <div class="slot-custom-note">No guide available for custom exercises</div>
+      </div>` : ''}
       <div class="slot-suggestion"><strong>Chasing Change Tip</strong>${getMuscleSuggestion(resolvedTargetMuscle, item.slot, dayState[dayKey], rowIndex)} ${getSlotPrescription(item.slot).note}<span class="slot-suggestion-primary">Suggested Sets + Reps: ${getSlotPrescription(item.slot).sets} sets x ${getSlotPrescription(item.slot).reps}</span>${slotOptionsByMuscle.length ? `<span class="slot-suggestion-priority">Priority-target matches available: ${slotOptionsByMuscle.length}.</span>` : ''}</div>
       ${buildSlotChoiceGuide({ ...item, targetMuscle: resolvedTargetMuscle }, slotOptionsByMuscle, dayMuscles)}
     </div>`;
@@ -1384,11 +1449,12 @@ function renderDayCards() {
       const selectedMuscle = select.value;
       debugSlotFilters('slot-muscle-change', { day, rowIndex, selectedMuscle: selectedMuscle || '(none)' });
       dayRows[rowIndex].targetMuscle = selectedMuscle;
-      const selectedExercise = EXERCISES.find((x) => x.id === dayRows[rowIndex].id);
+      const selectedExercise = resolveExerciseByEntry(dayRows[rowIndex]);
       const isStillValid = !selectedExercise || (!selectedMuscle || getMuscle(selectedExercise) === selectedMuscle);
       if (!isStillValid) {
         dayRows[rowIndex].id = '';
         dayRows[rowIndex].name = '';
+        dayRows[rowIndex].exercise = { source: 'matrix', value: '' };
       }
       renderDayCards();
       if (state.step >= 9) buildSummary();
@@ -1397,12 +1463,36 @@ function renderDayCards() {
   out.querySelectorAll('[data-select-ex]').forEach((select) => {
     select.onchange = () => {
       const { day, row } = select.dataset;
-      const chosen = EXERCISES.find((x) => x.id === select.value);
-      state.customDays[state.freq][day][parseInt(row, 10)].id = chosen?.id || '';
-      state.customDays[state.freq][day][parseInt(row, 10)].name = chosen?.name || '';
+      const rowEntry = state.customDays[state.freq][day][parseInt(row, 10)];
+      if (select.value === '__custom__') {
+        const existingCustom = rowEntry.exercise?.source === 'custom' ? String(rowEntry.exercise.value || '').trim() : '';
+        rowEntry.exercise = { source: 'custom', value: existingCustom };
+        rowEntry.id = '';
+        rowEntry.name = existingCustom;
+      } else {
+        const chosen = EXERCISES.find((x) => x.id === select.value);
+        rowEntry.id = chosen?.id || '';
+        rowEntry.name = chosen?.name || '';
+        rowEntry.exercise = { source: 'matrix', value: chosen?.id || '' };
+      }
       renderDayCards();
       if (state.step >= 9) buildSummary();
     };
+  });
+  out.querySelectorAll('[data-custom-ex-input]').forEach((input) => {
+    const syncCustom = () => {
+      const { day, row } = input.dataset;
+      const entry = state.customDays[state.freq][day][parseInt(row, 10)];
+      const trimmed = input.value.trim();
+      input.value = trimmed;
+      entry.exercise = { source: 'custom', value: trimmed };
+      entry.id = '';
+      entry.name = trimmed;
+      renderDayCards();
+      if (state.step >= 9) buildSummary();
+    };
+    input.addEventListener('change', syncCustom);
+    input.addEventListener('blur', syncCustom);
   });
   out.querySelectorAll('[data-select-sets]').forEach((select) => {
     select.onchange = () => {
@@ -1424,6 +1514,7 @@ function renderDayCards() {
       const target = state.customDays[state.freq][day][parseInt(row, 10)];
       target.name = '';
       target.id = '';
+      target.exercise = { source: 'matrix', value: '' };
       target.sets = '';
       target.reps = '';
       renderDayCards();
@@ -1445,6 +1536,7 @@ function renderDayCards() {
         slot: addType,
         name: '',
         id: '',
+        exercise: { source: 'matrix', value: '' },
         targetMuscle: '',
         sets: getSlotPrescription(addType).sets,
         reps: getSlotPrescription(addType).reps
@@ -1457,8 +1549,7 @@ function renderDayCards() {
     btn.onclick = () => {
       const [day, row] = btn.dataset.viewEx.split(':');
       const entry = state.customDays[state.freq][day][parseInt(row, 10)];
-      if (!entry?.id) return;
-      const selectedExercise = EXERCISES.find((item) => item.id === entry.id);
+      const selectedExercise = resolveExerciseByEntry(entry);
       openExerciseDetailModal(selectedExercise, entry.slot, entry.targetMuscle);
     };
   });
@@ -1532,7 +1623,7 @@ function buildSummary() {
     const dayKey = `d${i + 1}`;
     const rows = state.customDays[state.freq][dayKey]
       .map((slot) => {
-        const exerciseName = slot.name || '';
+        const exerciseName = getExerciseLabel(slot) || '';
         const sets = slot.sets || getSlotPrescription(slot.slot).sets;
         const reps = slot.reps || getSlotPrescription(slot.slot).reps;
         const missingClass = exerciseName ? '' : ' missing';
@@ -1612,11 +1703,14 @@ function restoreState(payload) {
   Object.values(state.customDays || {}).forEach((dayMap) => {
     Object.values(dayMap || {}).forEach((rows) => {
       (rows || []).forEach((row) => {
-        if (row.id && !EXERCISES.some((item) => item.id === row.id)) {
-          const migrated = EXERCISES.find((item) => item.name === row.name && (!row.targetMuscle || getMuscle(item) === row.targetMuscle))
-            || EXERCISES.find((item) => item.name === row.name);
-          row.id = migrated?.id || '';
+        row.exercise = normalizeExerciseSelection(row);
+        if (row.exercise.source === 'matrix') {
+          const migrated = resolveExerciseByEntry(row);
+          row.id = migrated?.id || row.exercise.value || '';
           row.name = migrated?.name || row.name || '';
+        } else {
+          row.id = '';
+          row.name = row.exercise.value;
         }
         if (typeof row.sets !== 'string' || !row.sets) row.sets = getSlotPrescription(row.slot).sets;
         if (typeof row.reps !== 'string' || !row.reps) row.reps = getSlotPrescription(row.slot).reps;
