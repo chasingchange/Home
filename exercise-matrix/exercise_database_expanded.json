@@ -15,7 +15,6 @@
     "movement_pattern": "squat",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "strength",
     "equipment_required": "barbell, squat rack, plates",
     "equipment_optional": "lifting belt, heeled shoes",
@@ -101,7 +100,8 @@
     "strength_priority_rank": "A",
     "plain_language_summary": "This exercise trains your legs and hips by sitting down with a bar on your back and standing up strong.",
     "feel_cue": "You should feel quads and glutes working hard out of the bottom.",
-    "self_check_cue": "If heels lift or knees cave, lower the weight and slow the descent."
+    "self_check_cue": "If heels lift or knees cave, lower the weight and slow the descent.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Barbell Bench Press",
@@ -117,7 +117,6 @@
     "movement_pattern": "push horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "strength",
     "equipment_required": "barbell, flat bench, rack",
     "equipment_optional": "wrist wraps",
@@ -203,7 +202,8 @@
     "strength_priority_rank": "A",
     "plain_language_summary": "This exercise builds chest, shoulder, and triceps strength by pressing a bar away from your chest.",
     "feel_cue": "You should feel chest and triceps driving the bar off your chest.",
-    "self_check_cue": "If your butt lifts off the bench, reduce load and re-brace."
+    "self_check_cue": "If your butt lifts off the bench, reduce load and re-brace.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Incline Dumbbell Press",
@@ -217,7 +217,6 @@
     "movement_pattern": "push horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "hypertrophy",
     "equipment_required": "adjustable bench, dumbbells",
     "equipment_optional": "spotter",
@@ -300,7 +299,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
     "feel_cue": "You should feel it mostly in your chest with support from front delts, triceps.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Weighted Pull-Up",
@@ -314,7 +314,6 @@
     "movement_pattern": "pull vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "advanced",
     "recommended_phase": "strength",
     "equipment_required": "pull-up bar, dip belt",
     "equipment_optional": "lifting straps",
@@ -397,7 +396,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your back using a controlled pull vertical pattern.",
     "feel_cue": "You should feel it mostly in your back with support from biceps, mid back.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Athlete"
   },
   {
     "exercise_name": "Lat Pulldown",
@@ -411,7 +411,6 @@
     "movement_pattern": "pull vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "lat pulldown machine",
     "equipment_optional": "straps",
@@ -494,7 +493,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your back using a controlled pull vertical pattern.",
     "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Seated Cable Row",
@@ -508,7 +508,6 @@
     "movement_pattern": "pull horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "cable row station",
     "equipment_optional": "different handles",
@@ -591,7 +590,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your back using a controlled pull horizontal pattern.",
     "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Standing Barbell Overhead Press",
@@ -605,7 +605,6 @@
     "movement_pattern": "push vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "strength",
     "equipment_required": "barbell, rack",
     "equipment_optional": "lifting belt",
@@ -688,7 +687,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your shoulders using a controlled push vertical pattern.",
     "feel_cue": "You should feel it mostly in your shoulders with support from triceps, upper chest.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Dumbbell Lateral Raise",
@@ -701,7 +701,6 @@
     "movement_pattern": "lateral movement",
     "plane_of_motion": "frontal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "dumbbells",
     "equipment_optional": "cables",
@@ -784,7 +783,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your shoulders using a controlled lateral movement pattern.",
     "feel_cue": "You should feel it mostly in your shoulders with support from upper traps.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Barbell Curl",
@@ -798,7 +798,6 @@
     "movement_pattern": "pull vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "accessory",
     "equipment_required": "barbell",
     "equipment_optional": "EZ bar",
@@ -881,7 +880,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your biceps using a controlled pull vertical pattern.",
     "feel_cue": "You should feel it mostly in your biceps with support from brachialis, forearms.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Cable Rope Triceps Pushdown",
@@ -894,7 +894,6 @@
     "movement_pattern": "push vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "cable station, rope",
     "equipment_optional": "straight bar",
@@ -977,7 +976,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your triceps using a controlled push vertical pattern.",
     "feel_cue": "You should feel it mostly in your triceps with support from forearms.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Romanian Deadlift",
@@ -991,7 +991,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "hypertrophy",
     "equipment_required": "barbell, plates",
     "equipment_optional": "straps",
@@ -1074,7 +1073,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your hamstrings using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your hamstrings with support from glutes, spinal erectors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Conventional Deadlift",
@@ -1089,7 +1089,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "strength",
     "equipment_required": "barbell, plates, platform",
     "equipment_optional": "belt, straps",
@@ -1172,7 +1171,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your full body with support from hamstrings, glutes.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Bulgarian Split Squat",
@@ -1186,7 +1186,6 @@
     "movement_pattern": "lunge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "hypertrophy",
     "equipment_required": "dumbbells, bench",
     "equipment_optional": "bodyweight",
@@ -1269,7 +1268,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
     "feel_cue": "You should feel it mostly in your quads with support from glutes, adductors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Walking Lunge",
@@ -1283,7 +1283,6 @@
     "movement_pattern": "lunge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "endurance",
     "equipment_required": "dumbbells",
     "equipment_optional": "barbell",
@@ -1366,7 +1365,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
     "feel_cue": "You should feel it mostly in your quads with support from glutes, hamstrings.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Barbell Hip Thrust",
@@ -1380,7 +1380,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "hypertrophy",
     "equipment_required": "barbell, bench",
     "equipment_optional": "pad, band",
@@ -1463,7 +1462,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your glutes using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your glutes with support from hamstrings, adductors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Seated Leg Curl",
@@ -1476,7 +1476,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "leg curl machine",
     "equipment_optional": "none",
@@ -1559,7 +1558,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your hamstrings using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your hamstrings with support from calves.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Leg Extension",
@@ -1572,7 +1572,6 @@
     "movement_pattern": "squat",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "leg extension machine",
     "equipment_optional": "none",
@@ -1655,7 +1654,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your quads using a controlled squat pattern.",
     "feel_cue": "You should feel it mostly in your quads with support from hip flexors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Standing Calf Raise",
@@ -1668,7 +1668,6 @@
     "movement_pattern": "lateral movement",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "calf raise machine",
     "equipment_optional": "smith machine",
@@ -1751,7 +1750,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your calves using a controlled lateral movement pattern.",
     "feel_cue": "You should feel it mostly in your calves with support from soleus.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Ab Wheel Rollout",
@@ -1765,7 +1765,6 @@
     "movement_pattern": "core extension",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "accessory",
     "equipment_required": "ab wheel",
     "equipment_optional": "barbell with plates",
@@ -1848,7 +1847,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your core using a controlled core extension pattern.",
     "feel_cue": "You should feel it mostly in your core with support from lats, shoulders.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Dead Bug",
@@ -1861,7 +1861,6 @@
     "movement_pattern": "anti-rotation",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "warmup",
     "equipment_required": "bodyweight",
     "equipment_optional": "mini band",
@@ -1944,7 +1943,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your core using a controlled anti-rotation pattern.",
     "feel_cue": "You should feel it mostly in your core with support from hip flexors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Pallof Press",
@@ -1958,7 +1958,6 @@
     "movement_pattern": "anti-rotation",
     "plane_of_motion": "transverse",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "cable station or band",
     "equipment_optional": "half-kneeling pad",
@@ -2041,7 +2040,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your core using a controlled anti-rotation pattern.",
     "feel_cue": "You should feel it mostly in your core with support from obliques, glutes.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Russian Twist",
@@ -2054,7 +2054,6 @@
     "movement_pattern": "rotation",
     "plane_of_motion": "transverse",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "finisher",
     "equipment_required": "bodyweight or medicine ball",
     "equipment_optional": "plate",
@@ -2137,7 +2136,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your core using a controlled rotation pattern.",
     "feel_cue": "You should feel it mostly in your core with support from hip flexors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Farmer's Carry",
@@ -2152,7 +2152,6 @@
     "movement_pattern": "carry",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "finisher",
     "equipment_required": "heavy dumbbells or farmer handles",
     "equipment_optional": "straps (advanced only)",
@@ -2235,7 +2234,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your forearms using a controlled carry pattern.",
     "feel_cue": "You should feel it mostly in your forearms with support from traps, core.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Suitcase Carry",
@@ -2249,7 +2249,6 @@
     "movement_pattern": "carry",
     "plane_of_motion": "frontal",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "accessory",
     "equipment_required": "single dumbbell or kettlebell",
     "equipment_optional": "none",
@@ -2332,7 +2331,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your core using a controlled carry pattern.",
     "feel_cue": "You should feel it mostly in your core with support from obliques, forearms.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Face Pull",
@@ -2346,7 +2346,6 @@
     "movement_pattern": "pull horizontal",
     "plane_of_motion": "transverse",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "cable station, rope",
     "equipment_optional": "bands",
@@ -2429,7 +2428,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your shoulders using a controlled pull horizontal pattern.",
     "feel_cue": "You should feel it mostly in your shoulders with support from rear delts, mid traps.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Power Clean",
@@ -2444,7 +2444,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "advanced",
     "recommended_phase": "athleticism",
     "equipment_required": "barbell, bumper plates",
     "equipment_optional": "lifting straps",
@@ -2527,7 +2526,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your full body with support from quads, glutes.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Athlete"
   },
   {
     "exercise_name": "Box Jump",
@@ -2541,7 +2541,6 @@
     "movement_pattern": "squat",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "athleticism",
     "equipment_required": "plyo box",
     "equipment_optional": "none",
@@ -2624,7 +2623,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your quads using a controlled squat pattern.",
     "feel_cue": "You should feel it mostly in your quads with support from glutes, calves.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Push-Up",
@@ -2639,7 +2639,6 @@
     "movement_pattern": "push horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "bodyweight",
     "equipment_optional": "bands, weight vest",
@@ -2722,7 +2721,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
     "feel_cue": "You should feel it mostly in your chest with support from triceps, front delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Dip",
@@ -2736,7 +2736,6 @@
     "movement_pattern": "push vertical",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "strength",
     "equipment_required": "dip bars",
     "equipment_optional": "dip belt",
@@ -2819,7 +2818,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your triceps using a controlled push vertical pattern.",
     "feel_cue": "You should feel it mostly in your triceps with support from chest, front delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "Inverted Row",
@@ -2833,7 +2833,6 @@
     "movement_pattern": "pull horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "bar in rack or suspension trainer",
     "equipment_optional": "elevated feet box",
@@ -2916,7 +2915,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your back using a controlled pull horizontal pattern.",
     "feel_cue": "You should feel it mostly in your back with support from biceps, rear delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Neck Flexion (Harness)",
@@ -2929,7 +2929,6 @@
     "movement_pattern": "core flexion",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "advanced",
     "recommended_phase": "accessory",
     "equipment_required": "neck harness and plate",
     "equipment_optional": "band",
@@ -3012,7 +3011,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your neck using a controlled core flexion pattern.",
     "feel_cue": "You should feel it mostly in your neck with support from deep neck flexors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Athlete"
   },
   {
     "exercise_name": "Wrist Curl",
@@ -3025,7 +3025,6 @@
     "movement_pattern": "core flexion",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "dumbbells or barbell",
     "equipment_optional": "fat grips",
@@ -3108,7 +3107,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your forearms using a controlled core flexion pattern.",
     "feel_cue": "You should feel it mostly in your forearms with support from finger flexors.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Copenhagen Plank",
@@ -3122,7 +3122,6 @@
     "movement_pattern": "anti-rotation",
     "plane_of_motion": "frontal",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "intermediate",
     "recommended_phase": "mobility",
     "equipment_required": "bench or box",
     "equipment_optional": "none",
@@ -3205,7 +3204,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your adductors using a controlled anti-rotation pattern.",
     "feel_cue": "You should feel it mostly in your adductors with support from obliques, glutes.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Intermediate"
   },
   {
     "exercise_name": "World's Greatest Stretch",
@@ -3219,7 +3219,6 @@
     "movement_pattern": "lunge",
     "plane_of_motion": "transverse",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "warmup",
     "equipment_required": "bodyweight",
     "equipment_optional": "yoga block",
@@ -3302,7 +3301,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your mobility using a controlled lunge pattern.",
     "feel_cue": "You should feel it mostly in your mobility with support from hip flexors, thoracic spine.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Banded Glute Bridge",
@@ -3316,7 +3316,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "warmup",
     "equipment_required": "mini band",
     "equipment_optional": "bodyweight only",
@@ -3399,7 +3398,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your glutes using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your glutes with support from hamstrings, core.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Cat-Camel",
@@ -3413,7 +3413,6 @@
     "movement_pattern": "core extension",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "mobility",
     "equipment_required": "bodyweight",
     "equipment_optional": "none",
@@ -3496,7 +3495,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your mobility using a controlled core extension pattern.",
     "feel_cue": "You should feel it mostly in your mobility with support from spinal erectors, abs.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Machine Chest Press",
@@ -3510,7 +3510,6 @@
     "movement_pattern": "push horizontal",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "chest press machine",
     "equipment_optional": "neutral-grip handle",
@@ -3593,7 +3592,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
     "feel_cue": "You should feel it mostly in your chest with support from front delts, triceps.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Cable Fly",
@@ -3606,7 +3606,6 @@
     "movement_pattern": "push horizontal",
     "plane_of_motion": "transverse",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "accessory",
     "equipment_required": "dual cable station",
     "equipment_optional": "bench",
@@ -3689,7 +3688,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your chest using a controlled push horizontal pattern.",
     "feel_cue": "You should feel it mostly in your chest with support from front delts.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   },
   {
     "exercise_name": "Trap Bar Deadlift",
@@ -3704,7 +3704,6 @@
     "movement_pattern": "hinge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "bilateral",
-    "difficulty_level": "novice",
     "recommended_phase": "strength",
     "equipment_required": "trap bar, plates",
     "equipment_optional": "belt",
@@ -3787,7 +3786,8 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your full body using a controlled hinge pattern.",
     "feel_cue": "You should feel it mostly in your full body with support from quads, glutes.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Novice"
   },
   {
     "exercise_name": "Step-Up",
@@ -3801,7 +3801,6 @@
     "movement_pattern": "lunge",
     "plane_of_motion": "sagittal",
     "bilateral_or_unilateral": "unilateral",
-    "difficulty_level": "beginner",
     "recommended_phase": "hypertrophy",
     "equipment_required": "box and dumbbells",
     "equipment_optional": "bodyweight",
@@ -3884,6 +3883,7 @@
     "strength_priority_rank": "B",
     "plain_language_summary": "This exercise trains your quads using a controlled lunge pattern.",
     "feel_cue": "You should feel it mostly in your quads with support from glutes, calves.",
-    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup."
+    "self_check_cue": "If you feel joints more than muscles, reduce load and tighten your setup.",
+    "difficulty": "Beginner"
   }
 ]

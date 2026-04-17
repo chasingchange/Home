@@ -150,9 +150,6 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .exercise-detail-card { border: 1px solid rgba(7,31,53,.12); border-radius: 10px; padding: .55rem .65rem; background: #f5f5f7; }
 .exercise-detail-card .k { display: block; font-family: 'Raleway', sans-serif; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .exercise-detail-card .v { display: block; margin-top: .2rem; font-size: .9rem; font-weight: 700; color: var(--text); }
-.exercise-detail-instructions { margin-top: .7rem; border: 1px solid rgba(7,31,53,.16); border-radius: 10px; background: #f8fafc; padding: .72rem .82rem; color: var(--text); }
-.exercise-detail-instructions .label { display: block; margin-bottom: .4rem; font-family: 'Raleway', sans-serif; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
-.exercise-detail-instructions ul { margin: 0; padding-left: 1.05rem; font-size: .9rem; line-height: 1.62; }
 .exercise-detail-note { margin-top: .7rem; border: 1px solid rgba(119,215,112,.35); border-left: 4px solid #59c352; border-radius: 10px; background: rgba(119,215,112,.12); padding: .68rem .78rem; color: var(--text); font-size: .88rem; line-height: 1.58; }
 .builder-day-tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .builder-day-tab { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .35rem .72rem; font-family: 'Raleway', sans-serif; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-weight: 700; }
@@ -465,7 +462,6 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <button type="button" class="exercise-detail-close" id="exercise-detail-close" aria-label="Close details">✕</button>
     </div>
     <div class="exercise-detail-grid" id="exercise-detail-grid"></div>
-    <div class="exercise-detail-instructions" id="exercise-detail-instructions"></div>
     <div class="exercise-detail-note" id="exercise-detail-note"></div>
   </div>
 </div>
@@ -632,6 +628,7 @@ function buildExerciseId(exercise) {
 const VALID_MATRIX_CATEGORIES = new Set(['compound', 'machine', 'isolation']);
 const VALID_EQUIPMENT = new Set(['Barbell', 'Dumbbell', 'Machine', 'Cable', 'Smith Machine', 'Bodyweight', 'Weight Plate']);
 const VALID_PRIMARY_MUSCLES = new Set(['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Triceps', 'Biceps', 'Calves', 'Abs']);
+const VALID_DIFFICULTIES = ['Beginner', 'Novice', 'Intermediate', 'Athlete'];
 const DEBUG_MODE = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.search.includes('debug=1');
 
 function normalizePrimaryMuscle(muscle) {
@@ -649,6 +646,11 @@ function normalizeExerciseRecord(exercise) {
   if (equipment === 'Barbell') category = 'Barbell';
   else if (equipment === 'Dumbbell' || equipment === 'Weight Plate') category = 'Dumbbell';
   else if (equipment === 'Machine' || equipment === 'Cable' || equipment === 'Smith Machine') category = 'Machines';
+  const rawDifficulty = String(exercise.difficulty || '').trim();
+  const fallbackDifficulty = rawDifficulty === 'Advanced'
+    ? 'Athlete'
+    : (exercise.fatigue === 'low' ? 'Beginner' : exercise.fatigue === 'high' ? 'Intermediate' : 'Novice');
+  const difficulty = VALID_DIFFICULTIES.includes(rawDifficulty) ? rawDifficulty : fallbackDifficulty;
   return {
     id: buildExerciseId(exercise),
     name: (exercise.name || '').trim(),
@@ -658,11 +660,10 @@ function normalizeExerciseRecord(exercise) {
     matrixCategory,
     primaryMuscle: normalizePrimaryMuscle(exercise.primaryMuscle || ''),
     movementType: exercise.movementType || '',
-    instructions: exercise.instructions || 'Keep this movement controlled, brace your core, and stop each set before form breaks down.',
+    difficulty,
     tags: Array.isArray(exercise.tags) ? exercise.tags : [],
     movementPattern: exercise.movementPattern || '',
     angle: exercise.angle || '',
-    beginnerFriendly: typeof exercise.beginnerFriendly === 'boolean' ? exercise.beginnerFriendly : true,
     fatigue: exercise.fatigue || 'medium'
   };
 }
@@ -1265,7 +1266,6 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
   const title = document.getElementById('exercise-detail-title');
   const sub = document.getElementById('exercise-detail-sub');
   const grid = document.getElementById('exercise-detail-grid');
-  const instructions = document.getElementById('exercise-detail-instructions');
   const note = document.getElementById('exercise-detail-note');
   const primary = getMuscle(exercise);
   const movementType = normalizeType(exercise);
@@ -1275,43 +1275,10 @@ function openExerciseDetailModal(exercise, slotType, targetMuscle) {
     { k: 'Targets', v: primary },
     { k: 'Slot Type', v: slotType || movementType },
     { k: 'Movement Class', v: movementType },
-    { k: 'Equipment', v: exercise.equipment || 'Bodyweight' }
+    { k: 'Equipment', v: exercise.equipment || 'Bodyweight' },
+    { k: 'Difficulty', v: exercise.difficulty || 'Novice' }
   ];
   grid.innerHTML = cards.map((item) => `<div class="exercise-detail-card"><span class="k">${item.k}</span><span class="v">${item.v}</span></div>`).join('');
-  const instructionSteps = (exercise.instructions || '')
-    .split('.')
-    .map((step) => step.trim())
-    .filter(Boolean)
-    .slice(0, 3);
-  const beginnerGuideByTopic = [
-    { topic: 'setup', text: `Setup: set the equipment first, then stand or sit in a stable position with your core tight and feet planted.` },
-    { topic: 'execution', text: `Execution: move slowly through the full range of motion, then stop the set the moment your form breaks down.` },
-    { topic: 'breathing', text: `Breathing: inhale before the hard part, exhale while you push or pull, and keep your ribs down instead of over-arching.` },
-    { topic: 'coaching', text: `Coaching cue: keep tension on your ${primary.toLowerCase()} muscles so momentum does not take over.` },
-    { topic: 'safety', text: `Safety check: choose a weight that lets you finish every rep with control before adding load next session.` }
-  ];
-  const topicKeywords = {
-    setup: ['set up', 'setup', 'stance', 'position', 'brace'],
-    execution: ['range of motion', 'tempo', 'control', 'rep', 'drive', 'lower', 'press', 'pull'],
-    breathing: ['inhale', 'exhale', 'breath', 'breathe', 'bracing'],
-    coaching: ['cue', 'tension', 'target', 'muscle', 'squeeze'],
-    safety: ['safety', 'form', 'load', 'weight', 'pain', 'stop']
-  };
-  const hasTopicInInstruction = (topic) => {
-    const keywords = topicKeywords[topic] || [];
-    return instructionSteps.some((step) => {
-      const lower = step.toLowerCase();
-      return keywords.some((keyword) => lower.includes(keyword));
-    });
-  };
-  const beginnerGuide = beginnerGuideByTopic
-    .filter((item) => !hasTopicInInstruction(item.topic))
-    .map((item) => item.text);
-  const allInstructionLines = [...instructionSteps.map((step) => `${step}.`), ...beginnerGuide];
-  instructions.innerHTML = `
-    <span class="label">How to perform (beginner-friendly)</span>
-    <ul>${allInstructionLines.map((step) => `<li>${step}</li>`).join('')}</ul>
-  `;
   const targetLine = targetMuscle
     ? (targetMuscle === primary ? `Great fit: this matches your selected target muscle (${targetMuscle}).` : `This hits ${primary}, while your selected target is ${targetMuscle}.`)
     : `No target muscle selected yet. Choose one first for tighter exercise suggestions.`;
