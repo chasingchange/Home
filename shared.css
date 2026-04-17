@@ -3,6 +3,8 @@
   --cc-text: #071f35;
   --cc-accent: #77d770;
   --cc-card: #ffffff;
+  --cc-nav-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --cc-nav-duration-premium: 0.34s;
   --cc-brand-font: "Museo Moderno", "Raleway", sans-serif;
   --cc-heading-font: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
   --cc-body-font: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -1010,6 +1012,8 @@ main[class*="max-w-"],
   margin: 1rem auto 1.5rem;
   border-bottom: 1px solid rgba(7, 31, 53, 0.15);
   padding: 0 1.25rem 0.75rem;
+  position: relative;
+  isolation: isolate;
 }
 
 .cc-global-nav-mobile-bar {
@@ -1056,56 +1060,56 @@ main[class*="max-w-"],
   border-radius: 999px;
   height: 2px;
   background: currentColor;
-  transition: transform 0.34s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.32s ease-in-out;
+  transition: transform var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), opacity 0.28s var(--cc-nav-ease-premium);
   will-change: transform, opacity;
 }
 
 .cc-global-nav-toggle-antler {
-  width: 56%;
-  top: 47%;
-  transform-origin: center;
+  width: 54%;
+  top: 50%;
+  transform-origin: center center;
 }
 
 .cc-global-nav-toggle-antler--left {
   left: 0;
-  transform: rotate(-14deg) translateY(-2px);
+  transform: translate(-3px, -2px) rotate(-18deg);
 }
 
 .cc-global-nav-toggle-antler--right {
   right: 0;
-  transform: rotate(14deg) translateY(-2px);
+  transform: translate(3px, -2px) rotate(18deg);
 }
 
 .cc-global-nav-toggle-tine {
-  width: 34%;
+  width: 30%;
   top: 20%;
-  transform-origin: bottom center;
+  transform-origin: center center;
 }
 
 .cc-global-nav-toggle-tine--left {
   left: 11%;
-  transform: rotate(-56deg) scaleX(0.92);
+  transform: translate(-2px, -1px) rotate(-56deg);
 }
 
 .cc-global-nav-toggle-tine--right {
   right: 11%;
-  transform: rotate(56deg) scaleX(0.92);
+  transform: translate(2px, -1px) rotate(56deg);
 }
 
 .cc-mobile-nav-open .cc-global-nav-toggle-antler--left,
 .cc-mobile-nav-closing .cc-global-nav-toggle-antler--left {
-  transform: rotate(45deg) translateY(0);
+  transform: translate(0, 0) rotate(45deg);
 }
 
 .cc-mobile-nav-open .cc-global-nav-toggle-antler--right,
 .cc-mobile-nav-closing .cc-global-nav-toggle-antler--right {
-  transform: rotate(-45deg) translateY(0);
+  transform: translate(0, 0) rotate(-45deg);
 }
 
 .cc-mobile-nav-open .cc-global-nav-toggle-tine,
 .cc-mobile-nav-closing .cc-global-nav-toggle-tine {
   opacity: 0;
-  transform: translateY(-4px) scale(0.65) rotate(0deg);
+  transform: translateY(-5px) scale(0.72) rotate(0deg);
 }
 
 .cc-global-nav {
@@ -1224,16 +1228,15 @@ main[class*="max-w-"],
 
 @media (max-width: 640px) {
   .cc-global-nav-wrap {
-    position: relative;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.45rem;
     border-radius: 1.25rem;
     background: rgba(255, 255, 255, 0.72);
     border: 1px solid rgba(7, 31, 53, 0.08);
     box-shadow: 0 14px 34px rgba(7, 31, 53, 0.08);
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
-    overflow: clip;
-    transition: background 0.34s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.34s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.34s cubic-bezier(0.4, 0, 0.2, 1), -webkit-backdrop-filter 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+    transition: background var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), box-shadow var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), backdrop-filter var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), -webkit-backdrop-filter var(--cc-nav-duration-premium) var(--cc-nav-ease-premium);
   }
 
   .cc-global-nav-mobile-bar {
@@ -1245,36 +1248,67 @@ main[class*="max-w-"],
     z-index: 3;
   }
 
+  .cc-global-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 31, 53, 0.16);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), visibility 0s linear var(--cc-nav-duration-premium);
+  }
+
+  .cc-global-nav-mobile-panel {
+    position: absolute;
+    top: calc(100% - 0.2rem);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    border-radius: 1.1rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(7, 31, 53, 0.08);
+    box-shadow: 0 22px 46px rgba(7, 31, 53, 0.16);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.985);
+    transform-origin: top center;
+    pointer-events: none;
+    transition: opacity var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), transform var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), visibility 0s linear var(--cc-nav-duration-premium);
+    will-change: transform, opacity;
+  }
+
   .cc-global-nav {
     position: relative;
-    z-index: 2;
-    overflow: hidden;
+    z-index: 3;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
     gap: 0.18rem;
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
-    padding: 0 0.2rem;
-    transition: max-height 0.34s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.34s ease-in-out, transform 0.34s cubic-bezier(0.4, 0, 0.2, 1), padding-top 0.34s cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.45rem 0.2rem 0.35rem;
   }
 
-  .cc-mobile-nav-open .cc-global-nav {
-    max-height: min(72vh, 36rem);
+  .cc-mobile-nav-open .cc-global-nav-backdrop {
     opacity: 1;
-    transform: translateY(0);
+    visibility: visible;
     pointer-events: auto;
-    padding-top: 0.35rem;
-    padding-bottom: 0.6rem;
+    transition: opacity var(--cc-nav-duration-premium) var(--cc-nav-ease-premium);
   }
 
-  .cc-mobile-nav-closing .cc-global-nav {
+  .cc-mobile-nav-open .cc-global-nav-mobile-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    transition: opacity var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), transform var(--cc-nav-duration-premium) var(--cc-nav-ease-premium);
+  }
+
+  .cc-mobile-nav-closing .cc-global-nav-mobile-panel {
     opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
-    transition-delay: 0.16s, 0.16s, 0.16s, 0.16s, 0.16s;
+    transform: translateY(-8px) scale(0.985);
+    transition-delay: 0.09s;
   }
 
   .cc-global-nav-link,
@@ -1294,8 +1328,8 @@ main[class*="max-w-"],
   .cc-global-nav > .cc-global-nav-link,
   .cc-global-nav > .cc-global-nav-core {
     opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity 0.32s ease-in-out, transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), background 0.24s ease;
+    transform: translateY(8px);
+    transition: opacity 0.26s var(--cc-nav-ease-premium), transform 0.3s var(--cc-nav-ease-premium), background 0.24s ease;
   }
 
   .cc-mobile-nav-open .cc-global-nav > .cc-global-nav-link,
@@ -1319,8 +1353,9 @@ main[class*="max-w-"],
 
   .cc-mobile-nav-closing .cc-global-nav > :is(.cc-global-nav-link, .cc-global-nav-core) {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(6px);
     transition-delay: 0s !important;
+    transition-duration: 0.18s;
   }
 
   .cc-global-nav-separator {
@@ -1328,10 +1363,10 @@ main[class*="max-w-"],
   }
 
   .cc-global-mega {
-    margin-top: 0.5rem;
+    margin: 0.15rem 0.2rem 0.45rem;
     opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 0.32s ease-in-out, transform 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(8px);
+    transition: opacity 0.26s var(--cc-nav-ease-premium), transform 0.3s var(--cc-nav-ease-premium);
   }
 
   .cc-mobile-nav-open .cc-global-mega:not(.cc-is-hidden) {
@@ -1347,7 +1382,11 @@ main[class*="max-w-"],
   }
 
   body.cc-mobile-nav-scroll-lock {
+    position: fixed;
     overflow: hidden;
+    left: 0;
+    right: 0;
+    width: 100%;
     touch-action: none;
   }
 }
@@ -1355,6 +1394,8 @@ main[class*="max-w-"],
 @media (prefers-reduced-motion: reduce) {
   .cc-global-nav-toggle-antler,
   .cc-global-nav-toggle-tine,
+  .cc-global-nav-backdrop,
+  .cc-global-nav-mobile-panel,
   .cc-global-nav,
   .cc-global-nav > :is(.cc-global-nav-link, .cc-global-nav-core),
   .cc-global-mega,

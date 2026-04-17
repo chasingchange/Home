@@ -22,6 +22,7 @@
   const nav = document.createElement("header");
   nav.className = "cc-global-nav-wrap";
   nav.innerHTML = `
+    <div class="cc-global-nav-backdrop" id="ccGlobalNavBackdrop" aria-hidden="true"></div>
     <div class="cc-global-nav-mobile-bar">
       <button
         id="ccGlobalNavToggle"
@@ -39,25 +40,27 @@
         </span>
       </button>
     </div>
-    <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
-      <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
-      <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
-      <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
-      <a href="${root}science-of-chasing-change/index.html" class="cc-global-nav-link">Science of Chasing Change</a>
-      <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
-      <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
-      <span class="cc-global-nav-separator" aria-hidden="true">|</span>
-      <button type="button" data-core="Body" class="cc-global-nav-core">Body</button>
-      <button type="button" data-core="Art" class="cc-global-nav-core">Art</button>
-      <button type="button" data-core="Mind" class="cc-global-nav-core">Mind</button>
-      <button type="button" data-core="Soul" class="cc-global-nav-core">Soul</button>
-      <button type="button" data-core="Career" class="cc-global-nav-core">Career</button>
-      <button type="button" data-core="Life" class="cc-global-nav-core">Life</button>
-    </nav>
-    <section id="ccGlobalMegaMenu" class="cc-global-mega cc-is-hidden" aria-live="polite">
-      <p id="ccGlobalMegaTitle" class="cc-global-mega-title"></p>
-      <div id="ccGlobalMegaItems" class="cc-global-mega-items"></div>
-    </section>
+    <div class="cc-global-nav-mobile-panel" id="ccGlobalNavPanel">
+      <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
+        <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
+        <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
+        <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
+        <a href="${root}science-of-chasing-change/index.html" class="cc-global-nav-link">Science of Chasing Change</a>
+        <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
+        <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
+        <span class="cc-global-nav-separator" aria-hidden="true">|</span>
+        <button type="button" data-core="Body" class="cc-global-nav-core">Body</button>
+        <button type="button" data-core="Art" class="cc-global-nav-core">Art</button>
+        <button type="button" data-core="Mind" class="cc-global-nav-core">Mind</button>
+        <button type="button" data-core="Soul" class="cc-global-nav-core">Soul</button>
+        <button type="button" data-core="Career" class="cc-global-nav-core">Career</button>
+        <button type="button" data-core="Life" class="cc-global-nav-core">Life</button>
+      </nav>
+      <section id="ccGlobalMegaMenu" class="cc-global-mega cc-is-hidden" aria-live="polite">
+        <p id="ccGlobalMegaTitle" class="cc-global-mega-title"></p>
+        <div id="ccGlobalMegaItems" class="cc-global-mega-items"></div>
+      </section>
+    </div>
   `;
 
   document.body.prepend(nav);
@@ -77,13 +80,15 @@
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");
+  const mobileBackdrop = nav.querySelector("#ccGlobalNavBackdrop");
   const mobileToggle = nav.querySelector("#ccGlobalNavToggle");
   const coreMegaMenu = nav.querySelector("#ccGlobalMegaMenu");
   const coreMegaMenuTitle = nav.querySelector("#ccGlobalMegaTitle");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
   const MOBILE_BREAKPOINT = 640;
-  const MOBILE_CLOSE_STAGGER_MS = 170;
+  const MOBILE_CLOSE_DURATION_MS = 360;
   let mobileCloseTimer = null;
+  let bodyScrollY = 0;
 
   function normalizePath(path) {
     if (!path) return "/";
@@ -113,6 +118,19 @@
     return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
   }
 
+  function lockBodyScroll() {
+    bodyScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add("cc-mobile-nav-scroll-lock");
+    document.body.style.top = `-${bodyScrollY}px`;
+  }
+
+  function unlockBodyScroll() {
+    if (!document.body.classList.contains("cc-mobile-nav-scroll-lock")) return;
+    document.body.classList.remove("cc-mobile-nav-scroll-lock");
+    document.body.style.top = "";
+    window.scrollTo(0, bodyScrollY);
+  }
+
   function setMobileMenuState(isOpen) {
     if (mobileCloseTimer) {
       clearTimeout(mobileCloseTimer);
@@ -120,7 +138,11 @@
     }
     nav.classList.toggle("cc-mobile-nav-open", isOpen);
     nav.classList.remove("cc-mobile-nav-closing");
-    document.body.classList.toggle("cc-mobile-nav-scroll-lock", isOpen && isMobileViewport());
+    if (isOpen && isMobileViewport()) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
     mobileToggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
     mobileToggle?.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
   }
@@ -131,10 +153,10 @@
     nav.classList.add("cc-mobile-nav-closing");
     mobileToggle?.setAttribute("aria-expanded", "false");
     mobileToggle?.setAttribute("aria-label", "Open navigation menu");
-    document.body.classList.remove("cc-mobile-nav-scroll-lock");
+    unlockBodyScroll();
     mobileCloseTimer = window.setTimeout(() => {
       setMobileMenuState(false);
-    }, MOBILE_CLOSE_STAGGER_MS);
+    }, MOBILE_CLOSE_DURATION_MS);
   }
 
   mobileToggle?.addEventListener("click", () => {
@@ -204,6 +226,12 @@
     }
   });
 
+  mobileBackdrop?.addEventListener("click", () => {
+    closeMobileMenu();
+    coreMegaMenu.classList.add("cc-is-hidden");
+    setActiveCoreTab(null);
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     coreMegaMenu.classList.add("cc-is-hidden");
@@ -218,7 +246,11 @@
     }
 
     const isOpen = mobileToggle?.getAttribute("aria-expanded") === "true";
-    document.body.classList.toggle("cc-mobile-nav-scroll-lock", Boolean(isOpen));
+    if (isOpen) {
+      lockBodyScroll();
+      return;
+    }
+    unlockBodyScroll();
   });
 
   const hasBottomCta = document.querySelector(".cc-bottom-coaching-wrap");
