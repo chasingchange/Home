@@ -364,8 +364,8 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <h3 class="step-title" style="margin-top:.2rem;">What is your usual session cap?</h3>
     <div class="chips" id="session-time-chips">
       <div class="chip" data-v="30">30 minutes</div>
-      <div class="chip on" data-v="45">45 minutes</div>
-      <div class="chip" data-v="60">1 hour</div>
+      <div class="chip" data-v="45">45 minutes</div>
+      <div class="chip on" data-v="60">1 hour</div>
       <div class="chip" data-v="90">1.5 hours</div>
       <div class="chip" data-v="120">2 hours</div>
     </div>
@@ -574,7 +574,7 @@ const state = {
   gymType: 'Commercial Gym',
   homeEquipment: ['Adjustable Bench', 'Dumbbells', 'Pull-up Bar'],
   activeBuilderDay: 1,
-  sessionMinutes: 45,
+  sessionMinutes: 60,
   viewYear: currentQuarter.year,
   viewQuarter: currentQuarter.quarter,
   freq: 3,
@@ -1077,7 +1077,7 @@ function buildNutritionChips() {
 
 function buildFrequencyRule() {
   document.getElementById('freq-rule').textContent = freqRule[state.freq];
-  const minutes = Number(state.sessionMinutes) || 45;
+  const minutes = Number(state.sessionMinutes) || 60;
   const sessionLabel = minutes < 60 ? `${minutes} minutes` : (minutes === 60 ? '1 hour' : `${minutes / 60} hours`);
   const timeContext = minutes <= 45
     ? `Time cap: ${sessionLabel}. One isolated slot is automatically removed from each day for faster sessions.`
@@ -1294,7 +1294,7 @@ function getPriorityTargetForDay(dayIndex) {
 }
 
 function getSlotPatternForSession() {
-  const minutes = Number(state.sessionMinutes) || 45;
+  const minutes = Number(state.sessionMinutes) || 60;
   if (minutes <= 30) return ['Compound', 'Compound', 'Machine', 'Machine'];
   if (minutes <= 45) return ['Compound', 'Compound', 'Machine', 'Machine', 'Isolated'];
   return [...baseSlotPattern];
@@ -2092,7 +2092,7 @@ function getSerializableState() {
     dayPriorities: { ...state.dayPriorities },
     gymType: state.gymType,
     homeEquipment: [...state.homeEquipment],
-    sessionMinutes: Number(state.sessionMinutes) || 45,
+    sessionMinutes: Number(state.sessionMinutes) || 60,
     freq: state.freq,
     customDays: JSON.parse(JSON.stringify(state.customDays)),
     dayTypes: JSON.parse(JSON.stringify(state.dayTypes)),
