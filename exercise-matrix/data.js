@@ -27,6 +27,7 @@ const NORMALIZED_EXERCISE_MATRIX = [
   { "Exercise": "Barbell Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
   { "Exercise": "T-Bar Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Barbell", "Difficulty": "Intermediate" },
   { "Exercise": "Single-Arm Dumbbell Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "horizontal · unilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
+  { "Exercise": "Dumbbell Bent-Over Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "isolation", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
   { "Exercise": "Seated Cable Row", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Cable", "Difficulty": "Novice" },
   { "Exercise": "Chest Supported Row Machine", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
   { "Exercise": "Iso-Lateral Row Machine", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
@@ -81,6 +82,7 @@ const NORMALIZED_EXERCISE_MATRIX = [
   { "Exercise": "Single-Arm Overhead Cable Extension", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Abs", "Movement Type": "isolation", "Pattern / Angle": "overhead · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
   { "Exercise": "Skullcrusher", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Beginner" },
 
+  { "Exercise": "Barbell Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "compound", "Pattern / Angle": "standing · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
   { "Exercise": "EZ-Bar Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
   { "Exercise": "Hammer Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Brachialis, forearms", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
   { "Exercise": "Dumbbell Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
