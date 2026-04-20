@@ -753,7 +753,7 @@ function buildExerciseId(exercise) {
 }
 
 const VALID_MATRIX_CATEGORIES = new Set(['compound', 'machine', 'isolation']);
-const VALID_EQUIPMENT = new Set(['Barbell', 'Dumbbell', 'Machine', 'Cable', 'Smith Machine', 'Bodyweight']);
+const VALID_EQUIPMENT = new Set(['Barbell', 'Dumbbell', 'Machine', 'Cable', 'Smith Machine', 'Bodyweight', 'Weight Plate']);
 const VALID_PRIMARY_MUSCLES = new Set(['Chest', 'Back', 'Shoulders', 'Quads', 'Hamstrings', 'Glutes', 'Triceps', 'Biceps', 'Calves', 'Abs']);
 const VALID_DIFFICULTIES = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Athlete'];
 const DEBUG_MODE = /localhost|127\.0\.0\.1/.test(window.location.hostname) || window.location.search.includes('debug=1');
@@ -1229,6 +1229,10 @@ function getDayFocusMuscles(focus) {
 }
 
 function normalizeType(exercise) {
+  if (exercise.matrixCategory === 'machine') return 'Machine';
+  if (exercise.matrixCategory === 'isolation') return 'Isolated';
+  if (exercise.matrixCategory === 'compound') return 'Compound';
+  if (exercise.equipment === 'Machine' || exercise.equipment === 'Cable' || exercise.equipment === 'Smith Machine') return 'Machine';
   if (exercise.movementType) return exercise.movementType;
   const byName = explicitMovementTypeByName[exercise.name];
   if (byName) return byName;
@@ -1236,7 +1240,7 @@ function normalizeType(exercise) {
   const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
   const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
   if (isolationKeywords.some((keyword) => name.includes(keyword))) return 'Isolated';
-  if (exercise.category === 'Machines' || exercise.equipment === 'Machine' || exercise.equipment === 'Smith Machine') return 'Machine';
+  if (exercise.category === 'Machines') return 'Machine';
   if (compoundKeywords.some((keyword) => name.includes(keyword))) return 'Compound';
   return 'Compound';
 }

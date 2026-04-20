@@ -1,14 +1,21 @@
 const NORMALIZED_EXERCISE_MATRIX = [
   { "Exercise": "Barbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Incline Barbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "incline · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Incline Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "incline · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
+  { "Exercise": "Dumbbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
   { "Exercise": "Incline Dumbbell Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "compound", "Pattern / Angle": "incline · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
   { "Exercise": "Decline Barbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "decline · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
   { "Exercise": "Flat Dumbbell Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Dumbbell", "Difficulty": "Novice" },
   { "Exercise": "Weighted Chest Dip", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "compound", "Pattern / Angle": "decline · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
   { "Exercise": "Machine Chest Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Chest Press Machine", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
+  { "Exercise": "Smith Machine Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
+  { "Exercise": "Smith Machine Incline Bench Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "machine", "Pattern / Angle": "incline · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
   { "Exercise": "Incline Chest Press Machine", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts, triceps", "Movement Type": "machine", "Pattern / Angle": "incline · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
   { "Exercise": "Plate-Loaded Chest Press", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Triceps, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
-  { "Exercise": "Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "isolation", "Pattern / Angle": "flat · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
-  { "Exercise": "Incline Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "isolation", "Pattern / Angle": "incline · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Incline Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "machine", "Pattern / Angle": "incline · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
+  { "Exercise": "Decline Cable Fly", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "machine", "Pattern / Angle": "decline · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
   { "Exercise": "Pec Deck", "Primary Muscle": "Chest", "Secondary Muscle(s)": "Front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
 
   { "Exercise": "Pull-Up", "Primary Muscle": "Back", "Secondary Muscle(s)": "Biceps, rear delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
@@ -30,6 +37,9 @@ const NORMALIZED_EXERCISE_MATRIX = [
   { "Exercise": "Machine Shoulder Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "machine", "Pattern / Angle": "overhead · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
   { "Exercise": "Smith Overhead Press", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Triceps, upper chest", "Movement Type": "machine", "Pattern / Angle": "overhead · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
   { "Exercise": "Dumbbell Lateral Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper traps", "Movement Type": "isolation", "Pattern / Angle": "lateral · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Front Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper chest", "Movement Type": "isolation", "Pattern / Angle": "front · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Rear Delt Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper back", "Movement Type": "isolation", "Pattern / Angle": "rear · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Lateral Raise Machine", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper traps", "Movement Type": "machine", "Pattern / Angle": "lateral · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
   { "Exercise": "Cable Lateral Raise", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper traps", "Movement Type": "isolation", "Pattern / Angle": "lateral · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
   { "Exercise": "Reverse Pec Deck", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper back", "Movement Type": "machine", "Pattern / Angle": "horizontal · bilateral", "Equipment": "Machine", "Difficulty": "Beginner" },
   { "Exercise": "Cable Rear Delt Fly", "Primary Muscle": "Shoulders", "Secondary Muscle(s)": "Upper back", "Movement Type": "isolation", "Pattern / Angle": "horizontal · unilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
@@ -61,6 +71,7 @@ const NORMALIZED_EXERCISE_MATRIX = [
 
   { "Exercise": "Close-Grip Bench Press", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "compound", "Pattern / Angle": "flat · bilateral", "Equipment": "Barbell", "Difficulty": "Athlete" },
   { "Exercise": "Weighted Parallel Dip", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
+  { "Exercise": "Weighted Tricep Dips", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "compound", "Pattern / Angle": "vertical · bilateral", "Equipment": "Bodyweight", "Difficulty": "Athlete" },
   { "Exercise": "Machine Dip", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "machine", "Pattern / Angle": "vertical · bilateral", "Equipment": "Machine", "Difficulty": "Novice" },
   { "Exercise": "Smith Close-Grip Press", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Chest, front delts", "Movement Type": "machine", "Pattern / Angle": "flat · bilateral", "Equipment": "Smith Machine", "Difficulty": "Novice" },
   { "Exercise": "Cable Pressdown", "Primary Muscle": "Triceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
@@ -127,15 +138,63 @@ function inferMovementPattern(exerciseName = "") {
   return "movement";
 }
 
-const BASE_EXERCISE_MATRIX = NORMALIZED_EXERCISE_MATRIX.map((row) => {
+function inferJointType(exerciseName = "", movementPattern = "") {
+  const name = exerciseName.toLowerCase();
+  const singleJointKeywords = [
+    "fly",
+    "raise",
+    "curl",
+    "extension",
+    "pushdown",
+    "kickback",
+    "abduction",
+    "adduction",
+    "preacher",
+    "skullcrusher",
+    "crunch",
+    "tibialis"
+  ];
+  if (singleJointKeywords.some((keyword) => name.includes(keyword))) return "single";
+  if (["fly", "rear fly", "curl", "extension", "abduction", "calf raise", "flexion", "dorsiflexion"].includes(movementPattern)) return "single";
+  return "multi";
+}
+
+function classifyMovementTypeByRules({ equipment = "", jointType = "multi" } = {}) {
+  if (["Machine", "Cable", "Smith Machine"].includes(equipment)) return "machine";
+  if (equipment === "Barbell") return jointType === "multi" ? "compound" : "isolation";
+  if (equipment === "Dumbbell") return jointType === "multi" ? "compound" : "isolation";
+  if (equipment === "Bodyweight") return jointType === "multi" ? "compound" : "isolation";
+  return jointType === "single" ? "isolation" : "compound";
+}
+
+const SANITIZED_NORMALIZED_EXERCISE_MATRIX = NORMALIZED_EXERCISE_MATRIX.map((row) => {
   const parsed = splitPatternAngle(row["Pattern / Angle"]);
   const movementPattern = inferMovementPattern(row.Exercise);
+  const jointType = inferJointType(row.Exercise, movementPattern);
+  const classifiedMovementType = classifyMovementTypeByRules({
+    equipment: row.Equipment,
+    jointType
+  });
+  return {
+    ...row,
+    "Movement Type": classifiedMovementType
+  };
+});
+
+const BASE_EXERCISE_MATRIX = SANITIZED_NORMALIZED_EXERCISE_MATRIX.map((row) => {
+  const parsed = splitPatternAngle(row["Pattern / Angle"]);
+  const movementPattern = inferMovementPattern(row.Exercise);
+  const jointType = inferJointType(row.Exercise, movementPattern);
+  const classifiedMovementType = classifyMovementTypeByRules({
+    equipment: row.Equipment,
+    jointType
+  });
   return {
     name: row.Exercise,
     primaryMuscle: row["Primary Muscle"],
     secondaryMuscles: row["Secondary Muscle(s)"].split(",").map((muscle) => muscle.trim()).filter(Boolean),
-    category: row["Movement Type"],
-    movementType: row["Movement Type"] === "compound" ? "Compound" : row["Movement Type"] === "machine" ? "Machine" : "Isolated",
+    category: classifiedMovementType,
+    movementType: classifiedMovementType === "compound" ? "Compound" : classifiedMovementType === "machine" ? "Machine" : "Isolated",
     angle: parsed.angle,
     laterality: parsed.laterality,
     movementPattern,
@@ -176,7 +235,7 @@ function toWhenToChoose(exercise) {
 }
 
 window.SPLIT_SCULPTOR_NORMALIZED_COLUMNS = COLUMN_ORDER;
-window.SPLIT_SCULPTOR_NORMALIZED_MATRIX = NORMALIZED_EXERCISE_MATRIX;
+window.SPLIT_SCULPTOR_NORMALIZED_MATRIX = SANITIZED_NORMALIZED_EXERCISE_MATRIX;
 window.EXERCISE_MATRIX = BASE_EXERCISE_MATRIX.map((exercise) => ({
   ...exercise,
   movement_summary: toMovementSummary(exercise),
