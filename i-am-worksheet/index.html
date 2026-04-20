@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I AM Worksheet | Chasing Change</title>
+  <meta
+    name="description"
+    content="An interactive I AM worksheet from Chasing Change to map identities, habits, and replacements you choose with intention."
+  />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Museo+Moderno:wght@500;700;800&family=Raleway:wght@500;600;700;800&family=Muli:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --cc-bg: #f5f5f7;
+      --cc-text: #071f35;
+      --cc-accent: #77d770;
+      --cc-card: #ffffff;
+      --cc-muted: #516173;
+      --cc-border: #d9dfe7;
+      --cc-line: #b8c3d0;
+    }
+
+    body {
+      background: var(--cc-bg);
+      color: var(--cc-text);
+      font-family: "Muli", "Mulish", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .font-title { font-family: "Museo Moderno", system-ui, sans-serif; }
+    .font-heading { font-family: "Raleway", "Muli", sans-serif; }
+
+    .focus-ring:focus-visible {
+      outline: 2px solid var(--cc-accent);
+      outline-offset: 2px;
+    }
+
+    .worksheet-card {
+      border-radius: 1rem;
+      background: var(--cc-card);
+      border: 1px solid var(--cc-border);
+      box-shadow: 0 8px 24px rgba(7, 31, 53, 0.06);
+    }
+
+    .worksheet-line {
+      width: 100%;
+      min-height: 2rem;
+      border-bottom: 1.8px solid var(--cc-line);
+      padding: 0.15rem 0.15rem 0.35rem;
+      margin-bottom: 0.65rem;
+      line-height: 1.45;
+      outline: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .worksheet-line:empty::before {
+      content: " ";
+      display: inline-block;
+      min-width: 1px;
+    }
+
+    .worksheet-line:focus {
+      border-bottom-color: var(--cc-accent);
+      box-shadow: inset 0 -1px 0 var(--cc-accent);
+    }
+
+    @media print {
+      @page {
+        size: auto;
+        margin: 0.5in;
+      }
+
+      body {
+        background: #fff !important;
+      }
+
+      nav,
+      footer,
+      .no-print,
+      #cc-global-nav,
+      .cc-global-nav,
+      [data-start-line],
+      [aria-label="Start Line"] {
+        display: none !important;
+      }
+
+      .worksheet-card {
+        box-shadow: none !important;
+        border: 1px solid #d9dfe7 !important;
+      }
+
+      .worksheet-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .worksheet-line {
+        margin-bottom: 0.7rem;
+        border-bottom-color: #aeb7c4 !important;
+        min-height: 2rem !important;
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="../shared.css" />
+  <script src="../shared-global-nav.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="antialiased cc-page">
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    <header class="max-w-3xl mx-auto px-6 pt-12 pb-6">
+      <h1 class="font-title text-4xl sm:text-5xl md:text-6xl font-extrabold text-[var(--cc-text)] tracking-tight">I AM</h1>
+      <p class="mt-6 text-lg sm:text-xl text-[color:rgba(7,31,53,0.78)]">How to determine who you are, the good &amp; the bad</p>
+    </header>
+
+    <section class="worksheet-card p-5 sm:p-7" id="worksheet" aria-label="I AM Worksheet">
+      <article class="worksheet-section mb-7">
+        <h2 class="font-heading text-2xl sm:text-3xl font-bold">I AM</h2>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Make a list of identities that define you, both positive and negative</p>
+        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">Examples | I am a writer. I am a runner. I am an athlete. I am a jealous person. I am a home.</p>
+        <div class="mt-4" data-group="iam"></div>
+      </article>
+
+      <article class="worksheet-section mb-7">
+        <h2 class="font-heading text-2xl sm:text-3xl font-bold">HABITS</h2>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Go back and list out the habits and choices that form those identities.</p>
+        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">Examples | I am a writer – I write every Saturday. I am a runner – I run 3 times a week.</p>
+        <div class="mt-4" data-group="habits"></div>
+      </article>
+
+      <article class="worksheet-section">
+        <h2 class="font-heading text-2xl sm:text-3xl font-bold">I AM REDUX</h2>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Circle the choices you have to replace to let go of identities you no longer want.</p>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Come up with new identities and choices to replace those old habits below.</p>
+        <div class="mt-4" data-group="redux"></div>
+      </article>
+    </section>
+
+    <section class="no-print mt-6 flex flex-col sm:flex-row gap-3">
+      <button id="downloadImageBtn" class="focus-ring rounded-xl bg-[var(--cc-text)] text-white px-4 py-3 text-sm font-semibold hover:opacity-95 transition">Download as Image</button>
+      <button id="downloadPdfBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Download as PDF</button>
+      <button id="resetBtn" class="focus-ring rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 hover:bg-rose-100 transition">Clear Worksheet</button>
+    </section>
+  </main>
+
+  <footer class="w-full px-5 pb-5 sm:px-8 no-print">
+    <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "iamWorksheetData";
+    const LINES_PER_GROUP = {
+      iam: 15,
+      habits: 12,
+      redux: 10
+    };
+
+    const worksheet = document.getElementById("worksheet");
+    const downloadImageBtn = document.getElementById("downloadImageBtn");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function createLine(group, index, value = "") {
+      const line = document.createElement("div");
+      line.className = "worksheet-line focus-ring";
+      line.contentEditable = "true";
+      line.setAttribute("data-group", group);
+      line.setAttribute("data-index", String(index));
+      line.setAttribute("role", "textbox");
+      line.setAttribute("aria-label", `${group} response line ${index + 1}`);
+      line.spellcheck = true;
+      line.textContent = value;
+      return line;
+    }
+
+    function getAllLines() {
+      return Array.from(document.querySelectorAll(".worksheet-line"));
+    }
+
+    function getState() {
+      return getAllLines().map((line) => ({
+        group: line.dataset.group,
+        index: Number(line.dataset.index),
+        text: line.textContent || ""
+      }));
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        return [];
+      }
+    }
+
+    function buildLines() {
+      const saved = loadState();
+      const textMap = new Map(saved.map((entry) => [`${entry.group}:${entry.index}`, entry.text || ""]));
+
+      Object.entries(LINES_PER_GROUP).forEach(([group, total]) => {
+        const container = document.querySelector(`[data-group="${group}"]`);
+        container.innerHTML = "";
+        for (let i = 0; i < total; i += 1) {
+          const key = `${group}:${i}`;
+          container.appendChild(createLine(group, i, textMap.get(key) || ""));
+        }
+      });
+    }
+
+    async function downloadImage() {
+      const canvas = await html2canvas(worksheet, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
+      const link = document.createElement("a");
+      link.download = "i-am-worksheet.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    async function downloadPDF() {
+      const options = {
+        margin: [12, 12, 12, 12],
+        filename: "i-am-worksheet.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+      };
+      await html2pdf().set(options).from(worksheet).save();
+    }
+
+    function clearWorksheet() {
+      getAllLines().forEach((line) => {
+        line.textContent = "";
+      });
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    function bindEvents() {
+      worksheet.addEventListener("input", (event) => {
+        if (event.target.classList.contains("worksheet-line")) {
+          saveState();
+        }
+      });
+
+      downloadImageBtn.addEventListener("click", () => {
+        downloadImage().catch(() => {
+          downloadImageBtn.textContent = "Image download failed";
+          setTimeout(() => {
+            downloadImageBtn.textContent = "Download as Image";
+          }, 1800);
+        });
+      });
+
+      downloadPdfBtn.addEventListener("click", () => {
+        downloadPDF().catch(() => {
+          downloadPdfBtn.textContent = "PDF download failed";
+          setTimeout(() => {
+            downloadPdfBtn.textContent = "Download as PDF";
+          }, 1800);
+        });
+      });
+
+      resetBtn.addEventListener("click", clearWorksheet);
+    }
+
+    function init() {
+      buildLines();
+      bindEvents();
+    }
+
+    init();
+  </script>
+</body>
+</html>
