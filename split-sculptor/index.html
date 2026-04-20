@@ -239,9 +239,12 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .exercise-guide-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .28rem; }
 .exercise-guide-list li { font-size: .84rem; line-height: 1.5; color: var(--text); }
 .volume-framework { display: grid; gap: .55rem; margin: .7rem 0; }
-.volume-tier { border: 1px solid rgba(119,215,112,0.42); border-radius: 10px; background: rgba(119,215,112,0.12); padding: .6rem .7rem; }
+.volume-tier { border-radius: 10px; padding: .6rem .7rem; }
+.volume-tier.beginner { border: 1px solid rgba(119,215,112,0.45); background: rgba(119,215,112,0.12); }
+.volume-tier.intermediate { border: 1px solid rgba(94,188,90,0.5); background: rgba(94,188,90,0.17); }
+.volume-tier.advanced { border: 1px solid rgba(66,153,63,0.58); background: rgba(66,153,63,0.22); }
 .volume-tier strong { display: block; font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .04em; color: var(--text); margin-bottom: .2rem; }
-.volume-tier span { display: block; font-weight: 700; color: #1f4a1f; margin-bottom: .2rem; }
+.volume-tier span { display: block; font-weight: 700; color: #174017; margin-bottom: .2rem; }
 .volume-tier p { margin: 0; font-size: .84rem; line-height: 1.5; color: rgba(7,31,53,0.9); }
 .weekly-volume-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; margin-bottom: .95rem; box-shadow: 0 10px 24px rgba(7,31,53,0.08); }
 .weekly-volume-head { display: flex; flex-wrap: wrap; gap: .55rem 1rem; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
@@ -425,17 +428,17 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       <p class="evidence">Research consistently shows muscle growth improves as weekly training volume increases, with the strongest hypertrophy results occurring around 10–20 hard sets per muscle group per week (Schoenfeld et al., 2017; Baz-Valle et al., 2022).</p>
       <p class="step-sub" style="margin-bottom:.45rem;">Here’s the framework we use inside Chasing Change:</p>
       <div class="volume-framework">
-        <div class="volume-tier">
+        <div class="volume-tier beginner">
           <strong>Beginner (0–1 year lifting)</strong>
           <span>6–10 sets per muscle per week</span>
           <p>Focus: learning technique, building consistency, and recovering well between sessions.</p>
         </div>
-        <div class="volume-tier">
+        <div class="volume-tier intermediate">
           <strong>Intermediate (1–3 years lifting)</strong>
           <span>10–15 sets per muscle per week</span>
           <p>Focus: progressive overload, balanced programming, and visible physique changes.</p>
         </div>
-        <div class="volume-tier">
+        <div class="volume-tier advanced">
           <strong>Advanced (3+ years lifting)</strong>
           <span>12–20 sets per muscle per week</span>
           <p>Focus: specialization, symmetry, and targeted muscle development.</p>
