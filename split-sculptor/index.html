@@ -946,7 +946,9 @@ const explicitMovementTypeByName = {
   'Reverse Fly': 'Isolated',
   'Face Pull': 'Isolated',
   'Bicep Curl': 'Isolated',
-  'Barbell Bicep Curl': 'Compound',
+  'Dumbbell Bicep Curl': 'Isolated',
+  'Dumbbell Curl': 'Isolated',
+  'Barbell Bicep Curl': 'Isolated',
   'Hammer Curl': 'Isolated',
   'Preacher Curl': 'Isolated',
   'Skullcrusher': 'Isolated',
@@ -967,6 +969,7 @@ const explicitMovementTypeByName = {
   'Cable Glute Kickback': 'Isolated',
   'Donkey Kick': 'Isolated',
   'Cable Leg Extension': 'Isolated',
+  'Leg Extension Machine': 'Isolated',
   'Sissy Squat': 'Isolated',
   'Goblet Squat': 'Compound',
   'Lunges': 'Compound',
@@ -983,6 +986,7 @@ const explicitMovementTypeByName = {
   'T Bar Row': 'Compound',
   'Barbell Row': 'Compound',
   'Single Arm Dumbbell Row': 'Isolated',
+  'Single-Arm Dumbbell Row': 'Isolated',
   'Chest Press': 'Compound',
   'Incline Chest Press': 'Compound',
   'Shoulder Press': 'Compound'
@@ -1235,10 +1239,10 @@ function normalizeType(exercise) {
   if (exercise.matrixCategory === 'machine') return 'Machine';
   if (exercise.matrixCategory === 'isolation') return 'Isolated';
   if (exercise.matrixCategory === 'compound') return 'Compound';
-  if (exercise.equipment === 'Machine' || exercise.equipment === 'Cable' || exercise.equipment === 'Smith Machine') return 'Machine';
-  if (exercise.movementType) return exercise.movementType;
   const byName = explicitMovementTypeByName[exercise.name];
   if (byName) return byName;
+  if (exercise.equipment === 'Machine' || exercise.equipment === 'Cable' || exercise.equipment === 'Smith Machine') return 'Machine';
+  if (exercise.movementType) return exercise.movementType;
   const name = exercise.name.toLowerCase();
   const isolationKeywords = ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'shrug', 'abductor', 'adductor', 'calf', 'deck'];
   const compoundKeywords = ['press', 'squat', 'deadlift', 'row', 'pull up', 'pull-up', 'chin up', 'chin-up', 'dip', 'lunge', 'thrust', 'clean', 'snatch'];
