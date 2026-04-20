@@ -1462,11 +1462,17 @@ function calculateWeeklyVolumeTotals() {
     const dayKey = `d${idx + 1}`;
     const rows = state.customDays[state.freq]?.[dayKey] || [];
     rows.forEach((row) => {
-      const chosenExercise = resolveExerciseByEntry(row);
-      if (!chosenExercise) return;
       const sets = Number.parseInt(row.sets, 10);
       if (!Number.isFinite(sets) || sets <= 0) return;
-      const primaryMuscle = getMuscle(chosenExercise);
+      let primaryMuscle = '';
+      if (row.exercise?.source === 'custom') {
+        primaryMuscle = normalizePrimaryMuscle(row.targetMuscle || '');
+      } else {
+        const chosenExercise = resolveExerciseByEntry(row);
+        if (!chosenExercise) return;
+        primaryMuscle = getMuscle(chosenExercise);
+      }
+      if (!primaryMuscle) return;
       if (!(primaryMuscle in totals)) totals[primaryMuscle] = 0;
       totals[primaryMuscle] += sets;
     });
