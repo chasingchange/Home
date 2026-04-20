@@ -82,7 +82,7 @@ const NORMALIZED_EXERCISE_MATRIX = [
 
   { "Exercise": "EZ-Bar Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Barbell", "Difficulty": "Novice" },
   { "Exercise": "Hammer Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Brachialis, forearms", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
-  { "Exercise": "Dumbbell Incline Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "incline · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
+  { "Exercise": "Dumbbell Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "standing · bilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
   { "Exercise": "Concentration Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms", "Movement Type": "isolation", "Pattern / Angle": "seated · unilateral", "Equipment": "Dumbbell", "Difficulty": "Beginner" },
   { "Exercise": "Cable EZ Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "machine", "Pattern / Angle": "standing · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
   { "Exercise": "Cable Preacher Curl", "Primary Muscle": "Biceps", "Secondary Muscle(s)": "Forearms, brachialis", "Movement Type": "machine", "Pattern / Angle": "seated · bilateral", "Equipment": "Cable", "Difficulty": "Beginner" },
