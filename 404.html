@@ -46,7 +46,7 @@
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <a href="./index.html" class="rounded-xl bg-cc-accent px-5 py-3 text-sm font-extrabold text-cc-text transition hover:brightness-95">Back to Homepage</a>
-        <a href="./preparing-route/index.html" class="rounded-xl bg-white px-5 py-3 text-sm font-bold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Go to Tools / Start Page</a>
+        <a href="./index.html" class="rounded-xl bg-white px-5 py-3 text-sm font-bold text-cc-text ring-1 ring-black/10 transition hover:bg-black/5">Go to Start Line</a>
       </div>
 
       <p id="redirectNotice" class="mt-6 hidden rounded-xl bg-white/80 px-4 py-2 text-sm ring-1 ring-black/10"></p>
@@ -56,13 +56,13 @@
       (function () {
         const redirects = {
           "/": "./index.html",
-          "/field-guide/fix-your-focus.html": "./preparing-route/index.html",
-          "/field-guide/56-hour-sleep-protocol.html": "./preparing-route/index.html",
-          "/field-guide/winning-the-back-to-work-war.html": "./preparing-route/index.html",
-          "/field-guide/circle-of-influence.html": "./preparing-route/index.html",
-          "/field-guide/millionaires-calendar.html": "./preparing-route/index.html",
+          "/field-guide/fix-your-focus.html": "./index.html",
+          "/field-guide/56-hour-sleep-protocol.html": "./index.html",
+          "/field-guide/winning-the-back-to-work-war.html": "./index.html",
+          "/field-guide/circle-of-influence.html": "./index.html",
+          "/field-guide/millionaires-calendar.html": "./index.html",
           "/meal-plan/tool.html": "./PhysiqueLedger/index.html",
-          "/meal-plan/index.html": "./preparing-route/index.html"
+          "/meal-plan/index.html": "./PhysiqueLedger/index.html"
         };
 
         const notice = document.getElementById("redirectNotice");

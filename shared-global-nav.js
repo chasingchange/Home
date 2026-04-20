@@ -73,10 +73,9 @@
     { title: "Gym Locator", core: "Body", url: `${root}gym-locator/index.html` },
     { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/index.html` },
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
-    { title: "Preparing Route", core: "Mind", url: `${root}preparing-route/index.html` },
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
-    { title: "Exercise Matrix", core: "Life", url: `${root}exercise-matrix/index.html` },
-    { title: "Physique Roadmap", core: "Soul", url: `${root}physique-roadmap/index.html` },
+    { title: "Exercise Matrix", core: "Body", url: `${root}exercise-matrix/index.html` },
+    { title: "Physique Roadmap", core: "Body", url: `${root}physique-roadmap/index.html` },
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");

@@ -485,7 +485,7 @@
       const createAccountHref = `${siteBasePath}create-account/index.html`;
       const isHomePage = normalizedPath === homeHref.replace(/\/index\.html$/, "") || normalizedPath === homeHref.replace(/\/+$/, "") || normalizedPath === "/";
       const isCreateAccountPage = normalizedPath.includes("/create-account") || normalizedPath.endsWith("/create-account.html");
-      const isSplitSculptorPage = normalizedPath.includes("/preparing-route/split-sculptor.html");
+      const isSplitSculptorPage = normalizedPath.includes("/split-sculptor/index.html") || normalizedPath.includes("/preparing-route/split-sculptor.html");
       const isRoadmapPage = normalizedPath.includes("/physique-roadmap/index.html");
       const isLoggedIn = !!getCurrentUserEmail();
       const isCoachMode = sessionStorage.getItem("ccAdminAuthed") === "1";
