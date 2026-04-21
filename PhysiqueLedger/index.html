@@ -26,22 +26,26 @@
       }
       * { box-sizing: border-box; }
       body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", sans-serif; }
-      .container { width: min(1180px, 94vw); margin: 0 auto; padding: 1.4rem 0 3rem; }
+      .container { width: min(1140px, 94vw); margin: 0 auto; padding: 1.2rem 0 2.6rem; }
       .hero h1 { margin: 0; font-family: "Museo Moderno", sans-serif; font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
       .hero p { margin: .35rem 0 1rem; color: var(--muted); font-family: "Raleway", sans-serif; }
       .card { background: var(--card); border: 1px solid rgba(7, 31, 53, .1); border-radius: 18px; box-shadow: 0 12px 28px rgba(7, 31, 53, .06); }
       .section { padding: .9rem; }
-      .summary { padding: .9rem; display: grid; gap: .7rem; }
+      .summary { padding: .9rem; display: grid; gap: .55rem; }
       .summary-grid { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
-      .metric { padding: .65rem; border-radius: 12px; background: rgba(7, 31, 53, .03); }
+      .metric { padding: .58rem; border-radius: 12px; background: rgba(7, 31, 53, .03); border: 1px solid rgba(7,31,53,.08); }
       .metric strong { display: block; font-family: "Raleway", sans-serif; font-size: .78rem; }
       .metric span { font-size: 1.02rem; font-weight: 700; }
-      .target-card.low, .pill.low { background: rgba(240, 156, 0, .15); color: #9a5f00; }
-      .target-card.on, .pill.on { background: rgba(119, 215, 112, .22); color: #1b6623; }
-      .target-card.high, .pill.high { background: rgba(255, 84, 84, .15); color: #8c2222; }
-      .target-card.deficit, .pill.deficit { background: rgba(66, 133, 244, .15); color: #1d4f9a; }
-      .target-card.maintain, .pill.maintain { background: rgba(119, 215, 112, .22); color: #1b6623; }
-      .target-card.surplus, .pill.surplus { background: rgba(255, 84, 84, .15); color: #8c2222; }
+      .target-card.low, .pill.low { background: rgba(240, 156, 0, .14); color: #9a5f00; border-color: rgba(240,156,0,.35); }
+      .target-card.on, .pill.on { background: rgba(119, 215, 112, .20); color: #1b6623; border-color: rgba(119,215,112,.45); }
+      .target-card.high, .pill.high { background: rgba(255, 84, 84, .14); color: #8c2222; border-color: rgba(255,84,84,.35); }
+      .target-card.deficit, .pill.deficit { background: rgba(66, 133, 244, .14); color: #1d4f9a; border-color: rgba(66,133,244,.35); }
+      .target-card.maintain, .pill.maintain { background: rgba(119, 215, 112, .20); color: #1b6623; border-color: rgba(119,215,112,.45); }
+      .target-card.surplus, .pill.surplus { background: rgba(255, 84, 84, .14); color: #8c2222; border-color: rgba(255,84,84,.35); }
+      .metric.calories { background: rgba(119,215,112,.13); border-color: rgba(119,215,112,.35); }
+      .metric.protein { background: rgba(66,133,244,.12); border-color: rgba(66,133,244,.32); }
+      .metric.carbs { background: rgba(246,193,67,.15); border-color: rgba(246,193,67,.35); }
+      .metric.fats { background: rgba(188,123,255,.12); border-color: rgba(188,123,255,.3); }
       .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: .15rem .55rem; font-size: .74rem; font-weight: 700; }
       .target-inputs { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
       label { font-size: .78rem; font-weight: 700; font-family: "Raleway", sans-serif; }
@@ -59,7 +63,7 @@
       .day-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .55rem; }
       .meal { border: 1px solid rgba(7, 31, 53, .11); border-radius: 12px; padding: .55rem; margin-bottom: .6rem; background: #fff; }
       .meal h4 { margin: 0 0 .4rem; font-family: "Raleway", sans-serif; }
-      .add-row { display: grid; gap: .42rem; grid-template-columns: 1fr .8fr .62fr auto auto; }
+      .add-row { display: grid; gap: .4rem; grid-template-columns: 1fr .72fr .62fr .78fr auto; }
       .food-row { border: 1px solid rgba(7, 31, 53, .1); border-radius: 10px; padding: .42rem; margin: .35rem 0; background: rgba(7, 31, 53, .02); }
       .food-macros, .tiny { color: var(--muted); font-size: .75rem; }
       .food-macros { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
@@ -67,7 +71,7 @@
       .totals div { background: rgba(7, 31, 53, .03); border-radius: 10px; padding: .34rem; font-size: .8rem; }
       .weekly { padding: .9rem; margin-top: .85rem; }
       .weekly-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(152px, 1fr)); }
-      .advanced details { border: 1px solid rgba(7, 31, 53, .12); border-radius: 12px; padding: .6rem; background: #fff; }
+      .advanced details { border: 1px solid rgba(7, 31, 53, .12); border-radius: 12px; padding: .55rem; background: #fff; }
       .advanced summary { cursor: pointer; font-family: "Raleway", sans-serif; font-weight: 700; }
       .inline-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .42rem; }
       .recipe-ingredient { display: grid; gap: .42rem; grid-template-columns: 1fr .8fr .65fr auto; margin-top: .4rem; }
@@ -159,7 +163,7 @@
     </main>
 
     <script>
-      const STORAGE_KEY = "physiqueLedgerStateV4";
+      const STORAGE_KEY = "physiqueLedgerStateV5";
       const TARGETS_KEY = "physiqueLedgerTargets";
       const MACRO_STORAGE_KEY = "macroCalculator";
       const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -224,6 +228,11 @@
         };
         return map[unit?.toLowerCase()] || unit;
       }
+      function displayUnit(unit, quantity = 1) {
+        const u = normalizeUnit(unit);
+        if (u === "item") return quantity === 1 ? "item" : "items";
+        return (u || "").replace("_", " ");
+      }
 
       function loadState() {
         let merged = clone(defaultState);
@@ -255,7 +264,14 @@
       }
 
       function dayRef(dayKey) { return dayKey === "masterDay" ? state.masterDay : state.week[dayKey]; }
-      function allFoods() { return [...foodBank, ...state.customFoods, ...state.customRecipes.map(recipeToFoodLike)]; }
+      function allFoods(type = "all") {
+        const all = [...foodBank, ...state.customFoods, ...state.customRecipes.map(recipeToFoodLike)];
+        if (type === "all") return all;
+        if (type === "built_in") return all.filter((f) => f.type === "built_in");
+        if (type === "custom_food") return all.filter((f) => f.type === "custom_food");
+        if (type === "recipe") return all.filter((f) => f.type === "recipe");
+        return all;
+      }
       function foodById(id) { return allFoods().find((f) => f.id === id); }
 
       function recipeToFoodLike(recipe) {
@@ -278,10 +294,11 @@
         return { quantity: parseFloat(m[1]), unit: normalizeUnit((m[2] || "").trim()), query: m[3].trim() };
       }
 
-      function matchFood(query) {
+      function matchFood(query, sourceType = "all") {
         const q = (query || "").trim().toLowerCase();
         if (!q) return null;
-        return allFoods().find((f) => f.name === q) || allFoods().find((f) => f.name.includes(q));
+        const list = allFoods(sourceType);
+        return list.find((f) => f.name === q) || list.find((f) => f.name.includes(q));
       }
 
       function gramsForQuantity(food, quantity, unit) {
@@ -312,12 +329,22 @@
         };
       }
 
-      function addFood(dayKey, meal, input, preferredUnit = "") {
-        const parsed = parseNatural(input);
-        const food = matchFood(parsed?.query || input);
+      function resolveAddIntent(name, quantityInput, unitInput) {
+        const parsedText = parseNatural(name);
+        const typedQty = parseNumber(quantityInput, 1);
+        const hasNaturalQty = Number.isFinite(parsedText?.quantity) && parsedText.quantity > 0;
+        const quantity = hasNaturalQty ? parsedText.quantity : typedQty;
+        const unit = normalizeUnit(parsedText?.unit) || normalizeUnit(unitInput) || "";
+        const query = (parsedText?.query || name || "").trim();
+        return { query, quantity, unit };
+      }
+
+      function addFood(dayKey, meal, input, preferredUnit = "", quantityInput = 1, sourceType = "all") {
+        const intent = resolveAddIntent(input, quantityInput, preferredUnit);
+        const food = matchFood(intent.query, sourceType);
         if (!food) return alert("Food not found. Try another search or save it in Advanced.");
-        const quantity = parsed?.quantity || 1;
-        const unit = normalizeUnit(parsed?.unit) || normalizeUnit(preferredUnit) || food.defaultServing.unit;
+        const quantity = Math.max(0, parseNumber(intent.quantity, 1));
+        const unit = normalizeUnit(intent.unit) || food.defaultServing.unit;
         const macros = convertMacros(food, quantity, unit);
         dayRef(dayKey).meals[meal].push({ id: crypto.randomUUID(), foodId: food.id, name: food.name, quantity, unit, ...macros });
         state.recentFoods = [food.id, ...state.recentFoods.filter((id) => id !== food.id)].slice(0, 25);
@@ -362,7 +389,7 @@
           const s = k === "calories"
             ? calorieStatus(live, state.targets[k])
             : statusMacro(live, state.targets[k], k === "protein" ? (1 - thresholds.proteinLow) : thresholds[k]);
-          return `<div class="metric target-card ${s}"><strong>${label}</strong><span>${Math.round(live)} / ${Math.round(state.targets[k])}${k === "calories" ? " kcal" : " g"}</span></div>`;
+          return `<div class="metric ${k} target-card ${s}"><strong>${label}</strong><span>${Math.round(live)} / ${Math.round(state.targets[k])}${k === "calories" ? " kcal" : " g"}</span></div>`;
         };
 
         document.getElementById("targetSummary").innerHTML = [
@@ -393,7 +420,9 @@
             <input placeholder="Add food (e.g., 5 eggs, 8 oz chicken breast)" list="foodSuggestions" data-add-input="${dayKey}|${meal}">
             <input type="number" min="0" step="0.1" value="1" data-add-qty="${dayKey}|${meal}">
             <select data-add-unit="${dayKey}|${meal}">${unitOptions.map((u) => `<option value="${u}">${u.replace("_", " ")}</option>`).join("")}</select>
-            <button data-add-recent="${dayKey}|${meal}">Recent</button>
+            <select data-add-source="${dayKey}|${meal}">
+              <option value="all">All</option><option value="built_in">Built-In</option><option value="custom_food">Custom</option><option value="recipe">Recipes</option>
+            </select>
             <button class="primary" data-add="${dayKey}|${meal}">Add Food</button>
           </div>
           ${mealRows.map((r) => `<div class="food-row">
@@ -401,7 +430,7 @@
             <div class="row" style="margin-top:.3rem;">
               <input type="number" min="0" step="0.1" value="${r.quantity}" data-qty="${dayKey}|${meal}|${r.id}" style="width:95px;">
               <select data-unit="${dayKey}|${meal}|${r.id}" style="width:auto;">${unitOptionsForFood(r.foodId, r.unit)}</select>
-              <span class="tiny">${r.calories} kcal</span>
+              <span class="tiny">${r.calories} kcal · ${r.quantity} ${displayUnit(r.unit, r.quantity)}</span>
             </div>
             <div class="food-macros"><span>P ${r.protein}g</span><span>C ${r.carbs}g</span><span>F ${r.fats}g</span></div>
           </div>`).join("")}
@@ -531,13 +560,8 @@
           const name = document.querySelector(`[data-add-input="${dayKey}|${meal}"]`)?.value || "";
           const qty = parseNumber(document.querySelector(`[data-add-qty="${dayKey}|${meal}"]`)?.value, 1);
           const unit = document.querySelector(`[data-add-unit="${dayKey}|${meal}"]`)?.value || "";
-          if (name.trim()) addFood(dayKey, meal, `${qty} ${unit} ${name}`.trim(), unit);
-        }
-
-        if (t.dataset.addRecent) {
-          const [dayKey, meal] = t.dataset.addRecent.split("|");
-          const recent = state.recentFoods.map((id) => foodById(id)).find(Boolean);
-          if (recent) addFood(dayKey, meal, `${1} ${recent.defaultServing.unit} ${recent.name}`);
+          const source = document.querySelector(`[data-add-source="${dayKey}|${meal}"]`)?.value || "all";
+          if (name.trim()) addFood(dayKey, meal, name, unit, qty, source);
         }
 
         if (t.dataset.del) {
