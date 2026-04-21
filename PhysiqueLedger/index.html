@@ -17,113 +17,156 @@
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
     <style>
-      :root { --bg:#f5f5f7; --text:#071f35; --accent:#77d770; --card:#fff; --muted:rgba(7,31,53,.62); }
-      *{ box-sizing:border-box; }
-      body{ margin:0; background:var(--bg); color:var(--text); font-family:"Muli",sans-serif; }
-      .container{ width:min(1200px,94vw); margin:0 auto; padding:1.8rem 0 4rem; }
-      .hero h1{ margin:0; font-family:"Museo Moderno",sans-serif; font-size:clamp(1.9rem,3.6vw,3rem); }
-      .hero p{ margin:.45rem 0 1.2rem; color:var(--muted); font-family:"Raleway",sans-serif; }
-      .card{ background:var(--card); border:1px solid rgba(7,31,53,.1); border-radius:18px; box-shadow:0 14px 36px rgba(7,31,53,.07); }
-      .stack{ display:grid; gap:1rem; }
-      .summary{ padding:1rem; display:grid; gap:.8rem; }
-      .summary-grid{ display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); }
-      .metric{ padding:.7rem; border-radius:12px; background:rgba(7,31,53,.03); }
-      .metric strong{ display:block; font-family:"Raleway",sans-serif; font-size:.82rem; }
-      .metric span{ font-size:1.1rem; font-weight:700; }
-      .targets{ display:grid; gap:.55rem; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); }
-      .pill{ display:inline-flex; align-items:center; gap:.35rem; border-radius:999px; padding:.2rem .65rem; font-size:.77rem; font-weight:700; }
-      .pill.low{ background:rgba(240,156,0,.14);} .pill.on{ background:rgba(119,215,112,.2);} .pill.high{ background:rgba(255,84,84,.16);} .pill.maintain{ background:rgba(119,215,112,.2);} .pill.deficit{ background:rgba(66,133,244,.16);} .pill.surplus{ background:rgba(255,84,84,.16);} 
-      label{ font-size:.8rem; font-weight:700; font-family:"Raleway",sans-serif; }
-      input,select,button,textarea{ font:inherit; }
-      input,select,textarea{ width:100%; border:1px solid rgba(7,31,53,.2); border-radius:10px; padding:.5rem .6rem; background:#fff; color:var(--text); }
-      button{ border:1px solid rgba(7,31,53,.18); border-radius:10px; background:#fff; color:var(--text); padding:.45rem .7rem; font-weight:700; cursor:pointer; }
-      button.primary{ background:var(--text); color:#fff; border-color:var(--text); }
-      button.accent{ background:var(--accent); border-color:var(--accent); }
-      .section{ padding:1rem; }
-      .row{ display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
-      .master-actions,.global-actions{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.7rem; }
-      .day-grid{ display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); }
-      .day-card{ padding:1rem; }
-      .day-head{ display:flex; justify-content:space-between; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.8rem; }
-      .meal{ border:1px solid rgba(7,31,53,.12); border-radius:12px; padding:.65rem; margin-bottom:.7rem; background:#fff; }
-      .meal h4{ margin:0 0 .45rem; font-family:"Raleway",sans-serif; }
-      .food-row{ border:1px solid rgba(7,31,53,.1); border-radius:10px; padding:.45rem; margin:.4rem 0; background:rgba(7,31,53,.02); }
-      .food-top{ display:flex; justify-content:space-between; gap:.5rem; align-items:center; }
-      .food-macros{ font-size:.76rem; color:var(--muted); display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.35rem; }
-      .tiny{ font-size:.76rem; color:var(--muted); }
-      .totals{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.45rem; margin-top:.6rem; }
-      .totals div{ background:rgba(7,31,53,.03); border-radius:10px; padding:.4rem; font-size:.82rem; }
-      .weekly{ padding:1rem; }
-      .weekly-grid{ display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); }
-      .bar{ height:8px; border-radius:999px; background:rgba(7,31,53,.1); overflow:hidden; }
-      .bar > i{ display:block; height:100%; background:var(--accent); }
-      .inline-input{ display:grid; grid-template-columns:1.3fr .8fr .7fr auto; gap:.45rem; }
-      @media (max-width:640px){ .inline-input{ grid-template-columns:1fr; } .totals{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      :root {
+        --bg: #f5f5f7;
+        --text: #071f35;
+        --accent: #77d770;
+        --card: #fff;
+        --muted: rgba(7, 31, 53, 0.62);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", sans-serif; }
+      .container { width: min(1180px, 94vw); margin: 0 auto; padding: 1.4rem 0 3rem; }
+      .hero h1 { margin: 0; font-family: "Museo Moderno", sans-serif; font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
+      .hero p { margin: .35rem 0 1rem; color: var(--muted); font-family: "Raleway", sans-serif; }
+      .card { background: var(--card); border: 1px solid rgba(7, 31, 53, .1); border-radius: 18px; box-shadow: 0 12px 28px rgba(7, 31, 53, .06); }
+      .section { padding: .9rem; }
+      .summary { padding: .9rem; display: grid; gap: .7rem; }
+      .summary-grid { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
+      .metric { padding: .65rem; border-radius: 12px; background: rgba(7, 31, 53, .03); }
+      .metric strong { display: block; font-family: "Raleway", sans-serif; font-size: .78rem; }
+      .metric span { font-size: 1.02rem; font-weight: 700; }
+      .target-card.low, .pill.low { background: rgba(240, 156, 0, .15); color: #9a5f00; }
+      .target-card.on, .pill.on { background: rgba(119, 215, 112, .22); color: #1b6623; }
+      .target-card.high, .pill.high { background: rgba(255, 84, 84, .15); color: #8c2222; }
+      .target-card.deficit, .pill.deficit { background: rgba(66, 133, 244, .15); color: #1d4f9a; }
+      .target-card.maintain, .pill.maintain { background: rgba(119, 215, 112, .22); color: #1b6623; }
+      .target-card.surplus, .pill.surplus { background: rgba(255, 84, 84, .15); color: #8c2222; }
+      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: .15rem .55rem; font-size: .74rem; font-weight: 700; }
+      .target-inputs { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+      label { font-size: .78rem; font-weight: 700; font-family: "Raleway", sans-serif; }
+      input, select, button, textarea { font: inherit; }
+      input, select, textarea {
+        width: 100%; border: 1px solid rgba(7, 31, 53, .19); border-radius: 10px; padding: .48rem .58rem; background: #fff; color: var(--text);
+      }
+      button { border: 1px solid rgba(7, 31, 53, .18); border-radius: 10px; background: #fff; color: var(--text); padding: .42rem .62rem; font-weight: 700; cursor: pointer; }
+      button.primary { background: var(--text); color: #fff; border-color: var(--text); }
+      button.accent { background: var(--accent); border-color: var(--accent); }
+      .row { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; }
+      .main-actions { margin: .8rem 0; display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
+      .day-grid { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+      .day-card { padding: .85rem; }
+      .day-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .55rem; }
+      .meal { border: 1px solid rgba(7, 31, 53, .11); border-radius: 12px; padding: .55rem; margin-bottom: .6rem; background: #fff; }
+      .meal h4 { margin: 0 0 .4rem; font-family: "Raleway", sans-serif; }
+      .add-row { display: grid; gap: .42rem; grid-template-columns: 1fr .8fr .62fr auto auto; }
+      .food-row { border: 1px solid rgba(7, 31, 53, .1); border-radius: 10px; padding: .42rem; margin: .35rem 0; background: rgba(7, 31, 53, .02); }
+      .food-macros, .tiny { color: var(--muted); font-size: .75rem; }
+      .food-macros { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
+      .totals { display: grid; gap: .35rem; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: .45rem; }
+      .totals div { background: rgba(7, 31, 53, .03); border-radius: 10px; padding: .34rem; font-size: .8rem; }
+      .weekly { padding: .9rem; margin-top: .85rem; }
+      .weekly-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(152px, 1fr)); }
+      .advanced details { border: 1px solid rgba(7, 31, 53, .12); border-radius: 12px; padding: .6rem; background: #fff; }
+      .advanced summary { cursor: pointer; font-family: "Raleway", sans-serif; font-weight: 700; }
+      .inline-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .42rem; }
+      .recipe-ingredient { display: grid; gap: .42rem; grid-template-columns: 1fr .8fr .65fr auto; margin-top: .4rem; }
+      .manager-list { margin-top: .55rem; display: grid; gap: .4rem; }
+      .manager-item { display: flex; justify-content: space-between; gap: .5rem; align-items: center; background: rgba(7,31,53,.03); border-radius: 10px; padding: .35rem .5rem; }
+      @media (max-width: 760px) {
+        .add-row, .recipe-ingredient { grid-template-columns: 1fr; }
+        .totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .inline-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      }
     </style>
   </head>
   <body>
     <main class="container">
       <header class="hero">
         <h1>Physique Ledger</h1>
-        <p>Plan meals for the full week, track macros instantly, and align intake with your calorie and macro goal.</p>
+        <p>Set targets, log meals, review totals, and check how your week aligns with your macro plan.</p>
       </header>
 
       <section class="card summary">
         <div class="summary-grid" id="targetSummary"></div>
-        <div class="targets" id="targetInputs"></div>
-      </section>
-
-      <section class="card section">
-        <div class="row" style="justify-content:space-between;">
-          <h2 style="margin:0;font-family:'Raleway',sans-serif;">Custom Foods</h2>
-          <span class="tiny">Save foods once and reuse them in search like built-in items.</span>
-        </div>
-        <div class="inline-input" style="margin-top:.6rem;">
-          <input id="customName" placeholder="Food name">
-          <input id="customAmount" type="number" min="0" step="0.1" placeholder="Serving amount">
-          <select id="customUnit"></select>
-          <button class="primary" id="addCustomFood">Save Food</button>
-        </div>
-        <div class="inline-input" style="margin-top:.5rem;grid-template-columns:repeat(4,minmax(0,1fr));">
-          <input id="customCalories" type="number" min="0" step="0.1" placeholder="Calories">
-          <input id="customProtein" type="number" min="0" step="0.1" placeholder="Protein">
-          <input id="customCarbs" type="number" min="0" step="0.1" placeholder="Carbs">
-          <input id="customFats" type="number" min="0" step="0.1" placeholder="Fats">
-        </div>
-        <div id="customFoodList" class="tiny" style="margin-top:.65rem;"></div>
+        <div class="target-inputs" id="targetInputs"></div>
       </section>
 
       <section class="card section">
         <div class="row" style="justify-content:space-between;">
           <h2 style="margin:0;font-family:'Raleway',sans-serif;">Master Day</h2>
-          <span class="tiny">Build once, apply to week, then edit any day independently.</span>
+          <span class="tiny">Build once, apply to full week or empty days only.</span>
         </div>
-        <div id="masterDay"></div>
-        <div class="master-actions">
+        <div id="masterDay" style="margin-top:.45rem;"></div>
+        <div class="row" style="margin-top:.55rem;">
           <button class="accent" id="applyMasterAll">Apply Master Day to Week</button>
-          <button id="applyMasterEmpty">Apply Master Day to Empty Days</button>
+          <button id="applyMasterEmpty">Apply to Empty Days</button>
           <button id="resetMaster">Reset Master Day</button>
         </div>
       </section>
 
-      <section class="global-actions" style="margin:1rem 0;">
+      <div class="main-actions">
+        <span class="tiny">Week plan: Monday through Sunday</span>
         <button id="clearWeek">Clear Week</button>
-      </section>
+      </div>
 
       <section class="day-grid" id="weekGrid"></section>
-
       <section class="card weekly" id="weeklySummary"></section>
+
+      <section class="advanced" style="margin-top:.9rem;">
+        <details>
+          <summary>Advanced: Manage Custom Foods & Recipes</summary>
+          <div style="margin-top:.65rem; display:grid; gap:.9rem;">
+            <div>
+              <h3 style="margin:.1rem 0 .5rem;font-family:'Raleway',sans-serif;">Custom Foods</h3>
+              <div class="add-row">
+                <input id="customName" placeholder="Food name" />
+                <input id="customAmount" type="number" min="0" step="0.1" placeholder="Serving amount" />
+                <select id="customUnit"></select>
+                <button class="primary" id="addCustomFood">Save Food</button>
+                <button id="resetCustomFood">Clear</button>
+              </div>
+              <div class="inline-4" style="margin-top:.42rem;">
+                <input id="customCalories" type="number" min="0" step="0.1" placeholder="Calories" />
+                <input id="customProtein" type="number" min="0" step="0.1" placeholder="Protein" />
+                <input id="customCarbs" type="number" min="0" step="0.1" placeholder="Carbs" />
+                <input id="customFats" type="number" min="0" step="0.1" placeholder="Fats" />
+              </div>
+              <div id="customFoodList" class="manager-list"></div>
+            </div>
+
+            <div>
+              <h3 style="margin:.1rem 0 .5rem;font-family:'Raleway',sans-serif;">Custom Recipes</h3>
+              <div class="row" style="margin-bottom:.42rem;">
+                <input id="recipeName" placeholder="Recipe name" style="max-width:280px;" />
+                <input id="recipeServings" type="number" min="0.25" step="0.25" value="1" style="width:120px;" />
+                <span class="tiny">Total servings</span>
+              </div>
+              <div id="recipeIngredients"></div>
+              <div class="row" style="margin-top:.45rem;">
+                <button id="addRecipeIngredient">Add Ingredient</button>
+                <button class="primary" id="saveRecipe">Save Recipe</button>
+                <button id="resetRecipeBuilder">Clear Builder</button>
+              </div>
+              <div id="recipePreview" class="tiny" style="margin-top:.35rem;"></div>
+              <div id="customRecipeList" class="manager-list"></div>
+            </div>
+          </div>
+        </details>
+      </section>
 
       <datalist id="foodSuggestions"></datalist>
     </main>
 
     <script>
-      const STORAGE_KEY = "physiqueLedgerStateV3";
+      const STORAGE_KEY = "physiqueLedgerStateV4";
       const TARGETS_KEY = "physiqueLedgerTargets";
       const MACRO_STORAGE_KEY = "macroCalculator";
-      const dayNames = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-      const meals = ["Breakfast","Lunch","Dinner","Snacks"];
-      const thresholds = { calories:0.08, proteinLow:0.95, proteinHigh:1.1, carbs:0.1, fats:0.1 };
+      const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const meals = ["Breakfast", "Lunch", "Dinner", "Snacks"];
+      const thresholds = { calories: 0.08, proteinLow: 0.95, proteinHigh: 1.1, carbs: 0.1, fats: 0.1 };
+
+      const unitOptions = ["g", "oz", "lb", "cup", "tbsp", "tsp", "ml", "fl_oz", "item", "slice", "scoop", "serving"];
 
       const foodBank = [
         ["banana",118,"item",105,1.3,27,0.3,{item:118,g:1,oz:28.35}], ["apple",182,"item",95,0.5,25,0.3,{item:182,g:1,oz:28.35}],
@@ -146,69 +189,121 @@
         ["bacon",8,"slice",43,3,0.1,3.3,{slice:8,g:1,oz:28.35}], ["sausage",56,"oz",180,10,2,14,{oz:28.35,g:1,item:85}],
         ["black beans",130,"cup",227,15,41,0.9,{cup:130,g:1,oz:28.35}], ["granola",60,"cup",280,6,44,10,{cup:60,g:1,oz:28.35}],
         ["honey",21,"tbsp",64,0,17,0,{tbsp:21,tsp:7,ml:1.42,g:1}]
-      ].map(([name,amount,unit,calories,protein,carbs,fats,units])=>({
-        id:name.replace(/\s+/g,"-"),name,defaultServing:{amount,unit},macros:{calories,protein,carbs,fats},units
+      ].map(([name, amount, unit, calories, protein, carbs, fats, units]) => ({
+        id: name.replace(/\s+/g, "-"),
+        type: "built_in",
+        name,
+        defaultServing: { amount, unit },
+        macros: { calories, protein, carbs, fats },
+        units
       }));
 
-      const toSlug = (t)=>t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
-      const blankDay = ()=>({ meals:Object.fromEntries(meals.map(m=>[m,[]])), notes:"" });
-      const defaultState = { targets:{calories:2200,protein:180,carbs:220,fats:70,goalType:"maintenance"}, masterDay:blankDay(), week:Object.fromEntries(dayNames.map(d=>[d,blankDay()])), customFoods:[], recentFoods:[] };
+      const toSlug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const parseNumber = (v, fallback = 0) => { const n = Number(v); return Number.isFinite(n) ? n : fallback; };
+      const clone = (obj) => JSON.parse(JSON.stringify(obj));
+      const blankDay = () => ({ meals: Object.fromEntries(meals.map((m) => [m, []])), notes: "" });
+      const defaultState = {
+        targets: { calories: 2200, protein: 180, carbs: 220, fats: 70, goalType: "maintenance" },
+        masterDay: blankDay(),
+        week: Object.fromEntries(dayNames.map((d) => [d, blankDay()])),
+        customFoods: [],
+        customRecipes: [],
+        recentFoods: []
+      };
 
       let state = loadState();
+      let recipeBuilder = { ingredients: [blankRecipeIngredient()] };
 
-      function parseNumber(v, fallback=0){ const n=Number(v); return Number.isFinite(n)?n:fallback; }
-      function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
-      function dayRef(dayKey){ return dayKey === "masterDay" ? state.masterDay : state.week[dayKey]; }
+      function blankRecipeIngredient() { return { id: crypto.randomUUID(), foodId: "", quantity: 1, unit: "" }; }
+      function normalizeUnit(unit) {
+        const map = {
+          grams: "g", gram: "g", g: "g", ounces: "oz", ounce: "oz", oz: "oz", lbs: "lb", pounds: "lb", pound: "lb", cups: "cup", cup: "cup",
+          tablespoon: "tbsp", tablespoons: "tbsp", tbsp: "tbsp", teaspoon: "tsp", teaspoons: "tsp", tsp: "tsp", milliliters: "ml", milliliter: "ml", ml: "ml",
+          "fluid ounces": "fl_oz", "fluid ounce": "fl_oz", floz: "fl_oz", slice: "slice", slices: "slice", item: "item", items: "item", egg: "item", eggs: "item",
+          scoop: "scoop", servings: "serving", serving: "serving"
+        };
+        return map[unit?.toLowerCase()] || unit;
+      }
 
-      function loadState(){
+      function loadState() {
         let merged = clone(defaultState);
-        try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"); if (saved) merged = {...merged,...saved}; } catch {}
-        const savedTargets = getTargetsFromStorage();
-        if (savedTargets) merged.targets = {...merged.targets,...savedTargets};
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          if (saved) merged = { ...merged, ...saved };
+        } catch {}
+        const targets = getTargetsFromStorage();
+        if (targets) merged.targets = { ...merged.targets, ...targets };
         return merged;
       }
 
-      function getTargetsFromStorage(){
+      function getTargetsFromStorage() {
         try {
-          const direct = JSON.parse(localStorage.getItem(TARGETS_KEY)||"null");
-          if (direct && direct.calories) return {calories:+direct.calories,protein:+direct.protein,carbs:+direct.carbs,fats:+direct.fats,goalType:direct.goalType||direct.goal||"maintenance"};
+          const direct = JSON.parse(localStorage.getItem(TARGETS_KEY) || "null");
+          if (direct?.calories) return { calories: +direct.calories, protein: +direct.protein, carbs: +direct.carbs, fats: +direct.fats, goalType: direct.goalType || "maintenance" };
         } catch {}
         try {
-          const macro = JSON.parse(localStorage.getItem(MACRO_STORAGE_KEY)||"null");
+          const macro = JSON.parse(localStorage.getItem(MACRO_STORAGE_KEY) || "null");
           const out = macro?.outputs;
           if (!out) return null;
-          return { calories:parseNumber(out.calories), protein:parseNumber(out.protein), carbs:parseNumber(out.carbs), fats:parseNumber(out.fat), goalType:macro?.profile?.goal || "maintenance" };
+          return { calories: parseNumber(out.calories), protein: parseNumber(out.protein), carbs: parseNumber(out.carbs), fats: parseNumber(out.fat), goalType: macro?.profile?.goal || "maintenance" };
         } catch { return null; }
       }
 
-      function saveState(){
+      function saveState() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets));
       }
 
-      function normalizeUnit(unit){ const map={grams:"g",gram:"g",g:"g",ounces:"oz",ounce:"oz",oz:"oz",lbs:"lb",pounds:"lb",pound:"lb",cups:"cup",cup:"cup",tablespoon:"tbsp",tablespoons:"tbsp",tbsp:"tbsp",teaspoon:"tsp",teaspoons:"tsp",tsp:"tsp",milliliters:"ml",milliliter:"ml",ml:"ml","fluid ounces":"fl_oz","fluid ounce":"fl_oz",floz:"fl_oz",slice:"slice",slices:"slice",item:"item",items:"item",egg:"item",eggs:"item",scoop:"scoop"}; return map[unit?.toLowerCase()]||unit; }
-      function foodById(id){ return [...foodBank,...state.customFoods].find(f=>f.id===id); }
+      function dayRef(dayKey) { return dayKey === "masterDay" ? state.masterDay : state.week[dayKey]; }
+      function allFoods() { return [...foodBank, ...state.customFoods, ...state.customRecipes.map(recipeToFoodLike)]; }
+      function foodById(id) { return allFoods().find((f) => f.id === id); }
 
-      function parseNatural(text){
-        const raw = (text||"").trim().toLowerCase();
+      function recipeToFoodLike(recipe) {
+        return {
+          id: recipe.id,
+          type: "recipe",
+          recipeId: recipe.id,
+          name: recipe.name,
+          defaultServing: { amount: 1, unit: "serving" },
+          macros: { ...recipe.perServingMacros },
+          units: { serving: 1, item: 1 }
+        };
+      }
+
+      function parseNatural(text) {
+        const raw = (text || "").trim().toLowerCase();
         if (!raw) return null;
         const m = raw.match(/^(\d*\.?\d+)\s*([a-zA-Z_ ]+)?\s+(.+)$/);
-        if (!m) return {query:raw};
-        return { quantity:parseFloat(m[1]), unit:normalizeUnit((m[2]||"").trim()), query:m[3].trim() };
+        if (!m) return { query: raw };
+        return { quantity: parseFloat(m[1]), unit: normalizeUnit((m[2] || "").trim()), query: m[3].trim() };
       }
 
-      function matchFood(query){
-        const q=(query||"").trim().toLowerCase();
+      function matchFood(query) {
+        const q = (query || "").trim().toLowerCase();
         if (!q) return null;
-        return [...foodBank,...state.customFoods].find(f=>f.name===q) || [...foodBank,...state.customFoods].find(f=>f.name.includes(q));
+        return allFoods().find((f) => f.name === q) || allFoods().find((f) => f.name.includes(q));
       }
 
-      function convertMacros(food, quantity, unit){
-        const u = normalizeUnit(unit) || food.defaultServing.unit;
-        const gramsPerUnit = food.units[u] || food.units[food.defaultServing.unit] || 1;
-        const grams = quantity * gramsPerUnit;
-        const baseGrams = food.defaultServing.amount * (food.units[food.defaultServing.unit]||1);
-        const ratio = grams / baseGrams;
+      function gramsForQuantity(food, quantity, unit) {
+        const activeUnit = normalizeUnit(unit) || food.defaultServing.unit;
+        if (activeUnit === "serving") return quantity * food.defaultServing.amount;
+        const gramsPerUnit = food.units?.[activeUnit] ?? (activeUnit === "g" ? 1 : null);
+        if (gramsPerUnit == null) {
+          const fallback = food.units?.[food.defaultServing.unit] ?? 1;
+          return quantity * fallback;
+        }
+        return quantity * gramsPerUnit;
+      }
+
+      function baseServingGrams(food) {
+        if (food.defaultServing.unit === "serving") return food.defaultServing.amount;
+        return food.defaultServing.amount;
+      }
+
+      function convertMacros(food, quantity, unit) {
+        const safeQty = Math.max(0, parseNumber(quantity, 0));
+        const grams = gramsForQuantity(food, safeQty, unit);
+        const ratio = grams / Math.max(0.0001, baseServingGrams(food));
         return {
           calories: +(food.macros.calories * ratio).toFixed(1),
           protein: +(food.macros.protein * ratio).toFixed(1),
@@ -217,63 +312,95 @@
         };
       }
 
-      function addFood(dayKey, meal, input){
+      function addFood(dayKey, meal, input, preferredUnit = "") {
         const parsed = parseNatural(input);
         const food = matchFood(parsed?.query || input);
-        if (!food) return alert("Food not found. Try another search term or add it as a custom food.");
-        const quantity = parsed?.quantity || food.defaultServing.amount;
-        const unit = normalizeUnit(parsed?.unit) || food.defaultServing.unit;
+        if (!food) return alert("Food not found. Try another search or save it in Advanced.");
+        const quantity = parsed?.quantity || 1;
+        const unit = normalizeUnit(parsed?.unit) || normalizeUnit(preferredUnit) || food.defaultServing.unit;
         const macros = convertMacros(food, quantity, unit);
-        const row = { id: crypto.randomUUID(), foodId:food.id, name:food.name, quantity, unit, ...macros };
-        dayRef(dayKey).meals[meal].push(row);
-        state.recentFoods = [food.id, ...state.recentFoods.filter(id=>id!==food.id)].slice(0,20);
-        persistAndRender();
-      }
-
-      function updateRow(dayKey, meal, rowId, patch){
-        const rows = dayRef(dayKey).meals[meal];
-        const row = rows.find(r=>r.id===rowId); if (!row) return;
-        Object.assign(row, patch);
-        const source = foodById(row.foodId);
-        if (source) Object.assign(row, convertMacros(source, parseNumber(row.quantity,1), normalizeUnit(row.unit)));
+        dayRef(dayKey).meals[meal].push({ id: crypto.randomUUID(), foodId: food.id, name: food.name, quantity, unit, ...macros });
+        state.recentFoods = [food.id, ...state.recentFoods.filter((id) => id !== food.id)].slice(0, 25);
         persistAndRender(false);
       }
 
-      function totalsForDay(day){
-        return meals.reduce((acc,m)=>{ day.meals[m].forEach(r=>{ acc.calories+=r.calories; acc.protein+=r.protein; acc.carbs+=r.carbs; acc.fats+=r.fats; }); return acc; },{calories:0,protein:0,carbs:0,fats:0});
+      function updateRow(dayKey, meal, rowId, patch) {
+        const row = dayRef(dayKey).meals[meal].find((r) => r.id === rowId);
+        if (!row) return;
+        Object.assign(row, patch);
+        const source = foodById(row.foodId);
+        if (source) Object.assign(row, convertMacros(source, parseNumber(row.quantity, 1), normalizeUnit(row.unit)));
+        persistAndRender(false);
       }
-      function sumDays(){
-        return dayNames.reduce((acc,d)=>{ const t=totalsForDay(state.week[d]); acc.calories+=t.calories; acc.protein+=t.protein; acc.carbs+=t.carbs; acc.fats+=t.fats; return acc; },{calories:0,protein:0,carbs:0,fats:0});
-      }
-      function statusMacro(v,t,pct){ if (v < t*(1-pct)) return "low"; if (v > t*(1+pct)) return "high"; return "on"; }
-      function calorieStatus(v,t){ if (v < t*(1-thresholds.calories)) return "deficit"; if (v > t*(1+thresholds.calories)) return "surplus"; return "maintain"; }
 
-      function renderTargets(){
-        const day = totalsForDay(state.week[dayNames[0]]);
+      function totalsForDay(day) {
+        return meals.reduce((acc, m) => {
+          day.meals[m].forEach((r) => { acc.calories += r.calories; acc.protein += r.protein; acc.carbs += r.carbs; acc.fats += r.fats; });
+          return acc;
+        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+      }
+
+      function sumDays() {
+        return dayNames.reduce((acc, d) => {
+          const t = totalsForDay(state.week[d]);
+          acc.calories += t.calories; acc.protein += t.protein; acc.carbs += t.carbs; acc.fats += t.fats;
+          return acc;
+        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+      }
+
+      function statusMacro(v, t, pct) { if (v < t * (1 - pct)) return "low"; if (v > t * (1 + pct)) return "high"; return "on"; }
+      function calorieStatus(v, t) { if (v < t * (1 - thresholds.calories)) return "deficit"; if (v > t * (1 + thresholds.calories)) return "surplus"; return "maintain"; }
+
+      function renderTargets() {
+        const monday = totalsForDay(state.week["Monday"]);
         const week = sumDays();
-        const dayStatus = calorieStatus(day.calories,state.targets.calories);
-        const weekStatus = calorieStatus(week.calories/7,state.targets.calories);
-        document.getElementById("targetSummary").innerHTML = `
-          ${["calories","protein","carbs","fats"].map(k=>`<div class="metric"><strong>Goal ${k}</strong><span>${Math.round(state.targets[k])}${k==="calories"?" kcal":" g"}</span></div>`).join("")}
-          <div class="metric"><strong>Current day</strong><span><span class="pill ${dayStatus}">${dayStatus}</span></span></div>
-          <div class="metric"><strong>Current week</strong><span><span class="pill ${weekStatus}">${weekStatus}</span></span></div>`;
-        document.getElementById("targetInputs").innerHTML = ["calories","protein","carbs","fats"].map(k=>`<label>${k}<input type="number" min="0" step="1" data-target="${k}" value="${state.targets[k]}"></label>`).join("") + `<label>goal type<input data-target="goalType" value="${state.targets.goalType||"maintenance"}"></label>`;
+        const dayStatus = calorieStatus(monday.calories, state.targets.calories);
+        const weekStatus = calorieStatus(week.calories / 7, state.targets.calories);
+
+        const metric = (k, label) => {
+          const live = k === "calories" ? monday[k] : monday[k];
+          const s = k === "calories"
+            ? calorieStatus(live, state.targets[k])
+            : statusMacro(live, state.targets[k], k === "protein" ? (1 - thresholds.proteinLow) : thresholds[k]);
+          return `<div class="metric target-card ${s}"><strong>${label}</strong><span>${Math.round(live)} / ${Math.round(state.targets[k])}${k === "calories" ? " kcal" : " g"}</span></div>`;
+        };
+
+        document.getElementById("targetSummary").innerHTML = [
+          metric("calories", "Calories"),
+          metric("protein", "Protein"),
+          metric("carbs", "Carbs"),
+          metric("fats", "Fats"),
+          `<div class="metric target-card ${dayStatus}"><strong>Today status</strong><span><span class="pill ${dayStatus}">${dayStatus}</span></span></div>`,
+          `<div class="metric target-card ${weekStatus}"><strong>Week avg status</strong><span><span class="pill ${weekStatus}">${weekStatus}</span></span></div>`
+        ].join("");
+
+        document.getElementById("targetInputs").innerHTML = ["calories", "protein", "carbs", "fats"]
+          .map((k) => `<label>${k}<input type="number" min="0" step="1" data-target="${k}" value="${state.targets[k]}"></label>`).join("") +
+          `<label>goal type<select data-target="goalType"><option ${state.targets.goalType === "deficit" ? "selected" : ""}>deficit</option><option ${state.targets.goalType === "maintenance" ? "selected" : ""}>maintenance</option><option ${state.targets.goalType === "surplus" ? "selected" : ""}>surplus</option></select></label>`;
       }
 
-      function renderMeal(dayKey, meal){
+      function unitOptionsForFood(foodId, selected) {
+        const food = foodById(foodId);
+        const units = food ? Object.keys(food.units || {}) : [selected || "item"];
+        if (food?.type === "recipe" && !units.includes("serving")) units.push("serving");
+        return units.map((u) => `<option value="${u}" ${u === selected ? "selected" : ""}>${u.replace("_", " ")}</option>`).join("");
+      }
+
+      function renderMeal(dayKey, meal) {
         const mealRows = dayRef(dayKey).meals[meal];
         return `<div class="meal"><h4>${meal}</h4>
-          <div class="inline-input">
-            <input placeholder="Add food (e.g., 3 eggs or 150 g rice)" data-add-input="${dayKey}|${meal}">
-            <input placeholder="Search food bank" list="foodSuggestions" data-add-search="${dayKey}|${meal}">
+          <div class="add-row">
+            <input placeholder="Add food (e.g., 5 eggs, 8 oz chicken breast)" list="foodSuggestions" data-add-input="${dayKey}|${meal}">
+            <input type="number" min="0" step="0.1" value="1" data-add-qty="${dayKey}|${meal}">
+            <select data-add-unit="${dayKey}|${meal}">${unitOptions.map((u) => `<option value="${u}">${u.replace("_", " ")}</option>`).join("")}</select>
             <button data-add-recent="${dayKey}|${meal}">Recent</button>
             <button class="primary" data-add="${dayKey}|${meal}">Add Food</button>
           </div>
-          ${mealRows.map(r=>`<div class="food-row">
-            <div class="food-top"><strong>${r.name}</strong><div class="row"><button data-edit="${dayKey}|${meal}|${r.id}">Edit</button><button data-del="${dayKey}|${meal}|${r.id}">Delete</button></div></div>
-            <div class="row" style="margin-top:.35rem;">
+          ${mealRows.map((r) => `<div class="food-row">
+            <div class="row" style="justify-content:space-between;"><strong>${r.name}</strong><div class="row"><button data-del="${dayKey}|${meal}|${r.id}">Delete</button></div></div>
+            <div class="row" style="margin-top:.3rem;">
               <input type="number" min="0" step="0.1" value="${r.quantity}" data-qty="${dayKey}|${meal}|${r.id}" style="width:95px;">
-              <select data-unit="${dayKey}|${meal}|${r.id}" style="width:auto;">${Object.keys(foodById(r.foodId)?.units||{[r.unit]:1}).map(u=>`<option value="${u}" ${u===r.unit?"selected":""}>${u.replace("_"," ")}</option>`).join("")}</select>
+              <select data-unit="${dayKey}|${meal}|${r.id}" style="width:auto;">${unitOptionsForFood(r.foodId, r.unit)}</select>
               <span class="tiny">${r.calories} kcal</span>
             </div>
             <div class="food-macros"><span>P ${r.protein}g</span><span>C ${r.carbs}g</span><span>F ${r.fats}g</span></div>
@@ -281,115 +408,303 @@
         </div>`;
       }
 
-      function renderDay(day, dayKey){
+      function renderDay(day, dayKey) {
         const t = totalsForDay(day);
         const cal = calorieStatus(t.calories, state.targets.calories);
-        const p = statusMacro(t.protein,state.targets.protein,1-thresholds.proteinLow);
-        const c = statusMacro(t.carbs,state.targets.carbs,thresholds.carbs);
-        const f = statusMacro(t.fats,state.targets.fats,thresholds.fats);
-        return `<article class="card day-card"><div class="day-head"><h3 style="margin:0;font-family:'Raleway';">${dayKey}</h3>
-            <div class="row"><span class="pill ${cal}">${cal}</span><button data-reset-day="${dayKey}">Reset Day</button><button data-copy-prev="${dayKey}">Copy Previous Day</button></div></div>
-            ${meals.map(m=>renderMeal(dayKey,m)).join("")}
-            <label>Notes<textarea rows="2" data-note="${dayKey}" placeholder="Optional coaching notes...">${day.notes||""}</textarea></label>
-            <div class="totals"><div>Cal ${t.calories.toFixed(0)}</div><div>P ${t.protein.toFixed(0)}</div><div>C ${t.carbs.toFixed(0)}</div><div>F ${t.fats.toFixed(0)}</div></div>
-            <div class="row" style="margin-top:.4rem;"><span class="pill ${p}">protein ${p}</span><span class="pill ${c}">carbs ${c}</span><span class="pill ${f}">fats ${f}</span></div>
-          </article>`;
+        return `<article class="card day-card">
+          <div class="day-head"><h3 style="margin:0;font-family:'Raleway',sans-serif;">${dayKey}</h3><div class="row"><span class="pill ${cal}">${cal}</span><button data-reset-day="${dayKey}">Reset</button><button data-copy-prev="${dayKey}">Copy Prev</button></div></div>
+          ${meals.map((m) => renderMeal(dayKey, m)).join("")}
+          <label>Notes<textarea rows="2" data-note="${dayKey}" placeholder="Optional notes">${day.notes || ""}</textarea></label>
+          <div class="totals"><div>Cal ${t.calories.toFixed(0)}</div><div>P ${t.protein.toFixed(0)}</div><div>C ${t.carbs.toFixed(0)}</div><div>F ${t.fats.toFixed(0)}</div></div>
+        </article>`;
       }
 
-      function renderWeekly(){
+      function renderWeekly() {
         const w = sumDays();
-        const avg = { calories:w.calories/7, protein:w.protein/7, carbs:w.carbs/7, fats:w.fats/7 };
-        let counts={deficit:0,maintain:0,surplus:0};
-        dayNames.forEach(d=>{ counts[calorieStatus(totalsForDay(state.week[d]).calories,state.targets.calories)]++; });
-        const adherence = Math.max(0,100 - Math.abs((avg.calories-state.targets.calories)/state.targets.calories)*100).toFixed(0);
-        document.getElementById("weeklySummary").innerHTML = `<h2 style="margin:0 0 .7rem;font-family:'Raleway'">Weekly Summary</h2>
+        const avg = { calories: w.calories / 7, protein: w.protein / 7, carbs: w.carbs / 7, fats: w.fats / 7 };
+        let counts = { deficit: 0, maintain: 0, surplus: 0 };
+        dayNames.forEach((d) => { counts[calorieStatus(totalsForDay(state.week[d]).calories, state.targets.calories)]++; });
+        const adherence = Math.max(0, 100 - Math.abs((avg.calories - state.targets.calories) / Math.max(1, state.targets.calories)) * 100).toFixed(0);
+        document.getElementById("weeklySummary").innerHTML = `<h2 style="margin:0 0 .6rem;font-family:'Raleway',sans-serif;">Weekly Summary</h2>
           <div class="weekly-grid">
             <div class="metric"><strong>Total calories</strong><span>${w.calories.toFixed(0)}</span></div>
             <div class="metric"><strong>Total protein</strong><span>${w.protein.toFixed(0)}g</span></div>
             <div class="metric"><strong>Total carbs</strong><span>${w.carbs.toFixed(0)}g</span></div>
             <div class="metric"><strong>Total fats</strong><span>${w.fats.toFixed(0)}g</span></div>
             <div class="metric"><strong>Avg calories/day</strong><span>${avg.calories.toFixed(0)}</span></div>
-            <div class="metric"><strong>Avg protein/day</strong><span>${avg.protein.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Avg carbs/day</strong><span>${avg.carbs.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Avg fats/day</strong><span>${avg.fats.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Deficit days</strong><span>${counts.deficit}</span></div>
-            <div class="metric"><strong>Maintenance days</strong><span>${counts.maintain}</span></div>
-            <div class="metric"><strong>Surplus days</strong><span>${counts.surplus}</span></div>
-            <div class="metric"><strong>Adherence score</strong><span>${adherence}%</span><div class="bar"><i style="width:${adherence}%"></i></div></div>
+            <div class="metric"><strong>Deficit / Maintenance / Surplus</strong><span>${counts.deficit} / ${counts.maintain} / ${counts.surplus}</span></div>
+            <div class="metric"><strong>Adherence score</strong><span>${adherence}%</span></div>
           </div>`;
       }
 
-      function render(){
-        renderTargets();
-        document.getElementById("masterDay").innerHTML = renderDay(state.masterDay, "masterDay").replace("Copy Previous Day","Duplicate Day");
-        document.getElementById("weekGrid").innerHTML = dayNames.map(d=>renderDay(state.week[d], d)).join("");
-        renderWeekly();
-        document.getElementById("foodSuggestions").innerHTML = [...foodBank,...state.customFoods].map(f=>`<option value="${f.name}"></option>`).join("");
-        document.getElementById("customUnit").innerHTML = ["g","oz","lb","cup","tbsp","tsp","ml","fl_oz","item","slice","scoop"].map(u=>`<option value="${u}">${u.replace("_"," ")}</option>`).join("");
-        document.getElementById("customFoodList").innerHTML = state.customFoods.length ? state.customFoods.map(f=>`<span class="pill on" style="margin:.2rem .2rem 0 0;">${f.name} <button data-del-custom="${f.id}" style="margin-left:.3rem;padding:0 .35rem;">×</button></span>`).join("") : "No custom foods saved yet.";
+      function computeRecipeMacros(recipeDraft) {
+        const items = recipeDraft.ingredients.map((ing) => {
+          const food = foodById(ing.foodId);
+          if (!food) return { calories: 0, protein: 0, carbs: 0, fats: 0 };
+          return convertMacros(food, parseNumber(ing.quantity, 0), normalizeUnit(ing.unit) || food.defaultServing.unit);
+        });
+        const total = items.reduce((acc, m) => {
+          acc.calories += m.calories; acc.protein += m.protein; acc.carbs += m.carbs; acc.fats += m.fats;
+          return acc;
+        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+        const servings = Math.max(0.25, parseNumber(document.getElementById("recipeServings")?.value, 1));
+        return {
+          total,
+          servings,
+          perServing: {
+            calories: +(total.calories / servings).toFixed(1),
+            protein: +(total.protein / servings).toFixed(1),
+            carbs: +(total.carbs / servings).toFixed(1),
+            fats: +(total.fats / servings).toFixed(1)
+          }
+        };
       }
 
-      function persistAndRender(scrollTop=true){ saveState(); render(); if(!scrollTop) return; }
+      function renderRecipeBuilder() {
+        const container = document.getElementById("recipeIngredients");
+        container.innerHTML = recipeBuilder.ingredients.map((ing) => `
+          <div class="recipe-ingredient">
+            <select data-recipe-food="${ing.id}">
+              <option value="">Select food</option>
+              ${[...foodBank, ...state.customFoods].map((f) => `<option value="${f.id}" ${f.id === ing.foodId ? "selected" : ""}>${f.name}</option>`).join("")}
+            </select>
+            <input type="number" min="0" step="0.1" value="${ing.quantity}" data-recipe-qty="${ing.id}">
+            <select data-recipe-unit="${ing.id}">${unitOptionsForFood(ing.foodId, ing.unit || "")}</select>
+            <button data-remove-ingredient="${ing.id}">Remove</button>
+          </div>
+        `).join("");
+        const macros = computeRecipeMacros(recipeBuilder);
+        document.getElementById("recipePreview").textContent = `Total: ${macros.total.calories.toFixed(0)} kcal | P ${macros.total.protein.toFixed(1)}g | C ${macros.total.carbs.toFixed(1)}g | F ${macros.total.fats.toFixed(1)}g · Per serving: ${macros.perServing.calories.toFixed(0)} kcal`;
+      }
 
-      document.body.addEventListener("click", (e)=>{
+      function renderManagers() {
+        document.getElementById("customUnit").innerHTML = unitOptions.filter((u) => u !== "serving").map((u) => `<option value="${u}">${u.replace("_", " ")}</option>`).join("");
+        document.getElementById("customFoodList").innerHTML = state.customFoods.length
+          ? state.customFoods.map((f) => `<div class="manager-item"><span>${f.name} · ${f.defaultServing.amount} ${f.defaultServing.unit} (${f.macros.calories} kcal)</span><span><button data-edit-custom="${f.id}">Edit</button><button data-del-custom="${f.id}">Delete</button></span></div>`).join("")
+          : `<div class="tiny">No custom foods saved yet.</div>`;
+
+        document.getElementById("customRecipeList").innerHTML = state.customRecipes.length
+          ? state.customRecipes.map((r) => `<div class="manager-item"><span>${r.name} · ${r.totalServings} servings · ${r.perServingMacros.calories.toFixed(0)} kcal/serving</span><span><button data-del-recipe="${r.id}">Delete</button></span></div>`).join("")
+          : `<div class="tiny">No custom recipes saved yet.</div>`;
+        renderRecipeBuilder();
+      }
+
+      function render() {
+        renderTargets();
+        document.getElementById("masterDay").innerHTML = renderDay(state.masterDay, "masterDay").replace("Copy Prev", "Duplicate");
+        document.getElementById("weekGrid").innerHTML = dayNames.map((d) => renderDay(state.week[d], d)).join("");
+        renderWeekly();
+        document.getElementById("foodSuggestions").innerHTML = allFoods().map((f) => `<option value="${f.name}"></option>`).join("");
+        renderManagers();
+      }
+
+      function persistAndRender() { saveState(); render(); }
+
+      function saveCustomFood(editId = "") {
+        const name = document.getElementById("customName").value.trim().toLowerCase();
+        const amount = parseNumber(document.getElementById("customAmount").value, 0);
+        const unit = normalizeUnit(document.getElementById("customUnit").value);
+        if (!name || amount <= 0) return alert("Add a valid custom food name and serving amount.");
+        const entry = {
+          id: editId || `custom-${toSlug(name)}-${Date.now()}`,
+          type: "custom_food",
+          name,
+          defaultServing: { amount, unit },
+          macros: {
+            calories: parseNumber(document.getElementById("customCalories").value, 0),
+            protein: parseNumber(document.getElementById("customProtein").value, 0),
+            carbs: parseNumber(document.getElementById("customCarbs").value, 0),
+            fats: parseNumber(document.getElementById("customFats").value, 0)
+          },
+          units: { [unit]: amount, g: 1 }
+        };
+        if (editId) state.customFoods = state.customFoods.map((f) => f.id === editId ? entry : f);
+        else state.customFoods.push(entry);
+        ["customName", "customAmount", "customCalories", "customProtein", "customCarbs", "customFats"].forEach((id) => document.getElementById(id).value = "");
+      }
+
+      document.body.addEventListener("click", (e) => {
         const t = e.target;
-        if (t.dataset.add){
+
+        if (t.dataset.add) {
           const [dayKey, meal] = t.dataset.add.split("|");
-          const input = document.querySelector(`[data-add-input="${dayKey}|${meal}"]`)?.value || document.querySelector(`[data-add-search="${dayKey}|${meal}"]`)?.value;
-          if (input) addFood(dayKey, meal, input);
+          const name = document.querySelector(`[data-add-input="${dayKey}|${meal}"]`)?.value || "";
+          const qty = parseNumber(document.querySelector(`[data-add-qty="${dayKey}|${meal}"]`)?.value, 1);
+          const unit = document.querySelector(`[data-add-unit="${dayKey}|${meal}"]`)?.value || "";
+          if (name.trim()) addFood(dayKey, meal, `${qty} ${unit} ${name}`.trim(), unit);
         }
-        if (t.dataset.addRecent){
+
+        if (t.dataset.addRecent) {
           const [dayKey, meal] = t.dataset.addRecent.split("|");
-          const recent = state.recentFoods.map(id=>foodById(id)).filter(Boolean)[0];
-          if (recent) addFood(dayKey, meal, recent.name);
+          const recent = state.recentFoods.map((id) => foodById(id)).find(Boolean);
+          if (recent) addFood(dayKey, meal, `${1} ${recent.defaultServing.unit} ${recent.name}`);
         }
-        if (t.dataset.del){ const [d,m,id]=t.dataset.del.split("|"); dayRef(d).meals[m]=dayRef(d).meals[m].filter(r=>r.id!==id); persistAndRender(false); }
-        if (t.dataset.edit){ const [d,m,id]=t.dataset.edit.split("|"); const raw=prompt("Update entry (e.g., 8 oz chicken breast)"); if (!raw) return; dayRef(d).meals[m]=dayRef(d).meals[m].filter(r=>r.id!==id); addFood(d,m,raw); }
-        if (t.dataset.delCustom){ state.customFoods = state.customFoods.filter(f=>f.id!==t.dataset.delCustom); persistAndRender(false); }
-        if (t.id === "applyMasterAll"){
-          if (!confirm("Apply Master Day to all seven days? This overwrites current week plan.")) return;
-          dayNames.forEach(d=>state.week[d]=clone(state.masterDay)); persistAndRender(false);
+
+        if (t.dataset.del) {
+          const [d, m, id] = t.dataset.del.split("|");
+          dayRef(d).meals[m] = dayRef(d).meals[m].filter((r) => r.id !== id);
+          persistAndRender();
         }
-        if (t.id === "applyMasterEmpty"){
-          dayNames.forEach(d=>{ const hasFood = meals.some(m=>state.week[d].meals[m].length); if (!hasFood) state.week[d]=clone(state.masterDay); }); persistAndRender(false);
+
+        if (t.dataset.delCustom) {
+          state.customFoods = state.customFoods.filter((f) => f.id !== t.dataset.delCustom);
+          state.customRecipes = state.customRecipes.map((r) => ({ ...r, ingredients: r.ingredients.filter((ing) => ing.foodId !== t.dataset.delCustom) }));
+          persistAndRender();
         }
-        if (t.id === "resetMaster"){ state.masterDay = blankDay(); persistAndRender(false); }
-        if (t.id === "clearWeek" && confirm("Clear all foods for Monday through Sunday?")){ state.week = Object.fromEntries(dayNames.map(d=>[d,blankDay()])); persistAndRender(false); }
-        if (t.dataset.resetDay){ const d=t.dataset.resetDay; if (d==="masterDay") state.masterDay=blankDay(); else state.week[d]=blankDay(); persistAndRender(false); }
-        if (t.dataset.copyPrev){ const d=t.dataset.copyPrev; if (d==="masterDay") return; const idx=dayNames.indexOf(d); if (idx<1) return alert("No previous day available."); state.week[d]=clone(state.week[dayNames[idx-1]]); persistAndRender(false); }
-        if (t.id === "addCustomFood"){
-          const name = document.getElementById("customName").value.trim().toLowerCase();
-          const amount = parseNumber(document.getElementById("customAmount").value, 0);
-          const unit = normalizeUnit(document.getElementById("customUnit").value);
-          if (!name || amount <= 0) return alert("Add a valid custom food name and serving amount.");
-          const food = {
-            id: `custom-${toSlug(name)}-${Date.now()}`,
+
+        if (t.dataset.editCustom) {
+          const f = state.customFoods.find((x) => x.id === t.dataset.editCustom);
+          if (!f) return;
+          document.getElementById("customName").value = f.name;
+          document.getElementById("customAmount").value = f.defaultServing.amount;
+          document.getElementById("customUnit").value = f.defaultServing.unit;
+          document.getElementById("customCalories").value = f.macros.calories;
+          document.getElementById("customProtein").value = f.macros.protein;
+          document.getElementById("customCarbs").value = f.macros.carbs;
+          document.getElementById("customFats").value = f.macros.fats;
+          document.getElementById("addCustomFood").dataset.editing = f.id;
+        }
+
+        if (t.id === "addCustomFood") {
+          saveCustomFood(t.dataset.editing || "");
+          t.dataset.editing = "";
+          persistAndRender();
+        }
+
+        if (t.id === "resetCustomFood") {
+          ["customName", "customAmount", "customCalories", "customProtein", "customCarbs", "customFats"].forEach((id) => document.getElementById(id).value = "");
+          document.getElementById("addCustomFood").dataset.editing = "";
+        }
+
+        if (t.id === "addRecipeIngredient") {
+          recipeBuilder.ingredients.push(blankRecipeIngredient());
+          renderRecipeBuilder();
+        }
+
+        if (t.dataset.removeIngredient) {
+          recipeBuilder.ingredients = recipeBuilder.ingredients.filter((x) => x.id !== t.dataset.removeIngredient);
+          if (!recipeBuilder.ingredients.length) recipeBuilder.ingredients = [blankRecipeIngredient()];
+          renderRecipeBuilder();
+        }
+
+        if (t.id === "saveRecipe") {
+          const name = document.getElementById("recipeName").value.trim().toLowerCase();
+          const totalServings = Math.max(0.25, parseNumber(document.getElementById("recipeServings").value, 1));
+          const validIngredients = recipeBuilder.ingredients.filter((ing) => ing.foodId && parseNumber(ing.quantity, 0) > 0);
+          if (!name || !validIngredients.length) return alert("Add a recipe name and at least one ingredient.");
+          const macros = computeRecipeMacros({ ingredients: validIngredients });
+          const recipe = {
+            id: `recipe-${toSlug(name)}-${Date.now()}`,
             name,
-            defaultServing: { amount, unit },
-            macros: {
-              calories: parseNumber(document.getElementById("customCalories").value, 0),
-              protein: parseNumber(document.getElementById("customProtein").value, 0),
-              carbs: parseNumber(document.getElementById("customCarbs").value, 0),
-              fats: parseNumber(document.getElementById("customFats").value, 0)
+            ingredients: validIngredients.map((ing) => ({ ...ing, unit: normalizeUnit(ing.unit) || foodById(ing.foodId)?.defaultServing.unit || "g", foodType: foodById(ing.foodId)?.type || "built_in" })),
+            totalServings,
+            totalMacros: macros.total,
+            perServingMacros: {
+              calories: +(macros.total.calories / totalServings).toFixed(1),
+              protein: +(macros.total.protein / totalServings).toFixed(1),
+              carbs: +(macros.total.carbs / totalServings).toFixed(1),
+              fats: +(macros.total.fats / totalServings).toFixed(1)
             },
-            units: { [unit]: 1, g: unit === "g" ? 1 : amount }
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           };
-          state.customFoods.push(food);
-          ["customName","customAmount","customCalories","customProtein","customCarbs","customFats"].forEach(id=>document.getElementById(id).value="");
-          persistAndRender(false);
+          state.customRecipes.push(recipe);
+          document.getElementById("recipeName").value = "";
+          document.getElementById("recipeServings").value = "1";
+          recipeBuilder = { ingredients: [blankRecipeIngredient()] };
+          persistAndRender();
+        }
+
+        if (t.id === "resetRecipeBuilder") {
+          document.getElementById("recipeName").value = "";
+          document.getElementById("recipeServings").value = "1";
+          recipeBuilder = { ingredients: [blankRecipeIngredient()] };
+          renderRecipeBuilder();
+        }
+
+        if (t.dataset.delRecipe) {
+          state.customRecipes = state.customRecipes.filter((r) => r.id !== t.dataset.delRecipe);
+          persistAndRender();
+        }
+
+        if (t.id === "applyMasterAll") {
+          if (!confirm("Apply Master Day to all seven days? This overwrites current week plan.")) return;
+          dayNames.forEach((d) => state.week[d] = clone(state.masterDay));
+          persistAndRender();
+        }
+
+        if (t.id === "applyMasterEmpty") {
+          dayNames.forEach((d) => {
+            const hasFood = meals.some((m) => state.week[d].meals[m].length);
+            if (!hasFood) state.week[d] = clone(state.masterDay);
+          });
+          persistAndRender();
+        }
+
+        if (t.id === "resetMaster") { state.masterDay = blankDay(); persistAndRender(); }
+        if (t.id === "clearWeek" && confirm("Clear all foods for Monday through Sunday?")) {
+          state.week = Object.fromEntries(dayNames.map((d) => [d, blankDay()]));
+          persistAndRender();
+        }
+
+        if (t.dataset.resetDay) {
+          const d = t.dataset.resetDay;
+          if (d === "masterDay") state.masterDay = blankDay(); else state.week[d] = blankDay();
+          persistAndRender();
+        }
+
+        if (t.dataset.copyPrev) {
+          const d = t.dataset.copyPrev;
+          if (d === "masterDay") return;
+          const idx = dayNames.indexOf(d);
+          if (idx < 1) return alert("No previous day available.");
+          state.week[d] = clone(state.week[dayNames[idx - 1]]);
+          persistAndRender();
         }
       });
 
-      document.body.addEventListener("input", (e)=>{
-        const t=e.target;
-        if (t.dataset.target){ state.targets[t.dataset.target]= t.dataset.target==="goalType" ? t.value : parseNumber(t.value,0); persistAndRender(false); }
-        if (t.dataset.qty){ const [d,m,id]=t.dataset.qty.split("|"); updateRow(d,m,id,{quantity:parseNumber(t.value,0)}); }
-        if (t.dataset.note){ const d=t.dataset.note; (d==="masterDay"?state.masterDay:state.week[d]).notes=t.value; saveState(); }
+      document.body.addEventListener("input", (e) => {
+        const t = e.target;
+        if (t.dataset.target) {
+          state.targets[t.dataset.target] = t.dataset.target === "goalType" ? t.value : parseNumber(t.value, 0);
+          persistAndRender();
+        }
+        if (t.dataset.qty) {
+          const [d, m, id] = t.dataset.qty.split("|");
+          updateRow(d, m, id, { quantity: parseNumber(t.value, 0) });
+        }
+        if (t.dataset.note) {
+          const d = t.dataset.note;
+          (d === "masterDay" ? state.masterDay : state.week[d]).notes = t.value;
+          saveState();
+        }
+        if (t.dataset.recipeQty) {
+          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeQty);
+          if (!row) return;
+          row.quantity = parseNumber(t.value, 0);
+          renderRecipeBuilder();
+        }
+        if (t.dataset.recipeFood) {
+          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeFood);
+          if (!row) return;
+          row.foodId = t.value;
+          row.unit = foodById(t.value)?.defaultServing.unit || "g";
+          renderRecipeBuilder();
+        }
       });
 
-      document.body.addEventListener("change", (e)=>{
-        const t=e.target;
-        if (t.dataset.unit){ const [d,m,id]=t.dataset.unit.split("|"); updateRow(d,m,id,{unit:t.value}); }
+      document.body.addEventListener("change", (e) => {
+        const t = e.target;
+        if (t.dataset.unit) {
+          const [d, m, id] = t.dataset.unit.split("|");
+          updateRow(d, m, id, { unit: t.value });
+        }
+        if (t.dataset.recipeUnit) {
+          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeUnit);
+          if (!row) return;
+          row.unit = normalizeUnit(t.value);
+          renderRecipeBuilder();
+        }
       });
 
       render();
