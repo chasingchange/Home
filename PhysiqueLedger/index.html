@@ -6,7 +6,7 @@
     <title>Physique Ledger | Chasing Change</title>
     <meta
       name="description"
-      content="Plan your full week of meals, track macros, and compare daily and weekly intake to your Chasing Change macro targets."
+      content="Weekly repeatable meal planning for Chasing Change clients: build a master day, apply it to your week, and instantly see macro totals."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,66 +21,85 @@
         --bg: #f5f5f7;
         --text: #071f35;
         --accent: #77d770;
-        --card: #fff;
+        --card: #ffffff;
         --muted: rgba(7, 31, 53, 0.62);
+        --line: rgba(7, 31, 53, 0.12);
+        --cal: #77d770;
+        --pro: #5f93ff;
+        --carb: #f4c24f;
+        --fat: #c49bff;
       }
+
       * { box-sizing: border-box; }
       body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", sans-serif; }
-      .container { width: min(1140px, 94vw); margin: 0 auto; padding: 1.2rem 0 2.6rem; }
-      .hero h1 { margin: 0; font-family: "Museo Moderno", sans-serif; font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
-      .hero p { margin: .35rem 0 1rem; color: var(--muted); font-family: "Raleway", sans-serif; }
-      .card { background: var(--card); border: 1px solid rgba(7, 31, 53, .1); border-radius: 18px; box-shadow: 0 12px 28px rgba(7, 31, 53, .06); }
-      .section { padding: .9rem; }
-      .summary { padding: .9rem; display: grid; gap: .55rem; }
-      .summary-grid { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
-      .metric { padding: .58rem; border-radius: 12px; background: rgba(7, 31, 53, .03); border: 1px solid rgba(7,31,53,.08); }
-      .metric strong { display: block; font-family: "Raleway", sans-serif; font-size: .78rem; }
-      .metric span { font-size: 1.02rem; font-weight: 700; }
-      .target-card.low, .pill.low { background: rgba(240, 156, 0, .14); color: #9a5f00; border-color: rgba(240,156,0,.35); }
-      .target-card.on, .pill.on { background: rgba(119, 215, 112, .20); color: #1b6623; border-color: rgba(119,215,112,.45); }
-      .target-card.high, .pill.high { background: rgba(255, 84, 84, .14); color: #8c2222; border-color: rgba(255,84,84,.35); }
-      .target-card.deficit, .pill.deficit { background: rgba(66, 133, 244, .14); color: #1d4f9a; border-color: rgba(66,133,244,.35); }
-      .target-card.maintain, .pill.maintain { background: rgba(119, 215, 112, .20); color: #1b6623; border-color: rgba(119,215,112,.45); }
-      .target-card.surplus, .pill.surplus { background: rgba(255, 84, 84, .14); color: #8c2222; border-color: rgba(255,84,84,.35); }
-      .metric.calories { background: rgba(119,215,112,.13); border-color: rgba(119,215,112,.35); }
-      .metric.protein { background: rgba(66,133,244,.12); border-color: rgba(66,133,244,.32); }
-      .metric.carbs { background: rgba(246,193,67,.15); border-color: rgba(246,193,67,.35); }
-      .metric.fats { background: rgba(188,123,255,.12); border-color: rgba(188,123,255,.3); }
-      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: .15rem .55rem; font-size: .74rem; font-weight: 700; }
-      .target-inputs { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-      label { font-size: .78rem; font-weight: 700; font-family: "Raleway", sans-serif; }
-      input, select, button, textarea { font: inherit; }
-      input, select, textarea {
-        width: 100%; border: 1px solid rgba(7, 31, 53, .19); border-radius: 10px; padding: .48rem .58rem; background: #fff; color: var(--text);
-      }
-      button { border: 1px solid rgba(7, 31, 53, .18); border-radius: 10px; background: #fff; color: var(--text); padding: .42rem .62rem; font-weight: 700; cursor: pointer; }
-      button.primary { background: var(--text); color: #fff; border-color: var(--text); }
+      .container { width: min(1180px, 94vw); margin: 0 auto; padding: 1.1rem 0 2.8rem; }
+      .hero h1 { margin: 0; font-family: "Museo Moderno", sans-serif; font-size: clamp(2rem, 3.8vw, 2.9rem); }
+      .hero p { margin: .3rem 0 0; font-family: "Raleway", sans-serif; color: var(--muted); }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 14px 30px rgba(7, 31, 53, 0.06); }
+      .section { margin-top: .85rem; padding: .95rem; }
+      .section h2 { margin: 0 0 .55rem; font-family: "Raleway", sans-serif; font-size: 1.06rem; }
+      .tiny { font-size: .78rem; color: var(--muted); }
+
+      .summary-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+      .metric-card { border: 1px solid var(--line); border-radius: 14px; padding: .62rem; background: rgba(7, 31, 53, 0.02); }
+      .metric-card strong { display: block; font-family: "Raleway", sans-serif; font-size: .77rem; margin-bottom: .2rem; }
+      .macro-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; }
+      .macro-chip { border-radius: 10px; padding: .35rem; border: 1px solid rgba(7, 31, 53, 0.1); font-size: .76rem; }
+      .macro-chip span { display: block; font-size: .95rem; font-weight: 700; margin-top: .1rem; }
+      .macro-chip.calories { background: color-mix(in srgb, var(--cal) 17%, white); border-color: color-mix(in srgb, var(--cal) 45%, white); }
+      .macro-chip.protein { background: color-mix(in srgb, var(--pro) 13%, white); border-color: color-mix(in srgb, var(--pro) 40%, white); }
+      .macro-chip.carbs { background: color-mix(in srgb, var(--carb) 16%, white); border-color: color-mix(in srgb, var(--carb) 45%, white); }
+      .macro-chip.fats { background: color-mix(in srgb, var(--fat) 12%, white); border-color: color-mix(in srgb, var(--fat) 40%, white); }
+
+      .inputs { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: .55rem; }
+      label { display: grid; gap: .2rem; font-size: .75rem; font-family: "Raleway", sans-serif; font-weight: 700; }
+      input, select, textarea, button { font: inherit; color: var(--text); }
+      input, select, textarea { width: 100%; border-radius: 10px; border: 1px solid rgba(7,31,53,.2); background: white; padding: .46rem .56rem; }
+      button { border-radius: 10px; border: 1px solid rgba(7,31,53,.2); background: white; padding: .42rem .62rem; font-weight: 700; cursor: pointer; }
+      button.primary { background: var(--text); color: white; border-color: var(--text); }
       button.accent { background: var(--accent); border-color: var(--accent); }
-      .row { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; }
-      .main-actions { margin: .8rem 0; display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
-      .day-grid { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
-      .day-card { padding: .85rem; }
-      .day-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .55rem; }
-      .meal { border: 1px solid rgba(7, 31, 53, .11); border-radius: 12px; padding: .55rem; margin-bottom: .6rem; background: #fff; }
-      .meal h4 { margin: 0 0 .4rem; font-family: "Raleway", sans-serif; }
-      .add-row { display: grid; gap: .4rem; grid-template-columns: 1fr .72fr .62fr .78fr auto; }
-      .food-row { border: 1px solid rgba(7, 31, 53, .1); border-radius: 10px; padding: .42rem; margin: .35rem 0; background: rgba(7, 31, 53, .02); }
-      .food-macros, .tiny { color: var(--muted); font-size: .75rem; }
-      .food-macros { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
-      .totals { display: grid; gap: .35rem; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: .45rem; }
-      .totals div { background: rgba(7, 31, 53, .03); border-radius: 10px; padding: .34rem; font-size: .8rem; }
-      .weekly { padding: .9rem; margin-top: .85rem; }
-      .weekly-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(152px, 1fr)); }
-      .advanced details { border: 1px solid rgba(7, 31, 53, .12); border-radius: 12px; padding: .55rem; background: #fff; }
-      .advanced summary { cursor: pointer; font-family: "Raleway", sans-serif; font-weight: 700; }
-      .inline-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .42rem; }
-      .recipe-ingredient { display: grid; gap: .42rem; grid-template-columns: 1fr .8fr .65fr auto; margin-top: .4rem; }
-      .manager-list { margin-top: .55rem; display: grid; gap: .4rem; }
-      .manager-item { display: flex; justify-content: space-between; gap: .5rem; align-items: center; background: rgba(7,31,53,.03); border-radius: 10px; padding: .35rem .5rem; }
-      @media (max-width: 760px) {
-        .add-row, .recipe-ingredient { grid-template-columns: 1fr; }
-        .totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .inline-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      button.ghost { background: rgba(7,31,53,.03); }
+
+      .row { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+      .tabs { display: grid; gap: .4rem; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); margin-top: .6rem; }
+      .tab { font-family: "Raleway", sans-serif; }
+      .tab.active { background: var(--text); color: white; }
+
+      .day-layout { margin-top: .7rem; display: grid; gap: .68rem; }
+      .meal-card { border: 1px solid var(--line); border-radius: 14px; padding: .6rem; background: #fff; }
+      .meal-head { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-bottom: .45rem; }
+      .meal-head h3 { margin: 0; font-family: "Raleway", sans-serif; font-size: .97rem; }
+      .item { border: 1px solid rgba(7,31,53,.12); border-radius: 12px; padding: .46rem; margin-bottom: .4rem; background: rgba(7,31,53,.02); }
+      .item-name { font-weight: 700; }
+      .item-meta { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
+      .qty-row { display: flex; align-items: center; gap: .35rem; margin-top: .34rem; flex-wrap: wrap; }
+      .qty-row input { width: 82px; }
+      .qty-btn { width: 30px; height: 30px; padding: 0; border-radius: 8px; }
+
+      .subtotal, .day-total, .helper-card { border: 1px dashed rgba(7,31,53,.2); border-radius: 12px; padding: .45rem; background: rgba(7,31,53,.02); }
+      .day-total { border-style: solid; background: #fff; }
+      .helper-card { font-size: .8rem; }
+
+      .modal-backdrop { position: fixed; inset: 0; background: rgba(7, 31, 53, .45); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 40; }
+      .modal-backdrop.show { display: flex; }
+      .modal { width: min(780px, 100%); background: #fff; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 20px 48px rgba(7,31,53,.2); padding: .8rem; max-height: 86vh; overflow: auto; }
+      .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+      .list { border: 1px solid var(--line); border-radius: 12px; padding: .45rem; max-height: 280px; overflow: auto; }
+      .list-item { display: flex; align-items: center; justify-content: space-between; gap: .4rem; padding: .33rem 0; border-bottom: 1px solid rgba(7,31,53,.08); }
+      .list-item:last-child { border-bottom: none; }
+
+      .manager-actions { margin-top: .6rem; display: flex; gap: .45rem; flex-wrap: wrap; }
+      .coach-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+      @media (max-width: 860px) {
+        .modal-grid { grid-template-columns: 1fr; }
+        .macro-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media print {
+        nav, .tabs, .manager-actions, .no-print, .modal-backdrop { display: none !important; }
+        body { background: white; }
+        .card, .meal-card, .item, .day-total { box-shadow: none; }
       }
     </style>
   </head>
@@ -88,174 +107,200 @@
     <main class="container">
       <header class="hero">
         <h1>Physique Ledger</h1>
-        <p>Set targets, log meals, review totals, and check how your week aligns with your macro plan.</p>
+        <p>Build one repeatable week in minutes. Then adjust only what changes.</p>
       </header>
 
-      <section class="card summary">
-        <div class="summary-grid" id="targetSummary"></div>
-        <div class="target-inputs" id="targetInputs"></div>
+      <section class="card section">
+        <h2>Targets & Weekly Alignment</h2>
+        <div id="summaryGrid" class="summary-grid"></div>
+        <div class="inputs" id="targetInputs"></div>
       </section>
 
       <section class="card section">
         <div class="row" style="justify-content:space-between;">
-          <h2 style="margin:0;font-family:'Raleway',sans-serif;">Master Day</h2>
-          <span class="tiny">Build once, apply to full week or empty days only.</span>
-        </div>
-        <div id="masterDay" style="margin-top:.45rem;"></div>
-        <div class="row" style="margin-top:.55rem;">
-          <button class="accent" id="applyMasterAll">Apply Master Day to Week</button>
-          <button id="applyMasterEmpty">Apply to Empty Days</button>
-          <button id="resetMaster">Reset Master Day</button>
-        </div>
-      </section>
-
-      <div class="main-actions">
-        <span class="tiny">Week plan: Monday through Sunday</span>
-        <button id="clearWeek">Clear Week</button>
-      </div>
-
-      <section class="day-grid" id="weekGrid"></section>
-      <section class="card weekly" id="weeklySummary"></section>
-
-      <section class="advanced" style="margin-top:.9rem;">
-        <details>
-          <summary>Advanced: Manage Custom Foods & Recipes</summary>
-          <div style="margin-top:.65rem; display:grid; gap:.9rem;">
-            <div>
-              <h3 style="margin:.1rem 0 .5rem;font-family:'Raleway',sans-serif;">Custom Foods</h3>
-              <div class="add-row">
-                <input id="customName" placeholder="Food name" />
-                <input id="customAmount" type="number" min="0" step="0.1" placeholder="Serving amount" />
-                <select id="customUnit"></select>
-                <button class="primary" id="addCustomFood">Save Food</button>
-                <button id="resetCustomFood">Clear</button>
-              </div>
-              <div class="inline-4" style="margin-top:.42rem;">
-                <input id="customCalories" type="number" min="0" step="0.1" placeholder="Calories" />
-                <input id="customProtein" type="number" min="0" step="0.1" placeholder="Protein" />
-                <input id="customCarbs" type="number" min="0" step="0.1" placeholder="Carbs" />
-                <input id="customFats" type="number" min="0" step="0.1" placeholder="Fats" />
-              </div>
-              <div id="customFoodList" class="manager-list"></div>
-            </div>
-
-            <div>
-              <h3 style="margin:.1rem 0 .5rem;font-family:'Raleway',sans-serif;">Custom Recipes</h3>
-              <div class="row" style="margin-bottom:.42rem;">
-                <input id="recipeName" placeholder="Recipe name" style="max-width:280px;" />
-                <input id="recipeServings" type="number" min="0.25" step="0.25" value="1" style="width:120px;" />
-                <span class="tiny">Total servings</span>
-              </div>
-              <div id="recipeIngredients"></div>
-              <div class="row" style="margin-top:.45rem;">
-                <button id="addRecipeIngredient">Add Ingredient</button>
-                <button class="primary" id="saveRecipe">Save Recipe</button>
-                <button id="resetRecipeBuilder">Clear Builder</button>
-              </div>
-              <div id="recipePreview" class="tiny" style="margin-top:.35rem;"></div>
-              <div id="customRecipeList" class="manager-list"></div>
-            </div>
+          <h2 style="margin:0;">Week Builder</h2>
+          <div class="row no-print">
+            <button id="openRecipeBuilder" class="ghost">Recipe Builder</button>
+            <button id="openCustomFood" class="ghost">Custom Foods</button>
+            <button id="openSavedMealBuilder" class="ghost">Saved Meals</button>
+            <button id="printPlan" class="accent">Print / Save PDF</button>
           </div>
-        </details>
+        </div>
+
+        <div class="tabs" id="dayTabs"></div>
+
+        <div class="manager-actions no-print">
+          <button class="accent" id="applyMasterAll">Apply Master Day to Full Week</button>
+          <button id="applyMasterWeekdays">Apply Master to Weekdays</button>
+          <button id="copyMasterSelected">Copy Master to Selected Days</button>
+          <button id="resetDayToMaster">Reset Current Day to Master</button>
+          <button id="clearCurrentDay" class="ghost">Clear Current Day</button>
+        </div>
+
+        <div id="dayView" class="day-layout"></div>
       </section>
 
-      <datalist id="foodSuggestions"></datalist>
+      <section class="card section">
+        <h2>Coach Context (Optional)</h2>
+        <div class="coach-grid">
+          <label>Client Name<input id="clientName" placeholder="Client name" /></label>
+          <label>Goal Phase
+            <select id="goalPhase">
+              <option value="cut">cut</option>
+              <option value="maintain">maintain</option>
+              <option value="gain">gain</option>
+            </select>
+          </label>
+          <label>Date Last Updated<input id="lastUpdated" type="date" /></label>
+          <label style="grid-column: 1 / -1;">Coach Notes<textarea id="coachNotes" rows="3" placeholder="Optional coaching notes"></textarea></label>
+        </div>
+      </section>
     </main>
 
+    <div class="modal-backdrop" id="addModal">
+      <div class="modal">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Add to Meal</h3>
+          <button data-close-modal="addModal">Close</button>
+        </div>
+        <label style="margin-top:.45rem;">Search<input id="addSearch" placeholder="Search foods, meals, recipes" /></label>
+        <div class="modal-grid" style="margin-top:.6rem;">
+          <div>
+            <h4 style="margin:.2rem 0;font-family:'Raleway',sans-serif;">Recent</h4>
+            <div class="list" id="recentList"></div>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Common Foods</h4>
+            <div class="list" id="commonFoodList"></div>
+          </div>
+          <div>
+            <h4 style="margin:.2rem 0;font-family:'Raleway',sans-serif;">Saved Meals</h4>
+            <div class="list" id="savedMealList"></div>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Saved Recipes</h4>
+            <div class="list" id="savedRecipeList"></div>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Custom Foods</h4>
+            <div class="list" id="customFoodList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="customFoodModal">
+      <div class="modal">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Custom Foods</h3>
+          <button data-close-modal="customFoodModal">Close</button>
+        </div>
+        <div class="inputs" style="margin-top:.6rem;">
+          <label>Name<input id="customFoodName" /></label>
+          <label>Serving Size<input id="customServing" placeholder="e.g., 1 scoop" /></label>
+          <label>Calories<input id="customCalories" type="number" min="0" step="0.1" /></label>
+          <label>Protein<input id="customProtein" type="number" min="0" step="0.1" /></label>
+          <label>Carbs<input id="customCarbs" type="number" min="0" step="0.1" /></label>
+          <label>Fats<input id="customFats" type="number" min="0" step="0.1" /></label>
+        </div>
+        <div class="row" style="margin-top:.55rem;"><button id="saveCustomFood" class="primary">Save Custom Food</button></div>
+        <div id="customFoodManager" class="list" style="margin-top:.55rem;max-height:260px;"></div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="recipeModal">
+      <div class="modal">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Recipe Builder</h3>
+          <button data-close-modal="recipeModal">Close</button>
+        </div>
+        <div class="inputs" style="margin-top:.55rem;">
+          <label>Recipe Name<input id="recipeName" /></label>
+          <label>Total Servings<input id="recipeServings" type="number" min="0.25" step="0.25" value="1" /></label>
+        </div>
+        <div class="list" id="recipeIngredientList" style="margin-top:.55rem;"></div>
+        <div class="row" style="margin-top:.5rem;"><button id="addRecipeIngredient">Add Ingredient</button><button id="saveRecipe" class="primary">Save Recipe</button></div>
+        <div class="helper-card" id="recipeMacroPreview" style="margin-top:.5rem;"></div>
+        <div id="recipeManager" class="list" style="margin-top:.55rem;max-height:250px;"></div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="savedMealModal">
+      <div class="modal">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Saved Meal Builder</h3>
+          <button data-close-modal="savedMealModal">Close</button>
+        </div>
+        <label style="margin-top:.5rem;">Meal Name<input id="savedMealName" /></label>
+        <div class="list" id="savedMealItemBuilder" style="margin-top:.55rem;"></div>
+        <div class="row" style="margin-top:.5rem;"><button id="addSavedMealItem">Add Item</button><button class="primary" id="saveSavedMeal">Save Meal</button></div>
+        <div class="helper-card" id="savedMealPreview" style="margin-top:.5rem;"></div>
+        <div id="savedMealManager" class="list" style="margin-top:.55rem;max-height:240px;"></div>
+      </div>
+    </div>
+
     <script>
-      const STORAGE_KEY = "physiqueLedgerStateV5";
+      const STORAGE_KEY = "physiqueLedgerStateV6";
+      const LEGACY_KEY = "physiqueLedgerStateV5";
       const TARGETS_KEY = "physiqueLedgerTargets";
       const MACRO_STORAGE_KEY = "macroCalculator";
-      const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const days = ["Master Day", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
       const meals = ["Breakfast", "Lunch", "Dinner", "Snacks"];
-      const thresholds = { calories: 0.08, proteinLow: 0.95, proteinHigh: 1.1, carbs: 0.1, fats: 0.1 };
 
-      const unitOptions = ["g", "oz", "lb", "cup", "tbsp", "tsp", "ml", "fl_oz", "item", "slice", "scoop", "serving"];
+      const builtInFoods = [
+        ["egg", "1 egg", 72, 6.3, 0.4, 4.8], ["banana", "1 banana", 105, 1.3, 27, 0.3], ["protein shake", "1 scoop", 120, 24, 3, 1.5],
+        ["rice cake", "1 cake", 35, 0.7, 7, 0.3], ["chicken breast", "5 oz", 234, 44, 0, 5], ["greek yogurt bowl", "1 serving", 300, 28, 34, 7],
+        ["oatmeal", "1 cup", 154, 5.3, 27, 2.6], ["white rice", "1 cup", 205, 4.3, 45, 0.4], ["salmon", "5 oz", 290, 31, 0, 17],
+        ["avocado", "0.5 item", 120, 1.5, 6, 11], ["tortilla", "1 tortilla", 140, 4, 24, 3.5], ["almonds", "1 oz", 164, 6, 6, 14],
+      ].map((f) => ({ id: slug(f[0]), type: "food", name: f[0], servingLabel: f[1], macros: { calories: f[2], protein: f[3], carbs: f[4], fats: f[5] } }));
 
-      const foodBank = [
-        ["banana",118,"item",105,1.3,27,0.3,{item:118,g:1,oz:28.35}], ["apple",182,"item",95,0.5,25,0.3,{item:182,g:1,oz:28.35}],
-        ["blueberries",148,"cup",84,1.1,21,0.5,{cup:148,g:1,oz:28.35}], ["strawberries",152,"cup",49,1,12,0.5,{cup:152,g:1,oz:28.35}],
-        ["eggs",50,"item",72,6.3,0.4,4.8,{item:50,g:1,oz:28.35}], ["egg whites",33,"item",17,3.6,0.2,0,{item:33,g:1,oz:28.35,cup:243}],
-        ["chicken breast",100,"g",165,31,0,3.6,{g:1,oz:28.35,lb:453.592}], ["ground beef",100,"g",250,26,0,17,{g:1,oz:28.35,lb:453.592}],
-        ["steak",100,"g",271,25,0,19,{g:1,oz:28.35,lb:453.592}], ["salmon",100,"g",208,20,0,13,{g:1,oz:28.35,lb:453.592}],
-        ["greek yogurt",170,"g",100,17,6,0,{g:1,oz:28.35,cup:245}], ["cottage cheese",113,"g",98,11,3.4,4.3,{g:1,oz:28.35,cup:226}],
-        ["white rice",158,"cup",205,4.3,45,0.4,{cup:158,g:1,oz:28.35}], ["brown rice",195,"cup",216,5,45,1.8,{cup:195,g:1,oz:28.35}],
-        ["oatmeal",40,"g",154,5.3,27,2.6,{g:1,oz:28.35,cup:80}], ["bread",38,"slice",100,4,19,1.3,{slice:38,g:1,oz:28.35}],
-        ["bagel",95,"item",245,10,47,1.5,{item:95,g:1,oz:28.35}], ["tortilla",49,"item",140,4,24,3.5,{item:49,g:1,oz:28.35}],
-        ["potato",213,"item",164,4.3,37,0.2,{item:213,g:1,oz:28.35}], ["sweet potato",130,"item",112,2,26,0.1,{item:130,g:1,oz:28.35}],
-        ["avocado",50,"g",80,1,4,7.4,{g:1,oz:28.35,item:150}], ["peanut butter",16,"tbsp",94,3.6,3.2,8,{tbsp:16,tsp:5.3,g:1,oz:28.35}],
-        ["almonds",28,"oz",164,6,6,14,{oz:28.35,g:1,item:1.2}], ["olive oil",14,"tbsp",119,0,0,13.5,{tbsp:14,tsp:4.67,ml:0.91,fl_oz:26.86,g:1}],
-        ["milk",244,"cup",149,7.7,12,8,{cup:244,ml:1.03,fl_oz:30.4,g:1}], ["almond milk",240,"cup",30,1,1,2.5,{cup:240,ml:1.01,fl_oz:29.8,g:1}],
-        ["protein powder",32,"scoop",120,24,3,1.5,{scoop:32,g:1,oz:28.35}], ["cheese",28,"oz",113,7,1,9,{oz:28.35,g:1,slice:21}],
-        ["broccoli",91,"cup",31,2.5,6,0.3,{cup:91,g:1,oz:28.35}], ["spinach",30,"cup",7,0.9,1.1,0.1,{cup:30,g:1,oz:28.35}],
-        ["mixed vegetables",85,"cup",59,2,12,0.2,{cup:85,g:1,oz:28.35}], ["pasta",56,"oz",200,7,42,1,{oz:28.35,g:1,cup:140}],
-        ["turkey",100,"g",189,29,0,7,{g:1,oz:28.35,lb:453.592}], ["deli turkey",56,"oz",60,12,2,1,{oz:28.35,g:1,slice:28}],
-        ["bacon",8,"slice",43,3,0.1,3.3,{slice:8,g:1,oz:28.35}], ["sausage",56,"oz",180,10,2,14,{oz:28.35,g:1,item:85}],
-        ["black beans",130,"cup",227,15,41,0.9,{cup:130,g:1,oz:28.35}], ["granola",60,"cup",280,6,44,10,{cup:60,g:1,oz:28.35}],
-        ["honey",21,"tbsp",64,0,17,0,{tbsp:21,tsp:7,ml:1.42,g:1}]
-      ].map(([name, amount, unit, calories, protein, carbs, fats, units]) => ({
-        id: name.replace(/\s+/g, "-"),
-        type: "built_in",
-        name,
-        defaultServing: { amount, unit },
-        macros: { calories, protein, carbs, fats },
-        units
-      }));
+      const macroFields = ["calories", "protein", "carbs", "fats"];
+      const blankTotals = () => ({ calories: 0, protein: 0, carbs: 0, fats: 0 });
+      const blankMealPlan = () => Object.fromEntries(meals.map((m) => [m, []]));
+      const uid = () => crypto.randomUUID();
 
-      const toSlug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      const parseNumber = (v, fallback = 0) => { const n = Number(v); return Number.isFinite(n) ? n : fallback; };
-      const clone = (obj) => JSON.parse(JSON.stringify(obj));
-      const blankDay = () => ({ meals: Object.fromEntries(meals.map((m) => [m, []])), notes: "" });
       const defaultState = {
-        targets: { calories: 2200, protein: 180, carbs: 220, fats: 70, goalType: "maintenance" },
-        masterDay: blankDay(),
-        week: Object.fromEntries(dayNames.map((d) => [d, blankDay()])),
+        targets: { calories: 2200, protein: 180, carbs: 220, fats: 70 },
+        selectedDay: "Master Day",
+        coach: { clientName: "", goalPhase: "maintain", coachNotes: "", lastUpdated: "" },
+        weekPlan: Object.fromEntries(days.map((d) => [d, blankMealPlan()])),
         customFoods: [],
-        customRecipes: [],
-        recentFoods: []
+        recipes: [],
+        savedMeals: [],
+        recent: [],
+        recipeBuilder: { ingredients: [{ id: uid(), sourceId: "", qty: 1 }] },
+        savedMealBuilder: { items: [{ id: uid(), sourceType: "food", sourceId: "", qty: 1 }] }
       };
 
       let state = loadState();
-      let recipeBuilder = { ingredients: [blankRecipeIngredient()] };
+      let addContext = { day: "Master Day", meal: "Breakfast" };
 
-      function blankRecipeIngredient() { return { id: crypto.randomUUID(), foodId: "", quantity: 1, unit: "" }; }
-      function normalizeUnit(unit) {
-        const map = {
-          grams: "g", gram: "g", g: "g", ounces: "oz", ounce: "oz", oz: "oz", lbs: "lb", pounds: "lb", pound: "lb", cups: "cup", cup: "cup",
-          tablespoon: "tbsp", tablespoons: "tbsp", tbsp: "tbsp", teaspoon: "tsp", teaspoons: "tsp", tsp: "tsp", milliliters: "ml", milliliter: "ml", ml: "ml",
-          "fluid ounces": "fl_oz", "fluid ounce": "fl_oz", floz: "fl_oz", slice: "slice", slices: "slice", item: "item", items: "item", egg: "item", eggs: "item",
-          scoop: "scoop", servings: "serving", serving: "serving"
-        };
-        return map[unit?.toLowerCase()] || unit;
-      }
-      function displayUnit(unit, quantity = 1) {
-        const u = normalizeUnit(unit);
-        if (u === "item") return quantity === 1 ? "item" : "items";
-        return (u || "").replace("_", " ");
-      }
+      function slug(text) { return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
+      function n(value, fallback = 0) { const x = Number(value); return Number.isFinite(x) ? x : fallback; }
+      function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+      function dayKey(day) { return day; }
+      function getDayPlan(day) { return state.weekPlan[dayKey(day)] || blankMealPlan(); }
+      function fmt(v) { return Math.round(v * 10) / 10; }
 
-      function loadState() {
-        let merged = clone(defaultState);
-        try {
-          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-          if (saved) merged = { ...merged, ...saved };
-        } catch {}
-        const targets = getTargetsFromStorage();
-        if (targets) merged.targets = { ...merged.targets, ...targets };
-        return merged;
-      }
-
-      function getTargetsFromStorage() {
+      function loadTargets() {
         try {
           const direct = JSON.parse(localStorage.getItem(TARGETS_KEY) || "null");
-          if (direct?.calories) return { calories: +direct.calories, protein: +direct.protein, carbs: +direct.carbs, fats: +direct.fats, goalType: direct.goalType || "maintenance" };
+          if (direct?.calories) return { calories: n(direct.calories), protein: n(direct.protein), carbs: n(direct.carbs), fats: n(direct.fats) };
         } catch {}
         try {
           const macro = JSON.parse(localStorage.getItem(MACRO_STORAGE_KEY) || "null");
-          const out = macro?.outputs;
-          if (!out) return null;
-          return { calories: parseNumber(out.calories), protein: parseNumber(out.protein), carbs: parseNumber(out.carbs), fats: parseNumber(out.fat), goalType: macro?.profile?.goal || "maintenance" };
-        } catch { return null; }
+          if (macro?.outputs) return { calories: n(macro.outputs.calories), protein: n(macro.outputs.protein), carbs: n(macro.outputs.carbs), fats: n(macro.outputs.fat) };
+        } catch {}
+        return null;
+      }
+
+      function loadState() {
+        let base = clone(defaultState);
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
+          if (saved) base = { ...base, ...saved, coach: { ...base.coach, ...(saved.coach || {}) }, targets: { ...base.targets, ...(saved.targets || {}) } };
+        } catch {}
+        const targets = loadTargets();
+        if (targets) base.targets = { ...base.targets, ...targets };
+        days.forEach((d) => {
+          if (!base.weekPlan[d]) base.weekPlan[d] = blankMealPlan();
+          meals.forEach((m) => { if (!Array.isArray(base.weekPlan[d][m])) base.weekPlan[d][m] = []; });
+        });
+        return base;
       }
 
       function saveState() {
@@ -263,475 +308,468 @@
         localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets));
       }
 
-      function dayRef(dayKey) { return dayKey === "masterDay" ? state.masterDay : state.week[dayKey]; }
-      function allFoods(type = "all") {
-        const all = [...foodBank, ...state.customFoods, ...state.customRecipes.map(recipeToFoodLike)];
-        if (type === "all") return all;
-        if (type === "built_in") return all.filter((f) => f.type === "built_in");
-        if (type === "custom_food") return all.filter((f) => f.type === "custom_food");
-        if (type === "recipe") return all.filter((f) => f.type === "recipe");
-        return all;
-      }
-      function foodById(id) { return allFoods().find((f) => f.id === id); }
-
-      function recipeToFoodLike(recipe) {
+      function allFoods() { return [...builtInFoods, ...state.customFoods, ...state.recipes.map(recipeAsFood)]; }
+      function allSearchItems() {
         return {
-          id: recipe.id,
-          type: "recipe",
-          recipeId: recipe.id,
-          name: recipe.name,
-          defaultServing: { amount: 1, unit: "serving" },
-          macros: { ...recipe.perServingMacros },
-          units: { serving: 1, item: 1 }
+          recent: state.recent.map((r) => resolveSearchReference(r)).filter(Boolean),
+          foods: [...builtInFoods],
+          savedMeals: [...state.savedMeals],
+          recipes: state.recipes.map(recipeAsFood),
+          customFoods: [...state.customFoods]
         };
       }
 
-      function parseNatural(text) {
-        const raw = (text || "").trim().toLowerCase();
-        if (!raw) return null;
-        const m = raw.match(/^(\d*\.?\d+)\s*([a-zA-Z_ ]+)?\s+(.+)$/);
-        if (!m) return { query: raw };
-        return { quantity: parseFloat(m[1]), unit: normalizeUnit((m[2] || "").trim()), query: m[3].trim() };
+      function recipeAsFood(recipe) {
+        return { id: recipe.id, type: "recipe", name: recipe.name, servingLabel: "1 serving", macros: clone(recipe.perServingMacros) };
       }
 
-      function matchFood(query, sourceType = "all") {
-        const q = (query || "").trim().toLowerCase();
-        if (!q) return null;
-        const list = allFoods(sourceType);
-        return list.find((f) => f.name === q) || list.find((f) => f.name.includes(q));
-      }
-
-      function gramsForQuantity(food, quantity, unit) {
-        const activeUnit = normalizeUnit(unit) || food.defaultServing.unit;
-        if (activeUnit === "serving") return quantity * food.defaultServing.amount;
-        const gramsPerUnit = food.units?.[activeUnit] ?? (activeUnit === "g" ? 1 : null);
-        if (gramsPerUnit == null) {
-          const fallback = food.units?.[food.defaultServing.unit] ?? 1;
-          return quantity * fallback;
+      function sourceMacros(sourceType, sourceId) {
+        if (sourceType === "saved_meal") {
+          const meal = state.savedMeals.find((x) => x.id === sourceId);
+          return meal ? clone(meal.macros) : blankTotals();
         }
-        return quantity * gramsPerUnit;
+        const food = allFoods().find((x) => x.id === sourceId);
+        return food ? clone(food.macros) : blankTotals();
       }
 
-      function baseServingGrams(food) {
-        if (food.defaultServing.unit === "serving") return food.defaultServing.amount;
-        return food.defaultServing.amount;
-      }
-
-      function convertMacros(food, quantity, unit) {
-        const safeQty = Math.max(0, parseNumber(quantity, 0));
-        const grams = gramsForQuantity(food, safeQty, unit);
-        const ratio = grams / Math.max(0.0001, baseServingGrams(food));
+      function multiplyMacros(macros, qty) {
         return {
-          calories: +(food.macros.calories * ratio).toFixed(1),
-          protein: +(food.macros.protein * ratio).toFixed(1),
-          carbs: +(food.macros.carbs * ratio).toFixed(1),
-          fats: +(food.macros.fats * ratio).toFixed(1)
+          calories: fmt(macros.calories * qty), protein: fmt(macros.protein * qty), carbs: fmt(macros.carbs * qty), fats: fmt(macros.fats * qty)
         };
       }
 
-      function resolveAddIntent(name, quantityInput, unitInput) {
-        const parsedText = parseNatural(name);
-        const typedQty = parseNumber(quantityInput, 1);
-        const hasNaturalQty = Number.isFinite(parsedText?.quantity) && parsedText.quantity > 0;
-        const quantity = hasNaturalQty ? parsedText.quantity : typedQty;
-        const unit = normalizeUnit(parsedText?.unit) || normalizeUnit(unitInput) || "";
-        const query = (parsedText?.query || name || "").trim();
-        return { query, quantity, unit };
-      }
-
-      function addFood(dayKey, meal, input, preferredUnit = "", quantityInput = 1, sourceType = "all") {
-        const intent = resolveAddIntent(input, quantityInput, preferredUnit);
-        const food = matchFood(intent.query, sourceType);
-        if (!food) return alert("Food not found. Try another search or save it in Advanced.");
-        const quantity = Math.max(0, parseNumber(intent.quantity, 1));
-        const unit = normalizeUnit(intent.unit) || food.defaultServing.unit;
-        const macros = convertMacros(food, quantity, unit);
-        dayRef(dayKey).meals[meal].push({ id: crypto.randomUUID(), foodId: food.id, name: food.name, quantity, unit, ...macros });
-        state.recentFoods = [food.id, ...state.recentFoods.filter((id) => id !== food.id)].slice(0, 25);
-        persistAndRender(false);
-      }
-
-      function updateRow(dayKey, meal, rowId, patch) {
-        const row = dayRef(dayKey).meals[meal].find((r) => r.id === rowId);
-        if (!row) return;
-        Object.assign(row, patch);
-        const source = foodById(row.foodId);
-        if (source) Object.assign(row, convertMacros(source, parseNumber(row.quantity, 1), normalizeUnit(row.unit)));
-        persistAndRender(false);
-      }
-
-      function totalsForDay(day) {
-        return meals.reduce((acc, m) => {
-          day.meals[m].forEach((r) => { acc.calories += r.calories; acc.protein += r.protein; acc.carbs += r.carbs; acc.fats += r.fats; });
-          return acc;
-        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
-      }
-
-      function sumDays() {
-        return dayNames.reduce((acc, d) => {
-          const t = totalsForDay(state.week[d]);
-          acc.calories += t.calories; acc.protein += t.protein; acc.carbs += t.carbs; acc.fats += t.fats;
-          return acc;
-        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
-      }
-
-      function statusMacro(v, t, pct) { if (v < t * (1 - pct)) return "low"; if (v > t * (1 + pct)) return "high"; return "on"; }
-      function calorieStatus(v, t) { if (v < t * (1 - thresholds.calories)) return "deficit"; if (v > t * (1 + thresholds.calories)) return "surplus"; return "maintain"; }
-
-      function renderTargets() {
-        const monday = totalsForDay(state.week["Monday"]);
-        const week = sumDays();
-        const dayStatus = calorieStatus(monday.calories, state.targets.calories);
-        const weekStatus = calorieStatus(week.calories / 7, state.targets.calories);
-
-        const metric = (k, label) => {
-          const live = k === "calories" ? monday[k] : monday[k];
-          const s = k === "calories"
-            ? calorieStatus(live, state.targets[k])
-            : statusMacro(live, state.targets[k], k === "protein" ? (1 - thresholds.proteinLow) : thresholds[k]);
-          return `<div class="metric ${k} target-card ${s}"><strong>${label}</strong><span>${Math.round(live)} / ${Math.round(state.targets[k])}${k === "calories" ? " kcal" : " g"}</span></div>`;
+      function makeItem({ sourceType, sourceId, qty }) {
+        const quantity = Math.max(0, n(qty, 1));
+        const source = sourceType === "saved_meal" ? state.savedMeals.find((x) => x.id === sourceId) : allFoods().find((x) => x.id === sourceId);
+        if (!source) return null;
+        const baseMacros = sourceType === "saved_meal" ? source.macros : source.macros;
+        return {
+          id: uid(),
+          sourceType,
+          sourceId,
+          name: source.name,
+          servingLabel: sourceType === "saved_meal" ? "1 serving" : (source.servingLabel || "1 serving"),
+          qty: quantity,
+          macrosPerUnit: clone(baseMacros),
+          macros: multiplyMacros(baseMacros, quantity)
         };
+      }
 
-        document.getElementById("targetSummary").innerHTML = [
-          metric("calories", "Calories"),
-          metric("protein", "Protein"),
-          metric("carbs", "Carbs"),
-          metric("fats", "Fats"),
-          `<div class="metric target-card ${dayStatus}"><strong>Today status</strong><span><span class="pill ${dayStatus}">${dayStatus}</span></span></div>`,
-          `<div class="metric target-card ${weekStatus}"><strong>Week avg status</strong><span><span class="pill ${weekStatus}">${weekStatus}</span></span></div>`
+      function recalcItem(item) {
+        item.qty = Math.max(0, n(item.qty, 0));
+        item.macros = multiplyMacros(item.macrosPerUnit, item.qty);
+      }
+
+      function dayTotals(day) {
+        const totals = blankTotals();
+        meals.forEach((m) => getDayPlan(day)[m].forEach((item) => macroFields.forEach((f) => totals[f] += n(item.macros[f]))));
+        macroFields.forEach((f) => totals[f] = fmt(totals[f]));
+        return totals;
+      }
+
+      function weeklyTotals() {
+        const totals = blankTotals();
+        days.filter((d) => d !== "Master Day").forEach((day) => {
+          const t = dayTotals(day);
+          macroFields.forEach((f) => totals[f] += t[f]);
+        });
+        macroFields.forEach((f) => totals[f] = fmt(totals[f]));
+        return totals;
+      }
+
+      function remainingToday() {
+        const planned = dayTotals(state.selectedDay === "Master Day" ? "Master Day" : state.selectedDay);
+        return {
+          calories: fmt(state.targets.calories - planned.calories),
+          protein: fmt(state.targets.protein - planned.protein),
+          carbs: fmt(state.targets.carbs - planned.carbs),
+          fats: fmt(state.targets.fats - planned.fats)
+        };
+      }
+
+      function helperMessages(day) {
+        const planned = dayTotals(day);
+        const msgs = [];
+        if (planned.protein < state.targets.protein * 0.9) msgs.push(`Protein is low for this day (−${Math.round(state.targets.protein - planned.protein)}g).`);
+        if (planned.calories < state.targets.calories * 0.9) msgs.push(`You are under calories by ${Math.round(state.targets.calories - planned.calories)} kcal.`);
+        if (planned.calories < state.targets.calories * 0.75) msgs.push("This day is much lower than your target.");
+        if (day !== "Master Day") msgs.push("Want to copy this lunch to the rest of the week? Duplicate it from Lunch row actions.");
+        return msgs.slice(0, 2);
+      }
+
+      function renderSummary() {
+        const plannedToday = dayTotals(state.selectedDay);
+        const remaining = remainingToday();
+        const weekly = weeklyTotals();
+        const weeklyTarget = multiplyMacros(state.targets, 7);
+        const avg = multiplyMacros(weekly, 1 / 7);
+
+        const card = (title, totals) => `<div class="metric-card"><strong>${title}</strong><div class="macro-row">${macroFields.map((f) => `<div class="macro-chip ${f}">${f}<span>${Math.round(totals[f])}${f === "calories" ? "" : "g"}</span></div>`).join("")}</div></div>`;
+        document.getElementById("summaryGrid").innerHTML = [
+          card("Daily Target", state.targets),
+          card("Planned Today", plannedToday),
+          card("Remaining Today", remaining),
+          card("Weekly Target", weeklyTarget),
+          card("Weekly Planned", weekly),
+          card("Weekly Average Per Day", avg)
         ].join("");
 
-        document.getElementById("targetInputs").innerHTML = ["calories", "protein", "carbs", "fats"]
-          .map((k) => `<label>${k}<input type="number" min="0" step="1" data-target="${k}" value="${state.targets[k]}"></label>`).join("") +
-          `<label>goal type<select data-target="goalType"><option ${state.targets.goalType === "deficit" ? "selected" : ""}>deficit</option><option ${state.targets.goalType === "maintenance" ? "selected" : ""}>maintenance</option><option ${state.targets.goalType === "surplus" ? "selected" : ""}>surplus</option></select></label>`;
+        document.getElementById("targetInputs").innerHTML = [
+          `<label>Calories Target<input data-target="calories" type="number" min="0" step="1" value="${state.targets.calories}" /></label>`,
+          `<label>Protein Target<input data-target="protein" type="number" min="0" step="1" value="${state.targets.protein}" /></label>`,
+          `<label>Carbs Target<input data-target="carbs" type="number" min="0" step="1" value="${state.targets.carbs}" /></label>`,
+          `<label>Fats Target<input data-target="fats" type="number" min="0" step="1" value="${state.targets.fats}" /></label>`
+        ].join("");
       }
 
-      function unitOptionsForFood(foodId, selected) {
-        const food = foodById(foodId);
-        const units = food ? Object.keys(food.units || {}) : [selected || "item"];
-        if (food?.type === "recipe" && !units.includes("serving")) units.push("serving");
-        return units.map((u) => `<option value="${u}" ${u === selected ? "selected" : ""}>${u.replace("_", " ")}</option>`).join("");
+      function renderTabs() {
+        document.getElementById("dayTabs").innerHTML = days.map((d) => `<button class="tab ${state.selectedDay === d ? "active" : ""}" data-tab="${d}">${d}</button>`).join("");
       }
 
-      function renderMeal(dayKey, meal) {
-        const mealRows = dayRef(dayKey).meals[meal];
-        return `<div class="meal"><h4>${meal}</h4>
-          <div class="add-row">
-            <input placeholder="Add food (e.g., 5 eggs, 8 oz chicken breast)" list="foodSuggestions" data-add-input="${dayKey}|${meal}">
-            <input type="number" min="0" step="0.1" value="1" data-add-qty="${dayKey}|${meal}">
-            <select data-add-unit="${dayKey}|${meal}">${unitOptions.map((u) => `<option value="${u}">${u.replace("_", " ")}</option>`).join("")}</select>
-            <select data-add-source="${dayKey}|${meal}">
-              <option value="all">All</option><option value="built_in">Built-In</option><option value="custom_food">Custom</option><option value="recipe">Recipes</option>
-            </select>
-            <button class="primary" data-add="${dayKey}|${meal}">Add Food</button>
-          </div>
-          ${mealRows.map((r) => `<div class="food-row">
-            <div class="row" style="justify-content:space-between;"><strong>${r.name}</strong><div class="row"><button data-del="${dayKey}|${meal}|${r.id}">Delete</button></div></div>
-            <div class="row" style="margin-top:.3rem;">
-              <input type="number" min="0" step="0.1" value="${r.quantity}" data-qty="${dayKey}|${meal}|${r.id}" style="width:95px;">
-              <select data-unit="${dayKey}|${meal}|${r.id}" style="width:auto;">${unitOptionsForFood(r.foodId, r.unit)}</select>
-              <span class="tiny">${r.calories} kcal · ${r.quantity} ${displayUnit(r.unit, r.quantity)}</span>
+      function mealSubtotal(items) {
+        const out = blankTotals();
+        items.forEach((it) => macroFields.forEach((f) => out[f] += n(it.macros[f])));
+        macroFields.forEach((f) => out[f] = fmt(out[f]));
+        return out;
+      }
+
+      function renderMealCard(day, meal) {
+        const rows = getDayPlan(day)[meal];
+        const subtotal = mealSubtotal(rows);
+        return `<article class="meal-card">
+          <div class="meal-head"><h3>${meal}</h3><div class="row no-print"><button data-open-add="${day}|${meal}">Add Food</button><button data-open-add="${day}|${meal}">Add Saved Meal</button><button data-open-add="${day}|${meal}">Add Saved Recipe</button></div></div>
+          ${rows.map((item) => `
+            <div class="item">
+              <div class="row" style="justify-content:space-between;">
+                <div><div class="item-name">${item.name}</div><div class="item-meta">${item.servingLabel}</div></div>
+                <div class="row no-print"><button data-duplicate-item="${day}|${meal}|${item.id}">Duplicate</button><button data-delete-item="${day}|${meal}|${item.id}">Delete</button></div>
+              </div>
+              <div class="qty-row no-print"><button class="qty-btn" data-adjust="${day}|${meal}|${item.id}|-0.5">−</button><input type="number" min="0" step="0.25" data-qty="${day}|${meal}|${item.id}" value="${item.qty}" /><button class="qty-btn" data-adjust="${day}|${meal}|${item.id}|0.5">+</button><span class="tiny">${item.macros.calories} kcal · P ${item.macros.protein} · C ${item.macros.carbs} · F ${item.macros.fats}</span></div>
             </div>
-            <div class="food-macros"><span>P ${r.protein}g</span><span>C ${r.carbs}g</span><span>F ${r.fats}g</span></div>
-          </div>`).join("")}
-        </div>`;
-      }
-
-      function renderDay(day, dayKey) {
-        const t = totalsForDay(day);
-        const cal = calorieStatus(t.calories, state.targets.calories);
-        return `<article class="card day-card">
-          <div class="day-head"><h3 style="margin:0;font-family:'Raleway',sans-serif;">${dayKey}</h3><div class="row"><span class="pill ${cal}">${cal}</span><button data-reset-day="${dayKey}">Reset</button><button data-copy-prev="${dayKey}">Copy Prev</button></div></div>
-          ${meals.map((m) => renderMeal(dayKey, m)).join("")}
-          <label>Notes<textarea rows="2" data-note="${dayKey}" placeholder="Optional notes">${day.notes || ""}</textarea></label>
-          <div class="totals"><div>Cal ${t.calories.toFixed(0)}</div><div>P ${t.protein.toFixed(0)}</div><div>C ${t.carbs.toFixed(0)}</div><div>F ${t.fats.toFixed(0)}</div></div>
+          `).join("") || `<div class="tiny">No items yet.</div>`}
+          <div class="subtotal tiny">Subtotal — ${Math.round(subtotal.calories)} kcal · P ${Math.round(subtotal.protein)}g · C ${Math.round(subtotal.carbs)}g · F ${Math.round(subtotal.fats)}g</div>
         </article>`;
       }
 
-      function renderWeekly() {
-        const w = sumDays();
-        const avg = { calories: w.calories / 7, protein: w.protein / 7, carbs: w.carbs / 7, fats: w.fats / 7 };
-        let counts = { deficit: 0, maintain: 0, surplus: 0 };
-        dayNames.forEach((d) => { counts[calorieStatus(totalsForDay(state.week[d]).calories, state.targets.calories)]++; });
-        const adherence = Math.max(0, 100 - Math.abs((avg.calories - state.targets.calories) / Math.max(1, state.targets.calories)) * 100).toFixed(0);
-        document.getElementById("weeklySummary").innerHTML = `<h2 style="margin:0 0 .6rem;font-family:'Raleway',sans-serif;">Weekly Summary</h2>
-          <div class="weekly-grid">
-            <div class="metric"><strong>Total calories</strong><span>${w.calories.toFixed(0)}</span></div>
-            <div class="metric"><strong>Total protein</strong><span>${w.protein.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Total carbs</strong><span>${w.carbs.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Total fats</strong><span>${w.fats.toFixed(0)}g</span></div>
-            <div class="metric"><strong>Avg calories/day</strong><span>${avg.calories.toFixed(0)}</span></div>
-            <div class="metric"><strong>Deficit / Maintenance / Surplus</strong><span>${counts.deficit} / ${counts.maintain} / ${counts.surplus}</span></div>
-            <div class="metric"><strong>Adherence score</strong><span>${adherence}%</span></div>
-          </div>`;
+      function renderDayView() {
+        const day = state.selectedDay;
+        const totals = dayTotals(day);
+        const helpers = helperMessages(day);
+        document.getElementById("dayView").innerHTML = [
+          ...helpers.map((m) => `<div class="helper-card">${m}</div>`),
+          ...meals.map((meal) => renderMealCard(day, meal)),
+          `<div class="day-total"><strong style="font-family:'Raleway',sans-serif;">${day} Total</strong><div class="tiny" style="margin-top:.18rem;">${Math.round(totals.calories)} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · F ${Math.round(totals.fats)}g</div></div>`
+        ].join("");
       }
 
-      function computeRecipeMacros(recipeDraft) {
-        const items = recipeDraft.ingredients.map((ing) => {
-          const food = foodById(ing.foodId);
-          if (!food) return { calories: 0, protein: 0, carbs: 0, fats: 0 };
-          return convertMacros(food, parseNumber(ing.quantity, 0), normalizeUnit(ing.unit) || food.defaultServing.unit);
+      function renderCoach() {
+        document.getElementById("clientName").value = state.coach.clientName || "";
+        document.getElementById("goalPhase").value = state.coach.goalPhase || "maintain";
+        document.getElementById("coachNotes").value = state.coach.coachNotes || "";
+        document.getElementById("lastUpdated").value = state.coach.lastUpdated || "";
+      }
+
+      function renderAddModal() {
+        const query = document.getElementById("addSearch")?.value?.trim().toLowerCase() || "";
+        const pool = allSearchItems();
+        const filter = (arr) => arr.filter((x) => !query || x.name.toLowerCase().includes(query));
+
+        const row = (entry, sourceType) => `<div class="list-item"><span>${entry.name}</span><span class="row"><button data-quick-add='${JSON.stringify({ sourceType, sourceId: entry.id }).replace(/'/g, "&apos;")}'>Add</button></span></div>`;
+        document.getElementById("recentList").innerHTML = filter(pool.recent).map((x) => row(x, x.type === "saved_meal" ? "saved_meal" : "food")).join("") || `<div class="tiny">No recent items.</div>`;
+        document.getElementById("commonFoodList").innerHTML = filter(pool.foods).map((x) => row(x, "food")).join("") || `<div class="tiny">No results.</div>`;
+        document.getElementById("savedMealList").innerHTML = filter(pool.savedMeals).map((x) => row(x, "saved_meal")).join("") || `<div class="tiny">No saved meals yet.</div>`;
+        document.getElementById("savedRecipeList").innerHTML = filter(pool.recipes).map((x) => row(x, "food")).join("") || `<div class="tiny">No recipes yet.</div>`;
+        document.getElementById("customFoodList").innerHTML = filter(pool.customFoods).map((x) => row(x, "food")).join("") || `<div class="tiny">No custom foods yet.</div>`;
+      }
+
+      function renderCustomFoodManager() {
+        document.getElementById("customFoodManager").innerHTML = state.customFoods.map((f) => `<div class="list-item"><span>${f.name} (${f.servingLabel})</span><button data-delete-custom="${f.id}">Delete</button></div>`).join("") || `<div class="tiny">No custom foods saved.</div>`;
+      }
+
+      function recipeBuilderTotals() {
+        const total = blankTotals();
+        state.recipeBuilder.ingredients.forEach((ing) => {
+          const source = allFoods().find((f) => f.id === ing.sourceId);
+          if (!source) return;
+          const m = multiplyMacros(source.macros, Math.max(0, n(ing.qty, 0)));
+          macroFields.forEach((k) => total[k] += m[k]);
         });
-        const total = items.reduce((acc, m) => {
-          acc.calories += m.calories; acc.protein += m.protein; acc.carbs += m.carbs; acc.fats += m.fats;
-          return acc;
-        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
-        const servings = Math.max(0.25, parseNumber(document.getElementById("recipeServings")?.value, 1));
-        return {
-          total,
-          servings,
-          perServing: {
-            calories: +(total.calories / servings).toFixed(1),
-            protein: +(total.protein / servings).toFixed(1),
-            carbs: +(total.carbs / servings).toFixed(1),
-            fats: +(total.fats / servings).toFixed(1)
-          }
-        };
+        macroFields.forEach((k) => total[k] = fmt(total[k]));
+        const servings = Math.max(0.25, n(document.getElementById("recipeServings")?.value, 1));
+        return { total, perServing: multiplyMacros(total, 1 / servings) };
       }
 
       function renderRecipeBuilder() {
-        const container = document.getElementById("recipeIngredients");
-        container.innerHTML = recipeBuilder.ingredients.map((ing) => `
-          <div class="recipe-ingredient">
-            <select data-recipe-food="${ing.id}">
-              <option value="">Select food</option>
-              ${[...foodBank, ...state.customFoods].map((f) => `<option value="${f.id}" ${f.id === ing.foodId ? "selected" : ""}>${f.name}</option>`).join("")}
-            </select>
-            <input type="number" min="0" step="0.1" value="${ing.quantity}" data-recipe-qty="${ing.id}">
-            <select data-recipe-unit="${ing.id}">${unitOptionsForFood(ing.foodId, ing.unit || "")}</select>
-            <button data-remove-ingredient="${ing.id}">Remove</button>
+        const foodOptions = allFoods().filter((f) => f.type !== "recipe");
+        const list = document.getElementById("recipeIngredientList");
+        list.innerHTML = state.recipeBuilder.ingredients.map((ing) => `
+          <div class="list-item">
+            <select data-r-food="${ing.id}"><option value="">Select ingredient</option>${foodOptions.map((f) => `<option value="${f.id}" ${f.id === ing.sourceId ? "selected" : ""}>${f.name}</option>`).join("")}</select>
+            <input type="number" min="0" step="0.25" value="${ing.qty}" data-r-qty="${ing.id}" style="width:88px;" />
+            <button data-r-del="${ing.id}">Remove</button>
           </div>
         `).join("");
-        const macros = computeRecipeMacros(recipeBuilder);
-        document.getElementById("recipePreview").textContent = `Total: ${macros.total.calories.toFixed(0)} kcal | P ${macros.total.protein.toFixed(1)}g | C ${macros.total.carbs.toFixed(1)}g | F ${macros.total.fats.toFixed(1)}g · Per serving: ${macros.perServing.calories.toFixed(0)} kcal`;
+
+        const totals = recipeBuilderTotals();
+        document.getElementById("recipeMacroPreview").textContent = `Recipe total: ${Math.round(totals.total.calories)} kcal · P ${Math.round(totals.total.protein)} · C ${Math.round(totals.total.carbs)} · F ${Math.round(totals.total.fats)} | Per serving: ${Math.round(totals.perServing.calories)} kcal`;
+        document.getElementById("recipeManager").innerHTML = state.recipes.map((r) => `<div class="list-item"><span>${r.name}</span><button data-delete-recipe="${r.id}">Delete</button></div>`).join("") || `<div class="tiny">No recipes saved.</div>`;
       }
 
-      function renderManagers() {
-        document.getElementById("customUnit").innerHTML = unitOptions.filter((u) => u !== "serving").map((u) => `<option value="${u}">${u.replace("_", " ")}</option>`).join("");
-        document.getElementById("customFoodList").innerHTML = state.customFoods.length
-          ? state.customFoods.map((f) => `<div class="manager-item"><span>${f.name} · ${f.defaultServing.amount} ${f.defaultServing.unit} (${f.macros.calories} kcal)</span><span><button data-edit-custom="${f.id}">Edit</button><button data-del-custom="${f.id}">Delete</button></span></div>`).join("")
-          : `<div class="tiny">No custom foods saved yet.</div>`;
+      function savedMealBuilderTotals() {
+        const total = blankTotals();
+        state.savedMealBuilder.items.forEach((it) => {
+          const m = sourceMacros(it.sourceType, it.sourceId);
+          const scaled = multiplyMacros(m, Math.max(0, n(it.qty, 0)));
+          macroFields.forEach((f) => total[f] += scaled[f]);
+        });
+        macroFields.forEach((f) => total[f] = fmt(total[f]));
+        return total;
+      }
 
-        document.getElementById("customRecipeList").innerHTML = state.customRecipes.length
-          ? state.customRecipes.map((r) => `<div class="manager-item"><span>${r.name} · ${r.totalServings} servings · ${r.perServingMacros.calories.toFixed(0)} kcal/serving</span><span><button data-del-recipe="${r.id}">Delete</button></span></div>`).join("")
-          : `<div class="tiny">No custom recipes saved yet.</div>`;
+      function renderSavedMealBuilder() {
+        const sources = [...allFoods().map((x) => ({ id: x.id, name: x.name, sourceType: "food" })), ...state.savedMeals.map((x) => ({ id: x.id, name: x.name, sourceType: "saved_meal" }))];
+        document.getElementById("savedMealItemBuilder").innerHTML = state.savedMealBuilder.items.map((row) => `
+          <div class="list-item">
+            <select data-sm-source="${row.id}"><option value="">Select item</option>${sources.map((s) => `<option value="${s.sourceType}|${s.id}" ${row.sourceId === s.id && row.sourceType === s.sourceType ? "selected" : ""}>${s.name}</option>`).join("")}</select>
+            <input type="number" min="0" step="0.25" value="${row.qty}" data-sm-qty="${row.id}" style="width:86px;" />
+            <button data-sm-del="${row.id}">Remove</button>
+          </div>
+        `).join("");
+        const preview = savedMealBuilderTotals();
+        document.getElementById("savedMealPreview").textContent = `Meal total: ${Math.round(preview.calories)} kcal · P ${Math.round(preview.protein)} · C ${Math.round(preview.carbs)} · F ${Math.round(preview.fats)}`;
+        document.getElementById("savedMealManager").innerHTML = state.savedMeals.map((m) => `<div class="list-item"><span>${m.name}</span><button data-delete-saved-meal="${m.id}">Delete</button></div>`).join("") || `<div class="tiny">No saved meals yet.</div>`;
+      }
+
+      function resolveSearchReference(ref) {
+        if (ref.type === "saved_meal") return state.savedMeals.find((x) => x.id === ref.id) || null;
+        return allFoods().find((x) => x.id === ref.id) || null;
+      }
+
+      function pushRecent(sourceType, sourceId) {
+        state.recent = [{ type: sourceType, id: sourceId }, ...state.recent.filter((x) => !(x.type === sourceType && x.id === sourceId))].slice(0, 20);
+      }
+
+      function openModal(id) { document.getElementById(id).classList.add("show"); }
+      function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+
+      function addItemToMeal(day, meal, sourceType, sourceId, qty = 1) {
+        const item = makeItem({ sourceType, sourceId, qty });
+        if (!item) return;
+        getDayPlan(day)[meal].push(item);
+        pushRecent(sourceType, sourceId);
+        persistAndRender();
+      }
+
+      function copyMasterTo(dayList) {
+        dayList.forEach((d) => state.weekPlan[d] = clone(state.weekPlan["Master Day"]));
+      }
+
+      function persistAndRender() {
+        state.coach.lastUpdated = state.coach.lastUpdated || new Date().toISOString().slice(0, 10);
+        saveState();
+        renderAll();
+      }
+
+      function renderAll() {
+        renderSummary();
+        renderTabs();
+        renderDayView();
+        renderCoach();
+        renderAddModal();
+        renderCustomFoodManager();
         renderRecipeBuilder();
-      }
-
-      function render() {
-        renderTargets();
-        document.getElementById("masterDay").innerHTML = renderDay(state.masterDay, "masterDay").replace("Copy Prev", "Duplicate");
-        document.getElementById("weekGrid").innerHTML = dayNames.map((d) => renderDay(state.week[d], d)).join("");
-        renderWeekly();
-        document.getElementById("foodSuggestions").innerHTML = allFoods().map((f) => `<option value="${f.name}"></option>`).join("");
-        renderManagers();
-      }
-
-      function persistAndRender() { saveState(); render(); }
-
-      function saveCustomFood(editId = "") {
-        const name = document.getElementById("customName").value.trim().toLowerCase();
-        const amount = parseNumber(document.getElementById("customAmount").value, 0);
-        const unit = normalizeUnit(document.getElementById("customUnit").value);
-        if (!name || amount <= 0) return alert("Add a valid custom food name and serving amount.");
-        const entry = {
-          id: editId || `custom-${toSlug(name)}-${Date.now()}`,
-          type: "custom_food",
-          name,
-          defaultServing: { amount, unit },
-          macros: {
-            calories: parseNumber(document.getElementById("customCalories").value, 0),
-            protein: parseNumber(document.getElementById("customProtein").value, 0),
-            carbs: parseNumber(document.getElementById("customCarbs").value, 0),
-            fats: parseNumber(document.getElementById("customFats").value, 0)
-          },
-          units: { [unit]: amount, g: 1 }
-        };
-        if (editId) state.customFoods = state.customFoods.map((f) => f.id === editId ? entry : f);
-        else state.customFoods.push(entry);
-        ["customName", "customAmount", "customCalories", "customProtein", "customCarbs", "customFats"].forEach((id) => document.getElementById(id).value = "");
+        renderSavedMealBuilder();
       }
 
       document.body.addEventListener("click", (e) => {
         const t = e.target;
+        if (t.dataset.tab) { state.selectedDay = t.dataset.tab; persistAndRender(); }
 
-        if (t.dataset.add) {
-          const [dayKey, meal] = t.dataset.add.split("|");
-          const name = document.querySelector(`[data-add-input="${dayKey}|${meal}"]`)?.value || "";
-          const qty = parseNumber(document.querySelector(`[data-add-qty="${dayKey}|${meal}"]`)?.value, 1);
-          const unit = document.querySelector(`[data-add-unit="${dayKey}|${meal}"]`)?.value || "";
-          const source = document.querySelector(`[data-add-source="${dayKey}|${meal}"]`)?.value || "all";
-          if (name.trim()) addFood(dayKey, meal, name, unit, qty, source);
+        if (t.dataset.openAdd) {
+          const [day, meal] = t.dataset.openAdd.split("|");
+          addContext = { day, meal };
+          document.getElementById("addSearch").value = "";
+          renderAddModal();
+          openModal("addModal");
         }
 
-        if (t.dataset.del) {
-          const [d, m, id] = t.dataset.del.split("|");
-          dayRef(d).meals[m] = dayRef(d).meals[m].filter((r) => r.id !== id);
+        if (t.dataset.closeModal) closeModal(t.dataset.closeModal);
+
+        if (t.dataset.quickAdd) {
+          const data = JSON.parse(t.dataset.quickAdd.replaceAll("&apos;", "'"));
+          addItemToMeal(addContext.day, addContext.meal, data.sourceType, data.sourceId, 1);
+          renderAddModal();
+        }
+
+        if (t.dataset.deleteItem) {
+          const [day, meal, id] = t.dataset.deleteItem.split("|");
+          state.weekPlan[day][meal] = state.weekPlan[day][meal].filter((x) => x.id !== id);
           persistAndRender();
         }
 
-        if (t.dataset.delCustom) {
-          state.customFoods = state.customFoods.filter((f) => f.id !== t.dataset.delCustom);
-          state.customRecipes = state.customRecipes.map((r) => ({ ...r, ingredients: r.ingredients.filter((ing) => ing.foodId !== t.dataset.delCustom) }));
+        if (t.dataset.duplicateItem) {
+          const [day, meal, id] = t.dataset.duplicateItem.split("|");
+          const item = state.weekPlan[day][meal].find((x) => x.id === id);
+          if (!item) return;
+          const cloneItem = clone(item); cloneItem.id = uid();
+          state.weekPlan[day][meal].push(cloneItem);
           persistAndRender();
         }
 
-        if (t.dataset.editCustom) {
-          const f = state.customFoods.find((x) => x.id === t.dataset.editCustom);
-          if (!f) return;
-          document.getElementById("customName").value = f.name;
-          document.getElementById("customAmount").value = f.defaultServing.amount;
-          document.getElementById("customUnit").value = f.defaultServing.unit;
-          document.getElementById("customCalories").value = f.macros.calories;
-          document.getElementById("customProtein").value = f.macros.protein;
-          document.getElementById("customCarbs").value = f.macros.carbs;
-          document.getElementById("customFats").value = f.macros.fats;
-          document.getElementById("addCustomFood").dataset.editing = f.id;
-        }
-
-        if (t.id === "addCustomFood") {
-          saveCustomFood(t.dataset.editing || "");
-          t.dataset.editing = "";
+        if (t.dataset.adjust) {
+          const [day, meal, id, diff] = t.dataset.adjust.split("|");
+          const item = state.weekPlan[day][meal].find((x) => x.id === id);
+          if (!item) return;
+          item.qty = Math.max(0, fmt(item.qty + n(diff)));
+          recalcItem(item);
           persistAndRender();
         }
 
-        if (t.id === "resetCustomFood") {
-          ["customName", "customAmount", "customCalories", "customProtein", "customCarbs", "customFats"].forEach((id) => document.getElementById(id).value = "");
-          document.getElementById("addCustomFood").dataset.editing = "";
+        if (t.id === "applyMasterAll") { copyMasterTo(days.filter((d) => d !== "Master Day")); persistAndRender(); }
+        if (t.id === "applyMasterWeekdays") { copyMasterTo(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]); persistAndRender(); }
+        if (t.id === "copyMasterSelected") {
+          const chosen = prompt("Copy Master Day to which days? Example: Monday,Wednesday,Sunday");
+          if (!chosen) return;
+          const list = chosen.split(",").map((x) => x.trim()).filter((d) => days.includes(d) && d !== "Master Day");
+          copyMasterTo(list);
+          persistAndRender();
+        }
+        if (t.id === "resetDayToMaster") {
+          if (state.selectedDay === "Master Day") return;
+          state.weekPlan[state.selectedDay] = clone(state.weekPlan["Master Day"]);
+          persistAndRender();
+        }
+        if (t.id === "clearCurrentDay") { state.weekPlan[state.selectedDay] = blankMealPlan(); persistAndRender(); }
+
+        if (t.id === "openCustomFood") openModal("customFoodModal");
+        if (t.id === "openRecipeBuilder") openModal("recipeModal");
+        if (t.id === "openSavedMealBuilder") openModal("savedMealModal");
+        if (t.id === "printPlan") window.print();
+
+        if (t.id === "saveCustomFood") {
+          const name = document.getElementById("customFoodName").value.trim();
+          const servingLabel = document.getElementById("customServing").value.trim() || "1 serving";
+          if (!name) return;
+          state.customFoods.push({
+            id: `custom-${slug(name)}-${Date.now()}`,
+            type: "food",
+            name,
+            servingLabel,
+            macros: {
+              calories: n(document.getElementById("customCalories").value),
+              protein: n(document.getElementById("customProtein").value),
+              carbs: n(document.getElementById("customCarbs").value),
+              fats: n(document.getElementById("customFats").value)
+            }
+          });
+          ["customFoodName", "customServing", "customCalories", "customProtein", "customCarbs", "customFats"].forEach((id) => document.getElementById(id).value = "");
+          persistAndRender();
         }
 
-        if (t.id === "addRecipeIngredient") {
-          recipeBuilder.ingredients.push(blankRecipeIngredient());
-          renderRecipeBuilder();
+        if (t.dataset.deleteCustom) {
+          state.customFoods = state.customFoods.filter((x) => x.id !== t.dataset.deleteCustom);
+          persistAndRender();
         }
 
-        if (t.dataset.removeIngredient) {
-          recipeBuilder.ingredients = recipeBuilder.ingredients.filter((x) => x.id !== t.dataset.removeIngredient);
-          if (!recipeBuilder.ingredients.length) recipeBuilder.ingredients = [blankRecipeIngredient()];
-          renderRecipeBuilder();
-        }
+        if (t.id === "addRecipeIngredient") { state.recipeBuilder.ingredients.push({ id: uid(), sourceId: "", qty: 1 }); persistAndRender(); }
+        if (t.dataset.rDel) { state.recipeBuilder.ingredients = state.recipeBuilder.ingredients.filter((x) => x.id !== t.dataset.rDel); if (!state.recipeBuilder.ingredients.length) state.recipeBuilder.ingredients = [{ id: uid(), sourceId: "", qty: 1 }]; persistAndRender(); }
 
         if (t.id === "saveRecipe") {
-          const name = document.getElementById("recipeName").value.trim().toLowerCase();
-          const totalServings = Math.max(0.25, parseNumber(document.getElementById("recipeServings").value, 1));
-          const validIngredients = recipeBuilder.ingredients.filter((ing) => ing.foodId && parseNumber(ing.quantity, 0) > 0);
-          if (!name || !validIngredients.length) return alert("Add a recipe name and at least one ingredient.");
-          const macros = computeRecipeMacros({ ingredients: validIngredients });
-          const recipe = {
-            id: `recipe-${toSlug(name)}-${Date.now()}`,
+          const name = document.getElementById("recipeName").value.trim();
+          if (!name) return;
+          const ingredients = state.recipeBuilder.ingredients.filter((x) => x.sourceId && n(x.qty) > 0);
+          if (!ingredients.length) return;
+          const servings = Math.max(0.25, n(document.getElementById("recipeServings").value, 1));
+          const totals = recipeBuilderTotals();
+          state.recipes.push({
+            id: `recipe-${slug(name)}-${Date.now()}`,
+            type: "recipe",
             name,
-            ingredients: validIngredients.map((ing) => ({ ...ing, unit: normalizeUnit(ing.unit) || foodById(ing.foodId)?.defaultServing.unit || "g", foodType: foodById(ing.foodId)?.type || "built_in" })),
-            totalServings,
-            totalMacros: macros.total,
-            perServingMacros: {
-              calories: +(macros.total.calories / totalServings).toFixed(1),
-              protein: +(macros.total.protein / totalServings).toFixed(1),
-              carbs: +(macros.total.carbs / totalServings).toFixed(1),
-              fats: +(macros.total.fats / totalServings).toFixed(1)
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
-          state.customRecipes.push(recipe);
-          document.getElementById("recipeName").value = "";
-          document.getElementById("recipeServings").value = "1";
-          recipeBuilder = { ingredients: [blankRecipeIngredient()] };
-          persistAndRender();
-        }
-
-        if (t.id === "resetRecipeBuilder") {
-          document.getElementById("recipeName").value = "";
-          document.getElementById("recipeServings").value = "1";
-          recipeBuilder = { ingredients: [blankRecipeIngredient()] };
-          renderRecipeBuilder();
-        }
-
-        if (t.dataset.delRecipe) {
-          state.customRecipes = state.customRecipes.filter((r) => r.id !== t.dataset.delRecipe);
-          persistAndRender();
-        }
-
-        if (t.id === "applyMasterAll") {
-          if (!confirm("Apply Master Day to all seven days? This overwrites current week plan.")) return;
-          dayNames.forEach((d) => state.week[d] = clone(state.masterDay));
-          persistAndRender();
-        }
-
-        if (t.id === "applyMasterEmpty") {
-          dayNames.forEach((d) => {
-            const hasFood = meals.some((m) => state.week[d].meals[m].length);
-            if (!hasFood) state.week[d] = clone(state.masterDay);
+            ingredients: clone(ingredients),
+            servings,
+            totalMacros: totals.total,
+            perServingMacros: multiplyMacros(totals.total, 1 / servings)
           });
+          document.getElementById("recipeName").value = "";
+          document.getElementById("recipeServings").value = "1";
+          state.recipeBuilder = { ingredients: [{ id: uid(), sourceId: "", qty: 1 }] };
           persistAndRender();
         }
 
-        if (t.id === "resetMaster") { state.masterDay = blankDay(); persistAndRender(); }
-        if (t.id === "clearWeek" && confirm("Clear all foods for Monday through Sunday?")) {
-          state.week = Object.fromEntries(dayNames.map((d) => [d, blankDay()]));
+        if (t.dataset.deleteRecipe) {
+          state.recipes = state.recipes.filter((x) => x.id !== t.dataset.deleteRecipe);
           persistAndRender();
         }
 
-        if (t.dataset.resetDay) {
-          const d = t.dataset.resetDay;
-          if (d === "masterDay") state.masterDay = blankDay(); else state.week[d] = blankDay();
+        if (t.id === "addSavedMealItem") { state.savedMealBuilder.items.push({ id: uid(), sourceType: "food", sourceId: "", qty: 1 }); persistAndRender(); }
+        if (t.dataset.smDel) { state.savedMealBuilder.items = state.savedMealBuilder.items.filter((x) => x.id !== t.dataset.smDel); if (!state.savedMealBuilder.items.length) state.savedMealBuilder.items = [{ id: uid(), sourceType: "food", sourceId: "", qty: 1 }]; persistAndRender(); }
+
+        if (t.id === "saveSavedMeal") {
+          const name = document.getElementById("savedMealName").value.trim();
+          if (!name) return;
+          const items = state.savedMealBuilder.items.filter((x) => x.sourceId && n(x.qty) > 0);
+          if (!items.length) return;
+          state.savedMeals.push({ id: `meal-${slug(name)}-${Date.now()}`, type: "saved_meal", name, items: clone(items), macros: savedMealBuilderTotals() });
+          document.getElementById("savedMealName").value = "";
+          state.savedMealBuilder = { items: [{ id: uid(), sourceType: "food", sourceId: "", qty: 1 }] };
           persistAndRender();
         }
 
-        if (t.dataset.copyPrev) {
-          const d = t.dataset.copyPrev;
-          if (d === "masterDay") return;
-          const idx = dayNames.indexOf(d);
-          if (idx < 1) return alert("No previous day available.");
-          state.week[d] = clone(state.week[dayNames[idx - 1]]);
+        if (t.dataset.deleteSavedMeal) {
+          state.savedMeals = state.savedMeals.filter((x) => x.id !== t.dataset.deleteSavedMeal);
           persistAndRender();
         }
       });
 
       document.body.addEventListener("input", (e) => {
         const t = e.target;
-        if (t.dataset.target) {
-          state.targets[t.dataset.target] = t.dataset.target === "goalType" ? t.value : parseNumber(t.value, 0);
+        if (t.dataset.target) { state.targets[t.dataset.target] = Math.max(0, n(t.value)); persistAndRender(); }
+        if (t.dataset.qty) {
+          const [day, meal, id] = t.dataset.qty.split("|");
+          const item = state.weekPlan[day][meal].find((x) => x.id === id);
+          if (!item) return;
+          item.qty = Math.max(0, n(t.value));
+          recalcItem(item);
           persistAndRender();
         }
-        if (t.dataset.qty) {
-          const [d, m, id] = t.dataset.qty.split("|");
-          updateRow(d, m, id, { quantity: parseNumber(t.value, 0) });
+        if (t.id === "addSearch") renderAddModal();
+        if (t.dataset.rQty) {
+          const row = state.recipeBuilder.ingredients.find((x) => x.id === t.dataset.rQty);
+          if (!row) return;
+          row.qty = Math.max(0, n(t.value));
+          persistAndRender();
         }
-        if (t.dataset.note) {
-          const d = t.dataset.note;
-          (d === "masterDay" ? state.masterDay : state.week[d]).notes = t.value;
+        if (t.dataset.rFood) {
+          const row = state.recipeBuilder.ingredients.find((x) => x.id === t.dataset.rFood);
+          if (!row) return;
+          row.sourceId = t.value;
+          persistAndRender();
+        }
+        if (t.dataset.smQty) {
+          const row = state.savedMealBuilder.items.find((x) => x.id === t.dataset.smQty);
+          if (!row) return;
+          row.qty = Math.max(0, n(t.value));
+          persistAndRender();
+        }
+        if (t.dataset.smSource) {
+          const row = state.savedMealBuilder.items.find((x) => x.id === t.dataset.smSource);
+          if (!row) return;
+          const [sourceType, sourceId] = String(t.value).split("|");
+          row.sourceType = sourceType || "food";
+          row.sourceId = sourceId || "";
+          persistAndRender();
+        }
+
+        if (["clientName", "goalPhase", "coachNotes", "lastUpdated"].includes(t.id)) {
+          state.coach.clientName = document.getElementById("clientName").value;
+          state.coach.goalPhase = document.getElementById("goalPhase").value;
+          state.coach.coachNotes = document.getElementById("coachNotes").value;
+          state.coach.lastUpdated = document.getElementById("lastUpdated").value;
           saveState();
         }
-        if (t.dataset.recipeQty) {
-          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeQty);
-          if (!row) return;
-          row.quantity = parseNumber(t.value, 0);
-          renderRecipeBuilder();
-        }
-        if (t.dataset.recipeFood) {
-          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeFood);
-          if (!row) return;
-          row.foodId = t.value;
-          row.unit = foodById(t.value)?.defaultServing.unit || "g";
-          renderRecipeBuilder();
-        }
       });
 
-      document.body.addEventListener("change", (e) => {
-        const t = e.target;
-        if (t.dataset.unit) {
-          const [d, m, id] = t.dataset.unit.split("|");
-          updateRow(d, m, id, { unit: t.value });
-        }
-        if (t.dataset.recipeUnit) {
-          const row = recipeBuilder.ingredients.find((x) => x.id === t.dataset.recipeUnit);
-          if (!row) return;
-          row.unit = normalizeUnit(t.value);
-          renderRecipeBuilder();
-        }
-      });
-
-      render();
+      renderAll();
     </script>
   </body>
 </html>
