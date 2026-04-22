@@ -70,6 +70,36 @@
       box-shadow: inset 0 -1px 0 var(--cc-accent);
     }
 
+    .replace-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      border: 1px solid transparent;
+      border-radius: 0.75rem;
+      padding: 0.5rem 0.6rem 0.2rem;
+      transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .replace-item.is-selected {
+      background: rgba(119, 215, 112, 0.12);
+      border-color: rgba(119, 215, 112, 0.55);
+      box-shadow: 0 4px 12px rgba(119, 215, 112, 0.2);
+    }
+
+    .replace-checkbox {
+      margin-top: 0.35rem;
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--cc-accent);
+      flex-shrink: 0;
+    }
+
+    .replace-line {
+      margin-bottom: 0.25rem;
+      min-height: 2rem;
+      padding-top: 0.05rem;
+    }
+
     @media print {
       @page {
         size: auto;
@@ -123,22 +153,34 @@
     <section class="worksheet-card p-5 sm:p-7" id="worksheet" aria-label="I AM Worksheet">
       <article class="worksheet-section mb-7">
         <h2 class="font-heading text-2xl sm:text-3xl font-bold">I AM</h2>
-        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Make a list of identities that define you, both positive and negative</p>
-        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">Examples | I am a writer. I am a runner. I am an athlete. I am a jealous person. I am a home.</p>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Write identity statements that describe who you are today. Then go back to that same line and add the habits and choices that make that identity true.</p>
+        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am inconsistent with sleep → stay up late scrolling, skip wind-down routine”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am strong → train 3x per week”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am anxious before social events → avoid reaching out first”</p>
         <div class="mt-4" data-group="iam"></div>
       </article>
 
       <article class="worksheet-section mb-7">
         <h2 class="font-heading text-2xl sm:text-3xl font-bold">HABITS</h2>
-        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Go back and list out the habits and choices that form those identities.</p>
-        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">Examples | I am a writer – I write every Saturday. I am a runner – I run 3 times a week.</p>
-        <div class="mt-4" data-group="habits"></div>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Return to each original “I am” line and add the habits and choices that support that identity directly on that same line.</p>
+        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">Keep the worksheet clean: do not add extra habit lines below.</p>
+      </article>
+
+      <article class="worksheet-section mb-7">
+        <h2 class="font-heading text-2xl sm:text-3xl font-bold">IDENTITIES TO REPLACE</h2>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Check the identities you are ready to replace.</p>
+        <div class="mt-4 space-y-2" data-group="replace"></div>
       </article>
 
       <article class="worksheet-section">
         <h2 class="font-heading text-2xl sm:text-3xl font-bold">I AM REDUX</h2>
-        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Circle the choices you have to replace to let go of identities you no longer want.</p>
-        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Come up with new identities and choices to replace those old habits below.</p>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Rewrite the checked identities using new identity statements that still begin with “I am.” These new identities should reflect who you are becoming through better habits and choices.</p>
+        <p class="mt-2 text-sm sm:text-base text-[color:rgba(7,31,53,0.76)]">Every replacement identity should still start with “I am.”</p>
+        <p class="mt-2 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am an alcoholic” → “I am a runner”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am inactive” → “I am someone who trains three times per week”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am inconsistent” → “I am someone who follows a weekly structure”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am always tired” → “I am someone who protects my sleep routine”</p>
+        <p class="mt-1 text-xs sm:text-sm text-[color:rgba(7,31,53,0.68)]">“I am bad with money” → “I am someone who tracks spending weekly”</p>
         <div class="mt-4" data-group="redux"></div>
       </article>
     </section>
@@ -160,7 +202,7 @@
     const STORAGE_KEY = "iamWorksheetData";
     const LINES_PER_GROUP = {
       iam: 15,
-      habits: 12,
+      replace: 8,
       redux: 10
     };
 
@@ -182,16 +224,53 @@
       return line;
     }
 
+    function createReplaceLine(index, value = "", checked = false) {
+      const row = document.createElement("label");
+      row.className = "replace-item";
+      row.setAttribute("data-role", "replace-item");
+      row.setAttribute("data-index", String(index));
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "replace-checkbox focus-ring";
+      checkbox.setAttribute("data-role", "replace-check");
+      checkbox.setAttribute("data-index", String(index));
+      checkbox.checked = Boolean(checked);
+      checkbox.setAttribute("aria-label", `Select identity to replace ${index + 1}`);
+
+      const line = document.createElement("div");
+      line.className = "worksheet-line replace-line focus-ring";
+      line.contentEditable = "true";
+      line.setAttribute("data-group", "replace");
+      line.setAttribute("data-index", String(index));
+      line.setAttribute("role", "textbox");
+      line.setAttribute("aria-label", `identity to replace line ${index + 1}`);
+      line.spellcheck = true;
+      line.textContent = value;
+
+      row.appendChild(checkbox);
+      row.appendChild(line);
+      row.classList.toggle("is-selected", checkbox.checked);
+
+      return row;
+    }
+
     function getAllLines() {
       return Array.from(document.querySelectorAll(".worksheet-line"));
     }
 
     function getState() {
-      return getAllLines().map((line) => ({
+      const textEntries = getAllLines().map((line) => ({
         group: line.dataset.group,
         index: Number(line.dataset.index),
         text: line.textContent || ""
       }));
+      const replaceChecks = Array.from(document.querySelectorAll('[data-role="replace-check"]')).map((input) => ({
+        group: "replace-check",
+        index: Number(input.dataset.index),
+        checked: input.checked
+      }));
+      return [...textEntries, ...replaceChecks];
     }
 
     function saveState() {
@@ -217,9 +296,18 @@
       Object.entries(LINES_PER_GROUP).forEach(([group, total]) => {
         const container = document.querySelector(`[data-group="${group}"]`);
         container.innerHTML = "";
+        const checkedMap = new Map(
+          saved
+            .filter((entry) => entry.group === "replace-check")
+            .map((entry) => [`replace-check:${entry.index}`, Boolean(entry.checked)])
+        );
         for (let i = 0; i < total; i += 1) {
           const key = `${group}:${i}`;
-          container.appendChild(createLine(group, i, textMap.get(key) || ""));
+          if (group === "replace") {
+            container.appendChild(createReplaceLine(i, textMap.get(key) || "", checkedMap.get(`replace-check:${i}`)));
+          } else {
+            container.appendChild(createLine(group, i, textMap.get(key) || ""));
+          }
         }
       });
     }
@@ -252,12 +340,27 @@
       getAllLines().forEach((line) => {
         line.textContent = "";
       });
+      Array.from(document.querySelectorAll('[data-role="replace-check"]')).forEach((input) => {
+        input.checked = false;
+        const row = input.closest('[data-role="replace-item"]');
+        if (row) row.classList.remove("is-selected");
+      });
       localStorage.removeItem(STORAGE_KEY);
     }
 
     function bindEvents() {
       worksheet.addEventListener("input", (event) => {
         if (event.target.classList.contains("worksheet-line")) {
+          saveState();
+        }
+      });
+
+      worksheet.addEventListener("change", (event) => {
+        if (event.target.matches('[data-role="replace-check"]')) {
+          const row = event.target.closest('[data-role="replace-item"]');
+          if (row) {
+            row.classList.toggle("is-selected", event.target.checked);
+          }
           saveState();
         }
       });
