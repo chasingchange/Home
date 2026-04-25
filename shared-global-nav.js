@@ -77,6 +77,7 @@
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
     { title: "Exercise Matrix", core: "Body", url: `${root}exercise-matrix/index.html` },
     { title: "Physique Roadmap", core: "Body", url: `${root}physique-roadmap/index.html` },
+    { title: "Founder’s Calendar", core: "Life", url: `${root}founders-calendar/index.html` },
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");
