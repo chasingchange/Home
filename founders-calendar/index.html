@@ -112,24 +112,29 @@
 
       const PRESET_PRIORITIES = [
         { label: "Train Body", core: "Body" },
-        { label: "Create Art", core: "Art" },
+        { label: "Run", core: "Body" },
+        { label: "Gym", core: "Body" },
+        { label: "Yoga", core: "Body" },
+        { label: "Write", core: "Art" },
+        { label: "Review Current Piece", core: "Art" },
         { label: "Deep Work", core: "Career" },
         { label: "Skill Building", core: "Mind" },
+        { label: "Weekly Review", core: "Mind" },
         { label: "Social Connection", core: "Life" },
         { label: "Reflection / Journaling", core: "Soul" },
         { label: "Spiritual Practice", core: "Soul" },
+        { label: "Church", core: "Soul" },
         { label: "Planning / Review", core: "Career" },
         { label: "Recovery", core: "Body" },
-        { label: "Admin Tasks", core: "Life" },
       ];
 
       const CORE_STYLES = {
-        Body: "bg-emerald-100 text-emerald-800",
-        Art: "bg-fuchsia-100 text-fuchsia-800",
+        Body: "bg-green-100 text-green-800",
+        Art: "bg-yellow-100 text-yellow-900",
         Mind: "bg-blue-100 text-blue-800",
         Soul: "bg-violet-100 text-violet-800",
-        Career: "bg-amber-100 text-amber-800",
-        Life: "bg-slate-200 text-slate-800",
+        Career: "bg-red-100 text-red-800",
+        Life: "bg-orange-100 text-orange-800",
       };
 
       const dayGrid = document.getElementById("dayGrid");
