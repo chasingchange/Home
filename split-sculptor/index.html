@@ -108,10 +108,15 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .slot-drop .placeholder { color: #9aa4af; font-size: .8rem; }
 .slot-drop .filled { font-size: .86rem; color: var(--text); font-weight: 600; }
 .slot-drop button { border: 0; background: transparent; color: #8f9aa6; cursor: pointer; font-size: .95rem; }
-.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 680px; }
-.priority-rank-item { display: grid; grid-template-columns: 180px 1fr; gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
+.priority-rank-list { display: grid; gap: .65rem; margin-top: .75rem; max-width: 860px; }
+.priority-rank-item { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: .7rem; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; }
 .priority-rank-label { font-family: 'Raleway', sans-serif; font-weight: 700; font-size: .8rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
 .priority-rank-select, .slot-select, .slot-muscle-select { font-family: 'Muli', sans-serif; border: 1px solid var(--border); border-radius: 8px; padding: .42rem .5rem; background: #fff; color: var(--text); }
+.priority-rank-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.priority-rank-custom-wrap { margin-top: .45rem; }
+.priority-rank-custom-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .42rem .5rem; font-family: 'Muli', sans-serif; background: #fff; color: var(--text); }
+.priority-rank-item.missing-priority,
+.day-card.missing-priority { background: rgba(255, 138, 138, 0.16); border-color: rgba(230, 106, 106, 0.5); }
 .rank-help { margin-top: .75rem; font-size: .85rem; color: var(--muted); }
 .slot-row { border: 1px solid rgba(7,31,53,.1); border-radius: 10px; padding: .55rem; grid-template-columns: 1fr; gap: .5rem; }
 .slot-controls { display: grid; grid-template-columns: 140px 1fr 92px 118px 72px repeat(2, 32px); gap: .45rem; align-items: center; }
@@ -278,6 +283,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .cc-title-coaching { margin: .35rem auto 0; }
 @media (max-width: 840px) { .timeline { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .summary-layout { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .header { flex-direction: column; align-items: flex-start; } .manual-macro-grid { grid-template-columns: 1fr; } .sum-row { flex-direction: column; } .start-line-card { width: 100%; } .past-split-controls { grid-template-columns: 1fr; } .focus-pill-row { grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: .5rem; } }
+@media (max-width: 700px) { .priority-rank-item { grid-template-columns: 1fr; } .priority-rank-controls { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .slot-controls { grid-template-columns: 1fr; } .exercise-detail-grid { grid-template-columns: 1fr; } .split-workout-main { grid-template-columns: 1fr; } .split-workout-prescription { text-align: left; justify-self: start; white-space: normal; } .weekly-volume-layout { grid-template-columns: 1fr; } .summary-workout-line { grid-template-columns: 1fr; } .summary-workout-line .lift { white-space: normal; } }
 </style>
 </head>
@@ -1043,13 +1049,20 @@ function applyPriorityProfileForFrequency() {
     const dayKey = `d${i + 1}`;
     const focus = extractFocusName(line);
     const focusMuscles = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
-    next[dayKey] = focusMuscles.includes(existing[dayKey]) ? existing[dayKey] : (focusMuscles[0] || 'Back');
+    const existingValue = existing[dayKey];
+    if (existingValue === '') {
+      next[dayKey] = '';
+    } else if (existingValue && !getPriorityMuscles().includes(existingValue)) {
+      next[dayKey] = existingValue;
+    } else {
+      next[dayKey] = focusMuscles.includes(existingValue) ? existingValue : (focusMuscles[0] || '');
+    }
   });
   state.dayPriorities = next;
-  const chosen = Object.values(next);
+  const chosen = Object.values(next).filter(Boolean);
   const remaining = getPriorityMuscles().filter((muscle) => !chosen.includes(muscle));
   state.priorities = [...chosen, ...remaining];
-  state.priority = chosen[0] || state.priorities[0];
+  state.priority = chosen[0] || state.priorities[0] || 'Back';
 }
 
 function buildPriorityRanker() {
@@ -1060,16 +1073,24 @@ function buildPriorityRanker() {
     const dayKey = `d${i + 1}`;
     const focus = extractFocusName(line);
     const options = getDayFocusMuscles(focus).filter((muscle) => getPriorityMuscles().includes(muscle));
-    const selected = state.dayPriorities[dayKey] || options[0] || '';
-    const opts = options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`).join('');
+    const selected = state.dayPriorities[dayKey] ?? '';
+    const isCustom = !!selected && !options.includes(selected);
+    const opts = [
+      `<option value=""${selected === '' ? ' selected' : ''}>Select priority</option>`,
+      ...options.map((muscle) => `<option value="${muscle}"${selected === muscle ? ' selected' : ''}>${muscle}</option>`),
+      `<option value="__custom__"${isCustom ? ' selected' : ''}>Custom…</option>`
+    ].join('');
     const dayTypeSelect = `<select class="priority-rank-select" data-day-type="${dayKey}">
         ${dayTypeOptions.map((type) => `<option value="${type}"${focus === type ? ' selected' : ''}>${type}</option>`).join('')}
       </select>`;
-    return `<div class="priority-rank-item">
+    return `<div class="priority-rank-item${selected ? '' : ' missing-priority'}">
       <div class="priority-rank-label">Day ${i + 1} · ${focus}</div>
-      <div style="display:grid;gap:.45rem;">
+      <div>
+        <div class="priority-rank-controls">
         ${dayTypeSelect}
         <select class="priority-rank-select" data-day-priority="${dayKey}">${opts}</select>
+        </div>
+        ${isCustom ? `<div class="priority-rank-custom-wrap"><input type="text" class="priority-rank-custom-input" data-day-priority-custom="${dayKey}" placeholder="Enter custom priority muscle" value="${selected.replace(/"/g, '&quot;')}" /></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1086,7 +1107,17 @@ function buildPriorityRanker() {
   });
   list.querySelectorAll('[data-day-priority]').forEach((select) => {
     select.onchange = () => {
-      state.dayPriorities[select.dataset.dayPriority] = select.value;
+      state.dayPriorities[select.dataset.dayPriority] = select.value === '__custom__' ? '' : select.value;
+      applyPriorityProfileForFrequency();
+      applyPriorityTargetsToBaseRows();
+      buildPriorityRanker();
+      buildWorkoutBuilder();
+      if (state.step >= 9) buildSummary();
+    };
+  });
+  list.querySelectorAll('[data-day-priority-custom]').forEach((input) => {
+    input.oninput = () => {
+      state.dayPriorities[input.dataset.dayPriorityCustom] = input.value.trim();
       applyPriorityProfileForFrequency();
       applyPriorityTargetsToBaseRows();
       buildPriorityRanker();
@@ -1096,7 +1127,7 @@ function buildPriorityRanker() {
   });
   const picks = split.map((line, i) => {
     const focus = extractFocusName(line);
-    return `Day ${i + 1} (${focus}): ${state.dayPriorities[`d${i + 1}`]}`;
+    return `Day ${i + 1} (${focus}): ${state.dayPriorities[`d${i + 1}`] || 'Not selected'}`;
   });
   document.getElementById('priority-rank-help').textContent = `Priority picks (${split.length}/${state.freq} days): ${picks.join(' · ')}.`;
 }
@@ -1821,8 +1852,9 @@ function renderDayCards() {
     if (state.activeBuilderDay !== i + 1) return '';
     const namedLine = line.replace(' (Priority First)', '');
     const dayFocus = extractFocusName(namedLine);
-    const dayTarget = getPriorityTargetForDay(i);
     const dayKey = `d${i + 1}`;
+    const explicitDayPriority = state.dayPriorities[dayKey] || '';
+    const dayTarget = explicitDayPriority || getPriorityTargetForDay(i);
     const dayFocusMuscles = getDayFocusMuscles(dayFocus);
     const rows = dayState[dayKey].map((item, rowIndex) => {
       const anchorSlot = isAnchorSlot(dayState[dayKey], rowIndex);
@@ -1909,7 +1941,7 @@ function renderDayCards() {
     const deleteDayButton = split.length > 1
       ? `<button type="button" class="btn btn-compact" data-remove-day="${i + 1}">Delete Day</button>`
       : '';
-    return `<div class="day-card"><div class="day-heading-row"><h4>Day ${i + 1} · Priority Target: ${dayTarget}</h4><div style="display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;">${dayTypeControl}${deleteDayButton}</div></div>${rows}
+    return `<div class="day-card${explicitDayPriority ? '' : ' missing-priority'}"><div class="day-heading-row"><h4>Day ${i + 1} · Priority Target: ${explicitDayPriority || 'Not selected'}</h4><div style="display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;">${dayTypeControl}${deleteDayButton}</div></div>${rows}
       <div class="slot-controls" style="grid-template-columns:minmax(0,1fr) 132px;">
         <select class="slot-select" data-add-type="${dayKey}">
           <option value="Compound">Compound</option>
