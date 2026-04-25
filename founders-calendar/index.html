@@ -232,13 +232,12 @@
                   <option value="">Select Core...</option>
                   ${CORE_ORDER.map((core) => `<option value="${core}">${core}</option>`).join("")}
                 </select>
-                <input class="custom-label rounded-xl bg-white ring-1 ring-black/10 px-3 py-2 text-sm disabled:bg-black/5 disabled:text-cc-text/45" list="${customDataListId}" placeholder="Custom task" disabled />
-                <datalist id="${customDataListId}"></datalist>
                 <select class="day-activity w-full rounded-xl bg-white ring-1 ring-black/10 px-3 py-2 text-sm disabled:bg-black/5 disabled:text-cc-text/45 focus:outline-none focus:ring-2 focus:ring-cc-outline/70" disabled>
                   <option value="">Select Activity...</option>
                 </select>
-                <div class="sm:col-span-2 xl:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button type="button" class="add-custom rounded-xl px-3 py-2 text-sm font-semibold bg-white ring-1 ring-black/15 hover:bg-cc-bg">Add Custom</button>
+                <input class="custom-activity hidden rounded-xl bg-white ring-1 ring-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cc-outline/70" list="${customDataListId}" placeholder="Enter custom task" />
+                <datalist id="${customDataListId}"></datalist>
+                <div class="sm:col-span-2 xl:col-span-4 grid grid-cols-1 gap-2">
                   <button type="button" class="add-activity rounded-xl px-3 py-2 text-sm font-semibold bg-white ring-1 ring-black/15 hover:bg-cc-bg">Add</button>
                 </div>
               </div>
@@ -290,15 +289,16 @@
         dayGrid.querySelectorAll("[data-day-card]").forEach((card) => {
           const coreSelect = card.querySelector(".day-core");
           const activitySelect = card.querySelector(".day-activity");
-          const customInput = card.querySelector(".custom-label");
+          const customActivityInput = card.querySelector(".custom-activity");
           const customList = card.querySelector("datalist");
 
-          if (!coreSelect || !activitySelect || !customInput || !customList) return;
+          if (!coreSelect || !activitySelect || !customActivityInput || !customList) return;
 
           const setControlsForCore = (coreValue) => {
             const hasCore = Boolean(coreValue);
             activitySelect.disabled = !hasCore;
-            customInput.disabled = !hasCore;
+            customActivityInput.classList.add("hidden");
+            customActivityInput.value = "";
 
             activitySelect.innerHTML = `<option value="">Select Activity...</option>`;
             customList.innerHTML = "";
@@ -311,6 +311,10 @@
               option.textContent = activity;
               activitySelect.appendChild(option);
             });
+            const customOption = document.createElement("option");
+            customOption.value = "__custom__";
+            customOption.textContent = "Custom...";
+            activitySelect.appendChild(customOption);
 
             getCustomTasksByCore(coreValue).forEach((task) => {
               const option = document.createElement("option");
@@ -320,9 +324,18 @@
           };
 
           coreSelect.addEventListener("change", () => {
-            customInput.value = "";
             activitySelect.value = "";
             setControlsForCore(coreSelect.value);
+          });
+
+          activitySelect.addEventListener("change", () => {
+            const isCustomSelected = activitySelect.value === "__custom__";
+            customActivityInput.classList.toggle("hidden", !isCustomSelected);
+            if (!isCustomSelected) {
+              customActivityInput.value = "";
+              return;
+            }
+            customActivityInput.focus();
           });
 
           setControlsForCore(coreSelect.value);
@@ -337,35 +350,23 @@
         if (event.target.matches(".add-activity")) {
           const coreSelect = card.querySelector(".day-core");
           const activitySelect = card.querySelector(".day-activity");
+          const customActivityInput = card.querySelector(".custom-activity");
           const selectedCore = coreSelect?.value || "";
-          const selectedLabel = (activitySelect?.value || "").trim();
+          const selectedActivityValue = (activitySelect?.value || "").trim();
+          const isCustom = selectedActivityValue === "__custom__";
+          const selectedLabel = isCustom ? (customActivityInput?.value || "").trim() : selectedActivityValue;
           if (!selectedCore || !selectedLabel) {
-            statusMessage.textContent = "Select a core and activity first.";
+            statusMessage.textContent = isCustom ? "Enter a custom task first." : "Select a core and task first.";
             return;
           }
-          const wasAdded = addPriorityToDay(day, { label: selectedLabel, core: selectedCore, custom: false });
-          if (!wasAdded) {
-            statusMessage.textContent = "You can only add up to three unique priorities per day.";
+          if (isCustom) {
+            customPriorityMap[`${selectedCore.toLowerCase()}::${selectedLabel.toLowerCase()}`] = {
+              label: selectedLabel,
+              core: selectedCore,
+              custom: true,
+            };
           }
-          return;
-        }
-
-        if (event.target.matches(".add-custom")) {
-          const coreSelect = card.querySelector(".day-core");
-          const labelInput = card.querySelector(".custom-label");
-          const label = (labelInput.value || "").trim();
-          const core = coreSelect?.value || "";
-          if (!core) {
-            statusMessage.textContent = "Select a core first.";
-            return;
-          }
-          if (!label) {
-            statusMessage.textContent = "Enter a custom task before adding.";
-            return;
-          }
-
-          customPriorityMap[`${core.toLowerCase()}::${label.toLowerCase()}`] = { label, core, custom: true };
-          const wasAdded = addPriorityToDay(day, { label, core, custom: true });
+          const wasAdded = addPriorityToDay(day, { label: selectedLabel, core: selectedCore, custom: isCustom });
           if (!wasAdded) {
             statusMessage.textContent = "You can only add up to three unique priorities per day.";
           }
