@@ -71,6 +71,7 @@
     { title: "Running Calculator", core: "Body", url: `${root}running-calculator/index.html` },
     { title: "Macro Calculator", core: "Body", url: `${root}macro/index.html` },
     { title: "Gym Locator", core: "Body", url: `${root}gym-locator/index.html` },
+    { title: "Arcadia", core: "Body", url: `${root}arcadia/index.html` },
     { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/index.html` },
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
