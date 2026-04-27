@@ -6,7 +6,7 @@
     <title>Arcadia | Chasing Change</title>
     <meta
       name="description"
-      content="Arcadia is your premium recipe cookbook and repeatable meal library with macros per plate, batch size controls, and local recipe saving."
+      content="Arcadia is your recipe cookbook and repeatable meal library with macros per plate, batch size controls, and local recipe saving."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,20 +38,27 @@
       .btn { border: 0; border-radius: 12px; padding: 0.6rem 0.85rem; cursor: pointer; font-weight: 700; }
       .btn-accent { background: var(--accent); }
       .btn-dark { background: var(--text); color: #fff; }
-      .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-      .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; box-shadow: 0 14px 28px rgba(7, 31, 53, 0.08); display: flex; flex-direction: column; }
+      .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; box-shadow: 0 14px 28px rgba(7, 31, 53, 0.08); display: flex; flex-direction: column; gap: 0.45rem; }
       .meta { font-size: 0.84rem; opacity: 0.8; margin-bottom: 0.4rem; }
       .macro-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin: 0.6rem 0; }
       .metric { border: 1px solid var(--line); border-radius: 12px; padding: 0.45rem 0.55rem; background: #f9fbff; }
       .metric strong { display: block; font-family: "Raleway", sans-serif; font-size: 0.84rem; }
       .metric span { font-size: 0.9rem; }
       .recipe-actions { margin-top: auto; display: flex; gap: 0.45rem; flex-wrap: wrap; }
+      .open-card-btn { width: 100%; margin-top: 0.4rem; }
       .drawer-toggle { display: none; }
       .subtle { font-size: 0.82rem; opacity: 0.78; }
       .empty { border: 1px dashed var(--line); border-radius: 16px; padding: 1rem; text-align: center; background: #fff; }
       .serving-controls { display: flex; align-items: center; gap: 0.45rem; }
       .serving-controls button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
       .list { margin: 0.4rem 0 0; padding-left: 1rem; }
+      .recipe-dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; width: min(760px, calc(100vw - 2rem)); background: #fff; color: var(--text); box-shadow: 0 30px 80px rgba(7, 31, 53, 0.3); }
+      .recipe-dialog::backdrop { background: rgba(5, 21, 38, 0.5); backdrop-filter: blur(2px); }
+      .dialog-inner { padding: 1.2rem; }
+      .dialog-top { display: flex; justify-content: space-between; gap: 0.8rem; align-items: flex-start; }
+      .dialog-close { border: 1px solid var(--line); background: #fff; border-radius: 10px; width: 34px; height: 34px; cursor: pointer; font-size: 1.05rem; }
+      .dialog-heading { margin: 0.2rem 0 0.4rem; }
       @media (max-width: 920px) {
         .layout { grid-template-columns: 1fr; }
         .drawer-toggle { display: inline-flex; margin-top: 0.8rem; }
@@ -63,7 +70,7 @@
   <body class="cc-page">
     <main class="arcadia-wrap">
       <section class="hero">
-        <div class="kicker">Premium meal library</div>
+        <div class="kicker">Meal library</div>
         <h1>Arcadia</h1>
         <p class="quote">Naive and ideal innocence, unaffacted by the passions of the larger world</p>
         <button class="btn btn-dark drawer-toggle" id="mobileFilterToggle">Open Filters</button>
@@ -100,6 +107,9 @@
         </section>
       </section>
     </main>
+    <dialog id="recipeDialog" class="recipe-dialog">
+      <div class="dialog-inner" id="recipeDialogContent"></div>
+    </dialog>
 
     <footer class="w-full px-5 pb-5 sm:px-8">
       <p class="text-center text-xs text-cc-text/70 sm:text-sm" style="margin:0;text-align:center;">© 2026 Chasing Change — 1% better every day.</p>
@@ -169,19 +179,27 @@
 
       const state = {
         recipes: loadLibrary(),
-        activeTags: new Set()
+        activeTags: new Set(),
+        selectedRecipeId: null
       };
 
       const tagOptions = ["keto", "gluten-free", "high-protein"];
 
       function loadLibrary() {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return [...BUILT_IN_RECIPES];
+        const withDefaults = (recipes) => recipes.map((recipe) => ({
+          ...recipe,
+          servings: recipe.servings || 1,
+          platesMade: recipe.platesMade || recipe.servings || 1,
+          baseServings: recipe.baseServings || recipe.servings || 1,
+          baseIngredients: recipe.baseIngredients || JSON.parse(JSON.stringify(recipe.ingredients || []))
+        }));
+        if (!saved) return withDefaults(BUILT_IN_RECIPES);
         try {
           const parsed = JSON.parse(saved);
-          return Array.isArray(parsed) && parsed.length ? parsed : [...BUILT_IN_RECIPES];
+          return Array.isArray(parsed) && parsed.length ? withDefaults(parsed) : withDefaults(BUILT_IN_RECIPES);
         } catch {
-          return [...BUILT_IN_RECIPES];
+          return withDefaults(BUILT_IN_RECIPES);
         }
       }
 
@@ -228,7 +246,8 @@
       }
 
       function ingredientLinesFor(recipe, multiplier) {
-        return recipe.ingredients.map((ing) => {
+        const sourceIngredients = recipe.baseIngredients || recipe.ingredients || [];
+        return sourceIngredients.map((ing) => {
           const scaled = typeof ing.amount === "number" ? ing.amount * multiplier : ing.amount;
           return `<li>${ing.item}: ${formatNum(scaled)} ${ing.unit || ""}</li>`;
         }).join("");
@@ -248,32 +267,57 @@
             <article class="card" data-id="${recipe.id}">
               <div class="meta">${recipe.cuisine || "Global"} · ${recipe.price || "$$"}</div>
               <h3>${recipe.title}</h3>
-              <div class="subtle">Batch size: <strong>${recipe.servings}</strong> · Plates made: <strong>${recipe.platesMade}</strong> · Serves <strong>${recipe.servings}</strong> people</div>
-              <div class="serving-controls" style="margin-top:.6rem;">
-                <button type="button" data-dec="${recipe.id}">-</button>
-                <span><strong data-serving="${recipe.id}">${recipe.servings}</strong> servings</span>
-                <button type="button" data-inc="${recipe.id}">+</button>
-              </div>
+              <div class="subtle">Serves <strong>${recipe.servings}</strong> · ${recipe.servingLabel || "1 plate"} macros shown below</div>
               <div class="macro-grid">
                 <div class="metric"><strong>Macros per plate</strong><span>${recipe.macrosPerServing.calories} kcal</span></div>
                 <div class="metric"><strong>Protein anchor</strong><span>${recipe.macrosPerServing.protein}g protein</span></div>
                 <div class="metric"><strong>Carbs / Fat</strong><span>${recipe.macrosPerServing.carbs}g / ${recipe.macrosPerServing.fat}g</span></div>
-                <div class="metric"><strong>Total batch macros</strong><span>${Math.round(recipe.macrosPerServing.calories * recipe.servings)} kcal</span></div>
+                <div class="metric"><strong>Per serving</strong><span>${recipe.servingLabel || "1 plate"}</span></div>
               </div>
-              <div class="subtle">Serving label: ${recipe.servingLabel || "1 plate"}</div>
               <div class="chip-row">${allTags.map((tag) => `<span class="chip">${tag}</span>`).join("")}</div>
-              <details>
-                <summary>Ingredients + instructions</summary>
-                <ul class="list" data-ingredients="${recipe.id}">${ingredientLinesFor(recipe, 1)}</ul>
-                <ol class="list">${recipe.instructions.map((step) => `<li>${step}</li>`).join("")}</ol>
-                <p class="subtle">${recipe.notes || ""}</p>
-              </details>
-              <div class="recipe-actions">
-                <button class="btn" data-delete="${recipe.id}">Delete</button>
-              </div>
+              <button class="btn btn-dark open-card-btn" data-open="${recipe.id}">View recipe</button>
             </article>
           `;
         }).join("");
+      }
+
+      function renderRecipeDialog() {
+        const container = document.getElementById("recipeDialogContent");
+        const recipe = state.recipes.find((r) => r.id === state.selectedRecipeId);
+        if (!recipe) {
+          container.innerHTML = "";
+          return;
+        }
+        const allTags = [...(recipe.tags || []), ...(recipe.dietary || [])];
+        const multiplier = (recipe.servings || 1) / (recipe.baseServings || 1);
+        container.innerHTML = `
+          <div class="dialog-top">
+            <div>
+              <div class="meta">${recipe.cuisine || "Global"} · ${recipe.price || "$$"}</div>
+              <h3 class="dialog-heading">${recipe.title}</h3>
+            </div>
+            <button class="dialog-close" data-close-dialog aria-label="Close">×</button>
+          </div>
+          <div class="subtle">Batch size: <strong>${recipe.servings}</strong> · Plates made: <strong>${recipe.platesMade}</strong></div>
+          <div class="serving-controls" style="margin-top:.6rem;">
+            <button type="button" data-dec="${recipe.id}">-</button>
+            <span><strong data-serving="${recipe.id}">${recipe.servings}</strong> servings</span>
+            <button type="button" data-inc="${recipe.id}">+</button>
+          </div>
+          <div class="macro-grid">
+            <div class="metric"><strong>Macros per plate</strong><span>${recipe.macrosPerServing.calories} kcal</span></div>
+            <div class="metric"><strong>Protein anchor</strong><span>${recipe.macrosPerServing.protein}g protein</span></div>
+            <div class="metric"><strong>Carbs / Fat</strong><span>${recipe.macrosPerServing.carbs}g / ${recipe.macrosPerServing.fat}g</span></div>
+            <div class="metric"><strong>Serving label</strong><span>${recipe.servingLabel || "1 plate"}</span></div>
+          </div>
+          <div class="chip-row">${allTags.map((tag) => `<span class="chip">${tag}</span>`).join("")}</div>
+          <h4 style="font-family:Raleway,sans-serif;margin:.35rem 0;">Ingredients</h4>
+          <ul class="list">${ingredientLinesFor(recipe, multiplier)}</ul>
+          <h4 style="font-family:Raleway,sans-serif;margin:.55rem 0 0;">Instructions</h4>
+          <ol class="list">${recipe.instructions.map((step) => `<li>${step}</li>`).join("")}</ol>
+          <p class="subtle">${recipe.notes || ""}</p>
+          <div class="recipe-actions"><button class="btn" data-delete="${recipe.id}">Delete</button></div>
+        `;
       }
 
       function rerender() {
@@ -283,10 +327,18 @@
         persist();
       }
 
-      document.getElementById("recipeCards").addEventListener("click", (event) => {
+      function handleRecipeAction(event) {
         const incId = event.target.dataset.inc;
         const decId = event.target.dataset.dec;
         const delId = event.target.dataset.delete;
+        const openId = event.target.dataset.open;
+
+        if (openId) {
+          state.selectedRecipeId = openId;
+          renderRecipeDialog();
+          document.getElementById("recipeDialog").showModal();
+          return;
+        }
 
         if (incId || decId) {
           const id = incId || decId;
@@ -294,24 +346,29 @@
           if (!recipe) return;
           const oldServings = recipe.servings || 1;
           const nextServings = Math.max(1, oldServings + (incId ? 1 : -1));
-          const ratio = nextServings / oldServings;
           recipe.servings = nextServings;
-          recipe.platesMade = Math.max(1, Math.round((recipe.platesMade || oldServings) * ratio));
-          recipe.ingredients = recipe.ingredients.map((ing) => ({
-            ...ing,
-            amount: typeof ing.amount === "number" && !Number.isNaN(ing.amount) ? ing.amount * ratio : ing.amount
-          }));
+          recipe.platesMade = nextServings;
           rerender();
+          if (state.selectedRecipeId === id) {
+            renderRecipeDialog();
+          }
           return;
         }
 
         if (delId) {
           state.recipes = state.recipes.filter((r) => r.id !== delId);
+          if (state.selectedRecipeId === delId) {
+            state.selectedRecipeId = null;
+            document.getElementById("recipeDialog").close();
+          }
           rerender();
           return;
         }
 
-      });
+      }
+
+      document.getElementById("recipeCards").addEventListener("click", handleRecipeAction);
+      document.getElementById("recipeDialog").addEventListener("click", handleRecipeAction);
 
       ["cuisineFilter", "priceFilter", "maxCalories", "minProtein", "maxCarbs", "maxFat"].forEach((id) => {
         document.getElementById(id).addEventListener("input", renderCards);
@@ -328,6 +385,12 @@
 
       document.getElementById("mobileFilterToggle").addEventListener("click", () => {
         document.getElementById("filtersPanel").classList.toggle("open");
+      });
+
+      document.getElementById("recipeDialog").addEventListener("click", (event) => {
+        if (event.target.dataset.closeDialog !== undefined) {
+          document.getElementById("recipeDialog").close();
+        }
       });
 
       rerender();
