@@ -76,8 +76,16 @@
               placeholder="fat loss, better sleep, career clarity, routine..."
               class="w-full bg-transparent px-3 py-2 text-base text-cc-text placeholder:text-cc-text/45 focus:outline-none"
               aria-describedby="searchHelp"
+              aria-autocomplete="list"
+              aria-controls="predictivePanel"
             />
           </div>
+          <div
+            id="predictivePanel"
+            class="mt-2 hidden overflow-hidden rounded-2xl bg-cc-panel p-2 shadow-soft ring-1 ring-black/10"
+            role="listbox"
+            aria-label="Predictive search suggestions"
+          ></div>
           <p id="searchHelp" class="mt-3 text-xs text-cc-text/55">Type naturally. We’ll recommend the best next resource.</p>
 
           <!-- Suggestions (shown only while search is empty) -->
@@ -383,6 +391,7 @@
       const searchInput = document.getElementById("searchInput");
       const resultsPanel = document.getElementById("resultsPanel");
       const suggestionsContainer = document.getElementById("suggestions");
+      const predictivePanel = document.getElementById("predictivePanel");
 
       function normalizeText(value = "") {
         return value
@@ -468,6 +477,74 @@
           .map((entry) => entry.resource);
       }
 
+      function getPredictionCandidates() {
+        const candidateSet = new Set();
+        suggestedSearches.forEach((term) => candidateSet.add(term));
+
+        resources.forEach((resource) => {
+          candidateSet.add(resource.title);
+          resource.tags.forEach((tag) => candidateSet.add(tag));
+          resource.keywords.forEach((keyword) => candidateSet.add(keyword));
+          resource.triggers.forEach((trigger) => candidateSet.add(trigger));
+        });
+
+        return [...candidateSet];
+      }
+
+      const predictionCandidates = getPredictionCandidates();
+
+      function getPredictions(query) {
+        const normalizedQuery = normalizeText(query);
+        if (!normalizedQuery || normalizedQuery.length < 2) return [];
+
+        return predictionCandidates
+          .map((candidate) => ({
+            label: candidate,
+            normalized: normalizeText(candidate),
+          }))
+          .filter(({ normalized }) => normalized.includes(normalizedQuery) && normalized !== normalizedQuery)
+          .sort((a, b) => {
+            const aStarts = a.normalized.startsWith(normalizedQuery) ? 0 : 1;
+            const bStarts = b.normalized.startsWith(normalizedQuery) ? 0 : 1;
+            if (aStarts !== bStarts) return aStarts - bStarts;
+            return a.normalized.length - b.normalized.length;
+          })
+          .slice(0, 5)
+          .map(({ label }) => label);
+      }
+
+      function renderPredictions(query) {
+        const predictions = getPredictions(query);
+
+        if (!predictions.length) {
+          predictivePanel.classList.add("hidden");
+          predictivePanel.innerHTML = "";
+          return;
+        }
+
+        predictivePanel.classList.remove("hidden");
+        predictivePanel.innerHTML = `
+          <ul class="space-y-1">
+            ${predictions
+              .map(
+                (prediction) => `
+                  <li>
+                    <button
+                      type="button"
+                      class="w-full rounded-xl px-3 py-2 text-left text-sm text-cc-text/80 transition hover:bg-cc-text/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-accent"
+                      data-prediction="${prediction}"
+                      role="option"
+                    >
+                      ${prediction}
+                    </button>
+                  </li>
+                `,
+              )
+              .join("")}
+          </ul>
+        `;
+      }
+
       function resultItemTemplate(resource) {
         const isLive = resource.status === "live";
         const ctaText = isLive ? (resource.type === "Calculator" || resource.type === "Tracker" ? "Open Tool" : "View Resource") : "Coming Soon";
@@ -544,7 +621,30 @@
       }
 
       searchInput.addEventListener("input", (event) => {
-        renderResults(event.target.value);
+        const query = event.target.value;
+        renderPredictions(query);
+        renderResults(query);
+      });
+
+      searchInput.addEventListener("blur", () => {
+        // Delay allows suggestion click to register before hiding panel.
+        setTimeout(() => {
+          predictivePanel.classList.add("hidden");
+        }, 120);
+      });
+
+      searchInput.addEventListener("focus", () => {
+        renderPredictions(searchInput.value);
+      });
+
+      predictivePanel.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-prediction]");
+        if (!button) return;
+        const prediction = button.dataset.prediction;
+        searchInput.value = prediction;
+        searchInput.focus();
+        renderPredictions(prediction);
+        renderResults(prediction);
       });
 
       suggestionsContainer.addEventListener("click", (event) => {
@@ -552,6 +652,7 @@
         if (!button) return;
         searchInput.value = button.dataset.suggestion;
         searchInput.focus();
+        renderPredictions(button.dataset.suggestion);
         renderResults(button.dataset.suggestion);
       });
 
