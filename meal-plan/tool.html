@@ -19,12 +19,12 @@
     <style>
       :root { --bg: #f5f5f7; --text: #071f35; --accent: #77d770; --card: #ffffff; --line: rgba(7, 31, 53, 0.14); }
       * { box-sizing: border-box; }
-      body { margin: 0; background: radial-gradient(circle at top right, #ffffff 0%, var(--bg) 45%), var(--bg); color: var(--text); font-family: "Muli", system-ui, sans-serif; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", system-ui, sans-serif; }
       .arcadia-wrap { max-width: 1200px; margin: 0 auto; padding: 7.5rem 1rem 2rem; }
       .hero { background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%); border: 1px solid var(--line); border-radius: 24px; padding: 1.5rem; box-shadow: 0 20px 45px rgba(7, 31, 53, 0.08); }
       .kicker { font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; color: #386a3e; }
       h1 { font-family: "Museo Moderno", sans-serif; margin: 0.2rem 0 0.5rem; font-size: clamp(2rem, 6vw, 3.2rem); }
-      .hero h2 { margin: 0 0 0.35rem; font-family: "Raleway", sans-serif; font-size: clamp(1rem, 3.5vw, 1.5rem); }
+      .hero .quote { margin: 0.4rem 0 0.2rem; font-family: "Raleway", sans-serif; font-size: clamp(1rem, 3vw, 1.3rem); opacity: 0.9; }
       .hero p { margin: 0.2rem 0; opacity: 0.85; }
       .layout { display: grid; gap: 1rem; grid-template-columns: 320px 1fr; margin-top: 1rem; }
       .panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; }
@@ -65,9 +65,7 @@
       <section class="hero">
         <div class="kicker">Premium meal library</div>
         <h1>Arcadia</h1>
-        <h2>Build your repeatable meals.</h2>
-        <p>Save the meals that move you forward.</p>
-        <p class="subtle">Stop guessing. Start planning. Dial in your <strong>protein anchor</strong> with macros per plate and batch size clarity.</p>
+        <p class="quote">Naive and ideal innocence, unaffacted by the passions of the larger world</p>
         <button class="btn btn-dark drawer-toggle" id="mobileFilterToggle">Open Filters</button>
       </section>
 
@@ -98,33 +96,6 @@
         </aside>
 
         <section>
-          <div class="panel form" style="margin-bottom: 1rem;">
-            <h3>Save a recipe to Arcadia</h3>
-            <label>Title<input id="recipeTitle" /></label>
-            <label>Cuisine<input id="recipeCuisine" placeholder="Mediterranean" /></label>
-            <label>Price tier ($ / $$ / $$$)<input id="recipePrice" placeholder="$$" /></label>
-            <label>Batch size / serves<input id="recipeServings" type="number" min="1" step="1" value="4" /></label>
-            <label>Plates made<input id="recipePlates" type="number" min="1" step="1" value="4" /></label>
-            <label>Serving label<input id="recipeServingLabel" value="1 plate" /></label>
-            <label>Tags (comma-separated)<input id="recipeTags" placeholder="high-protein, dinner" /></label>
-            <label>Dietary (comma-separated)<input id="recipeDietary" placeholder="gluten-free" /></label>
-            <label>Calories per serving<input id="macroCalories" type="number" min="0" /></label>
-            <label>Protein per serving<input id="macroProtein" type="number" min="0" /></label>
-            <label>Carbs per serving<input id="macroCarbs" type="number" min="0" /></label>
-            <label>Fat per serving<input id="macroFat" type="number" min="0" /></label>
-            <label>Ingredients (one per line: item | amount | unit)
-              <textarea id="recipeIngredients" rows="4" placeholder="Chicken breast | 1.5 | lb"></textarea>
-            </label>
-            <label>Instructions (one per line)
-              <textarea id="recipeInstructions" rows="4"></textarea>
-            </label>
-            <label>Notes<textarea id="recipeNotes" rows="2"></textarea></label>
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-              <button class="btn btn-accent" id="saveRecipeBtn">Save recipe</button>
-              <button class="btn" id="clearFormBtn" type="button">Clear</button>
-            </div>
-          </div>
-
           <div id="recipeCards" class="cards"></div>
         </section>
       </section>
@@ -198,8 +169,7 @@
 
       const state = {
         recipes: loadLibrary(),
-        activeTags: new Set(),
-        editingId: null
+        activeTags: new Set()
       };
 
       const tagOptions = ["keto", "gluten-free", "high-protein"];
@@ -299,7 +269,6 @@
                 <p class="subtle">${recipe.notes || ""}</p>
               </details>
               <div class="recipe-actions">
-                <button class="btn" data-edit="${recipe.id}">Edit</button>
                 <button class="btn" data-delete="${recipe.id}">Delete</button>
               </div>
             </article>
@@ -314,59 +283,10 @@
         persist();
       }
 
-      function parseIngredients(text) {
-        return text.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
-          const [item, amount, unit] = line.split("|").map((x) => (x || "").trim());
-          return { item, amount: Number(amount), unit };
-        });
-      }
-
-      function resetForm() {
-        document.querySelectorAll(".form input, .form textarea").forEach((input) => {
-          if (input.id === "recipeServings" || input.id === "recipePlates") input.value = "4";
-          else if (input.id === "recipeServingLabel") input.value = "1 plate";
-          else input.value = "";
-        });
-        state.editingId = null;
-      }
-
-      document.getElementById("saveRecipeBtn").addEventListener("click", () => {
-        const recipe = {
-          id: state.editingId || `recipe-${Date.now()}`,
-          title: document.getElementById("recipeTitle").value.trim(),
-          cuisine: document.getElementById("recipeCuisine").value.trim() || "Global",
-          tags: document.getElementById("recipeTags").value.split(",").map((x) => x.trim()).filter(Boolean),
-          dietary: document.getElementById("recipeDietary").value.split(",").map((x) => x.trim()).filter(Boolean),
-          price: document.getElementById("recipePrice").value.trim() || "$$",
-          servings: Number(document.getElementById("recipeServings").value || 1),
-          platesMade: Number(document.getElementById("recipePlates").value || 1),
-          servingLabel: document.getElementById("recipeServingLabel").value.trim() || "1 plate",
-          macrosPerServing: {
-            calories: Number(document.getElementById("macroCalories").value || 0),
-            protein: Number(document.getElementById("macroProtein").value || 0),
-            carbs: Number(document.getElementById("macroCarbs").value || 0),
-            fat: Number(document.getElementById("macroFat").value || 0)
-          },
-          ingredients: parseIngredients(document.getElementById("recipeIngredients").value),
-          instructions: document.getElementById("recipeInstructions").value.split("\n").map((x) => x.trim()).filter(Boolean),
-          notes: document.getElementById("recipeNotes").value.trim()
-        };
-
-        if (!recipe.title) return;
-        const index = state.recipes.findIndex((r) => r.id === recipe.id);
-        if (index >= 0) state.recipes[index] = recipe;
-        else state.recipes.unshift(recipe);
-        resetForm();
-        rerender();
-      });
-
-      document.getElementById("clearFormBtn").addEventListener("click", resetForm);
-
       document.getElementById("recipeCards").addEventListener("click", (event) => {
         const incId = event.target.dataset.inc;
         const decId = event.target.dataset.dec;
         const delId = event.target.dataset.delete;
-        const editId = event.target.dataset.edit;
 
         if (incId || decId) {
           const id = incId || decId;
@@ -391,27 +311,6 @@
           return;
         }
 
-        if (editId) {
-          const recipe = state.recipes.find((r) => r.id === editId);
-          if (!recipe) return;
-          state.editingId = editId;
-          document.getElementById("recipeTitle").value = recipe.title || "";
-          document.getElementById("recipeCuisine").value = recipe.cuisine || "";
-          document.getElementById("recipePrice").value = recipe.price || "$$";
-          document.getElementById("recipeServings").value = recipe.servings || 1;
-          document.getElementById("recipePlates").value = recipe.platesMade || recipe.servings || 1;
-          document.getElementById("recipeServingLabel").value = recipe.servingLabel || "1 plate";
-          document.getElementById("recipeTags").value = (recipe.tags || []).join(", ");
-          document.getElementById("recipeDietary").value = (recipe.dietary || []).join(", ");
-          document.getElementById("macroCalories").value = recipe.macrosPerServing?.calories ?? "";
-          document.getElementById("macroProtein").value = recipe.macrosPerServing?.protein ?? "";
-          document.getElementById("macroCarbs").value = recipe.macrosPerServing?.carbs ?? "";
-          document.getElementById("macroFat").value = recipe.macrosPerServing?.fat ?? "";
-          document.getElementById("recipeIngredients").value = (recipe.ingredients || []).map((ing) => `${ing.item} | ${ing.amount} | ${ing.unit || ""}`).join("\n");
-          document.getElementById("recipeInstructions").value = (recipe.instructions || []).join("\n");
-          document.getElementById("recipeNotes").value = recipe.notes || "";
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
       });
 
       ["cuisineFilter", "priceFilter", "maxCalories", "minProtein", "maxCarbs", "maxFat"].forEach((id) => {
