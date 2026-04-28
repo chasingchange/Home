@@ -10,6 +10,14 @@
       ],
     },
     {
+      name: "Jack Williams",
+      year: "2026",
+      paragraphs: [
+        "When I started working with Tyler I knew pretty much nothing about the gym or splits or nutrition. He does a fantastic job of making sure you can be comfortable and not overwhelmed, while also giving you the tools you need to keep moving towards your goals down the line.",
+        "In the past I’d tried lots of things that didn’t end up working, either because I didn’t have the right mindset going in or I just didn’t know enough and got in over my head. Tyler gives you all the tools you need to succeed and a judgement-free space to do it in. There’s no way I could’ve reached my goals without him and I’m excited to start working towards new goals with the confidence and knowledge I’ve gained from my time in his program.",
+      ],
+    },
+    {
       name: "Tanner Childress",
       year: "2025",
       paragraphs: [

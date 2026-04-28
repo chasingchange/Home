@@ -110,7 +110,7 @@
               <button type="submit" class="rounded-xl bg-cc-outline px-4 py-2 text-sm font-bold text-cc-text">Add testimonial</button>
             </form>
           </div>
-          <h3 class="mt-6 text-xs sm:text-sm font-heading font-bold uppercase tracking-[0.2em] text-cc-text/60">2025 Cohort</h3>
+          <h3 class="mt-6 text-xs sm:text-sm font-heading font-bold uppercase tracking-[0.2em] text-cc-text/60">Client Cohorts</h3>
           <div id="testimonialGrid" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 items-start auto-rows-auto">
           </div>
         </section>
@@ -175,8 +175,25 @@
         return article;
       };
 
+      const isValidTestimonial = (item) =>
+        item?.name && item?.year && Array.isArray(item?.paragraphs) && item.paragraphs.length;
+      const normalizeTestimonialKey = (item) => `${item?.name || ""}::${item?.year || ""}`.toLowerCase();
+
       const savedTestimonials = window.CCTestimonialsStore?.load() || [];
+      const defaultTestimonials = window.CCTestimonialsStore?.defaults || [];
+      const mergedTestimonialsMap = new Map();
+
+      defaultTestimonials.forEach((item) => {
+        if (!isValidTestimonial(item)) return;
+        mergedTestimonialsMap.set(normalizeTestimonialKey(item), item);
+      });
+
       savedTestimonials.forEach((item) => {
+        if (!isValidTestimonial(item)) return;
+        mergedTestimonialsMap.set(normalizeTestimonialKey(item), item);
+      });
+
+      Array.from(mergedTestimonialsMap.values()).forEach((item) => {
         if (item?.name && item?.year && Array.isArray(item?.paragraphs) && item.paragraphs.length) {
           testimonialGrid.appendChild(createTestimonialCard(item));
         }
