@@ -1279,6 +1279,11 @@ main[class*="max-w-"],
     pointer-events: none;
     transition: opacity var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), transform var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), visibility 0s linear var(--cc-nav-duration-premium);
     will-change: transform, opacity;
+    max-height: min(78vh, calc(100dvh - 6rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .cc-global-nav {
@@ -1388,7 +1393,6 @@ main[class*="max-w-"],
     left: 0;
     right: 0;
     width: 100%;
-    touch-action: none;
   }
 }
 
