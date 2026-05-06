@@ -204,6 +204,50 @@
     }
   }
 
+
+
+  function downloadSummaryPng(payload) {
+    const width = 1400;
+    const height = 1800;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return false;
+
+    ctx.fillStyle = "#f5f5f7";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#071f35";
+    ctx.font = "700 58px Raleway, Arial, sans-serif";
+    ctx.fillText(payload.toolName || "Macro Calculator", 80, 120);
+    ctx.font = "500 34px Muli, Arial, sans-serif";
+    ctx.fillText(`Generated ${new Date().toLocaleString()}`, 80, 170);
+
+    let y = 250;
+    const lineHeight = 46;
+    (payload.sections || []).forEach((section) => {
+      ctx.fillStyle = "#77d770";
+      ctx.font = "700 40px Raleway, Arial, sans-serif";
+      ctx.fillText((section.title || "Section").toUpperCase(), 80, y);
+      y += 55;
+      ctx.fillStyle = "#071f35";
+      ctx.font = "500 30px Muli, Arial, sans-serif";
+      (section.fields || []).forEach((field) => {
+        if (y > height - 80) return;
+        const label = field?.label || "Field";
+        const value = String(field?.value ?? "—");
+        ctx.fillText(`${label}: ${value}`, 100, y);
+        y += lineHeight;
+      });
+      y += 35;
+    });
+
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `${buildFileName(payload.toolSlug).replace(/\.pdf$/i, "")}.png`;
+    link.click();
+    return true;
+  }
   function registerTool(config) {
     const container = typeof config.buttonTarget === "string"
       ? document.querySelector(config.buttonTarget)
@@ -227,10 +271,16 @@
     downloadBtn.textContent = "Download PDF";
     downloadBtn.className = config.downloadButtonClass || "btn";
 
+    const pngBtn = document.createElement("button");
+    pngBtn.type = "button";
+    pngBtn.textContent = "Save as PNG";
+    pngBtn.className = config.downloadButtonClass || "btn";
+
     wrap.appendChild(emailBtn);
     if (config.includeDownloadButton !== false) {
       wrap.appendChild(downloadBtn);
     }
+    wrap.appendChild(pngBtn);
 
     const messageEl = document.createElement("p");
     messageEl.className = "cc-coach-export-msg";
@@ -301,6 +351,13 @@
       messageEl.textContent = "Your PDF has been downloaded.";
     });
 
+    pngBtn.addEventListener("click", async () => {
+      const extracted = await runtimeConfig.extract();
+      const payload = normalizePayload(runtimeConfig, extracted || {});
+      const ok = downloadSummaryPng(payload);
+      messageEl.textContent = ok ? "Your PNG has been saved." : "Could not create PNG.";
+    });
+
     copyBtn.addEventListener("click", async () => {
       try {
         if (navigator.clipboard?.writeText) {
@@ -322,7 +379,7 @@
       }
     });
 
-    return { emailBtn, downloadBtn, messageEl, copyBtn };
+    return { emailBtn, downloadBtn, pngBtn, messageEl, copyBtn };
   }
 
   window.CCCoachExport = {
