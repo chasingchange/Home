@@ -105,6 +105,20 @@
               </div>
 
               <div class="space-y-5">
+                <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/35">
+                  <label for="quickProfileInput" class="block text-sm font-semibold mb-2">Quick Profile Paste</label>
+                  <textarea
+                    id="quickProfileInput"
+                    rows="3"
+                    placeholder="Example: 34 year old female, 165 lbs, 5'7, moderate activity, goal lose, target 150 lbs"
+                    class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
+                  ></textarea>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <button id="parseProfileBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Parse Into Fields</button>
+                    <p id="quickProfileStatus" class="text-xs opacity-80 self-center">Paste age, weight, height, activity, and goals in one line.</p>
+                  </div>
+                </div>
+
                 <!-- Units toggle -->
                 <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
                   <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -671,6 +685,9 @@
 
       const targetBodyFatEl = document.getElementById("targetBodyFat");
       const targetBodyFatErrorEl = document.getElementById("targetBodyFatError");
+      const quickProfileInputEl = document.getElementById("quickProfileInput");
+      const parseProfileBtn = document.getElementById("parseProfileBtn");
+      const quickProfileStatusEl = document.getElementById("quickProfileStatus");
 
       const resultsEl = document.getElementById("results");
       const proteinCapBox = document.getElementById("proteinCapBox");
@@ -1120,6 +1137,111 @@
         }
       }
 
+      function setQuickProfileStatus(message, isError = false) {
+        if (!quickProfileStatusEl) return;
+        quickProfileStatusEl.textContent = message;
+        quickProfileStatusEl.classList.toggle("text-red-700", !!isError);
+        quickProfileStatusEl.classList.toggle("text-emerald-700", !isError);
+      }
+
+      function parseQuickProfileText() {
+        const raw = quickProfileInputEl?.value?.trim();
+        if (!raw) {
+          setQuickProfileStatus("Add details first, then parse.", true);
+          return;
+        }
+
+        const text = raw.toLowerCase();
+        let applied = 0;
+
+        if (/\bmale\b/.test(text)) {
+          sexEl.value = "male";
+          applied += 1;
+        } else if (/\bfemale\b/.test(text)) {
+          sexEl.value = "female";
+          applied += 1;
+        }
+
+        const ageMatch = text.match(/(\d{1,3})\s*(?:years?\s*old|yo\b|y\/o\b|yrs?\b)/);
+        if (ageMatch) {
+          ageEl.value = ageMatch[1];
+          applied += 1;
+        }
+
+        const lbMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs|pounds?)/);
+        const kgMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*kg\b/);
+        if (lbMatch) {
+          setUnit("us");
+          weightLbEl.value = lbMatch[1];
+          applied += 1;
+        } else if (kgMatch) {
+          setUnit("metric");
+          weightKgEl.value = kgMatch[1];
+          applied += 1;
+        }
+
+        const usHeightMatch = text.match(/(\d)\s*(?:ft|feet|')\s*(\d{1,2})?\s*(?:in|inches|")?/);
+        const cmMatch = text.match(/(\d{3})\s*cm\b/);
+        if (usHeightMatch) {
+          setUnit("us");
+          heightFtEl.value = usHeightMatch[1];
+          heightInEl.value = usHeightMatch[2] || "0";
+          applied += 1;
+        } else if (cmMatch) {
+          setUnit("metric");
+          heightCmEl.value = cmMatch[1];
+          applied += 1;
+        }
+
+        const activityMap = [
+          { pattern: /\bvery active\b|hard training|physical job/, value: "veryActive" },
+          { pattern: /\bactive\b/, value: "active" },
+          { pattern: /\bmoderate\b/, value: "moderate" },
+          { pattern: /\blight\b/, value: "light" },
+          { pattern: /\bsedentary\b|little exercise|desk job/, value: "sedentary" },
+        ];
+        const matchedActivity = activityMap.find((item) => item.pattern.test(text));
+        if (matchedActivity) {
+          activityEl.value = matchedActivity.value;
+          applied += 1;
+        }
+
+        if (/\blose|cut\b/.test(text)) { setGoalMode("standard"); setGoal("lose"); applied += 1; }
+        else if (/\bgain|bulk\b/.test(text)) { setGoalMode("standard"); setGoal("gain"); applied += 1; }
+        else if (/\bmaintain|recomp\b/.test(text)) { setGoalMode("standard"); setGoal("maintain"); applied += 1; }
+
+        const targetWeightLbMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs|pounds?)/);
+        const targetWeightKgMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*kg\b/);
+        if (targetWeightLbMatch) {
+          setGoalMode("targetWeight");
+          setUnit("us");
+          targetWeightLbEl.value = targetWeightLbMatch[1];
+          applied += 1;
+        } else if (targetWeightKgMatch) {
+          setGoalMode("targetWeight");
+          setUnit("metric");
+          targetWeightKgEl.value = targetWeightKgMatch[1];
+          applied += 1;
+        }
+
+        const targetBodyFatMatch = text.match(/target(?:\s*body\s*fat)?[^0-9]*(\d{1,2}(?:\.\d+)?)\s*%/);
+        if (targetBodyFatMatch && /body\s*fat/.test(text)) {
+          setGoalMode("targetBodyFat");
+          targetBodyFatEl.value = targetBodyFatMatch[1];
+          applied += 1;
+        }
+
+        const currentBodyFatMatch = text.match(/(?:body\s*fat|bf)[^0-9]*(\d{1,2}(?:\.\d+)?)\s*%/);
+        if (currentBodyFatMatch) {
+          bodyFatEl.value = currentBodyFatMatch[1];
+          applied += 1;
+        }
+
+        updateWeeklyByTargets();
+        updateIdealBodyWeightPreview();
+        setQuickProfileStatus(applied > 0 ? `Parsed ${applied} field${applied === 1 ? "" : "s"} from your text.` : "Could not find known values. Try including units like lbs/kg and ft/in or cm.", applied === 0);
+      }
+
       function calculate() {
         hide(weightErrorEl);
         hide(ageErrorEl);
@@ -1434,6 +1556,7 @@ const proteinPerLb =
 
       document.getElementById("unitUS").addEventListener("click", () => setUnit("us"));
       document.getElementById("unitMetric").addEventListener("click", () => setUnit("metric"));
+      parseProfileBtn?.addEventListener("click", parseQuickProfileText);
 
       document.getElementById("goalLose").addEventListener("click", () => setGoal("lose"));
       document.getElementById("goalMaintain").addEventListener("click", () => setGoal("maintain"));
