@@ -466,14 +466,10 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="summary-layout">
       <div class="summary-main">
         <div class="summary-tabs">
-          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros</button>
-          <button type="button" class="summary-tab" data-summary-tab="workouts">Split</button>
+          <button type="button" class="summary-tab on" data-summary-tab="overview">Summary + Macros + Split</button>
         </div>
         <div class="summary-panel active" id="overview-summary-panel">
           <div id="overview-summary-content"></div>
-        </div>
-        <div class="summary-panel" id="workouts-summary-panel">
-          <div id="split-workouts-panel"></div>
         </div>
       </div>
       <aside class="summary-side" id="summary-save-card">
@@ -2179,8 +2175,6 @@ function buildSummary() {
       <ul class="weekly-volume-list">${condensedVolumeRows}</ul>
       <p class="weekly-volume-insight">${getVolumeInsight(volumeRows)}</p>
     </div>
-  `;
-  document.getElementById('split-workouts-panel').innerHTML = `
     <div class="week">
       <h3>Split</h3>
       <p class="step-sub">Any workout row marked red is still not set and needs an exercise selection.</p>
@@ -2575,9 +2569,7 @@ document.querySelectorAll('[data-summary-tab]').forEach((btn) => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-summary-tab]').forEach((node) => node.classList.remove('on'));
     btn.classList.add('on');
-    const showWorkouts = btn.dataset.summaryTab === 'workouts';
-    document.getElementById('overview-summary-panel').classList.toggle('active', !showWorkouts);
-    document.getElementById('workouts-summary-panel').classList.toggle('active', showWorkouts);
+    document.getElementById('overview-summary-panel').classList.add('active');
   });
 });
 
@@ -2678,12 +2670,6 @@ document.getElementById('back-btn').addEventListener('click', () => {
 
 
 function getActiveSummaryPanel() {
-  const overviewActive = document.getElementById('overview-summary-panel')?.classList.contains('active');
-  if (overviewActive) return document.getElementById('overview-summary-content');
-
-  const workoutsPanelActive = document.getElementById('workouts-summary-panel')?.classList.contains('active');
-  if (workoutsPanelActive) return document.getElementById('split-workouts-panel');
-
   return document.getElementById('overview-summary-content');
 }
 
