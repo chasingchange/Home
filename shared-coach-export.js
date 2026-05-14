@@ -13,7 +13,6 @@
       heading: "Raleway",
       body: "Muli",
     },
-    coachEmail: "tywadebusiness@gmail.com",
   };
 
   function todayStamp() {
@@ -29,36 +28,6 @@
 
   function buildFileName(toolSlug) {
     return `${slugify(toolSlug)}-${todayStamp()}.pdf`;
-  }
-
-  function openCoachMailDraft(toolName) {
-    const subject = `Chasing Change Tool Submission — ${toolName}`;
-    const body = [
-      "Hi Tyler,",
-      "",
-      `I’m sending over my result from the ${toolName} tool.`,
-      "",
-      "Please see the attached PDF.",
-      "",
-      "Name:",
-      "Email:",
-      "Notes:",
-    ].join("\n");
-
-    const mailto = `mailto:${BRAND.coachEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    const link = document.createElement("a");
-    link.href = mailto;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    return { mailto, subject, body };
-  }
-
-  // Future direct-send hook. Replace this function later with EmailJS/Resend/SendGrid.
-  async function sendCoachEmail(payload) {
-    const draft = openCoachMailDraft(payload.toolName);
-    return { ok: true, mode: "mailto", draft };
   }
 
   function getPdfLib() {
@@ -183,70 +152,19 @@
     return doc;
   }
 
-  async function runExport(config, mode) {
+  async function runExport(config) {
     const extracted = await config.extract();
     const payload = normalizePayload(config, extracted || {});
     const fileName = buildFileName(payload.toolSlug);
     const pdf = generateBrandedPdf(payload);
     pdf.save(fileName);
 
-    if (mode === "email") {
-      await sendCoachEmail(payload);
-    }
-
     if (config.messageTarget) {
       const target = typeof config.messageTarget === "string" ? document.querySelector(config.messageTarget) : config.messageTarget;
       if (target) {
-        target.textContent = mode === "email"
-          ? "Your PDF was downloaded. We opened your default email app with a draft to tywadebusiness@gmail.com. Attach the PDF before sending."
-          : "Your PDF has been downloaded.";
+        target.textContent = "Your PDF has been downloaded.";
       }
     }
-  }
-
-
-
-  function downloadSummaryPng(payload) {
-    const width = 1400;
-    const height = 1800;
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return false;
-
-    ctx.fillStyle = "#f5f5f7";
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#071f35";
-    ctx.font = "700 58px Raleway, Arial, sans-serif";
-    ctx.fillText(payload.toolName || "Macro Calculator", 80, 120);
-    ctx.font = "500 34px Muli, Arial, sans-serif";
-    ctx.fillText(`Generated ${new Date().toLocaleString()}`, 80, 170);
-
-    let y = 250;
-    const lineHeight = 46;
-    (payload.sections || []).forEach((section) => {
-      ctx.fillStyle = "#77d770";
-      ctx.font = "700 40px Raleway, Arial, sans-serif";
-      ctx.fillText((section.title || "Section").toUpperCase(), 80, y);
-      y += 55;
-      ctx.fillStyle = "#071f35";
-      ctx.font = "500 30px Muli, Arial, sans-serif";
-      (section.fields || []).forEach((field) => {
-        if (y > height - 80) return;
-        const label = field?.label || "Field";
-        const value = String(field?.value ?? "—");
-        ctx.fillText(`${label}: ${value}`, 100, y);
-        y += lineHeight;
-      });
-      y += 35;
-    });
-
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    link.download = `${buildFileName(payload.toolSlug).replace(/\.pdf$/i, "")}.png`;
-    link.click();
-    return true;
   }
   function registerTool(config) {
     const container = typeof config.buttonTarget === "string"
@@ -261,26 +179,13 @@
     wrap.style.gap = "8px";
     wrap.style.marginTop = "12px";
 
-    const emailBtn = document.createElement("button");
-    emailBtn.type = "button";
-    emailBtn.textContent = "Email This to Your Coach";
-    emailBtn.className = config.emailButtonClass || "btn btn-p";
-
     const downloadBtn = document.createElement("button");
     downloadBtn.type = "button";
     downloadBtn.textContent = "Download PDF";
     downloadBtn.className = config.downloadButtonClass || "btn";
-
-    const pngBtn = document.createElement("button");
-    pngBtn.type = "button";
-    pngBtn.textContent = "Save as PNG";
-    pngBtn.className = config.downloadButtonClass || "btn";
-
-    wrap.appendChild(emailBtn);
     if (config.includeDownloadButton !== false) {
       wrap.appendChild(downloadBtn);
     }
-    wrap.appendChild(pngBtn);
 
     const messageEl = document.createElement("p");
     messageEl.className = "cc-coach-export-msg";
@@ -288,104 +193,20 @@
     messageEl.style.fontSize = "0.85rem";
     messageEl.style.color = BRAND.colors.muted;
 
-    const helperNote = document.createElement("p");
-    helperNote.className = "cc-coach-export-helper";
-    helperNote.textContent = "Opens your default email app.";
-    helperNote.style.marginTop = "8px";
-    helperNote.style.marginBottom = "0";
-    helperNote.style.fontSize = "0.8rem";
-    helperNote.style.color = BRAND.colors.muted;
-
-    const fallbackWrap = document.createElement("div");
-    fallbackWrap.className = "cc-coach-export-fallback";
-    fallbackWrap.style.display = "none";
-    fallbackWrap.style.marginTop = "10px";
-    fallbackWrap.style.padding = "10px 12px";
-    fallbackWrap.style.background = "#fff";
-    fallbackWrap.style.border = "1px solid rgba(7,31,53,0.15)";
-    fallbackWrap.style.borderRadius = "10px";
-
-    const fallbackMsg = document.createElement("p");
-    fallbackMsg.style.margin = "0 0 8px 0";
-    fallbackMsg.style.fontSize = "0.85rem";
-    fallbackMsg.style.color = BRAND.colors.text;
-    fallbackMsg.textContent = "If your email draft didn’t open, send your PDF to:";
-
-    const emailText = document.createElement("p");
-    emailText.style.margin = "0 0 8px 0";
-    emailText.style.fontSize = "0.9rem";
-    emailText.style.fontWeight = "700";
-    emailText.style.color = BRAND.colors.text;
-    emailText.textContent = BRAND.coachEmail;
-
-    const copyBtn = document.createElement("button");
-    copyBtn.type = "button";
-    copyBtn.textContent = "Copy Email Address";
-    copyBtn.className = config.downloadButtonClass || "btn";
-
-    const copyStatus = document.createElement("p");
-    copyStatus.style.margin = "8px 0 0 0";
-    copyStatus.style.fontSize = "0.8rem";
-    copyStatus.style.color = BRAND.colors.muted;
-
-    fallbackWrap.appendChild(fallbackMsg);
-    fallbackWrap.appendChild(emailText);
-    fallbackWrap.appendChild(copyBtn);
-    fallbackWrap.appendChild(copyStatus);
-
     container.appendChild(wrap);
-    container.appendChild(helperNote);
     container.appendChild(messageEl);
-    container.appendChild(fallbackWrap);
 
     const runtimeConfig = { ...config, messageTarget: messageEl };
 
-    emailBtn.addEventListener("click", async () => {
-      await runExport(runtimeConfig, "email");
-      fallbackWrap.style.display = "block";
-      copyStatus.textContent = "";
-    });
-
     downloadBtn.addEventListener("click", async () => {
-      await runExport(runtimeConfig, "download");
+      await runExport(runtimeConfig);
       messageEl.textContent = "Your PDF has been downloaded.";
     });
-
-    pngBtn.addEventListener("click", async () => {
-      const extracted = await runtimeConfig.extract();
-      const payload = normalizePayload(runtimeConfig, extracted || {});
-      const ok = downloadSummaryPng(payload);
-      messageEl.textContent = ok ? "Your PNG has been saved." : "Could not create PNG.";
-    });
-
-    copyBtn.addEventListener("click", async () => {
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(BRAND.coachEmail);
-        } else {
-          const textArea = document.createElement("textarea");
-          textArea.value = BRAND.coachEmail;
-          textArea.setAttribute("readonly", "");
-          textArea.style.position = "absolute";
-          textArea.style.left = "-9999px";
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          textArea.remove();
-        }
-        copyStatus.textContent = "Email address copied.";
-      } catch (error) {
-        copyStatus.textContent = `Copy failed. Please manually copy: ${BRAND.coachEmail}`;
-      }
-    });
-
-    return { emailBtn, downloadBtn, pngBtn, messageEl, copyBtn };
+    return { downloadBtn, messageEl };
   }
 
   window.CCCoachExport = {
     registerTool,
-    sendCoachEmail,
-    openCoachMailDraft,
     generateBrandedPdf,
   };
 })();
