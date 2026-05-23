@@ -1279,9 +1279,22 @@ function normalizeType(exercise) {
   return 'Compound';
 }
 
+function isSingleJointIsolationLike(exercise = {}) {
+  if (exercise.matrixCategory === 'isolation') return true;
+  const pattern = String(exercise.movementPattern || '').toLowerCase();
+  const isolationPatterns = new Set(['fly', 'rear fly', 'curl', 'extension', 'abduction', 'adduction', 'calf raise', 'flexion', 'dorsiflexion']);
+  if (isolationPatterns.has(pattern)) return true;
+  const name = String(exercise.name || '').toLowerCase();
+  return ['fly', 'raise', 'curl', 'extension', 'pushdown', 'kickback', 'abduction', 'adduction', 'crunch', 'tibialis'].some((keyword) => name.includes(keyword));
+}
+
 function matchesSlotType(exercise, slotType) {
   if (slotType === 'Machine') return normalizeType(exercise) === 'Machine' || exercise.matrixCategory === 'machine';
-  if (slotType === 'Isolated') return normalizeType(exercise) === 'Isolated' || exercise.matrixCategory === 'isolation';
+  if (slotType === 'Isolated') {
+    if (normalizeType(exercise) === 'Isolated' || exercise.matrixCategory === 'isolation') return true;
+    // Keep machine-assisted single-joint moves (like quad leg extensions) available in isolated slots.
+    return exercise.matrixCategory === 'machine' && isSingleJointIsolationLike(exercise);
+  }
   if (slotType === 'Compound') return normalizeType(exercise) === 'Compound' || exercise.matrixCategory === 'compound';
   return normalizeType(exercise) === slotType;
 }
