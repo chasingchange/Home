@@ -18,6 +18,15 @@
       ],
     },
     {
+      name: "Ahmad Alj",
+      year: "2026",
+      paragraphs: [
+        "Choosing Tyler as my coach was an amazing experience. He takes the time to listen carefully and tailor his approach to your individual fitness goals and needs.",
+        "As someone who was completely new to training, I really appreciated how patient and knowledgeable he was. He explained every movement clearly, ensuring I understood the proper technique, and he also provided helpful guidance on nutrition and meal planning.",
+        "Tyler is always available to answer questions, offer support, and check in regularly on your progress. He genuinely cares about his clients and goes beyond to help them succeed. I highly recommend him to anyone looking for a knowledgeable, supportive, and dedicated coach.",
+      ],
+    },
+    {
       name: "Tanner Childress",
       year: "2025",
       paragraphs: [
