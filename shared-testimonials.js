@@ -27,6 +27,15 @@
       ],
     },
     {
+      name: "German",
+      year: "2026",
+      paragraphs: [
+        "My experience with Chasing Change was incredible. As someone who was new to fitness, Tyler was patient and made everything simple and easy to understand so I could be successful.",
+        "He wasn’t just a trainer, he was also a second set of eyes and a great person to bounce ideas off of when it came to applying for jobs and grad school.",
+        "I highly recommend anyone who’s on the fence or hesitant about starting their journey with Chasing Change to go for it!",
+      ],
+    },
+    {
       name: "Tanner Childress",
       year: "2025",
       paragraphs: [
