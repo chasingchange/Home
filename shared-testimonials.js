@@ -18,6 +18,13 @@
       ],
     },
     {
+      name: "Sal Cruz",
+      year: "2026",
+      paragraphs: [
+        "I really enjoyed my time working with Tyler. He gave me the encouragement I needed to leave a job where I felt stuck and pursue one I truly wanted. Throughout our time working together, he was consistently supportive and motivating. He also helped me recognize the importance of planning ahead and dedicating more time and focus to my art. I'm grateful for his guidance and the confidence he helped me build.",
+      ],
+    },
+    {
       name: "Ahmad Alj",
       year: "2026",
       paragraphs: [
