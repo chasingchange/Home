@@ -1,0 +1,53 @@
+name: Trainerize Check-In Autopull
+
+on:
+  schedule:
+    # 12:00 UTC = 7am America/Chicago (CDT) / 6am (CST) — safely before the
+    # 1pm CT "Client Review" block every Tue/Wed/Thu.
+    - cron: "0 12 * * 2,3,4"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Optional YYYY-MM-DD to run for (defaults to today)"
+        required: false
+      force:
+        description: "Run even if the date isn't Tue/Wed/Thu"
+        type: boolean
+        default: false
+
+jobs:
+  autopull:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/trainerize-checkin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run autopull
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+          TRAINERIZE_EMAIL: ${{ secrets.TRAINERIZE_EMAIL }}
+          TRAINERIZE_PASSWORD: ${{ secrets.TRAINERIZE_PASSWORD }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_CHECK_IN_DATA_SOURCE_ID: ${{ secrets.NOTION_CHECK_IN_DATA_SOURCE_ID }}
+          NOTION_CURRENT_CLIENTS_DATA_SOURCE_ID: ${{ secrets.NOTION_CURRENT_CLIENTS_DATA_SOURCE_ID }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          python -m src.main $ARGS

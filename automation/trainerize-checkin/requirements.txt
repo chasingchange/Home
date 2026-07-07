@@ -1,0 +1,6 @@
+requests==2.32.3
+playwright==1.47.0
+google-api-python-client==2.146.0
+google-auth==2.35.0
+notion-client==2.2.1
+python-dateutil==2.9.0.post0
