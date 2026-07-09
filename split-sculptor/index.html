@@ -251,6 +251,14 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
 .volume-tier strong { display: block; font-family: 'Raleway', sans-serif; font-size: .78rem; letter-spacing: .04em; color: var(--text); margin-bottom: .2rem; }
 .volume-tier span { display: block; font-weight: 700; color: #174017; margin-bottom: .2rem; }
 .volume-tier p { margin: 0; font-size: .84rem; line-height: 1.5; color: rgba(7,31,53,0.9); }
+.meal-prep-list { list-style: none; margin: .3rem 0 .2rem; padding: 0; display: grid; gap: .4rem; }
+.meal-prep-list li { font-size: .84rem; line-height: 1.5; color: var(--text); }
+.gear-pick { display: flex; gap: .9rem; align-items: center; flex-wrap: wrap; border: 1px solid rgba(119,215,112,0.45); background: rgba(119,215,112,0.1); border-radius: 10px; padding: .7rem .8rem; margin-top: .75rem; }
+.gear-pick .gear-info { flex: 1; min-width: 220px; }
+.gear-pick .gear-label { display: block; font-family: 'Raleway', sans-serif; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: #2f7d2b; margin-bottom: .2rem; }
+.gear-pick .gear-info strong { display: block; font-size: .92rem; color: var(--text); margin-bottom: .2rem; }
+.gear-pick .gear-info p { margin: 0; font-size: .82rem; line-height: 1.5; color: rgba(7,31,53,0.9); }
+.gear-pick a.btn { flex-shrink: 0; text-decoration: none; }
 .weekly-volume-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; margin-bottom: .95rem; box-shadow: 0 10px 24px rgba(7,31,53,0.08); }
 .weekly-volume-head { display: flex; flex-wrap: wrap; gap: .55rem 1rem; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
 .weekly-volume-head h3 { font-family: 'Raleway', sans-serif; font-size: 1.02rem; margin: 0; }
@@ -339,6 +347,23 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <p class="step-sub">Select the calorie direction that fits your goal. Protein anchor: ~0.9–1.0g per lb bodyweight.</p>
     <div class="chips" id="nutrition-chips"></div>
     <div class="rule" id="nutrition-rule"></div>
+    <div class="info-card meal-prep-card">
+      <h3>Meal Prep: Make Your Macros Automatic</h3>
+      <p class="lead">Hitting the numbers above is far easier when the food is already made. Prepping two to four days at a time removes daily decisions, keeps portions consistent, and makes it much harder to drift off your calorie direction.</p>
+      <ul class="meal-prep-list">
+        <li><strong>Cook once, portion many.</strong> Batch your protein and carbs, then divide into single-serving containers so each meal already matches your targets.</li>
+        <li><strong>Weigh, don’t guess.</strong> Portioning into identical containers keeps calories and protein consistent from day to day.</li>
+        <li><strong>Stack the routine.</strong> Pick one or two prep days each week and keep grab-and-go meals ready in the fridge.</li>
+      </ul>
+      <div class="gear-pick">
+        <div class="gear-info">
+          <span class="gear-label">Recommended Gear</span>
+          <strong>IKEA 365+ Food Container with Lid (Rectangular, Plastic)</strong>
+          <p>Stackable, leak-resistant containers that make portioning and storing prepped meals simple.</p>
+        </div>
+        <a class="btn btn-p" href="https://www.ikea.com/us/en/p/ikea-365-food-container-with-lid-rectangular-plastic-s39567068/" target="_blank" rel="noopener noreferrer">View on IKEA</a>
+      </div>
+    </div>
   </div>
 
   <div class="screen" id="s4">
