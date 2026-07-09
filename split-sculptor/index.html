@@ -452,11 +452,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
       </div>
     </div>
         <div class="builder-layout">
-      <div class="builder-day-tabs" id="builder-day-tabs"></div>
       <div class="day-grid" id="builder-out"></div>
     </div>
     <div id="weekly-volume-summary"></div>
     <p class="step-sub" id="builder-validation-msg"></p>
+    <div class="builder-day-tabs" id="builder-day-tabs" style="margin-top:.7rem;margin-bottom:0;"></div>
   </div>
 
   <div class="screen" id="s9">
@@ -1596,7 +1596,10 @@ function hasCompleteBuilderPrescription() {
     const dayKey = `d${idx + 1}`;
     const rows = state.customDays[state.freq]?.[dayKey] || [];
     rows.forEach((row, rowIndex) => {
-      if (!row.sets || !row.reps) {
+      const selection = normalizeExerciseSelection(row);
+      row.exercise = selection;
+      const hasExercise = selection.source === 'custom' ? !!selection.value : !!resolveExerciseByEntry(row);
+      if (!hasExercise || !row.sets || !row.reps) {
         missing.push(`Day ${idx + 1}, ${row.slot} slot ${rowIndex + 1}`);
       }
     });
@@ -1611,10 +1614,10 @@ function syncBuilderStepGate(showWarning = false) {
   const nextBtn = document.getElementById('next-btn');
   nextBtn.disabled = !validation.ok;
   if (!validation.ok && showWarning) {
-    msg.textContent = `Before continuing, select sets and reps for every slot. Missing: ${validation.missing.slice(0, 4).join('; ')}${validation.missing.length > 4 ? '…' : ''}`;
+    msg.textContent = `Before continuing, select an exercise, sets, and reps for every slot. Missing: ${validation.missing.slice(0, 4).join('; ')}${validation.missing.length > 4 ? '…' : ''}`;
     return;
   }
-  msg.textContent = validation.ok ? '' : 'Set both sets and reps for every movement to unlock Next.';
+  msg.textContent = validation.ok ? '' : 'Choose an exercise and set both sets and reps for every movement to unlock Next.';
 }
 
 function getMuscleSuggestion(targetMuscle, slotType, dayRows, rowIndex) {
@@ -2046,6 +2049,7 @@ function renderDayCards() {
       const { day, row } = select.dataset;
       state.customDays[state.freq][day][parseInt(row, 10)].sets = select.value;
       renderWeeklyVolumeSummary();
+      syncBuilderStepGate();
       if (state.step >= 9) buildSummary();
     };
   });
@@ -2053,6 +2057,7 @@ function renderDayCards() {
     select.onchange = () => {
       const { day, row } = select.dataset;
       state.customDays[state.freq][day][parseInt(row, 10)].reps = select.value;
+      syncBuilderStepGate();
       if (state.step >= 9) buildSummary();
     };
   });
@@ -2541,6 +2546,7 @@ function showStep(step) {
   document.getElementById('next-btn').disabled = step === TOTAL_STEPS;
   document.getElementById('prog').style.width = `${14 + ((step - 1) / (TOTAL_STEPS - 1)) * 86}%`;
   renderDots();
+  if (step === 8) syncBuilderStepGate();
   if (step >= 9) buildSummary();
 }
 
