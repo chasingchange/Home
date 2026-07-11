@@ -3,15 +3,15 @@
     title: "Chasing Change",
     footer: "© 2026 Chasing Change — 1% better every day.",
     colors: {
-      bg: "#f7f7f5",
-      text: "#111111",
-      accent: "#111111",
+      bg: "#f5f5f7",
+      text: "#071f35",
+      accent: "#77d770",
       muted: "#5d6c79",
     },
     fonts: {
-      title: "Inter",
-      heading: "Inter",
-      body: "Inter",
+      title: "Museo Moderno",
+      heading: "Raleway",
+      body: "Muli",
     },
   };
 
