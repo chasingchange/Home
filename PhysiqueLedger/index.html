@@ -11,40 +11,40 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
     <style>
       :root {
-        --bg: #f5f5f7;
-        --text: #071f35;
-        --accent: #77d770;
+        --bg: #f7f7f5;
+        --text: #111111;
+        --accent: #111111;
         --card: #ffffff;
-        --muted: rgba(7, 31, 53, 0.62);
-        --line: rgba(7, 31, 53, 0.12);
-        --cal: #77d770;
+        --muted: rgba(17, 17, 17, 0.62);
+        --line: rgba(17, 17, 17, 0.12);
+        --cal: #111111;
         --pro: #5f93ff;
         --carb: #f4c24f;
         --fat: #c49bff;
       }
 
       * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", sans-serif; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; }
       .container { width: min(1180px, 94vw); margin: 0 auto; padding: 1.1rem 0 2.8rem; }
-      .hero h1 { margin: 0; font-family: "Museo Moderno", sans-serif; font-size: clamp(2rem, 3.8vw, 2.9rem); }
-      .hero p { margin: .3rem 0 0; font-family: "Raleway", sans-serif; color: var(--muted); }
-      .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 14px 30px rgba(7, 31, 53, 0.06); }
+      .hero h1 { margin: 0; font-family: "Inter", sans-serif; font-size: clamp(2rem, 3.8vw, 2.9rem); }
+      .hero p { margin: .3rem 0 0; font-family: "Inter", sans-serif; color: var(--muted); }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 14px 30px rgba(17, 17, 17, 0.06); }
       .section { margin-top: .85rem; padding: .95rem; }
-      .section h2 { margin: 0 0 .55rem; font-family: "Raleway", sans-serif; font-size: 1.06rem; }
+      .section h2 { margin: 0 0 .55rem; font-family: "Inter", sans-serif; font-size: 1.06rem; }
       .tiny { font-size: .78rem; color: var(--muted); }
 
       .summary-grid { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-      .metric-card { border: 1px solid var(--line); border-radius: 14px; padding: .62rem; background: rgba(7, 31, 53, 0.02); }
-      .metric-card strong { display: block; font-family: "Raleway", sans-serif; font-size: .77rem; margin-bottom: .2rem; }
+      .metric-card { border: 1px solid var(--line); border-radius: 14px; padding: .62rem; background: rgba(17, 17, 17, 0.02); }
+      .metric-card strong { display: block; font-family: "Inter", sans-serif; font-size: .77rem; margin-bottom: .2rem; }
       .macro-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; }
-      .macro-chip { border-radius: 10px; padding: .35rem; border: 1px solid rgba(7, 31, 53, 0.1); font-size: .76rem; }
+      .macro-chip { border-radius: 10px; padding: .35rem; border: 1px solid rgba(17, 17, 17, 0.1); font-size: .76rem; }
       .macro-chip span { display: block; font-size: .95rem; font-weight: 700; margin-top: .1rem; }
       .macro-chip.calories { background: color-mix(in srgb, var(--cal) 17%, white); border-color: color-mix(in srgb, var(--cal) 45%, white); }
       .macro-chip.protein { background: color-mix(in srgb, var(--pro) 13%, white); border-color: color-mix(in srgb, var(--pro) 40%, white); }
@@ -52,40 +52,40 @@
       .macro-chip.fats { background: color-mix(in srgb, var(--fat) 12%, white); border-color: color-mix(in srgb, var(--fat) 40%, white); }
 
       .inputs { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: .55rem; }
-      label { display: grid; gap: .2rem; font-size: .75rem; font-family: "Raleway", sans-serif; font-weight: 700; }
+      label { display: grid; gap: .2rem; font-size: .75rem; font-family: "Inter", sans-serif; font-weight: 700; }
       input, select, textarea, button { font: inherit; color: var(--text); }
-      input, select, textarea { width: 100%; border-radius: 10px; border: 1px solid rgba(7,31,53,.2); background: white; padding: .46rem .56rem; }
-      button { border-radius: 10px; border: 1px solid rgba(7,31,53,.2); background: white; padding: .42rem .62rem; font-weight: 700; cursor: pointer; }
+      input, select, textarea { width: 100%; border-radius: 10px; border: 1px solid rgba(17, 17, 17,.2); background: white; padding: .46rem .56rem; }
+      button { border-radius: 10px; border: 1px solid rgba(17, 17, 17,.2); background: white; padding: .42rem .62rem; font-weight: 700; cursor: pointer; }
       button.primary { background: var(--text); color: white; border-color: var(--text); }
       button.accent { background: var(--accent); border-color: var(--accent); }
-      button.ghost { background: rgba(7,31,53,.03); }
+      button.ghost { background: rgba(17, 17, 17,.03); }
 
       .row { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
       .tabs { display: grid; gap: .4rem; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); margin-top: .6rem; }
-      .tab { font-family: "Raleway", sans-serif; }
+      .tab { font-family: "Inter", sans-serif; }
       .tab.active { background: var(--text); color: white; }
 
       .day-layout { margin-top: .7rem; display: grid; gap: .68rem; }
       .meal-card { border: 1px solid var(--line); border-radius: 14px; padding: .6rem; background: #fff; }
       .meal-head { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-bottom: .45rem; }
-      .meal-head h3 { margin: 0; font-family: "Raleway", sans-serif; font-size: .97rem; }
-      .item { border: 1px solid rgba(7,31,53,.12); border-radius: 12px; padding: .46rem; margin-bottom: .4rem; background: rgba(7,31,53,.02); }
+      .meal-head h3 { margin: 0; font-family: "Inter", sans-serif; font-size: .97rem; }
+      .item { border: 1px solid rgba(17, 17, 17,.12); border-radius: 12px; padding: .46rem; margin-bottom: .4rem; background: rgba(17, 17, 17,.02); }
       .item-name { font-weight: 700; }
       .item-meta { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
       .qty-row { display: flex; align-items: center; gap: .35rem; margin-top: .34rem; flex-wrap: wrap; }
       .qty-row input { width: 82px; }
       .qty-btn { width: 30px; height: 30px; padding: 0; border-radius: 8px; }
 
-      .subtotal, .day-total, .helper-card { border: 1px dashed rgba(7,31,53,.2); border-radius: 12px; padding: .45rem; background: rgba(7,31,53,.02); }
+      .subtotal, .day-total, .helper-card { border: 1px dashed rgba(17, 17, 17,.2); border-radius: 12px; padding: .45rem; background: rgba(17, 17, 17,.02); }
       .day-total { border-style: solid; background: #fff; }
       .helper-card { font-size: .8rem; }
 
-      .modal-backdrop { position: fixed; inset: 0; background: rgba(7, 31, 53, .45); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 40; }
+      .modal-backdrop { position: fixed; inset: 0; background: rgba(17, 17, 17, .45); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 40; }
       .modal-backdrop.show { display: flex; }
-      .modal { width: min(780px, 100%); background: #fff; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 20px 48px rgba(7,31,53,.2); padding: .8rem; max-height: 86vh; overflow: auto; }
+      .modal { width: min(780px, 100%); background: #fff; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 20px 48px rgba(17, 17, 17,.2); padding: .8rem; max-height: 86vh; overflow: auto; }
       .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
       .list { border: 1px solid var(--line); border-radius: 12px; padding: .45rem; max-height: 280px; overflow: auto; }
-      .list-item { display: flex; align-items: center; justify-content: space-between; gap: .4rem; padding: .33rem 0; border-bottom: 1px solid rgba(7,31,53,.08); }
+      .list-item { display: flex; align-items: center; justify-content: space-between; gap: .4rem; padding: .33rem 0; border-bottom: 1px solid rgba(17, 17, 17,.08); }
       .list-item:last-child { border-bottom: none; }
 
       .manager-actions { margin-top: .6rem; display: flex; gap: .45rem; flex-wrap: wrap; }
@@ -160,23 +160,23 @@
     <div class="modal-backdrop" id="addModal">
       <div class="modal">
         <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Add to Meal</h3>
+          <h3 style="margin:0;font-family:'Inter',sans-serif;">Add to Meal</h3>
           <button data-close-modal="addModal">Close</button>
         </div>
         <label style="margin-top:.45rem;">Search<input id="addSearch" placeholder="Search foods, meals, recipes" /></label>
         <div class="modal-grid" style="margin-top:.6rem;">
           <div>
-            <h4 style="margin:.2rem 0;font-family:'Raleway',sans-serif;">Recent</h4>
+            <h4 style="margin:.2rem 0;font-family:'Inter',sans-serif;">Recent</h4>
             <div class="list" id="recentList"></div>
-            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Common Foods</h4>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Inter',sans-serif;">Common Foods</h4>
             <div class="list" id="commonFoodList"></div>
           </div>
           <div>
-            <h4 style="margin:.2rem 0;font-family:'Raleway',sans-serif;">Saved Meals</h4>
+            <h4 style="margin:.2rem 0;font-family:'Inter',sans-serif;">Saved Meals</h4>
             <div class="list" id="savedMealList"></div>
-            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Saved Recipes</h4>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Inter',sans-serif;">Saved Recipes</h4>
             <div class="list" id="savedRecipeList"></div>
-            <h4 style="margin:.55rem 0 .2rem;font-family:'Raleway',sans-serif;">Custom Foods</h4>
+            <h4 style="margin:.55rem 0 .2rem;font-family:'Inter',sans-serif;">Custom Foods</h4>
             <div class="list" id="customFoodList"></div>
           </div>
         </div>
@@ -186,7 +186,7 @@
     <div class="modal-backdrop" id="customFoodModal">
       <div class="modal">
         <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Custom Foods</h3>
+          <h3 style="margin:0;font-family:'Inter',sans-serif;">Custom Foods</h3>
           <button data-close-modal="customFoodModal">Close</button>
         </div>
         <div class="inputs" style="margin-top:.6rem;">
@@ -205,7 +205,7 @@
     <div class="modal-backdrop" id="recipeModal">
       <div class="modal">
         <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Recipe Builder</h3>
+          <h3 style="margin:0;font-family:'Inter',sans-serif;">Recipe Builder</h3>
           <button data-close-modal="recipeModal">Close</button>
         </div>
         <div class="inputs" style="margin-top:.55rem;">
@@ -222,7 +222,7 @@
     <div class="modal-backdrop" id="savedMealModal">
       <div class="modal">
         <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;font-family:'Raleway',sans-serif;">Saved Meal Builder</h3>
+          <h3 style="margin:0;font-family:'Inter',sans-serif;">Saved Meal Builder</h3>
           <button data-close-modal="savedMealModal">Close</button>
         </div>
         <label style="margin-top:.5rem;">Meal Name<input id="savedMealName" /></label>
@@ -458,7 +458,7 @@
         document.getElementById("dayView").innerHTML = [
           ...helpers.map((m) => `<div class="helper-card">${m}</div>`),
           ...meals.map((meal) => renderMealCard(day, meal)),
-          `<div class="day-total"><strong style="font-family:'Raleway',sans-serif;">${day} Total</strong><div class="tiny" style="margin-top:.18rem;">${Math.round(totals.calories)} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · F ${Math.round(totals.fats)}g</div></div>`
+          `<div class="day-total"><strong style="font-family:'Inter',sans-serif;">${day} Total</strong><div class="tiny" style="margin-top:.18rem;">${Math.round(totals.calories)} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · F ${Math.round(totals.fats)}g</div></div>`
         ].join("");
       }
 

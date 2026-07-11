@@ -11,24 +11,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Museo+Moderno:wght@500;700;800&family=Muli:wght@300;400;600;700&family=Raleway:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
     <style>
-      :root { --bg: #f5f5f7; --text: #071f35; --accent: #77d770; --card: #ffffff; --line: rgba(7, 31, 53, 0.14); }
+      :root { --bg: #f7f7f5; --text: #111111; --accent: #111111; --card: #ffffff; --line: rgba(17, 17, 17, 0.14); }
       * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Muli", system-ui, sans-serif; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", system-ui, sans-serif; }
       .arcadia-wrap { max-width: 1200px; margin: 0 auto; padding: 7.5rem 1rem 2rem; }
-      .hero { background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%); border: 1px solid var(--line); border-radius: 24px; padding: 1.5rem; box-shadow: 0 20px 45px rgba(7, 31, 53, 0.08); }
+      .hero { background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%); border: 1px solid var(--line); border-radius: 24px; padding: 1.5rem; box-shadow: 0 20px 45px rgba(17, 17, 17, 0.08); }
       .kicker { font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; color: #386a3e; }
-      h1 { font-family: "Museo Moderno", sans-serif; margin: 0.2rem 0 0.5rem; font-size: clamp(2rem, 6vw, 3.2rem); }
-      .hero .quote { margin: 0.4rem 0 0.2rem; font-family: "Raleway", sans-serif; font-size: clamp(1rem, 3vw, 1.3rem); opacity: 0.9; }
+      h1 { font-family: "Inter", sans-serif; margin: 0.2rem 0 0.5rem; font-size: clamp(2rem, 6vw, 3.2rem); }
+      .hero .quote { margin: 0.4rem 0 0.2rem; font-family: "Inter", sans-serif; font-size: clamp(1rem, 3vw, 1.3rem); opacity: 0.9; }
       .hero p { margin: 0.2rem 0; opacity: 0.85; }
       .layout { display: grid; gap: 1rem; grid-template-columns: 320px 1fr; margin-top: 1rem; }
       .panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; }
-      .panel h3, .card h3 { font-family: "Raleway", sans-serif; margin-top: 0; }
+      .panel h3, .card h3 { font-family: "Inter", sans-serif; margin-top: 0; }
       .filters label, .form label { display: block; font-size: 0.86rem; margin-bottom: 0.6rem; }
       select, input, textarea, button { font: inherit; color: inherit; }
       select, input, textarea { width: 100%; margin-top: 0.2rem; border-radius: 10px; border: 1px solid var(--line); padding: 0.55rem 0.65rem; background: #fff; }
@@ -39,11 +39,11 @@
       .btn-accent { background: var(--accent); }
       .btn-dark { background: var(--text); color: #fff; }
       .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
-      .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; box-shadow: 0 14px 28px rgba(7, 31, 53, 0.08); display: flex; flex-direction: column; gap: 0.45rem; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; box-shadow: 0 14px 28px rgba(17, 17, 17, 0.08); display: flex; flex-direction: column; gap: 0.45rem; }
       .meta { font-size: 0.84rem; opacity: 0.8; margin-bottom: 0.4rem; }
       .macro-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin: 0.6rem 0; }
       .metric { border: 1px solid var(--line); border-radius: 12px; padding: 0.45rem 0.55rem; background: #f9fbff; }
-      .metric strong { display: block; font-family: "Raleway", sans-serif; font-size: 0.84rem; }
+      .metric strong { display: block; font-family: "Inter", sans-serif; font-size: 0.84rem; }
       .metric span { font-size: 0.9rem; }
       .recipe-actions { margin-top: auto; display: flex; gap: 0.45rem; flex-wrap: wrap; }
       .open-card-btn { width: 100%; margin-top: 0.4rem; }
@@ -53,7 +53,7 @@
       .serving-controls { display: flex; align-items: center; gap: 0.45rem; }
       .serving-controls button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
       .list { margin: 0.4rem 0 0; padding-left: 1rem; }
-      .recipe-dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; width: min(760px, calc(100vw - 2rem)); background: #fff; color: var(--text); box-shadow: 0 30px 80px rgba(7, 31, 53, 0.3); }
+      .recipe-dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; width: min(760px, calc(100vw - 2rem)); background: #fff; color: var(--text); box-shadow: 0 30px 80px rgba(17, 17, 17, 0.3); }
       .recipe-dialog::backdrop { background: rgba(5, 21, 38, 0.5); backdrop-filter: blur(2px); }
       .dialog-inner { padding: 1.2rem; }
       .dialog-top { display: flex; justify-content: space-between; gap: 0.8rem; align-items: flex-start; }
@@ -311,9 +311,9 @@
             <div class="metric"><strong>Serving label</strong><span>${recipe.servingLabel || "1 plate"}</span></div>
           </div>
           <div class="chip-row">${allTags.map((tag) => `<span class="chip">${tag}</span>`).join("")}</div>
-          <h4 style="font-family:Raleway,sans-serif;margin:.35rem 0;">Ingredients</h4>
+          <h4 style="font-family:Inter,sans-serif;margin:.35rem 0;">Ingredients</h4>
           <ul class="list">${ingredientLinesFor(recipe, multiplier)}</ul>
-          <h4 style="font-family:Raleway,sans-serif;margin:.55rem 0 0;">Instructions</h4>
+          <h4 style="font-family:Inter,sans-serif;margin:.55rem 0 0;">Instructions</h4>
           <ol class="list">${recipe.instructions.map((step) => `<li>${step}</li>`).join("")}</ol>
           <p class="subtle">${recipe.notes || ""}</p>
           <div class="recipe-actions"><button class="btn" data-delete="${recipe.id}">Delete</button></div>

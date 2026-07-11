@@ -141,7 +141,7 @@
     let dragSource = null;
 
     const bar = document.createElement("div");
-    bar.style.cssText = "position:fixed;bottom:14px;left:14px;z-index:9999;display:flex;gap:8px;align-items:center;background:#071f35;color:#fff;padding:10px 12px;border-radius:12px;font:700 12px Muli, sans-serif;box-shadow:0 10px 30px rgba(7,31,53,.25);";
+    bar.style.cssText = "position:fixed;bottom:14px;left:14px;z-index:9999;display:flex;gap:8px;align-items:center;background:#111111;color:#fff;padding:10px 12px;border-radius:12px;font:700 12px Inter, sans-serif;box-shadow:0 10px 30px rgba(17, 17, 17,.25);";
 
     const buildLockedView = () => {
       bar.innerHTML = "<span>Admin</span>";
@@ -152,7 +152,7 @@
 
       const unlockBtn = document.createElement("button");
       unlockBtn.textContent = "Unlock";
-      unlockBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#77d770;color:#071f35;font-weight:800;cursor:pointer;";
+      unlockBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#111111;color:#111111;font-weight:800;cursor:pointer;";
 
       unlockBtn.addEventListener("click", () => {
         if (input.value === ADMIN_PASSWORD) {
@@ -176,7 +176,7 @@
     const setSelected = (node) => {
       clearHighlight();
       selected = node;
-      if (selected && moving) selected.style.outline = "2px dashed #77d770";
+      if (selected && moving) selected.style.outline = "2px dashed #111111";
     };
 
     const getSortableTarget = (node) => {
@@ -210,7 +210,7 @@
 
       const editBtn = document.createElement("button");
       editBtn.textContent = "Edit text";
-      editBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#77d770;color:#071f35;font-weight:800;cursor:pointer;";
+      editBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#111111;color:#111111;font-weight:800;cursor:pointer;";
 
       const moveBtn = document.createElement("button");
       moveBtn.textContent = "Move blocks";
@@ -241,7 +241,7 @@
       editBtn.addEventListener("click", () => {
         editing = !editing;
         root.contentEditable = String(editing);
-        root.style.outline = editing ? "2px dashed #77d770" : "";
+        root.style.outline = editing ? "2px dashed #111111" : "";
         editBtn.textContent = editing ? "Stop text" : "Edit text";
       });
 

@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./shared.css" />
@@ -29,20 +29,20 @@
             colors: {
               cc: {
                 // EDIT COLORS HERE
-                bg: "#f5f5f7",
-                text: "#071f35",
-                accent: "#77d770",
+                bg: "#f7f7f5",
+                text: "#111111",
+                accent: "#111111",
                 panel: "#ffffff",
               },
             },
             fontFamily: {
               // EDIT FONTS HERE
-              brand: ["Museo Moderno", "Raleway", "sans-serif"],
-              heading: ["Raleway", "system-ui", "sans-serif"],
-              body: ["Muli", "system-ui", "sans-serif"],
+              brand: ["Inter", "Inter", "sans-serif"],
+              heading: ["Inter", "system-ui", "sans-serif"],
+              body: ["Inter", "system-ui", "sans-serif"],
             },
             boxShadow: {
-              soft: "0 14px 45px rgba(7, 31, 53, 0.08)",
+              soft: "0 14px 45px rgba(17, 17, 17, 0.08)",
             },
           },
         },
@@ -50,11 +50,14 @@
     </script>
   </head>
   <body class="min-h-screen bg-cc-bg text-cc-text font-body antialiased cc-page">
-    <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-start px-5 pt-4 pb-6 sm:px-8">
-      <!-- Minimal brand label -->
-      <p class="mb-8 text-sm tracking-[0.18em] text-cc-text/75 font-brand">Chasing Change</p>
+    <div class="mx-auto flex w-full max-w-5xl items-center justify-between px-5 pt-6 sm:px-8" style="font-family: var(--cc-mono-font); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;">
+      <span>Chasing Change</span>
+      <span class="opacity-60">Menu +</span>
+    </div>
 
+    <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-start px-5 pt-16 pb-6 sm:px-8">
       <section class="w-full text-center" aria-labelledby="hero-heading">
+        <p style="font-family: var(--cc-mono-font); font-size: 0.68rem; letter-spacing: 0.1em;" class="mb-4 uppercase opacity-55">Front Door</p>
         <!-- EDIT HERO COPY HERE -->
         <h1 id="hero-heading" class="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">What are you chasing?</h1>
         <p class="mx-auto mt-4 max-w-2xl text-sm text-cc-text/70 sm:text-base">
@@ -64,10 +67,10 @@
         <div class="mx-auto mt-10 w-full max-w-3xl text-left">
           <label for="searchInput" class="sr-only">Search Chasing Change resources</label>
           <div
-            class="flex items-center rounded-full bg-cc-panel px-3 py-2 shadow-soft ring-1 ring-black/10 transition focus-within:ring-2 focus-within:ring-cc-accent"
+            class="flex items-center border-b border-cc-text/25 bg-transparent px-1 py-3 transition focus-within:border-cc-text"
           >
             <!-- Option B: fixed prefix label for premium clarity -->
-            <span class="shrink-0 whitespace-nowrap rounded-full bg-cc-text/5 px-4 py-2 text-sm font-semibold text-cc-text/75 sm:text-base">I’m Chasing</span>
+            <span style="font-family: var(--cc-mono-font);" class="shrink-0 whitespace-nowrap px-2 text-xs uppercase tracking-wider text-cc-text/60 sm:text-sm">I’m Chasing</span>
             <input
               id="searchInput"
               type="search"
