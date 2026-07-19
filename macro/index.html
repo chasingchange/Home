@@ -104,9 +104,12 @@
                 </div>
               </div>
 
-              <div class="space-y-5">
+              <div class="space-y-6">
                 <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/35">
-                  <label for="quickProfileInput" class="block text-sm font-semibold mb-2">Quick Profile Paste</label>
+                  <div class="flex items-baseline justify-between gap-2 mb-2 flex-wrap">
+                    <label for="quickProfileInput" class="block text-sm font-semibold">Quick Profile Paste</label>
+                    <span class="text-[11px] font-bold uppercase tracking-wide text-cc-text/60">Optional shortcut</span>
+                  </div>
                   <textarea
                     id="quickProfileInput"
                     rows="3"
@@ -116,6 +119,15 @@
                   <div class="mt-3 flex flex-wrap gap-2">
                     <button id="parseProfileBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Parse Into Fields</button>
                     <p id="quickProfileStatus" class="text-xs opacity-80 self-center">Paste age, sex, weight, height, activity, and goal — most formats work (34F, 165 lbs, 5'7", 82 kg, 178 cm).</p>
+                  </div>
+                </div>
+
+                <!-- SECTION: About You -->
+                <div class="flex items-center gap-3 pt-4 mt-1 border-t border-black/10">
+                  <span class="flex-none w-8 h-8 rounded-full bg-cc-outline text-cc-text font-extrabold text-sm flex items-center justify-center ring-1 ring-cc-outline/40">1</span>
+                  <div>
+                    <h3 class="text-base sm:text-lg font-bold font-heading leading-tight">About You</h3>
+                    <p class="text-xs opacity-70">Your current stats — everything else is built from these.</p>
                   </div>
                 </div>
 
@@ -137,6 +149,8 @@
                   </div>
                 </div>
 
+                <!-- Weight + Body Fat -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- Weight -->
                 <div>
                   <label class="block text-sm font-semibold mb-2">Body Weight</label>
@@ -180,6 +194,7 @@
                   <p id="bodyFatError" class="hidden mt-2 text-sm text-red-600">
                     Enter a valid body fat % (3–70).
                   </p>
+                </div>
                 </div>
 
                 <!-- Sex + Age -->
@@ -348,6 +363,14 @@
                     <p id="changeSummaryText" class="mt-1 text-sm font-extrabold">No previous targets on file yet.</p>
                   </div>
 
+                <!-- SECTION: Your Goal -->
+                <div class="flex items-center gap-3 pt-4 mt-1 border-t border-black/10">
+                  <span class="flex-none w-8 h-8 rounded-full bg-cc-outline text-cc-text font-extrabold text-sm flex items-center justify-center ring-1 ring-cc-outline/40">2</span>
+                  <div>
+                    <h3 class="text-base sm:text-lg font-bold font-heading leading-tight">Your Goal</h3>
+                    <p class="text-xs opacity-70">Where you're headed and how fast — this shapes your calories and macros.</p>
+                  </div>
+                </div>
 
                 <!-- Goal -->
                 <div>
@@ -504,10 +527,10 @@
                   ></select>
                   <p class="text-xs opacity-70 mt-2">If adherence is hard, go smaller and stay consistent.</p>
                   <p id="lossNote" class="hidden text-xs text-amber-700 mt-2">
-                    A word on pace: pushing much past 1 lb per week — say a full 2 lb — is aggressive, and at that speed some of what you lose is likely to be hard-earned muscle, not just fat. A steadier cut protects the muscle you've built.
+                    Losing more than about 1 lb a week is aggressive — at that pace you tend to give up muscle along with fat. A slower cut protects the muscle you've built.
                   </p>
                   <p id="gainNote" class="hidden text-xs text-amber-700 mt-2">
-                    A word on pace: gaining a full pound a week is fast, and some of that added weight is likely to come on as fat rather than pure muscle. Aim closer to 0.25–0.5 lb per week for leaner gains.
+                    Gaining more than about 0.5 lb a week is fast — the extra tends to come on as fat, not just muscle. A slower bulk keeps your gains leaner.
                   </p>
                 </div>
 
