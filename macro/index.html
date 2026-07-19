@@ -110,12 +110,12 @@
                   <textarea
                     id="quickProfileInput"
                     rows="3"
-                    placeholder="Example: 34 year old female, 165 lbs, 5'7, moderate activity, goal lose, target 150 lbs"
+                    placeholder="Example: 34F, 165 lbs, 5'7&quot;, moderately active, want to lose, target 150 lbs — or metric: 30M, 82 kg, 178 cm, bulk"
                     class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
                   ></textarea>
                   <div class="mt-3 flex flex-wrap gap-2">
                     <button id="parseProfileBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Parse Into Fields</button>
-                    <p id="quickProfileStatus" class="text-xs opacity-80 self-center">Paste age, weight, height, activity, and goals in one line.</p>
+                    <p id="quickProfileStatus" class="text-xs opacity-80 self-center">Paste age, sex, weight, height, activity, and goal — most formats work (34F, 165 lbs, 5'7", 82 kg, 178 cm).</p>
                   </div>
                 </div>
 
@@ -285,33 +285,51 @@
                   <div class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
                     <h3 class="text-base sm:text-lg font-bold mb-1 font-heading">Ideal Physique Weight Ranges</h3>
                     <p class="text-sm opacity-80">
-                      Based on your age, weight, sex, height, and current weight.
+                      Based on your age, weight, sex, height, and current weight. Tap a look to use it as your goal body weight.
                     </p>
 
                     <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div class="rounded-xl p-4 ring-1 ring-black/10 bg-cc-outline/15">
+                      <button
+                        id="leanLookBtn"
+                        type="button"
+                        data-look="lean"
+                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-cc-outline/15 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
+                      >
                         <p class="text-xs uppercase tracking-wide opacity-70">Lean Look</p>
                         <p class="text-2xl font-extrabold">
                           <span id="leanWeightOut">--</span>
                           <span id="lookWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
                         </p>
-                      </div>
+                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
+                      </button>
 
-                      <div class="rounded-xl p-4 ring-1 ring-black/10 bg-black/5">
+                      <button
+                        id="athleticLookBtn"
+                        type="button"
+                        data-look="athletic"
+                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-black/5 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
+                      >
                         <p class="text-xs uppercase tracking-wide opacity-70">Athletic Look</p>
                         <p class="text-2xl font-extrabold">
                           <span id="athleticWeightOut">--</span>
                           <span id="athleticWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
                         </p>
-                      </div>
+                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
+                      </button>
 
-                      <div class="rounded-xl p-4 ring-1 ring-black/10 bg-black/5">
+                      <button
+                        id="muscularLookBtn"
+                        type="button"
+                        data-look="muscular"
+                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-black/5 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
+                      >
                         <p class="text-xs uppercase tracking-wide opacity-70">Muscular Look</p>
                         <p class="text-2xl font-extrabold">
                           <span id="muscularWeightOut">--</span>
                           <span id="muscularWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
                         </p>
-                      </div>
+                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
+                      </button>
                     </div>
 
                     <div class="mt-3 rounded-xl p-3 bg-black/5 ring-1 ring-black/5">
@@ -319,8 +337,10 @@
                       <p id="lookStatusOut" class="text-base font-bold mt-1">Enter age, weight, sex, and height</p>
                     </div>
 
+                    <p id="lookPickedOut" class="hidden mt-3 text-xs font-semibold text-emerald-700"></p>
+
                     <p class="mt-3 text-xs opacity-70">
-                      Uses an ideal baseline with age adjustment, then maps lean (−5%), athletic (baseline), and muscular (+7%) physique ranges.
+                      Uses an ideal baseline with age adjustment, then maps lean (−5%), athletic (baseline), and muscular (+7%) physique ranges. Values are rounded to the nearest pound.
                     </p>
                   </div>
                   <div id="changeSummaryBox" class="hidden rounded-2xl p-4 ring-1 ring-black/10 bg-cc-bg">
@@ -483,8 +503,11 @@
 
                   ></select>
                   <p class="text-xs opacity-70 mt-2">If adherence is hard, go smaller and stay consistent.</p>
+                  <p id="lossNote" class="hidden text-xs text-amber-700 mt-2">
+                    A word on pace: pushing much past 1 lb per week — say a full 2 lb — is aggressive, and at that speed some of what you lose is likely to be hard-earned muscle, not just fat. A steadier cut protects the muscle you've built.
+                  </p>
                   <p id="gainNote" class="hidden text-xs text-amber-700 mt-2">
-                    For best results, aim to gain no more than 1 lb per week to limit fat gain.
+                    A word on pace: gaining a full pound a week is fast, and some of that added weight is likely to come on as fat rather than pure muscle. Aim closer to 0.25–0.5 lb per week for leaner gains.
                   </p>
                 </div>
 
@@ -667,6 +690,7 @@
       const weeklyLabel = document.getElementById("weeklyLabel");
       const weeklyEl = document.getElementById("weeklyChange");
       const gainNote = document.getElementById("gainNote");
+      const lossNote = document.getElementById("lossNote");
       const macroStyleStandardBtn = document.getElementById("macroStyleStandard");
       const macroStyleKetoBtn = document.getElementById("macroStyleKeto");
 
@@ -714,6 +738,11 @@
       const athleticWeightUnitOut = document.getElementById("athleticWeightUnitOut");
       const muscularWeightUnitOut = document.getElementById("muscularWeightUnitOut");
       const lookStatusOut = document.getElementById("lookStatusOut");
+      const lookPickedOut = document.getElementById("lookPickedOut");
+      const lookButtons = Array.from(document.querySelectorAll(".lookBtn"));
+
+      // Raw (kg) physique range values from the latest preview, used when a look is applied as the goal weight.
+      let physiqueLookKg = null;
 
       const proteinPctOut = document.getElementById("proteinPctOut");
       const proteinShareOut = document.getElementById("proteinShareOut");
@@ -921,15 +950,18 @@
           show(weeklyWrap);
           weeklyLabel.textContent = "Weight Loss per Week";
           hide(gainNote);
+          show(lossNote);
           populateWeeklyOptions([0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]);
         } else if (goalValue === "gain") {
           show(weeklyWrap);
           weeklyLabel.textContent = "Weight Gain per Week";
           show(gainNote);
+          hide(lossNote);
           populateWeeklyOptions([0.25, 0.5, 0.75, 1]);
         } else {
           hide(weeklyWrap);
           hide(gainNote);
+          hide(lossNote);
         }
       }
 
@@ -1091,6 +1123,42 @@
         show(timelineBox);
       }
 
+      function setLookButtonsEnabled(enabled) {
+        lookButtons.forEach((btn) => {
+          btn.disabled = !enabled;
+          btn.classList.toggle("opacity-50", !enabled);
+          btn.classList.toggle("cursor-not-allowed", !enabled);
+          btn.classList.toggle("cursor-pointer", enabled);
+        });
+        if (!enabled && lookPickedOut) {
+          hide(lookPickedOut);
+        }
+      }
+
+      function applyLookAsGoal(lookKey) {
+        if (!physiqueLookKg || !physiqueLookKg[lookKey]) return;
+
+        const kg = physiqueLookKg[lookKey];
+        setGoalMode("targetWeight");
+
+        if (unit === "us") {
+          targetWeightLbEl.value = String(Math.round(kg * 2.2046226218));
+        } else {
+          targetWeightKgEl.value = String(Math.round(kg));
+        }
+
+        const displayValue = unit === "us" ? Math.round(kg * 2.2046226218) : Math.round(kg);
+        const unitLabel = unit === "us" ? "lbs" : "kg";
+        const lookLabel = lookKey.charAt(0).toUpperCase() + lookKey.slice(1);
+
+        if (lookPickedOut) {
+          lookPickedOut.textContent = `${lookLabel} look (${displayValue} ${unitLabel}) set as your goal body weight.`;
+          show(lookPickedOut);
+        }
+
+        updateWeeklyByTargets();
+      }
+
       function updateIdealBodyWeightPreview() {
         const age = parseInt(ageEl.value, 10);
         const { weightLb, totalInches } = getInputsAsLbsAndInches();
@@ -1100,6 +1168,8 @@
           athleticWeightOut.textContent = "--";
           muscularWeightOut.textContent = "--";
           lookStatusOut.textContent = "Enter age, weight, sex, and height";
+          physiqueLookKg = null;
+          setLookButtonsEnabled(false);
           return;
         }
 
@@ -1116,12 +1186,17 @@
         const toDisplay = (kg) => unit === "us" ? kg * 2.20462262 : kg;
         const unitLabel = unit === "us" ? "lbs" : "kg";
 
-        leanWeightOut.textContent = toDisplay(leanKg).toFixed(1);
-        athleticWeightOut.textContent = toDisplay(athleticKg).toFixed(1);
-        muscularWeightOut.textContent = toDisplay(muscularKg).toFixed(1);
+        // Round each physique range to the nearest whole pound (or kg in metric).
+        leanWeightOut.textContent = String(Math.round(toDisplay(leanKg)));
+        athleticWeightOut.textContent = String(Math.round(toDisplay(athleticKg)));
+        muscularWeightOut.textContent = String(Math.round(toDisplay(muscularKg)));
         lookWeightUnitOut.textContent = unitLabel;
         athleticWeightUnitOut.textContent = unitLabel;
         muscularWeightUnitOut.textContent = unitLabel;
+
+        // Store the raw kg values so a tapped look can be applied as the goal weight in any unit.
+        physiqueLookKg = { lean: leanKg, athletic: athleticKg, muscular: muscularKg };
+        setLookButtonsEnabled(true);
 
         const distanceLean = Math.abs(currentWeightKg - leanKg);
         const distanceAthletic = Math.abs(currentWeightKg - athleticKg);
@@ -1154,22 +1229,33 @@
         const text = raw.toLowerCase();
         let applied = 0;
 
-        if (/\bmale\b/.test(text)) {
-          sexEl.value = "male";
-          applied += 1;
-        } else if (/\bfemale\b/.test(text)) {
+        // "34F" / "28 m" shorthand — a bounded number+letter token gives us both age and sex.
+        const shorthandMatch = text.match(/(?:^|[\s,(])(\d{1,3})\s?(m|f)(?=$|[\s,.)])/);
+
+        // Sex — test female first so it wins over the "male" contained inside "female".
+        if (/\bfemale\b|\bwoman\b|\bwomen\b|\bgirl\b/.test(text) || (shorthandMatch && shorthandMatch[2] === "f")) {
           sexEl.value = "female";
+          applied += 1;
+        } else if (/\bmale\b|\bman\b|\bmen\b|\bguy\b|\bboy\b/.test(text) || (shorthandMatch && shorthandMatch[2] === "m")) {
+          sexEl.value = "male";
           applied += 1;
         }
 
-        const ageMatch = text.match(/(\d{1,3})\s*(?:years?\s*old|yo\b|y\/o\b|yrs?\b)/);
+        // Age — "34yo", "34 years old", "34-year-old", "aged 34", "age: 34", or the shorthand above.
+        const ageMatch =
+          text.match(/(\d{1,3})[\s-]*(?:years?[\s-]*old|yrs?\.?[\s-]*old|yo\b|y\/o\b|yrs?\b)/) ||
+          text.match(/\bage[d]?\s*[:=-]?\s*(\d{1,3})\b/);
         if (ageMatch) {
           ageEl.value = ageMatch[1];
           applied += 1;
+        } else if (shorthandMatch) {
+          ageEl.value = shorthandMatch[1];
+          applied += 1;
         }
 
-        const lbMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs|pounds?)/);
-        const kgMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*kg\b/);
+        // Body weight — a number followed by a weight unit (lb / lbs / pounds / # / kg / kilos).
+        const lbMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:lbs?|pounds?|#)/);
+        const kgMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:kgs?|kilos?|kilograms?)\b/);
         if (lbMatch) {
           setUnit("us");
           weightLbEl.value = lbMatch[1];
@@ -1180,25 +1266,39 @@
           applied += 1;
         }
 
-        const usHeightMatch = text.match(/(\d)\s*(?:ft|feet|')\s*(\d{1,2})?\s*(?:in|inches|")?/);
-        const cmMatch = text.match(/(\d{3})\s*cm\b/);
+        // Height — feet/inches ("5'7", "5 ft 7 in"), inches only ("67 in"), centimetres, or metres ("1.75 m").
+        const usHeightMatch = text.match(/(\d)\s*(?:ft|feet|foot|')\s*(\d{1,2})?\s*(?:in|ins|inches|")?/);
+        const inchesOnlyMatch = text.match(/(\d{2})\s*(?:in|ins|inches|")\b/);
+        const cmMatch = text.match(/(\d{3}(?:\.\d+)?)\s*(?:cm|centimet(?:er|re)s?)\b/);
+        const metreMatch = text.match(/(\d)\.(\d{1,2})\s*m\b/);
         if (usHeightMatch) {
           setUnit("us");
           heightFtEl.value = usHeightMatch[1];
           heightInEl.value = usHeightMatch[2] || "0";
           applied += 1;
+        } else if (inchesOnlyMatch) {
+          setUnit("us");
+          const totalIn = parseInt(inchesOnlyMatch[1], 10);
+          heightFtEl.value = String(Math.floor(totalIn / 12));
+          heightInEl.value = String(totalIn % 12);
+          applied += 1;
         } else if (cmMatch) {
           setUnit("metric");
           heightCmEl.value = cmMatch[1];
           applied += 1;
+        } else if (metreMatch) {
+          setUnit("metric");
+          heightCmEl.value = String(Math.round(parseFloat(`${metreMatch[1]}.${metreMatch[2]}`) * 100));
+          applied += 1;
         }
 
+        // Order matters: qualified levels ("moderately/lightly active") must be tested before bare "active".
         const activityMap = [
-          { pattern: /\bvery active\b|hard training|physical job/, value: "veryActive" },
+          { pattern: /\bvery active\b|hard training|physical job|athlete/, value: "veryActive" },
+          { pattern: /\bmoderate(?:ly)?\b/, value: "moderate" },
+          { pattern: /\blight(?:ly)?\b/, value: "light" },
           { pattern: /\bactive\b/, value: "active" },
-          { pattern: /\bmoderate\b/, value: "moderate" },
-          { pattern: /\blight\b/, value: "light" },
-          { pattern: /\bsedentary\b|little exercise|desk job/, value: "sedentary" },
+          { pattern: /\bsedentary\b|little exercise|desk job|no exercise/, value: "sedentary" },
         ];
         const matchedActivity = activityMap.find((item) => item.pattern.test(text));
         if (matchedActivity) {
@@ -1206,9 +1306,13 @@
           applied += 1;
         }
 
-        if (/\blose|cut\b/.test(text)) { setGoalMode("standard"); setGoal("lose"); applied += 1; }
-        else if (/\bgain|bulk\b/.test(text)) { setGoalMode("standard"); setGoal("gain"); applied += 1; }
-        else if (/\bmaintain|recomp\b/.test(text)) { setGoalMode("standard"); setGoal("maintain"); applied += 1; }
+        if (/\b(?:lose|losing|cut(?:ting)?|shred(?:ding)?|lean out|leaning out|fat loss|deficit|slim down)\b/.test(text)) {
+          setGoalMode("standard"); setGoal("lose"); applied += 1;
+        } else if (/\b(?:gain|gaining|bulk(?:ing)?|build(?:ing)?|mass|surplus|grow|put on)\b/.test(text)) {
+          setGoalMode("standard"); setGoal("gain"); applied += 1;
+        } else if (/\b(?:maintain|maintenance|recomp(?:osition)?|stay the same|hold)\b/.test(text)) {
+          setGoalMode("standard"); setGoal("maintain"); applied += 1;
+        }
 
         const targetWeightLbMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs|pounds?)/);
         const targetWeightKgMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*kg\b/);
@@ -1557,6 +1661,10 @@ const proteinPerLb =
       document.getElementById("unitUS").addEventListener("click", () => setUnit("us"));
       document.getElementById("unitMetric").addEventListener("click", () => setUnit("metric"));
       parseProfileBtn?.addEventListener("click", parseQuickProfileText);
+
+      lookButtons.forEach((btn) => {
+        btn.addEventListener("click", () => applyLookAsGoal(btn.dataset.look));
+      });
 
       document.getElementById("goalLose").addEventListener("click", () => setGoal("lose"));
       document.getElementById("goalMaintain").addEventListener("click", () => setGoal("maintain"));
