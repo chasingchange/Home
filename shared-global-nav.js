@@ -253,23 +253,4 @@
     }
     unlockBodyScroll();
   });
-
-  const hasBottomCta = document.querySelector(".cc-bottom-coaching-wrap");
-  if (!hasBottomCta) {
-    const footer = document.querySelector("footer");
-    const copyrightLine = Array.from(document.querySelectorAll("p")).find((p) => /©\s*\d{4}\s*Chasing Change/i.test((p.textContent || "").trim()));
-    const anchor = footer || copyrightLine?.closest("footer") || copyrightLine;
-    const container = anchor?.parentElement;
-
-    if (anchor && container) {
-      const ctaWrap = document.createElement("section");
-      ctaWrap.className = "cc-bottom-coaching-wrap";
-      ctaWrap.innerHTML = `
-        <a href="https://tally.so/r/w5JXKE" class="cc-title-coaching cc-bottom-coaching" target="_blank" rel="noopener noreferrer">
-          Ready to Chase Change? Apply for Coaching.
-        </a>
-      `;
-      container.insertBefore(ctaWrap, anchor);
-    }
-  }
 })();
