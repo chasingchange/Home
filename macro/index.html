@@ -22,7 +22,6 @@
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
-    <script src="../shared-session.js"></script>
     <script src="../shared-coach.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../shared-coach-export.js"></script>
@@ -685,7 +684,6 @@
       let macroStyle = "standard"; // "standard" | "keto"
 
       // Elements
-      const pageLoginStatus = document.getElementById("pageLoginStatus");
 
       const sexEl = document.getElementById("sex");
       const ageEl = document.getElementById("age");
@@ -776,10 +774,8 @@
       const changeSummaryText = document.getElementById("changeSummaryText");
       const calcBtn = document.getElementById("calcBtn");
 
-      const sessionApi = window.ChasingChangeSession;
       const coachApi = window.ChasingChangeCoach;
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
-      const MACRO_STORAGE_KEY = "macroCalculator";
       const COACH_TOOL_KEY = "macro_calculator";
       let lastSavedOutputs = null;
 
@@ -897,25 +893,7 @@
         calcBtn.textContent = lastSavedOutputs ? "Recalculate Macros" : "Calculate Macros";
       }
 
-      function refreshAccountNotice() {
-        if (!pageLoginStatus) return;
-        const displayName = sessionApi?.getCurrentDisplayName?.() || "";
-        pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
-      }
-
-      async function restoreSessionData() {
-        await sessionApi?.whenReady?.();
-        refreshAccountNotice();
-        const stored = sessionApi?.getCalculatorData?.(MACRO_STORAGE_KEY);
-        if (stored) {
-          applyStoredMacroData(stored);
-          lastSavedOutputs = {
-            calories: Number(stored?.outputs?.calories || 0),
-            protein: Number(stored?.outputs?.protein || 0),
-            carbs: Number(stored?.outputs?.carbs || 0),
-            fat: Number(stored?.outputs?.fat || 0),
-          };
-        }
+      function restoreSessionData() {
         updateCalcButtonLabel();
         syncCoachMacroCard();
       }
@@ -1581,7 +1559,6 @@ const proteinPerLb =
         renderTimeline(timelineWeeks, timelineSummary, timelineAssumption);
 
         show(resultsEl);
-        sessionApi?.saveCalculatorData?.(MACRO_STORAGE_KEY, collectStoredMacroData());
         lastSavedOutputs = { calories: caloriesR, protein: proteinR, carbs: carbsR, fat: fatR };
         updateCalcButtonLabel();
       }
