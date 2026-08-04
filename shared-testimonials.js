@@ -99,6 +99,17 @@
         "In having the opportunity, I’d say to anyone that wants to get out of stagnancy, pushed out of their comfort zone, ready to be challenged and changed for the better; Chasing Change is a journey to commit to, not financially or with him but to yourself. To trust the process and to nudge yourself to take a leap of faith.",
       ],
     },
+    {
+      name: "Tommy Allegreto",
+      year: "2026",
+      note: "Scholarship Recipient",
+      paragraphs: [
+        "I was fortunate enough to receive a scholarship to participate in Tyler’s program through Chasing Change. I originally reached out because I wanted help with weight loss and staying consistent, but the experience became about much more than simply changing my body or watching the number on the scale.",
+        "Tyler helped me stay committed while encouraging me to think about my overall health, wellness, habits, and mindset. His coaching style is hands-off in the best way he does not force you into a rigid plan or simply tell you what to do. Instead, he teaches you how the process works, helps you understand your own choices, and gives you the tools to create changes that feel realistic and sustainable.",
+        "As a gay man working with other gay men who want to improve their health and their lives, Tyler creates an environment that feels comfortable, understanding, and free of judgment. I felt supported without feeling pressured, and I came away with a much stronger understanding of what consistency and wellness look like for me.",
+        "I am incredibly grateful for the opportunity to work with Tyler and Chasing Change, and I would recommend his coaching to anyone looking for thoughtful, supportive, and sustainable guidance.",
+      ],
+    },
   ];
 
   const normalizeKey = (item) => `${item?.name || ""}::${item?.year || ""}`.toLowerCase();
