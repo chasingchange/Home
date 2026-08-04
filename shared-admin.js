@@ -152,7 +152,7 @@
 
       const unlockBtn = document.createElement("button");
       unlockBtn.textContent = "Unlock";
-      unlockBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#77d770;color:#071f35;font-weight:800;cursor:pointer;";
+      unlockBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#dcd1ff;color:#071f35;font-weight:800;cursor:pointer;";
 
       unlockBtn.addEventListener("click", () => {
         if (input.value === ADMIN_PASSWORD) {
@@ -176,7 +176,7 @@
     const setSelected = (node) => {
       clearHighlight();
       selected = node;
-      if (selected && moving) selected.style.outline = "2px dashed #77d770";
+      if (selected && moving) selected.style.outline = "2px dashed #dcd1ff";
     };
 
     const getSortableTarget = (node) => {
@@ -210,7 +210,7 @@
 
       const editBtn = document.createElement("button");
       editBtn.textContent = "Edit text";
-      editBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#77d770;color:#071f35;font-weight:800;cursor:pointer;";
+      editBtn.style.cssText = "border:0;border-radius:8px;padding:7px 10px;background:#dcd1ff;color:#071f35;font-weight:800;cursor:pointer;";
 
       const moveBtn = document.createElement("button");
       moveBtn.textContent = "Move blocks";
@@ -241,7 +241,7 @@
       editBtn.addEventListener("click", () => {
         editing = !editing;
         root.contentEditable = String(editing);
-        root.style.outline = editing ? "2px dashed #77d770" : "";
+        root.style.outline = editing ? "2px dashed #dcd1ff" : "";
         editBtn.textContent = editing ? "Stop text" : "Edit text";
       });
 
