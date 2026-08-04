@@ -26,7 +26,16 @@
         border: 1px solid rgba(7, 31, 53, 0.1);
         border-radius: 1rem;
         box-shadow: 0 8px 24px rgba(7, 31, 53, 0.06);
-        transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        cursor: pointer;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
+      }
+
+      .testimonial-card:hover,
+      .testimonial-card:focus-visible {
+        border-color: rgba(220, 209, 255, 0.9);
+        box-shadow: 0 12px 28px rgba(7, 31, 53, 0.1);
+        transform: translateY(-2px);
+        outline: none;
       }
 
       .testimonial-content {
@@ -45,7 +54,7 @@
       }
 
       .testimonial-card.is-open {
-        border-color: rgba(119, 215, 112, 0.9);
+        border-color: rgba(220, 209, 255, 0.9);
         box-shadow: 0 12px 28px rgba(7, 31, 53, 0.08);
       }
 
@@ -67,7 +76,7 @@
         theme: {
           extend: {
             colors: {
-              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
+              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#dcd1ff", card: "#ffffff" },
             },
             fontFamily: {
               body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
@@ -76,7 +85,7 @@
             },
             boxShadow: {
               soft: "0 10px 30px rgba(7,31,53,0.10)",
-              neon: "0 24px 80px rgba(119,215,112,0.30)",
+              neon: "0 24px 80px rgba(220,209,255,0.30)",
             },
           },
         },
@@ -111,7 +120,7 @@
             </form>
           </div>
           <h3 class="mt-6 text-xs sm:text-sm font-heading font-bold uppercase tracking-[0.2em] text-cc-text/60">Client Cohorts</h3>
-          <div id="testimonialGrid" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 items-start auto-rows-auto">
+          <div id="testimonialGrid" class="mt-3 space-y-8">
           </div>
         </section>
 
@@ -133,22 +142,23 @@
         const article = document.createElement("article");
         article.className =
           "testimonial-card group relative p-5 sm:p-6";
+        article.setAttribute("role", "button");
+        article.setAttribute("tabindex", "0");
+        article.setAttribute("aria-expanded", "false");
 
-        const trigger = document.createElement("button");
-        trigger.type = "button";
+        const trigger = document.createElement("div");
         trigger.className =
-          "testimonial-trigger flex w-full items-start justify-between gap-4 rounded-lg border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cc-outline/90";
-        trigger.setAttribute("aria-expanded", "false");
+          "testimonial-trigger flex w-full items-start justify-between gap-4 rounded-lg p-0 text-left";
 
         const heading = document.createElement("h3");
         heading.className = "text-base sm:text-lg font-heading font-extrabold leading-tight";
         heading.append(document.createTextNode(testimonial.name));
-        const cohort = document.createElement("span");
-        cohort.className = "mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/60";
-        cohort.textContent = testimonial.note
-          ? `${testimonial.year} Cohort · ${testimonial.note}`
-          : `${testimonial.year} Cohort`;
-        heading.appendChild(cohort);
+        if (testimonial.note) {
+          const cohort = document.createElement("span");
+          cohort.className = "mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/60";
+          cohort.textContent = testimonial.note;
+          heading.appendChild(cohort);
+        }
 
         const indicator = document.createElement("span");
         indicator.className = "mt-1 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-cc-text/65";
@@ -195,10 +205,33 @@
         mergedTestimonialsMap.set(normalizeTestimonialKey(item), item);
       });
 
+      const testimonialsByYear = new Map();
       Array.from(mergedTestimonialsMap.values()).forEach((item) => {
-        if (item?.name && item?.year && Array.isArray(item?.paragraphs) && item.paragraphs.length) {
-          testimonialGrid.appendChild(createTestimonialCard(item));
-        }
+        if (!(item?.name && item?.year && Array.isArray(item?.paragraphs) && item.paragraphs.length)) return;
+        const year = String(item.year);
+        if (!testimonialsByYear.has(year)) testimonialsByYear.set(year, []);
+        testimonialsByYear.get(year).push(item);
+      });
+
+      const sortedYears = Array.from(testimonialsByYear.keys()).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+
+      sortedYears.forEach((year) => {
+        const section = document.createElement("section");
+
+        const yearHeading = document.createElement("h4");
+        yearHeading.className = "font-heading text-lg sm:text-xl font-extrabold tracking-tight text-cc-text/90";
+        yearHeading.textContent = `${year} Cohort`;
+
+        const yearGrid = document.createElement("div");
+        yearGrid.className = "mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 items-start auto-rows-auto";
+
+        testimonialsByYear.get(year).forEach((item) => {
+          yearGrid.appendChild(createTestimonialCard(item));
+        });
+
+        section.appendChild(yearHeading);
+        section.appendChild(yearGrid);
+        testimonialGrid.appendChild(section);
       });
 
       const bindCardInteractions = () => {
@@ -206,12 +239,11 @@
         const closeCard = (card) => {
           const content = card.querySelector(".testimonial-content");
           const copy = card.querySelector(".testimonial-copy");
-          const trigger = card.querySelector(".testimonial-trigger");
-          if (!content || !copy || !trigger) return;
+          if (!content || !copy) return;
           content.style.height = `${copy.scrollHeight}px`;
           requestAnimationFrame(() => {
             card.classList.remove("is-open");
-            trigger.setAttribute("aria-expanded", "false");
+            card.setAttribute("aria-expanded", "false");
             content.setAttribute("aria-hidden", "true");
             content.style.height = "0px";
           });
@@ -220,10 +252,9 @@
         const openCard = (card) => {
           const content = card.querySelector(".testimonial-content");
           const copy = card.querySelector(".testimonial-copy");
-          const trigger = card.querySelector(".testimonial-trigger");
-          if (!content || !copy || !trigger) return;
+          if (!content || !copy) return;
           card.classList.add("is-open");
-          trigger.setAttribute("aria-expanded", "true");
+          card.setAttribute("aria-expanded", "true");
           content.setAttribute("aria-hidden", "false");
           content.style.height = `${copy.scrollHeight}px`;
         };
@@ -239,10 +270,7 @@
         };
 
         testimonialCards.forEach((card) => {
-          const trigger = card.querySelector(".testimonial-trigger");
-          if (!trigger) return;
-
-          trigger.addEventListener("click", () => {
+          const toggleCard = () => {
             const isOpen = card.classList.contains("is-open");
             testimonialCards.forEach((item) => {
               if (item !== card && item.classList.contains("is-open")) {
@@ -254,6 +282,13 @@
             } else {
               openCard(card);
             }
+          };
+
+          card.addEventListener("click", toggleCard);
+          card.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            toggleCard();
           });
 
           const content = card.querySelector(".testimonial-content");
