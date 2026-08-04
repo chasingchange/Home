@@ -11,7 +11,6 @@
 <script src="../shared-admin.js" defer></script>
 <link rel="stylesheet" href="../shared.css" />
 <script src="../shared-global-nav.js" defer></script>
-<script src="../shared-session.js"></script>
 <script src="../shared-coach.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -2352,43 +2351,30 @@ function renderPastSplitSelectors() {
   controls.saveQuarter.innerHTML = saveQuarterOptions || `<option value="${current.quarter}">Q${current.quarter}</option>`;
 }
 
-async function loadSplitArchive(options = {}) {
-  const { refresh = false } = options;
-  const sessionApi = window.ChasingChangeSession;
-  if (!sessionApi?.whenReady) return;
-  await sessionApi.whenReady();
-  if (refresh && typeof sessionApi.refreshFromStores === 'function') {
-    try {
-      await sessionApi.refreshFromStores();
-    } catch (error) {
-      console.warn('Unable to refresh account data from stores before loading split archive.', error);
-    }
+const SPLIT_ARCHIVE_STORAGE_KEY = 'ccSplitSculptorArchive';
+
+function loadSplitArchive() {
+  try {
+    splitArchive = JSON.parse(localStorage.getItem(SPLIT_ARCHIVE_STORAGE_KEY) || '{}');
+  } catch {
+    splitArchive = {};
   }
-  const data = sessionApi.getCalculatorData('splitSculptor') || {};
-  splitArchive = data.quarterlySplits || {};
 }
 
-async function persistSplitArchive() {
-  const sessionApi = window.ChasingChangeSession;
-  if (!sessionApi?.saveCalculatorData) return false;
-  return sessionApi.saveCalculatorData('splitSculptor', { quarterlySplits: splitArchive });
+function persistSplitArchive() {
+  localStorage.setItem(SPLIT_ARCHIVE_STORAGE_KEY, JSON.stringify(splitArchive));
+  return true;
 }
 
 function syncPastSplitsPanel() {
   const controls = getArchiveControls();
-  const user = window.ChasingChangeSession?.getCurrentUserEmail?.();
-  const isLoggedIn = !!user;
-  controls.loginPrompt.style.display = isLoggedIn ? 'none' : 'block';
-  controls.loginPrompt.textContent = isLoggedIn
-    ? ''
-    : 'Log in to view and manage your past splits. Go to the account section to sign in.';
-  controls.controlsWrap.style.display = isLoggedIn ? 'block' : 'none';
-  controls.summaryLoginPrompt.style.display = isLoggedIn ? 'none' : 'block';
-  controls.summaryLoginPrompt.textContent = isLoggedIn ? '' : 'Log in to save your summary to a quarter.';
-  controls.summaryControlsWrap.style.display = isLoggedIn ? 'block' : 'none';
+  if (controls.loginPrompt) controls.loginPrompt.style.display = 'none';
+  controls.controlsWrap.style.display = 'block';
+  if (controls.summaryLoginPrompt) controls.summaryLoginPrompt.style.display = 'none';
+  controls.summaryControlsWrap.style.display = 'block';
   controls.msg.textContent = '';
   controls.saveMsg.textContent = '';
-  if (isLoggedIn) renderPastSplitSelectors();
+  renderPastSplitSelectors();
   renderStartupMacrocycleCard();
   syncCoachSplitPanel();
 }
@@ -2499,11 +2485,6 @@ function getSavedSplitEntries() {
 function renderStartupMacrocycleCard() {
   const card = document.getElementById('startup-macrocycle-card');
   if (!card) return;
-  const isLoggedIn = !!window.ChasingChangeSession?.getCurrentUserEmail?.();
-  if (!isLoggedIn) {
-    card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">Choose a new macrocycle below, or sign in to load a previous one.</p>`;
-    return;
-  }
   const savedEntries = getSavedSplitEntries();
   if (!savedEntries.length) {
     card.innerHTML = `<strong>Start your macrocycle</strong><p class="step-sub">No previous macrocycles found yet. Start a new one below and save it in Step 9.</p>`;
@@ -2594,7 +2575,8 @@ buildGymRule();
 buildWorkoutBuilder();
 
 const refreshSplitArchiveUi = () => {
-  loadSplitArchive({ refresh: true }).finally(syncPastSplitsPanel);
+  loadSplitArchive();
+  syncPastSplitsPanel();
 };
 
 refreshSplitArchiveUi();
@@ -2677,10 +2659,10 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
       viewQuarter: quarter
     }
   };
-  const saved = await persistSplitArchive();
+  const saved = persistSplitArchive();
   controls.saveMsg.textContent = saved
     ? `Saved this split view to ${key}. Existing data was overwritten for that quarter.`
-    : 'Could not save right now. Please make sure you are logged in and try again.';
+    : 'Could not save right now. Please try again.';
 });
 
 document.getElementById('coach-split-save-btn')?.addEventListener('click', saveSplitToCoachClient);

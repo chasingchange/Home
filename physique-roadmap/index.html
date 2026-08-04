@@ -18,7 +18,6 @@
 
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
-    <script src="../shared-session.js"></script>
 
     <style>
       :root {
@@ -129,11 +128,6 @@
         background: linear-gradient(90deg, #dcd1ff, #52bc9f);
       }
 
-      .login-lock {
-        margin-top: 1rem;
-        padding: 1rem;
-      }
-
       a.cta {
         display: inline-block;
         margin-top: 0.75rem;
@@ -155,19 +149,11 @@
   <body class="cc-page">
     <div class="container">
       <header>
-        <p class="chip">Logged-In Athlete View</p>
         <h1 class="title">Physique Roadmap</h1>
-                <p id="welcomeName" class="muted">Track exactly how your body and performance evolve week to week.</p>
-        <p id="dataSourceNote" class="muted" style="margin-top:.35rem;font-size:.88rem;">Data source: showing demo metrics until your calculators save account data.</p>
-</header>
+        <p class="muted">Track exactly how your body and performance evolve week to week.</p>
+      </header>
 
-      <section id="lockedState" class="card login-lock" hidden>
-        <h2>Log in to unlock your Physique Roadmap.</h2>
-        <p class="muted">This dashboard tab is only visible for active Chasing Change accounts.</p>
-        <a class="cta" href="../create-account/index.html">Log In / Create Account</a>
-      </section>
-
-      <main id="roadmapContent" hidden>
+      <main id="roadmapContent">
         <section class="card hero">
           <div>
             <h2>Current Phase: Lean Rebuild</h2>
@@ -280,33 +266,6 @@
       </main>
     </div>
 
-    <script>
-      const sessionApi = window.ChasingChangeSession;
-      const roadmapContent = document.getElementById("roadmapContent");
-      const lockedState = document.getElementById("lockedState");
-      const welcomeName = document.getElementById("welcomeName");
-      const dataSourceNote = document.getElementById("dataSourceNote");
-
-      sessionApi?.whenReady?.().finally(() => {
-        const session = sessionApi?.getCurrentAccount?.();
-        const isLoggedIn = !!session;
-
-        roadmapContent.hidden = !isLoggedIn;
-        lockedState.hidden = isLoggedIn;
-
-        if (isLoggedIn) {
-          const name = session.account?.name || session.email?.split("@")[0] || "Athlete";
-          welcomeName.textContent = `${name}, here is your performance dashboard and trend roadmap.`;
-          const calculatorKeys = Object.keys(session.account?.calculators || {}).filter((key) => key !== "profile");
-          dataSourceNote.textContent = calculatorKeys.length
-            ? `Data source: ${calculatorKeys.join(", ")} from your signed-in account storage.`
-            : "Data source: seeded demo metrics (no saved calculator data found on this account yet).";
-        } else {
-          dataSourceNote.textContent = "Data source: sign in to load your account-backed calculator history.";
-        }
-      });
-    </script>
-  
     <footer class="w-full px-5 pb-5 sm:px-8">
       <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
     </footer>

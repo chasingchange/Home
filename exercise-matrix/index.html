@@ -28,7 +28,6 @@
     </script>
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
-    <script src="../shared-session.js"></script>
     <script src="./data.js"></script>
   </head>
   <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
@@ -99,7 +98,6 @@
       const difficultyFilter = document.getElementById("difficultyFilter");
       const matrixBody = document.getElementById("matrixBody");
       const resultCount = document.getElementById("resultCount");
-      const pageLoginStatus = document.getElementById("pageLoginStatus");
 
       function uniqueValues(key) {
         return [...new Set(DATA.map((item) => item[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b));
@@ -186,10 +184,6 @@
       }
 
       hydrateFilters();
-      if (pageLoginStatus && window.ChasingChangeSession?.getCurrentDisplayName) {
-        const displayName = window.ChasingChangeSession.getCurrentDisplayName();
-        pageLoginStatus.textContent = displayName ? `Welcome Back To The Race, ${displayName}` : "Not Logged In";
-      }
       render();
       [searchInput, muscleFilter, equipmentFilter, movementTypeFilter, difficultyFilter].forEach((el) => el.addEventListener("input", render));
     </script>

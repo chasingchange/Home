@@ -317,37 +317,6 @@ h3 {
   text-transform: uppercase;
 }
 
-.cc-title-home {
-  min-width: 0;
-  text-decoration: none;
-  border-radius: 0.85rem;
-  border: 1px solid rgba(7, 31, 53, 0.14);
-  color: var(--cc-text);
-  background: rgba(220, 209, 255, 0.2);
-  padding: 0.6rem 0.85rem;
-  text-align: center;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.cc-title-home-label {
-  display: block;
-  font-family: var(--cc-brand-font);
-  font-size: 0.88rem;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  font-weight: 800;
-}
-
-.cc-title-home-sub {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.85rem;
-  opacity: 0.78;
-  font-weight: 700;
-}
-
 .cc-title-subline {
   margin-top: 0.35rem;
   text-align: center;
@@ -366,21 +335,6 @@ h3 {
   font-weight: 800;
 }
 
-.cc-page-login-tile {
-  display: none;
-  position: absolute;
-  right: 1rem;
-  top: 1rem;
-  margin: 0;
-  border-radius: 999px;
-  background: rgba(7, 31, 53, 0.05);
-  border: 1px solid rgba(7, 31, 53, 0.14);
-  color: var(--cc-text);
-  padding: 0.4rem 0.7rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-}
-
 .cc-title-coaching {
   margin: 0.35rem auto 0;
   display: inline-flex;
@@ -396,216 +350,6 @@ h3 {
   font-size: 0.92rem;
   padding: 0.58rem 0.95rem;
   line-height: 1.2;
-}
-
-.cc-bottom-coaching-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 1.75rem 0 0.9rem;
-}
-
-.cc-bottom-coaching-wrap .cc-bottom-coaching {
-  margin: 0;
-}
-
-.cc-account-card {
-  width: 100%;
-  margin: 0.85rem 0 1rem;
-  border-radius: 2rem;
-  border: 1px solid rgba(7, 31, 53, 0.1);
-  background: #ffffff;
-  box-shadow: 0 14px 45px rgba(7, 31, 53, 0.08);
-  padding: 1.5rem 1.35rem;
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
-
-.cc-account-card-inline {
-  position: relative;
-  z-index: 2;
-}
-
-.cc-account-start-line {
-  position: static;
-  display: inline-flex;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.98);
-  color: var(--cc-text);
-  border: 1px solid rgba(7, 31, 53, 0.14);
-}
-
-.cc-account-start-line .cc-title-home-label {
-  font-size: 0.72rem;
-}
-
-.cc-account-status {
-  margin: 0 auto;
-  font-family: var(--cc-heading-font);
-  font-size: clamp(1.45rem, 2.8vw, 2rem);
-  font-weight: 800;
-  color: var(--cc-text);
-  position: relative;
-  z-index: 1;
-}
-
-.cc-account-sub-status {
-  margin: 0.4rem auto 0;
-  color: rgba(7, 31, 53, 0.72);
-  font-size: 0.92rem;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.cc-account-card-content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  text-align: center;
-}
-
-.cc-account-card-actions {
-  margin-top: 0.75rem;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.cc-account-logout-action {
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.cc-account-copy {
-  margin: 0.4rem 0 0;
-  font-size: 0.72rem;
-  line-height: 1.4;
-  opacity: 0.75;
-}
-
-.cc-account-actions {
-  margin-top: 0.85rem;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
-  position: relative;
-  z-index: 1;
-}
-
-.cc-account-actions-inline {
-  grid-template-columns: repeat(2, minmax(0, max-content));
-  justify-content: flex-start;
-}
-
-.cc-account-actions button,
-.cc-account-actions a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.95rem;
-  border: 1px solid rgba(7, 31, 53, 0.14);
-  padding: 0.54rem 0.62rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.cc-account-card.is-logged-in {
-  background: #ffffff;
-  border-color: rgba(7, 31, 53, 0.12);
-}
-
-.cc-account-card.is-logged-in .cc-account-status {
-  color: var(--cc-text);
-}
-
-.cc-account-card.is-logged-in .cc-account-sub-status {
-  color: color-mix(in srgb, var(--cc-text) 88%, #ffffff);
-}
-
-.cc-account-login-btn {
-  background: var(--cc-accent);
-  color: var(--cc-text);
-}
-
-.cc-account-create-btn,
-.cc-account-logout-btn {
-  background: #ffffff;
-  color: var(--cc-text);
-}
-
-.cc-auth-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(7, 31, 53, 0.5);
-  backdrop-filter: blur(4px);
-}
-
-.cc-auth-modal__panel {
-  width: min(100%, 430px);
-  border-radius: 1.25rem;
-  background: #ffffff;
-  border: 1px solid rgba(7, 31, 53, 0.1);
-  box-shadow: 0 20px 50px rgba(7, 31, 53, 0.22);
-  padding: 1rem;
-}
-
-.cc-auth-modal__eyebrow {
-  margin: 0;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 800;
-  opacity: 0.65;
-}
-
-.cc-auth-modal__title {
-  margin: 0.3rem 0 0;
-  font-family: var(--cc-heading-font);
-  font-size: 1.35rem;
-  line-height: 1.2;
-}
-
-.cc-auth-form {
-  margin-top: 0.8rem;
-  display: grid;
-  gap: 0.55rem;
-}
-
-.cc-auth-form input {
-  width: 100%;
-  border-radius: 0.8rem;
-  border: 1px solid rgba(7, 31, 53, 0.14);
-  background: #f8fafc;
-  color: var(--cc-text);
-  padding: 0.72rem 0.8rem;
-  font-family: var(--cc-body-font);
-  font-size: 0.93rem;
-}
-
-.cc-auth-hint {
-  margin: 0.15rem 0 0;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  opacity: 0.75;
-}
-
-.cc-auth-actions {
-  margin-top: 0.35rem;
-  display: flex;
-  gap: 0.45rem;
-}
-
-.cc-auth-actions .cc-account-login-btn,
-.cc-auth-actions .cc-account-logout-btn {
-  flex: 1 1 auto;
 }
 
 .cc-modal {
@@ -650,66 +394,6 @@ h3 {
   border: 0;
 }
 
-
-.race-card-track {
-  position: relative;
-  overflow: hidden;
-  min-height: 185px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1.5rem;
-  background: #ffffff;
-  border: 1px solid rgba(7, 31, 53, 0.1);
-  box-shadow: 0 14px 45px rgba(7, 31, 53, 0.08);
-}
-
-.race-card-track::before,
-.race-card-track::after {
-  display: none;
-}
-
-.race-card-track::before {
-  right: -28px;
-  bottom: -72px;
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(220, 209, 255, 0.35), rgba(220, 209, 255, 0));
-}
-
-.race-card-track::after {
-  left: -90px;
-  top: -120px;
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(7, 31, 53, 0.06), rgba(7, 31, 53, 0));
-}
-
-.race-card-overlay {
-  display: none;
-}
-
-.race-card-kicker {
-  display: inline-flex;
-  margin: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  padding: 0.45rem 0.8rem;
-  font-size: 0.72rem;
-  font-family: var(--cc-heading-font);
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cc-text);
-}
-
-
-@media (max-width: 640px) {
-  .cc-account-start-line {
-    margin-top: 0.7rem;
-  }
-}
 
 /* ===== Chasing Change light design system ===== */
 :root {
@@ -838,9 +522,7 @@ main[class*="max-w-"],
 }
 
 .cc-title-block,
-.cc-account-card,
 .cc-modal-shell,
-.cc-auth-modal__panel,
 .cc-cta-block {
   border: 1px solid rgba(7, 31, 53, 0.1);
   border-radius: 1.5rem;
@@ -862,7 +544,6 @@ main[class*="max-w-"],
   opacity: 0.72;
 }
 
-.cc-title-home,
 .cc-home-icon-link,
 .cc-link-chip {
   background: #fff;
@@ -999,12 +680,6 @@ main[class*="max-w-"],
 
 .cc-title-block-inner {
   padding: 1.15rem 1.15rem 1rem;
-}
-
-.cc-account-card {
-  border-radius: 1.6rem;
-  border: 1px solid rgba(7, 31, 53, 0.1);
-  box-shadow: 0 12px 30px rgba(7, 31, 53, 0.08);
 }
 
 .cc-global-nav-wrap {
