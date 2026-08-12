@@ -5,7 +5,7 @@
     colors: {
       bg: "#f5f5f7",
       text: "#071f35",
-      accent: "#dcd1ff",
+      accent: "#cceaff",
       muted: "#5d6c79",
     },
     fonts: {
@@ -76,7 +76,7 @@
     const drawHeader = () => {
       doc.setFillColor(245, 245, 247);
       doc.rect(0, 0, pageWidth, pageHeight, "F");
-      doc.setDrawColor(220, 209, 255);
+      doc.setDrawColor(204, 234, 255);
       doc.setLineWidth(2);
       doc.line(margin, y, pageWidth - margin, y);
       y += 12;
@@ -120,7 +120,7 @@
       doc.text(section.title || "Section", margin, y);
       y += 12;
 
-      doc.setDrawColor(220, 209, 255);
+      doc.setDrawColor(204, 234, 255);
       doc.setLineWidth(1);
       doc.line(margin, y, margin + contentWidth, y);
       y += 12;
