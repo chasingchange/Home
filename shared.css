@@ -1,7 +1,7 @@
 :root {
   --cc-bg: #f5f5f7;
   --cc-text: #071f35;
-  --cc-accent: #dcd1ff;
+  --cc-accent: #cceaff;
   --cc-card: #ffffff;
   --cc-nav-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   --cc-nav-duration-premium: 0.34s;
@@ -59,8 +59,8 @@ h3 {
   align-items: center;
   border-radius: 999px;
   padding: 6px 12px;
-  background: rgba(220, 209, 255, 0.28);
-  border: 1px solid rgba(220, 209, 255, 0.7);
+  background: rgba(204, 234, 255, 0.28);
+  border: 1px solid rgba(204, 234, 255, 0.7);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -167,7 +167,7 @@ h3 {
   width: 140px;
   height: 140px;
   border-radius: 999px;
-  background: radial-gradient(circle at center, rgba(220, 209, 255, 0.25), rgba(220, 209, 255, 0));
+  background: radial-gradient(circle at center, rgba(204, 234, 255, 0.25), rgba(204, 234, 255, 0));
   pointer-events: none;
 }
 
@@ -233,7 +233,7 @@ h3 {
   height: 2rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(7, 31, 53, 0.14);
-  background: rgba(220, 209, 255, 0.2);
+  background: rgba(204, 234, 255, 0.2);
   color: var(--cc-text);
   text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -272,7 +272,7 @@ h3 {
   border: 1px solid rgba(7, 31, 53, 0.14);
   background: #ffffff;
   color: var(--cc-text);
-  box-shadow: 0 24px 80px rgba(220, 209, 255, 0.2);
+  box-shadow: 0 24px 80px rgba(204, 234, 255, 0.2);
   overflow: hidden;
 }
 
@@ -472,7 +472,7 @@ input[type="button"]:hover {
 }
 
 .cc-btn-primary {
-  border-color: rgba(220, 209, 255, 0.85);
+  border-color: rgba(204, 234, 255, 0.85);
   background: var(--cc-accent);
 }
 
@@ -559,7 +559,7 @@ main[class*="max-w-"],
 
 .cc-title-coaching:hover,
 .cc-btn-primary:hover {
-  border-color: #dcd1ff;
+  border-color: #cceaff;
 }
 
 .cc-cta-coaching {
@@ -625,8 +625,8 @@ main[class*="max-w-"],
 
 :where(.cc-page) :where(input:focus, select:focus, textarea:focus) {
   outline: none;
-  border-color: rgba(220, 209, 255, 0.95);
-  box-shadow: 0 0 0 3px rgba(220, 209, 255, 0.22);
+  border-color: rgba(204, 234, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(204, 234, 255, 0.22);
 }
 
 :where(.cc-page) :where(button, .btn-primary, .cc-button-accent) {
@@ -662,12 +662,12 @@ main[class*="max-w-"],
 
 .cc-signature-nav:hover {
   transform: translateY(-1px);
-  border-color: rgba(220, 209, 255, 0.9);
+  border-color: rgba(204, 234, 255, 0.9);
   box-shadow: 0 10px 26px rgba(7, 31, 53, 0.12);
 }
 
 .cc-signature-nav:focus-visible {
-  outline: 2px solid rgba(220, 209, 255, 0.72);
+  outline: 2px solid rgba(204, 234, 255, 0.72);
   outline-offset: 2px;
 }
 
@@ -719,7 +719,7 @@ main[class*="max-w-"],
 }
 
 .cc-global-nav-toggle:focus-visible {
-  outline: 2px solid rgba(220, 209, 255, 0.72);
+  outline: 2px solid rgba(204, 234, 255, 0.72);
   outline-offset: 2px;
 }
 
@@ -837,7 +837,7 @@ main[class*="max-w-"],
 .cc-global-nav-link:focus-visible,
 .cc-global-nav-core:focus-visible {
   color: #071f35;
-  outline: 2px solid rgba(220, 209, 255, 0.72);
+  outline: 2px solid rgba(204, 234, 255, 0.72);
   outline-offset: 2px;
   border-radius: 0.2rem;
 }
