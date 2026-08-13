@@ -150,13 +150,13 @@
 
         const heading = document.createElement("h3");
         heading.className = "text-base sm:text-lg font-heading font-extrabold leading-tight";
-        heading.append(document.createTextNode(testimonial.name));
         if (testimonial.note) {
           const cohort = document.createElement("span");
-          cohort.className = "mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/60";
+          cohort.className = "mb-1 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/60";
           cohort.textContent = testimonial.note;
           heading.appendChild(cohort);
         }
+        heading.append(document.createTextNode(testimonial.name));
 
         const indicator = document.createElement("span");
         indicator.className = "mt-1 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-cc-text/65";
