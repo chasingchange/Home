@@ -66,18 +66,18 @@
   document.body.prepend(nav);
 
   const resources = [
-    { title: "1RM Calculator", core: "Body", url: `${root}1RM Calculator/Index.html` },
-    { title: "Split Sculptor", core: "Body", url: `${root}split-sculptor/index.html` },
-    { title: "Running Calculator", core: "Body", url: `${root}running-calculator/index.html` },
-    { title: "Macro Calculator", core: "Body", url: `${root}macro/index.html` },
-    { title: "Gym Locator", core: "Body", url: `${root}gym-locator/index.html` },
-    { title: "Arcadia", core: "Body", url: `${root}meal-plan/tool.html` },
+    { title: "1RM Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
+    { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/index.html` },
+    { title: "Running Calculator", core: "Body", section: "Fitness", url: `${root}running-calculator/index.html` },
+    { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/index.html` },
+    { title: "Physique Roadmap", core: "Body", section: "Fitness", url: `${root}physique-roadmap/index.html` },
+    { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/index.html` },
+    { title: "Macro Calculator", core: "Body", section: "Nutrition", url: `${root}macro/index.html` },
+    { title: "Arcadia", core: "Body", section: "Nutrition", url: `${root}meal-plan/tool.html` },
     { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/index.html` },
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
-    { title: "Exercise Matrix", core: "Body", url: `${root}exercise-matrix/index.html` },
-    { title: "Physique Roadmap", core: "Body", url: `${root}physique-roadmap/index.html` },
     { title: "Founder’s Calendar", core: "Life", url: `${root}founders-calendar/index.html` },
   ];
 
@@ -189,9 +189,29 @@
     }
 
     coreMegaMenuTitle.textContent = `Explore ${activeCore}`;
-    coreMegaMenuItems.innerHTML = coreMatches
-      .map((resource) => `<a href="${resource.url}" class="cc-global-mega-item">${resource.title}</a>`)
-      .join("");
+
+    const sectionOrder = [...new Set(coreMatches.map((resource) => resource.section).filter(Boolean))];
+    if (sectionOrder.length) {
+      const unsectioned = coreMatches.filter((resource) => !resource.section);
+      coreMegaMenuItems.innerHTML = sectionOrder
+        .map((section) => {
+          const items = coreMatches.filter((resource) => resource.section === section);
+          return `
+            <div class="cc-global-mega-section">
+              <p class="cc-global-mega-section-title">${section.toUpperCase()}</p>
+              <div class="cc-global-mega-section-items">
+                ${items.map((resource) => `<a href="${resource.url}" class="cc-global-mega-item">${resource.title}</a>`).join("")}
+              </div>
+            </div>
+          `;
+        })
+        .join("") + unsectioned.map((resource) => `<a href="${resource.url}" class="cc-global-mega-item">${resource.title}</a>`).join("");
+    } else {
+      coreMegaMenuItems.innerHTML = coreMatches
+        .map((resource) => `<a href="${resource.url}" class="cc-global-mega-item">${resource.title}</a>`)
+        .join("");
+    }
+
     coreMegaMenu.classList.remove("cc-is-hidden");
   }
 
