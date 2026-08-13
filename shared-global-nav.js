@@ -68,12 +68,10 @@
   const resources = [
     { title: "1RM Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
     { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/index.html` },
-    { title: "Running Calculator", core: "Body", section: "Fitness", url: `${root}running-calculator/index.html` },
     { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/index.html` },
     { title: "Physique Roadmap", core: "Body", section: "Fitness", url: `${root}physique-roadmap/index.html` },
     { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/index.html` },
     { title: "Macro Calculator", core: "Body", section: "Nutrition", url: `${root}macro/index.html` },
-    { title: "Arcadia", core: "Body", section: "Nutrition", url: `${root}meal-plan/tool.html` },
     { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/index.html` },
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
