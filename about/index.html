@@ -108,6 +108,63 @@
         <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Does a Life Coach Do?</h2>
           <p class="mt-4 text-sm sm:text-base text-cc-text/80">A life coach builds routines, delivers education, and provides accountability for key areas of life: your fitness, career, artistic endeavors, environments, and relationships.</p>
+
+          <div class="mt-6 rounded-2xl bg-cc-card ring-1 ring-black/5 p-5 sm:p-6">
+            <button
+              type="button"
+              class="group flex w-full items-center justify-between gap-4 text-left"
+              aria-expanded="false"
+              aria-controls="coachingAccordionContent"
+              id="coachingAccordionTrigger"
+            >
+              <h3 class="text-xl sm:text-2xl font-extrabold font-heading">What Coaching Is / What Coaching Isn’t</h3>
+              <span
+                id="coachingAccordionIcon"
+                class="shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out"
+                aria-hidden="true"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </button>
+
+            <div
+              id="coachingAccordionContent"
+              class="mt-0 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
+              style="max-height: 0px;"
+            >
+              <div class="pt-5 space-y-6 text-sm sm:text-base text-cc-text/80 font-body">
+                <article>
+                  <h3 class="text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Is</h3>
+                  <p class="mt-2">Coaching is structured guidance designed to help you move forward with clarity and consistency.</p>
+                  <ul class="mt-3 list-disc pl-5 space-y-1">
+                    <li>weekly strategy sessions to adjust direction and remove friction</li>
+                    <li>personalized training and habit systems built around your real schedule</li>
+                    <li>accountability that keeps momentum from disappearing between sessions</li>
+                    <li>feedback based on your progress, not generic plans</li>
+                    <li>decision support when routines break or life gets busy</li>
+                    <li>long-term structure across the Body, Art, Mind, Soul, Career, and Life cores</li>
+                  </ul>
+                  <p class="mt-3 font-semibold text-cc-text">Coaching replaces guessing with execution.</p>
+                </article>
+
+                <article>
+                  <h3 class="text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Isn’t</h3>
+                  <p class="mt-2">Coaching is not therapy, emergency support, or passive motivation.</p>
+                  <ul class="mt-3 list-disc pl-5 space-y-1">
+                    <li>a substitute for mental health treatment</li>
+                    <li>daily crisis intervention</li>
+                    <li>a done-for-you transformation</li>
+                    <li>a rigid program you must follow perfectly</li>
+                    <li>a one-time plan without adjustment</li>
+                    <li>a shortcut that avoids effort or consistency</li>
+                  </ul>
+                  <p class="mt-3 font-semibold text-cc-text">Coaching works when structure meets action.</p>
+                </article>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
@@ -175,6 +232,16 @@
           <p class="mt-3 text-sm sm:text-base text-cc-text/80">Transformation happens in layers. The length of your commitment determines how many areas of life we rebuild together.</p>
           <div class="mt-6 grid gap-4 lg:grid-cols-3">
             <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
+              <h3 class="text-xl font-extrabold font-heading">The 5K — Body Core Foundation (12 Weeks · Meets Weekly)</h3>
+              <p class="text-sm text-cc-text/80">Best for clients who want fast, focused momentum before expanding scope.</p>
+              <p class="text-sm font-semibold">This level installs foundational structure in:</p>
+              <ul class="list-disc pl-5 text-sm text-cc-text/80 space-y-1">
+                <li>Body (training, nutrition, and recovery systems)</li>
+              </ul>
+              <p class="text-sm"><span class="font-bold">Result:</span> a proven twelve-week arc of consistency, visible physical progress, and a system that's ready to expand into additional cores.</p>
+            </article>
+
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
               <h3 class="text-xl font-extrabold font-heading">The 10K — Two-Core Transformation (6 Months · Meets Weekly)</h3>
               <p class="text-sm text-cc-text/80">Best for clients ready to build momentum quickly.</p>
               <p class="text-sm font-semibold">We focus on two primary cores at the same time, typically:</p>
@@ -189,7 +256,7 @@
             </article>
 
             <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
-              <h3 class="text-xl font-extrabold font-heading">The Half Marathon — Four-Core Alignment (9 Months · Meets Weekly)</h3>
+              <h3 class="text-xl font-extrabold font-heading">The Marathon — Four-Core Alignment (9 Months · Meets Weekly)</h3>
               <p class="text-sm text-cc-text/80">Best for clients ready to create structure across most of their week.</p>
               <p class="text-sm font-semibold">Typical structure includes:</p>
               <ul class="list-disc pl-5 text-sm text-cc-text/80 space-y-1">
@@ -199,21 +266,6 @@
                 <li>Career or Art (direction or expression)</li>
               </ul>
               <p class="text-sm"><span class="font-bold">Result:</span> clients stop living in disconnected routines and begin operating with alignment across multiple areas of life.</p>
-            </article>
-
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
-              <h3 class="text-xl font-extrabold font-heading">The Marathon — Six-Core Operating System (1 Year · Meets Weekly)</h3>
-              <p class="text-sm text-cc-text/80">Best for clients committed to full lifestyle transformation.</p>
-              <p class="text-sm font-semibold">This level installs structure across:</p>
-              <ul class="list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                <li>Body</li>
-                <li>Art</li>
-                <li>Mind</li>
-                <li>Soul</li>
-                <li>Career</li>
-                <li>Life</li>
-              </ul>
-              <p class="text-sm"><span class="font-bold">Result:</span> clients leave with a repeatable operating system they can rely on for years.</p>
             </article>
           </div>
         </section>
@@ -489,7 +541,9 @@
           <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold font-heading">Body Core Timeline</h2>
           <p class="mt-3 text-sm sm:text-base text-cc-text/80">A twelve-week arc of coaching milestones and honest expectations—so you always know what we're building next and what your body and mind may be doing along the way.</p>
 
-          <ol class="cc-timeline mt-8 space-y-6">
+          <div class="mt-8">
+            <div id="timelineCollapse" class="relative overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 460px;">
+              <ol class="cc-timeline space-y-6">
             <li class="cc-timeline-item">
               <span class="cc-timeline-marker" aria-hidden="true">1</span>
               <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
@@ -750,80 +804,21 @@
                 </div>
               </div>
             </li>
-          </ol>
-        </section>
-
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">The Goal</h2>
-          <div class="mt-4 space-y-2 text-sm sm:text-base text-cc-text/80">
-            <p>Short timelines create momentum.</p>
-            <p>Longer timelines create alignment.</p>
-            <p>The longest timelines create identity-level change.</p>
-          </div>
-          <p class="mt-4 text-base sm:text-lg font-semibold">The objective isn’t temporary discipline. It’s building a structure you can rely on for the rest of your life.</p>
-          <div class="mt-5 flex flex-wrap gap-3">
-            <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noopener noreferrer" class="cc-signature-nav">Apply for 1:1 Coaching</a>
-            <a href="../index.html#coreTopBar" class="cc-signature-nav">Explore the Ecosystem</a>
-          </div>
-        </section>
-
-        <section class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 p-6 sm:p-8">
-          <button
-            type="button"
-            class="group flex w-full items-center justify-between gap-4 text-left"
-            aria-expanded="false"
-            aria-controls="coachingAccordionContent"
-            id="coachingAccordionTrigger"
-          >
-            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Coaching Is / What Coaching Isn’t</h2>
-            <span
-              id="coachingAccordionIcon"
-              class="shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out"
-              aria-hidden="true"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </span>
-          </button>
-
-          <div
-            id="coachingAccordionContent"
-            class="mt-0 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
-            style="max-height: 0px;"
-          >
-            <div class="pt-5 space-y-6 text-sm sm:text-base text-cc-text/80 font-body">
-              <article>
-                <h3 class="text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Is</h3>
-                <p class="mt-2">Coaching is structured guidance designed to help you move forward with clarity and consistency.</p>
-                <ul class="mt-3 list-disc pl-5 space-y-1">
-                  <li>weekly strategy sessions to adjust direction and remove friction</li>
-                  <li>personalized training and habit systems built around your real schedule</li>
-                  <li>accountability that keeps momentum from disappearing between sessions</li>
-                  <li>feedback based on your progress, not generic plans</li>
-                  <li>decision support when routines break or life gets busy</li>
-                  <li>long-term structure across the Body, Art, Mind, Soul, Career, and Life cores</li>
-                </ul>
-                <p class="mt-3 font-semibold text-cc-text">Coaching replaces guessing with execution.</p>
-              </article>
-
-              <article>
-                <h3 class="text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Isn’t</h3>
-                <p class="mt-2">Coaching is not therapy, emergency support, or passive motivation.</p>
-                <ul class="mt-3 list-disc pl-5 space-y-1">
-                  <li>a substitute for mental health treatment</li>
-                  <li>daily crisis intervention</li>
-                  <li>a done-for-you transformation</li>
-                  <li>a rigid program you must follow perfectly</li>
-                  <li>a one-time plan without adjustment</li>
-                  <li>a shortcut that avoids effort or consistency</li>
-                </ul>
-                <p class="mt-3 font-semibold text-cc-text">Coaching works when structure meets action.</p>
-              </article>
-
+              </ol>
+              <div id="timelineFade" class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent transition-opacity duration-300 ease-in-out"></div>
+            </div>
+            <div class="mt-5 flex justify-center">
+              <button
+                type="button"
+                id="timelineToggle"
+                class="cc-signature-nav"
+                aria-expanded="false"
+                aria-controls="timelineCollapse"
+              >Show Full 12-Week Timeline</button>
             </div>
           </div>
         </section>
+
       </main>
       <footer class="w-full px-5 pb-5 sm:px-8">
         <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
@@ -889,6 +884,33 @@
         });
 
         setAccordionState(false);
+      })();
+    </script>
+    <script>
+      (() => {
+        const collapse = document.getElementById("timelineCollapse");
+        const fade = document.getElementById("timelineFade");
+        const toggle = document.getElementById("timelineToggle");
+        if (!collapse || !fade || !toggle) return;
+
+        const collapsedHeight = 460;
+        let expanded = false;
+
+        const setState = (isExpanded) => {
+          expanded = isExpanded;
+          toggle.setAttribute("aria-expanded", String(isExpanded));
+          toggle.textContent = isExpanded ? "Show Fewer Weeks" : "Show Full 12-Week Timeline";
+          fade.style.opacity = isExpanded ? "0" : "1";
+          collapse.style.maxHeight = isExpanded ? `${collapse.scrollHeight}px` : `${collapsedHeight}px`;
+        };
+
+        toggle.addEventListener("click", () => setState(!expanded));
+
+        window.addEventListener("resize", () => {
+          if (expanded) collapse.style.maxHeight = `${collapse.scrollHeight}px`;
+        });
+
+        setState(false);
       })();
     </script>
   </body>
