@@ -127,8 +127,9 @@
       /* Coach photos */
       .cc-coach-photo {
         width: 100%;
-        aspect-ratio: 4 / 5;
+        aspect-ratio: 3 / 4;
         object-fit: cover;
+        object-position: top center;
         border-radius: 20px;
       }
 
@@ -163,33 +164,6 @@
         color: #071f35;
         text-decoration: underline;
         text-underline-offset: 4px;
-      }
-
-      /* Timeline */
-      #timeline .timeline-strip {
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        padding: 4px 24px 20px;
-        scroll-snap-type: x proximity;
-        scrollbar-width: thin;
-      }
-      .timeline-card {
-        flex: 0 0 300px;
-        scroll-snap-align: start;
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 24px;
-        border: 1px solid rgba(7, 31, 53, 0.08);
-      }
-      .timeline-card h4 {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: rgba(7, 31, 53, 0.5);
-        margin: 16px 0 0;
       }
 
       /* Persistent CTA */
@@ -233,7 +207,6 @@
           <a href="#routes" class="cc-about-nav-link" data-nav-link>Routes</a>
           <a href="#included" class="cc-about-nav-link" data-nav-link>What's Included</a>
           <a href="#cores" class="cc-about-nav-link" data-nav-link>Six Cores</a>
-          <a href="#timeline" class="cc-about-nav-link" data-nav-link>Timeline</a>
         </div>
       </nav>
 
@@ -689,168 +662,6 @@
                 <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> life stops feeling reactive, cluttered, or fragmented, and starts operating like a stable foundation you can build on.</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="timeline" style="padding:100px 0; background:#f5f5f7; scroll-margin-top:64px">
-        <div style="max-width:1120px; margin:0 auto; padding:0 24px">
-          <p class="cc-a-kicker">Week by Week</p>
-          <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">The 12-week arc</h2>
-          <p style="margin-top:16px; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:640px">Coaching milestones and honest expectations — so you always know what's next.</p>
-        </div>
-        <div class="timeline-strip" style="margin-top:36px">
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 1</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Vision Board Round 1</li>
-              <li>Setting the 1st workout day and 1st cardio day.</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Early on, weight can drop fast. Mostly water and glycogen. Do not get addicted to the scale.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 2</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Master Grocery List</li>
-              <li>Chasing Change Core Planning</li>
-              <li>Setting the 2nd workout day and 2nd cardio day.</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Hunger can increase, especially as training quality and consistency improve.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 3</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Protein Anchor System</li>
-              <li>Setting the 3rd workout day.</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Water retention from carbs, sodium, stress, travel, and hard training can spike the scale even when things are going right.</li>
-              <li>Energy can fluctuate. Sleep, stress, hormones, and workload matter.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 4</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Mobility</li>
-              <li>The Gym Husband (or Wife)</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Imperfect days happen. The goal is to rebound fast, not to avoid mistakes forever.</li>
-              <li>Other core exploration.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 5</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Restaurant/Travel Strategy Map</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Strength can stall or drop before it climbs. Plateaus are data, not failure.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 6</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Progressive Overload Challenge</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Weight can rise while getting leaner. Recomposition happens when training quality improves and consistency holds.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 7</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Select Endurance Race</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Boredom often means it is working. Variables change only when the data says so.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 8</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Create Meal Plan</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Eating should start to feel intuitive. The meal plan is not the end goal, it is training wheels for the judgment being built.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 9</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Vision Board Round 2</li>
-              <li>Exercise Education</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>A reassessment week. Look at the identity shift, not just the physical change.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 10</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>The Split Sculptor</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>The body has fully adapted to the old split. A new one keeps progress moving instead of stagnating.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 11</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Set 1RM Goals</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>The goals that got you here will not keep you moving. New targets prevent the plateau.</li>
-            </ul>
-          </div>
-
-          <div class="timeline-card">
-            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 12</p>
-            <h4>Coaching</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Graduation or Macrocycle II</li>
-            </ul>
-            <h4>Expectations</h4>
-            <ul class="cc-a-list" style="font-size:14px">
-              <li>Decision point: recommit with new goals, or wrap the program here.</li>
-              <li>Less about performance now, more about honesty.</li>
-            </ul>
           </div>
         </div>
       </section>
