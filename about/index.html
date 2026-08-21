@@ -116,6 +116,24 @@
         color: #071f35;
         background: #77d770;
       }
+
+      /* Accordion triggers: heading-style toggle, no default focus ring */
+      .cc-accordion-trigger {
+        outline: none;
+      }
+      .cc-accordion-trigger h3 {
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        transition: text-decoration-color 0.2s ease;
+      }
+      .cc-accordion-trigger:hover h3,
+      .cc-accordion-trigger:focus-visible h3 {
+        text-decoration-color: currentColor;
+      }
+      .cc-accordion-trigger:focus-visible .cc-accordion-icon {
+        opacity: 0.75;
+      }
     </style>
   </head>
 
