@@ -6,369 +6,441 @@
     <title>About | Chasing Change</title>
     <meta name="description" content="The Chasing Change 1:1 Transformation Program across Body, Art, Mind, Soul, Career, and Life." />
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
 
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              cc: { text: "#071f35", bg: "#f5f5f7", outline: "#77d770", card: "#ffffff" },
-            },
-            fontFamily: {
-              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-              brand: ["Museo Moderno", "Raleway", "sans-serif"],
-            },
-            boxShadow: {
-              soft: "0 14px 45px rgba(7,31,53,0.08)",
-            },
-          },
-        },
-      };
-    </script>
-
     <style>
-      /* Body Core Timeline */
-      .cc-timeline {
-        position: relative;
-        list-style: none;
-        padding: 0;
-        margin-left: 0;
-      }
-      .cc-timeline::before {
-        content: "";
-        position: absolute;
-        top: 0.25rem;
-        bottom: 0.25rem;
-        left: 1.125rem;
-        width: 2px;
-        background: linear-gradient(to bottom, rgba(119, 215, 112, 0.85), rgba(119, 215, 112, 0.25));
-      }
-      .cc-timeline-item {
-        position: relative;
-        padding-left: 3.5rem;
-      }
-      .cc-timeline-marker {
-        position: absolute;
-        left: 0;
-        top: 0.25rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 9999px;
-        background: #77d770;
+      body.cc-page {
+        margin: 0;
+        background: #ffffff;
         color: #071f35;
-        font-family: "Museo Moderno", "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 0.95rem;
-        line-height: 1;
-        box-shadow: 0 6px 16px rgba(119, 215, 112, 0.45);
-        border: 3px solid #ffffff;
-      }
-      @media (min-width: 640px) {
-        .cc-timeline::before {
-          left: 1.375rem;
-        }
-        .cc-timeline-item {
-          padding-left: 4rem;
-        }
-        .cc-timeline-marker {
-          width: 2.75rem;
-          height: 2.75rem;
-          font-size: 1.05rem;
-        }
+        font-family: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
 
-      /* About page in-page nav */
+      .cc-a-heading {
+        font-family: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-weight: 800;
+      }
+
+      .cc-a-kicker {
+        font-family: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(7, 31, 53, 0.45);
+        margin: 0;
+      }
+
+      /* Sticky in-page nav */
       #aboutInPageNav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        background: rgba(255, 255, 255, 0.78);
+        border-bottom: 1px solid rgba(7, 31, 53, 0.08);
         scrollbar-width: none;
       }
       #aboutInPageNav::-webkit-scrollbar {
         display: none;
       }
+      #aboutInPageNav .inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 12px 24px;
+        display: flex;
+        gap: 2px;
+        overflow-x: auto;
+      }
       .cc-about-nav-link {
         flex-shrink: 0;
         white-space: nowrap;
-        border-radius: 9999px;
-        padding: 0.4rem 0.85rem;
-        font-size: 0.8rem;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 13px;
         font-weight: 700;
-        color: rgba(7, 31, 53, 0.65);
-        transition: color 0.2s ease, background-color 0.2s ease;
+        text-decoration: none;
+        color: rgba(7, 31, 53, 0.6);
+        background: transparent;
+        transition: background-color 0.15s ease, color 0.15s ease;
       }
       .cc-about-nav-link:hover {
-        color: #071f35;
-        background: rgba(7, 31, 53, 0.06);
+        background: rgba(7, 31, 53, 0.05);
       }
       .cc-about-nav-link.is-active {
         color: #071f35;
-        background: #77d770;
+        background: rgba(7, 31, 53, 0.06);
       }
 
-      /* Accordion triggers: heading-style toggle, no default focus ring */
-      .cc-accordion-trigger {
-        outline: none;
+      /* Accordion chevrons */
+      .cc-a-chevron {
+        flex-shrink: 0;
+        color: rgba(7, 31, 53, 0.5);
+        transition: transform 0.25s ease;
       }
-      .cc-accordion-trigger h3 {
+      .cc-a-chevron.is-open {
+        transform: rotate(180deg);
+      }
+
+      /* Coaching accordion heading underline-on-open */
+      #coachingAccordionTrigger .cc-a-title {
         text-decoration: underline;
         text-decoration-color: transparent;
-        text-underline-offset: 4px;
+        text-underline-offset: 5px;
         transition: text-decoration-color 0.2s ease;
       }
-      .cc-accordion-trigger:hover h3,
-      .cc-accordion-trigger:focus-visible h3 {
+      #coachingAccordionTrigger.is-open .cc-a-title {
         text-decoration-color: currentColor;
       }
-      .cc-accordion-trigger:focus-visible .cc-accordion-icon {
-        opacity: 0.75;
+
+      /* Generic collapse animation */
+      .cc-a-collapse {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+      }
+      .cc-a-collapse.is-open {
+        opacity: 1;
+      }
+
+      /* Route + Included cards */
+      .cc-route-card,
+      .cc-included-row {
+        border-top: 1px solid rgba(7, 31, 53, 0.1);
+      }
+      .cc-route-card {
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        border-radius: 18px;
+        padding: 26px;
+      }
+
+      /* Coach photos */
+      .cc-coach-photo {
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+        border-radius: 20px;
+      }
+
+      /* Core sections */
+      .cc-core-section {
+        border-top: 1px solid rgba(7, 31, 53, 0.08);
+      }
+      .cc-core-numeral {
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1;
+        color: rgba(7, 31, 53, 0.12);
+      }
+      .cc-core-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .cc-core-toggle {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 800;
+        color: #071f35;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      /* Timeline */
+      #timeline .timeline-strip {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 4px 24px 20px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: thin;
+      }
+      .timeline-card {
+        flex: 0 0 300px;
+        scroll-snap-align: start;
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 24px;
+        border: 1px solid rgba(7, 31, 53, 0.08);
+      }
+      .timeline-card h4 {
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgba(7, 31, 53, 0.5);
+        margin: 16px 0 0;
+      }
+
+      /* Persistent CTA */
+      #aboutCta {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #071f35;
+        color: #fff;
+        padding: 15px 26px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 14px;
+        text-decoration: none;
+        box-shadow: 0 14px 34px rgba(7, 31, 53, 0.28);
+        z-index: 60;
+      }
+      #aboutCta:hover {
+        opacity: 0.92;
+      }
+
+      ul.cc-a-list {
+        margin: 10px 0 0;
+        padding-left: 20px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: rgba(7, 31, 53, 0.68);
+      }
+      ul.cc-a-list > li + li {
+        margin-top: 4px;
       }
     </style>
   </head>
 
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+  <body class="cc-page">
+    <main data-admin-edit-root>
+      <nav id="aboutInPageNav" aria-label="On this page">
+        <div class="inner">
+          <a href="#coaching" class="cc-about-nav-link" data-nav-link>Coaching</a>
+          <a href="#coaches" class="cc-about-nav-link" data-nav-link>Coaches</a>
+          <a href="#routes" class="cc-about-nav-link" data-nav-link>Routes</a>
+          <a href="#included" class="cc-about-nav-link" data-nav-link>What's Included</a>
+          <a href="#cores" class="cc-about-nav-link" data-nav-link>Six Cores</a>
+          <a href="#timeline" class="cc-about-nav-link" data-nav-link>Timeline</a>
+        </div>
+      </nav>
 
-      <main data-admin-edit-root class="space-y-6">
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h1 class="text-3xl sm:text-4xl font-extrabold font-heading">The Chasing Change 1:1 Transformation Program</h1>
-          <p class="mt-4 text-sm sm:text-base text-cc-text/80">The Chasing Change system helps clients build a stronger body, clearer routines, and a more aligned direction across six areas of life:</p>
-          <p class="mt-6 text-center text-2xl sm:text-4xl md:text-5xl font-extrabold font-brand leading-tight tracking-tight text-cc-text">
-            <span class="text-cc-outline">Body</span> · <span style="color:#ffbd59">Art</span> · <span style="color:#2a9df0">Mind</span> · <span style="color:#aa70d7">Soul</span> · <span style="color:#f02348">Career</span> · <span style="color:#f58b1c">Life</span>
-          </p>
-        </section>
+      <section style="padding:110px 24px 80px; text-align:center; max-width:880px; margin:0 auto">
+        <p class="cc-a-kicker">The Chasing Change 1:1 Transformation Program</p>
+        <h1 class="cc-a-heading" style="font-size:clamp(38px,6vw,68px); line-height:1.06; letter-spacing:-0.02em; margin:18px 0 0">
+          Six areas of life.<br />One system.
+        </h1>
+        <p style="margin:22px auto 0; max-width:560px; font-size:19px; line-height:1.6; color:rgba(7,31,53,0.62)">
+          A stronger body, clearer routines, and a more aligned direction — built with structure, not motivation.
+        </p>
+        <div style="margin-top:36px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#77d770"></span>Body</span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#ffbd59"></span>Art</span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#2a9df0"></span>Mind</span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#aa70d7"></span>Soul</span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#f02348"></span>Career</span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid rgba(7,31,53,0.1); font-size:13px; font-weight:700; color:rgba(7,31,53,0.75)"><span class="cc-core-dot" style="background:#f58b1c"></span>Life</span>
+        </div>
+      </section>
 
-        <nav id="aboutInPageNav" aria-label="On this page" class="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-cc-bg/95 backdrop-blur supports-[backdrop-filter]:bg-cc-bg/80 border-b border-black/10">
-          <div class="flex gap-1.5 overflow-x-auto">
-            <a href="#coaching" class="cc-about-nav-link" data-nav-link>Coaching</a>
-            <a href="#coaches" class="cc-about-nav-link" data-nav-link>Coaches</a>
-            <a href="#routes" class="cc-about-nav-link" data-nav-link>Routes</a>
-            <a href="#included" class="cc-about-nav-link" data-nav-link>What's Included</a>
-            <a href="#cores" class="cc-about-nav-link" data-nav-link>Six Cores</a>
-            <a href="#timeline" class="cc-about-nav-link" data-nav-link>Timeline</a>
-          </div>
-        </nav>
+      <section id="coaching" style="padding:100px 24px; max-width:740px; margin:0 auto; scroll-margin-top:64px">
+        <p class="cc-a-kicker">Coaching</p>
+        <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">What does a life coach actually do?</h2>
+        <p style="margin-top:18px; font-size:17px; line-height:1.65; color:rgba(7,31,53,0.68)">A life coach builds routines, delivers education, and provides accountability for the areas of life that matter: fitness, career, creative work, environment, and relationships.</p>
 
-        <section id="coaching" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Does a Life Coach Do?</h2>
-          <p class="mt-4 text-sm sm:text-base text-cc-text/80">A life coach builds routines, delivers education, and provides accountability for key areas of life: your fitness, career, artistic endeavors, environments, and relationships.</p>
-
-          <div class="mt-6 border-t border-black/10 pt-6">
-            <button
-              type="button"
-              class="group flex w-full items-center justify-between gap-4 text-left"
-              aria-expanded="false"
-              aria-controls="coachingAccordionContent"
-              id="coachingAccordionTrigger"
-            >
-              <h3 class="text-xl sm:text-2xl font-extrabold font-heading">What Coaching Is / What Coaching Isn’t</h3>
-              <span
-                id="coachingAccordionIcon"
-                class="shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out"
-                aria-hidden="true"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </button>
-
-            <div
-              id="coachingAccordionContent"
-              class="mt-0 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
-              style="max-height: 0px;"
-            >
-              <div class="pt-5 text-sm sm:text-base text-cc-text/80 font-body">
-                <article>
-                  <h3 class="text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Is</h3>
-                  <p class="mt-2">Coaching is structured guidance designed to help you move forward with clarity and consistency.</p>
-                  <ul class="mt-3 list-disc pl-5 space-y-1">
-                    <li>weekly strategy sessions to adjust direction and remove friction</li>
-                    <li>personalized training and habit systems built around your real schedule</li>
-                    <li>accountability that keeps momentum from disappearing between sessions</li>
-                    <li>feedback based on your progress, not generic plans</li>
-                    <li>decision support when routines break or life gets busy</li>
-                    <li>long-term structure across the Body, Art, Mind, Soul, Career, and Life cores</li>
-                  </ul>
-                  <p class="mt-3 font-semibold text-cc-text">Coaching replaces guessing with execution.</p>
-
-                  <h3 class="mt-6 text-xl sm:text-2xl font-extrabold font-heading text-cc-text">What Coaching Isn’t</h3>
-                  <p class="mt-2">Coaching is not therapy, emergency support, or passive motivation.</p>
-                  <ul class="mt-3 list-disc pl-5 space-y-1">
-                    <li>a substitute for mental health treatment</li>
-                    <li>daily crisis intervention</li>
-                    <li>a done-for-you transformation</li>
-                    <li>a rigid program you must follow perfectly</li>
-                    <li>a one-time plan without adjustment</li>
-                    <li>a shortcut that avoids effort or consistency</li>
-                  </ul>
-                  <p class="mt-3 font-semibold text-cc-text">Coaching works when structure meets action.</p>
-                </article>
+        <div style="margin-top:36px; border-top:1px solid rgba(7,31,53,0.1); padding-top:28px">
+          <button
+            type="button"
+            id="coachingAccordionTrigger"
+            aria-expanded="false"
+            aria-controls="coachingAccordionContent"
+            style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer"
+          >
+            <span class="cc-a-heading cc-a-title" style="font-size:20px">What Coaching Is / Isn't</span>
+            <span class="cc-a-chevron" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            </span>
+          </button>
+          <div id="coachingAccordionContent" class="cc-a-collapse">
+            <div style="margin-top:24px; display:grid; gap:32px; grid-template-columns:1fr 1fr" class="cc-a-two-col">
+              <div>
+                <h3 class="cc-a-heading" style="font-size:16px; margin:0">What Coaching Is</h3>
+                <p style="margin:10px 0 0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.7)">Structured guidance to move forward with clarity and consistency:</p>
+                <ul class="cc-a-list">
+                  <li>weekly strategy sessions that adjust direction and remove friction</li>
+                  <li>personalized training and habit systems built around your real schedule</li>
+                  <li>accountability that keeps momentum from disappearing between sessions</li>
+                  <li>feedback based on your progress, not generic plans</li>
+                  <li>decision support when routines break or life gets busy</li>
+                  <li>long-term structure across all six cores</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; font-weight:700">Coaching replaces guessing with execution.</p>
+              </div>
+              <div>
+                <h3 class="cc-a-heading" style="font-size:16px; margin:0">What Coaching Isn't</h3>
+                <p style="margin:10px 0 0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.7)">Not therapy, emergency support, or passive motivation:</p>
+                <ul class="cc-a-list">
+                  <li>a substitute for mental health treatment</li>
+                  <li>daily crisis intervention</li>
+                  <li>a done-for-you transformation</li>
+                  <li>a rigid program you must follow perfectly</li>
+                  <li>a one-time plan without adjustment</li>
+                  <li>a shortcut that avoids effort or consistency</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; font-weight:700">Coaching works when structure meets action.</p>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="coaches" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Meet Your Coaches</p>
-            <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold font-heading">Two coaches. One structured path toward change.</h2>
-            <p class="mt-4 text-sm sm:text-base text-cc-text/80">Chasing Change is led by Tyler Wade and Paul York as two distinct coaches who bring complementary experience to your transformation.</p>
-          </div>
+      <section id="coaches" style="padding:100px 24px; background:#f5f5f7; scroll-margin-top:64px">
+        <div style="max-width:1000px; margin:0 auto">
+          <p class="cc-a-kicker">Meet Your Coaches</p>
+          <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">Two coaches. One structured path.</h2>
+          <p style="margin-top:16px; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:640px">Chasing Change is led by Tyler Wade and Paul York — two coaches with complementary experience.</p>
 
-          <div class="mt-8 grid gap-6">
-            <article class="grid gap-5 lg:grid-cols-[minmax(0,320px),1fr] lg:items-start">
-              <figure class="relative mx-auto w-full max-w-xs lg:mx-0 lg:max-w-none">
-                <div class="absolute -inset-2 rounded-[2rem] bg-cc-outline/20 blur-xl" aria-hidden="true"></div>
-                <img
-                  src="../assets/Tyler_018.png"
-                  alt="Portrait of Tyler Wade"
-                  class="relative aspect-[4/5] w-full rounded-[2rem] object-cover object-[50%_18%] shadow-soft ring-1 ring-black/10"
-                  width="1600"
-                  height="2000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </figure>
-              <div class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Meet Tyler Wade</p>
-                <h3 class="mt-2 text-base sm:text-lg font-extrabold font-heading">Chasing Change was created at one of the lowest points of my life.</h3>
-                <div class="mt-3 space-y-3 text-sm sm:text-base text-cc-text/80">
-                  <p>I was a lost twenty something with no direction, no structure, and no real reason to get up in the morning. When I looked in the mirror, I didn’t recognize the person I was becoming.</p>
-                  <p>I had habits I regretted. I was leaning on distractions and vices just to get through the day. Eventually, I reached a point where staying the same felt worse than starting over. So I built a way out.</p>
-                  <p>What started as a personal system to rebuild my body, my routines, and my confidence became something bigger. I realized the problem wasn’t motivation, it was structure. Once structure was in place, change followed.</p>
-                  <p>Chasing Change exists to give people that structure. Not quick fixes. Not hype. Real systems that help you move forward when life feels stuck. Because sometimes the way out isn’t something you find. It’s something you build.</p>
+          <div style="margin-top:56px; display:grid; gap:64px">
+            <article class="cc-coach-article" style="display:grid; gap:40px; grid-template-columns:280px 1fr; align-items:start">
+              <img
+                src="../assets/Tyler_018.png"
+                alt="Portrait of Tyler Wade"
+                class="cc-coach-photo"
+                width="1600"
+                height="2000"
+                loading="lazy"
+                decoding="async"
+              />
+              <div>
+                <p class="cc-a-kicker">Tyler Wade</p>
+                <h3 class="cc-a-heading" style="font-size:22px; line-height:1.3; margin:10px 0 0">Chasing Change was created at one of the lowest points of my life.</h3>
+                <div style="margin-top:16px; display:grid; gap:14px; font-size:16px; line-height:1.65; color:rgba(7,31,53,0.72)">
+                  <p style="margin:0">I was a lost twenty something with no direction, no structure, and no real reason to get up in the morning. When I looked in the mirror, I didn't recognize the person I was becoming.</p>
+                  <p style="margin:0">I had habits I regretted. I was leaning on distractions and vices just to get through the day. Eventually, staying the same felt worse than starting over. So I built a way out.</p>
+                  <p style="margin:0">What started as a personal system to rebuild my body, my routines, and my confidence became something bigger. The problem wasn't motivation — it was structure. Once structure was in place, change followed.</p>
+                  <p style="margin:0">Chasing Change exists to give people that structure. Not quick fixes. Not hype. Real systems that help you move forward when life feels stuck.</p>
                 </div>
               </div>
             </article>
 
-            <article class="grid gap-5 lg:grid-cols-[minmax(0,320px),1fr] lg:items-start">
-              <figure class="relative mx-auto w-full max-w-xs lg:mx-0 lg:max-w-none">
-                <div class="absolute -inset-2 rounded-[2rem] bg-cc-outline/20 blur-xl" aria-hidden="true"></div>
-                <img
-                  src="../Paul.png"
-                  alt="Portrait of Paul York"
-                  class="relative aspect-[4/5] w-full rounded-[2rem] object-cover object-[50%_0%] shadow-soft ring-1 ring-black/10"
-                  width="2576"
-                  height="3865"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </figure>
-              <div class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Meet Paul York</p>
-                <div class="mt-3 space-y-3 text-sm sm:text-base text-cc-text/80">
-                  <p>My name is Paul York, and for the past 10 years I've helped people build strength, lose weight, and become more confident through fitness.</p>
-                  <p>Throughout my coaching career, I've worked with everyone from competitive athletes to everyday people simply looking to feel better, move better, and create healthier habits.</p>
-                  <p>One thing I've learned is that lasting results don't come from chasing perfection. They come from building sustainable habits, staying consistent, and having someone in your corner when motivation fades.</p>
-                  <p>As a NASM Certified Personal Trainer, my goal is simple: help you create a fitness lifestyle that works with your life, not one that takes it over.</p>
-                  <p>Through Chasing Change, I'll help you build strength, gain confidence, and create progress you can maintain for years to come.</p>
+            <article class="cc-coach-article" style="display:grid; gap:40px; grid-template-columns:280px 1fr; align-items:start">
+              <img
+                src="../Paul.png"
+                alt="Portrait of Paul York"
+                class="cc-coach-photo"
+                width="2576"
+                height="3865"
+                loading="lazy"
+                decoding="async"
+              />
+              <div>
+                <p class="cc-a-kicker">Paul York</p>
+                <h3 class="cc-a-heading" style="font-size:22px; line-height:1.3; margin:10px 0 0">10 years helping people build strength and confidence.</h3>
+                <div style="margin-top:16px; display:grid; gap:14px; font-size:16px; line-height:1.65; color:rgba(7,31,53,0.72)">
+                  <p style="margin:0">For the past 10 years I've helped people build strength, lose weight, and become more confident through fitness — from competitive athletes to everyday people simply looking to feel and move better.</p>
+                  <p style="margin:0">Lasting results don't come from chasing perfection. They come from building sustainable habits, staying consistent, and having someone in your corner when motivation fades.</p>
+                  <p style="margin:0">As a NASM Certified Personal Trainer, my goal is simple: help you build a fitness lifestyle that works with your life, not one that takes it over.</p>
                 </div>
               </div>
             </article>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="routes" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">The Routes | Programming Cadence</h2>
-          <p class="mt-3 text-sm sm:text-base text-cc-text/80">Transformation happens in layers. The length of your commitment determines how many areas of life we rebuild together.</p>
-          <div class="mt-6 grid gap-4 lg:grid-cols-3">
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading">The 5K (12 Weeks · Meets Weekly)</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3 space-y-3">
-                  <p class="text-sm text-cc-text/80">Best for clients who want fast, focused momentum before expanding scope.</p>
-                  <p class="text-sm"><span class="font-bold">Result:</span> a proven twelve-week arc of consistency, visible physical progress, and a system that's ready to expand into additional cores.</p>
-                </div>
-              </div>
-            </article>
+      <section id="routes" style="padding:100px 24px; max-width:1040px; margin:0 auto; scroll-margin-top:64px">
+        <p class="cc-a-kicker">The Routes</p>
+        <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">Programming cadence</h2>
+        <p style="margin-top:16px; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:640px">Transformation happens in layers. The length of your commitment determines how many areas of life we rebuild together.</p>
 
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading">The 10K (6 Months · Meets Weekly)</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3 space-y-3">
-                  <p class="text-sm text-cc-text/80">Best for clients ready to build momentum quickly.</p>
-                  <p class="text-sm"><span class="font-bold">Result:</span> visible physical change paired with one additional life upgrade that makes progress sustainable.</p>
-                </div>
+        <div style="margin-top:44px; display:grid; gap:20px" class="cc-routes-grid">
+          <div class="cc-route-card" data-accordion-card>
+            <button type="button" class="cc-a-trigger" style="all:unset; display:block; width:100%; cursor:pointer">
+              <h3 class="cc-a-heading" style="font-size:19px; margin:0">The 5K</h3>
+              <p style="margin:6px 0 0; font-size:13px; font-weight:700; color:rgba(7,31,53,0.5)">12 Weeks · Meets Weekly</p>
+            </button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(7,31,53,0.08)">
+                <p style="margin:0; font-size:14px; line-height:1.6; color:rgba(7,31,53,0.68)">Best for clients who want fast, focused momentum before expanding scope.</p>
+                <p style="margin:10px 0 0; font-size:14px; line-height:1.6"><span style="font-weight:800">Result:</span> a proven twelve-week arc of consistency, visible physical progress, and a system ready to expand into additional cores.</p>
               </div>
-            </article>
-
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading">The Marathon (9 Months · Meets Weekly)</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3 space-y-3">
-                  <p class="text-sm text-cc-text/80">Best for clients ready to create structure across most of their week.</p>
-                  <p class="text-sm"><span class="font-bold">Result:</span> clients stop living in disconnected routines and begin operating with alignment across multiple areas of life.</p>
-                </div>
-              </div>
-            </article>
+            </div>
           </div>
-        </section>
 
-        <section id="included" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Every Client Receives</h2>
-          <div class="mt-6 grid gap-4 md:grid-cols-2">
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-lg font-extrabold font-heading leading-snug">Weekly Strategy Sessions</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
+          <div class="cc-route-card" data-accordion-card>
+            <button type="button" class="cc-a-trigger" style="all:unset; display:block; width:100%; cursor:pointer">
+              <h3 class="cc-a-heading" style="font-size:19px; margin:0">The 10K</h3>
+              <p style="margin:6px 0 0; font-size:13px; font-weight:700; color:rgba(7,31,53,0.5)">6 Months · Meets Weekly</p>
+            </button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(7,31,53,0.08)">
+                <p style="margin:0; font-size:14px; line-height:1.6; color:rgba(7,31,53,0.68)">Best for clients ready to build momentum quickly.</p>
+                <p style="margin:10px 0 0; font-size:14px; line-height:1.6"><span style="font-weight:800">Result:</span> visible physical change paired with one additional life upgrade that makes progress sustainable.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cc-route-card" data-accordion-card>
+            <button type="button" class="cc-a-trigger" style="all:unset; display:block; width:100%; cursor:pointer">
+              <h3 class="cc-a-heading" style="font-size:19px; margin:0">The Marathon</h3>
+              <p style="margin:6px 0 0; font-size:13px; font-weight:700; color:rgba(7,31,53,0.5)">9 Months · Meets Weekly</p>
+            </button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(7,31,53,0.08)">
+                <p style="margin:0; font-size:14px; line-height:1.6; color:rgba(7,31,53,0.68)">Best for clients ready to create structure across most of their week.</p>
+                <p style="margin:10px 0 0; font-size:14px; line-height:1.6"><span style="font-weight:800">Result:</span> clients stop living in disconnected routines and begin operating with alignment across multiple areas of life.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="included" style="padding:100px 24px; background:#f5f5f7; scroll-margin-top:64px">
+        <div style="max-width:760px; margin:0 auto">
+          <p class="cc-a-kicker">What Every Client Receives</p>
+          <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">Support, structured.</h2>
+
+          <div style="margin-top:36px">
+            <div class="cc-included-row" style="padding:24px 0" data-accordion-card>
+              <button type="button" class="cc-a-trigger" style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer">
+                <span class="cc-a-heading" style="font-size:18px">Weekly Strategy Sessions</span>
+                <span class="cc-a-chevron" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span>
               </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">Each week includes a focused planning session to adjust priorities, refine routines, and solve consistency challenges in real time.</p>
-                  <p class="mt-2 text-sm font-semibold">You always know what to do next.</p>
-                  <p class="mt-2 text-sm text-cc-text/80">Sessions are used to:</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
+              <div class="cc-a-collapse">
+                <div style="margin-top:14px">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.68)">Each week includes a focused planning session to adjust priorities, refine routines, and solve consistency challenges in real time.</p>
+                  <ul class="cc-a-list">
                     <li>clarify the next milestone</li>
                     <li>remove friction from your environment</li>
-                    <li>adjust systems that aren’t working</li>
+                    <li>adjust systems that are not working</li>
                     <li>build repeatable weekly structure</li>
                     <li>stay aligned with your long-term direction</li>
                   </ul>
-                  <p class="mt-2 text-sm font-semibold">Momentum replaces uncertainty.</p>
+                  <p style="margin:12px 0 0; font-size:15px; font-weight:700">Momentum replaces uncertainty.</p>
                 </div>
               </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-lg font-extrabold font-heading leading-snug">Custom Systems Built Around Your Life</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
+            </div>
+
+            <div class="cc-included-row" style="padding:24px 0" data-accordion-card>
+              <button type="button" class="cc-a-trigger" style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer">
+                <span class="cc-a-heading" style="font-size:18px">Custom Systems Built Around Your Life</span>
+                <span class="cc-a-chevron" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span>
               </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">Every transformation plan is designed around your schedule, environment, responsibilities, and current season of life.</p>
-                  <p class="mt-2 text-sm text-cc-text/80">This may include:</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
+              <div class="cc-a-collapse">
+                <div style="margin-top:14px">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.68)">Every transformation plan is designed around your schedule, environment, responsibilities, and current season of life.</p>
+                  <ul class="cc-a-list">
                     <li>weekly structure planning</li>
                     <li>habit architecture</li>
                     <li>skill-building routines</li>
@@ -376,22 +448,20 @@
                     <li>accountability frameworks</li>
                     <li>adaptations for travel or schedule changes</li>
                   </ul>
-                  <p class="mt-2 text-sm font-semibold">Progress becomes automatic instead of negotiable.</p>
+                  <p style="margin:12px 0 0; font-size:15px; font-weight:700">Progress becomes automatic instead of negotiable.</p>
                 </div>
               </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-lg font-extrabold font-heading leading-snug">Sustainable Strategy Frameworks</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
+            </div>
+
+            <div class="cc-included-row" style="padding:24px 0" data-accordion-card>
+              <button type="button" class="cc-a-trigger" style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer">
+                <span class="cc-a-heading" style="font-size:18px">Sustainable Strategy Frameworks</span>
+                <span class="cc-a-chevron" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span>
               </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">Instead of rigid rules, clients receive flexible structures that support consistency across all six cores.</p>
-                  <p class="mt-2 text-sm text-cc-text/80">Support may include:</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
+              <div class="cc-a-collapse">
+                <div style="margin-top:14px">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.68)">Instead of rigid rules, clients receive flexible structures that support consistency across all six cores.</p>
+                  <ul class="cc-a-list">
                     <li>decision-making frameworks</li>
                     <li>planning templates</li>
                     <li>resource systems</li>
@@ -399,22 +469,20 @@
                     <li>routine anchors</li>
                     <li>energy management strategies</li>
                   </ul>
-                  <p class="mt-2 text-sm font-semibold">Clients stop restarting and begin sustaining momentum.</p>
+                  <p style="margin:12px 0 0; font-size:15px; font-weight:700">Clients stop restarting and begin sustaining momentum.</p>
                 </div>
               </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-lg font-extrabold font-heading leading-snug">Progress Review System</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
+            </div>
+
+            <div class="cc-included-row" style="padding:24px 0" data-accordion-card>
+              <button type="button" class="cc-a-trigger" style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer">
+                <span class="cc-a-heading" style="font-size:18px">Progress Review System</span>
+                <span class="cc-a-chevron" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span>
               </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">Each week we evaluate movement across the areas that matter most right now.</p>
-                  <p class="mt-2 text-sm text-cc-text/80">Depending on your focus, this may include:</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
+              <div class="cc-a-collapse">
+                <div style="margin-top:14px">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.68)">Each week we evaluate movement across the areas that matter most right now.</p>
+                  <ul class="cc-a-list">
                     <li>skill development</li>
                     <li>creative output</li>
                     <li>mental clarity</li>
@@ -423,486 +491,428 @@
                     <li>career direction</li>
                     <li>schedule consistency</li>
                   </ul>
-                  <p class="mt-2 text-sm font-semibold">The program adapts as you change.</p>
+                  <p style="margin:12px 0 0; font-size:15px; font-weight:700">The program adapts as you change.</p>
                 </div>
               </div>
-            </article>
+            </div>
+
+            <div class="cc-included-row" style="padding:24px 0" data-accordion-card>
+              <button type="button" class="cc-a-trigger" style="all:unset; display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px; cursor:pointer">
+                <span class="cc-a-heading" style="font-size:18px">Direct Coach Access Between Sessions</span>
+                <span class="cc-a-chevron" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span>
+              </button>
+              <div class="cc-a-collapse">
+                <div style="margin-top:14px">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:rgba(7,31,53,0.68)">Support continues between calls when real life happens.</p>
+                  <ul class="cc-a-list">
+                    <li>missed routines</li>
+                    <li>unexpected obstacles</li>
+                    <li>decision points</li>
+                    <li>travel adjustments</li>
+                    <li>motivation drops</li>
+                    <li>strategy questions</li>
+                  </ul>
+                  <p style="margin:12px 0 0; font-size:15px; font-weight:700">Problems get solved before they become setbacks.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <article class="mt-4 rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-            <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-              <h3 class="text-lg font-extrabold font-heading leading-snug">Direct Coach Access Between Sessions</h3>
-              <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-              </span>
-            </button>
-            <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-              <div class="pt-3">
-                <p class="text-sm text-cc-text/80">Support continues between calls when real life happens.</p>
-                <p class="mt-2 text-sm text-cc-text/80">Clients receive guidance for:</p>
-                <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                  <li>missed routines</li>
-                  <li>unexpected obstacles</li>
-                  <li>decision points</li>
-                  <li>travel adjustments</li>
-                  <li>motivation drops</li>
-                  <li>strategy questions</li>
+        </div>
+      </section>
+
+      <section id="cores" style="padding:100px 24px 20px; max-width:820px; margin:0 auto; scroll-margin-top:64px">
+        <p class="cc-a-kicker">The Six Core System</p>
+        <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">Most programs improve one area of life.</h2>
+        <p style="margin-top:16px; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68)">Chasing Change installs structure underneath all of them.</p>
+      </section>
+
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">01</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#77d770"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Body Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Body Core establishes visible momentum and creates the energy required to improve the rest of life.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>a personalized weekly strength split matched to schedule and training history</li>
+                  <li>calorie targets or structured meal frameworks depending on preference</li>
+                  <li>a repeatable 5–10 meal rotation system for weekdays</li>
+                  <li>a travel and disruption workout substitution matrix</li>
+                  <li>weekly bodyweight and physique trend tracking</li>
+                  <li>cardio integration based on fat-loss or performance goals</li>
+                  <li>sleep anchors that support recovery and consistency</li>
+                  <li>step-count or movement baselines when needed</li>
                 </ul>
-                <p class="mt-2 text-sm font-semibold">Problems get solved before they become setbacks.</p>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> training stops depending on motivation and becomes part of normal weekly structure.</p>
               </div>
-            </div>
-          </article>
-        </section>
-
-        <section id="cores" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">The Six Core System</h2>
-          <p class="mt-3 text-sm sm:text-base text-cc-text/80">Most programs improve one area of life. Chasing Change installs structure underneath all of them.</p>
-          <div class="mt-6 grid gap-4 lg:grid-cols-2">
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span class="text-cc-outline">Body</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Body Core establishes visible momentum and creates the energy required to improve the rest of life.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>a personalized weekly strength split matched to schedule and training history</li>
-                    <li>calorie targets or structured meal frameworks depending on preference</li>
-                    <li>a repeatable 5–10 meal rotation system for weekdays</li>
-                    <li>a travel and disruption workout substitution matrix</li>
-                    <li>weekly bodyweight and physique trend tracking</li>
-                    <li>cardio integration based on fat-loss or performance goals</li>
-                    <li>sleep anchors that support recovery and consistency</li>
-                    <li>step-count or movement baselines when needed</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> training stops depending on motivation and becomes part of normal weekly structure.</p>
-                </div>
-              </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span style="color:#2a9df0">Mind</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Mind Core installs execution systems so progress continues even during stressful weeks.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>weekly priority filtering using a 3-task execution framework</li>
-                    <li>friction audits identifying where consistency breaks down</li>
-                    <li>decision rules for workouts, food, and schedule conflicts</li>
-                    <li>a weekly reset structure to prevent falling behind</li>
-                    <li>“minimum viable week” fallback planning for busy seasons</li>
-                    <li>consistency tracking across chosen habit targets</li>
-                    <li>structured planning inside a quarter-based timeline system</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> clients stop restarting routines and begin maintaining forward motion year-round.</p>
-                </div>
-              </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span style="color:#ffbd59">Art</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Art Core restores creative output as part of identity rather than something postponed indefinitely.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>a weekly creative block built into their calendar structure</li>
-                    <li>one active project roadmap with milestones</li>
-                    <li>output cadence targets (daily, weekly, or seasonal)</li>
-                    <li>friction mapping around avoidance or perfectionism</li>
-                    <li>identity positioning around creator vs consumer</li>
-                    <li>accountability checkpoints tied to visible deliverables</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> creative work becomes scheduled behavior instead of future intention.</p>
-                </div>
-              </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span style="color:#aa70d7">Soul</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Soul Core stabilizes energy, stress, and internal clarity so progress across other cores can hold.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>a structured weekly reflection system</li>
-                    <li>sleep rhythm anchoring routines</li>
-                    <li>stress reset protocols for high-pressure weeks</li>
-                    <li>meaning-alignment check-ins during transitions</li>
-                    <li>emotional pattern awareness across work and relationships</li>
-                    <li>routines that protect recovery without reducing ambition</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> clients feel steadier and clearer instead of oscillating between burnout and restart cycles.</p>
-                </div>
-              </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span style="color:#f02348">Career</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Career Core evaluates whether current work supports long-term direction and lifestyle goals.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>a 5Ps alignment audit (Pay, Place, People, Problem, Passion)</li>
-                    <li>schedule-energy mapping across the workweek</li>
-                    <li>role-fit evaluation against strengths and constraints</li>
-                    <li>promotion vs pivot decision frameworks</li>
-                    <li>transition planning timelines when needed</li>
-                    <li>long-range positioning conversations tied to identity goals</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> clients understand whether to optimize their role or change direction entirely.</p>
-                </div>
-              </div>
-            </article>
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
-              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
-                <h3 class="text-xl font-extrabold font-heading"><span style="color:#f58b1c">Life</span> Core</h3>
-                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </span>
-              </button>
-              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
-                <div class="pt-3">
-                  <p class="text-sm text-cc-text/80">The Life Core installs the systems, structure, and environmental stability that make sustainable progress possible across every other core.</p>
-                  <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                    <li>calendar architecture that reflects real priorities, not wishful thinking</li>
-                    <li>household systems that reduce chaos and recurring stress</li>
-                    <li>environment design that makes better decisions easier</li>
-                    <li>relationship boundaries and social structure that protect your energy</li>
-                    <li>routine anchors that create consistency during busy or unpredictable seasons</li>
-                    <li>financial organization and life admin systems that reduce background pressure</li>
-                    <li>recovery rhythms that protect bandwidth, not just productivity</li>
-                    <li>experience planning so life feels intentionally lived, not endlessly managed</li>
-                  </ul>
-                  <p class="mt-2 text-sm"><span class="font-bold">Result:</span> life stops feeling reactive, cluttered, or fragmented—and starts operating like a stable foundation you can build on.</p>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section id="timeline" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
-          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Week by Week</p>
-          <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold font-heading">Body Core Timeline</h2>
-          <p class="mt-3 text-sm sm:text-base text-cc-text/80">A twelve-week arc of coaching milestones and honest expectations—so you always know what we're building next and what your body and mind may be doing along the way.</p>
-
-          <div class="mt-8">
-            <div id="timelineCollapse" class="relative overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 460px;">
-              <ol class="cc-timeline space-y-6">
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">1</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 1</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Vision Board Round 1</li>
-                      <li>Setting the 1st workout day &amp; 1st cardio day.</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Early on, weight can drop fast. Mostly water/glycogen. Don't get addicted to the scale.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">2</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 2</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Master Grocery List</li>
-                      <li>Chasing Change Core Planning</li>
-                      <li>Setting the 2nd workout day &amp; 2nd cardio day.</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Hunger can increase, especially as training quality and consistency improve.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">3</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 3</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Protein Anchor System</li>
-                      <li>Setting the 3rd workout day.</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Your weight will sometimes go the wrong direction. Water retention from carbs, sodium, stress, travel, and hard training can spike the scale even when you're doing things right.</li>
-                      <li>Energy can fluctuate. Sleep, stress, hormones, and workload matter.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">4</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 4</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Mobility</li>
-                      <li>The Gym Husband (or Wife)</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>You'll have imperfect days. The goal is to rebound fast, not to avoid mistakes forever.</li>
-                      <li>Other core exploration.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">5</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 5</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Restaurant/Travel Strategy Map</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Strength can stall or drop before it climbs. Plateaus happen. The body adapts. Plateaus are data, not failure.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">6</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 6</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Progressive Overload Challenge</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>You can gain weight while getting leaner. Recomposition happens, especially if training quality improves and you're staying consistent.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">7</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 7</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Select Endurance Race</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Bored often means it's working. We change variables only when the data says it's working, not because feelings changed.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">8</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 8</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Create Meal Plan</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Eating should start to feel intuitive by now, not like something you have to plan out every day. The meal plan isn't the end goal—it's training wheels for the judgment you're building.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">9</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 9</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Vision Board Round 2</li>
-                      <li>Exercise Education</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>This is a reassessment week. Look at where you started versus where you are now, not just the physical change, but the identity shift. "This is just who I am now," not "this is a program I'm doing."</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">10</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 10</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>The Split Sculptor</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Your body has fully adapted to the old split. A new one isn't about beating boredom, it's what keeps you progressing instead of stagnating.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">11</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 11</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Set 1RM Goals</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>The goals that got you here won't keep you moving. New 1RM targets now prevent the plateau that comes from chasing numbers you've already hit.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-
-            <li class="cc-timeline-item">
-              <span class="cc-timeline-marker" aria-hidden="true">12</span>
-              <div class="cc-timeline-card rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 sm:p-6">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-outline font-brand">Week 12</p>
-                <div class="mt-3 grid gap-5 md:grid-cols-2">
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Coaching</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Graduation or Macrocycle II</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-extrabold font-heading uppercase tracking-wide text-cc-text/70">Expectations</h3>
-                    <ul class="mt-2 list-disc pl-5 text-sm text-cc-text/80 space-y-1">
-                      <li>Decision point: Macrocycle II or graduation. Clients either recommit for another cycle with new goals, or wraps the program here.</li>
-                      <li>Less about performance now, more about honesty. Where do you actually want to go from here, and does getting there require more coaching or not?</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-              </ol>
-              <div id="timelineFade" class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent transition-opacity duration-300 ease-in-out"></div>
-            </div>
-            <div class="mt-5 flex justify-center">
-              <button
-                type="button"
-                id="timelineToggle"
-                class="cc-signature-nav"
-                aria-expanded="false"
-                aria-controls="timelineCollapse"
-              >Show Full 12-Week Timeline</button>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-      </main>
-      <footer class="w-full px-5 pb-5 sm:px-8">
-        <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">02</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#2a9df0"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Mind Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Mind Core installs execution systems so progress continues even during stressful weeks.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>weekly priority filtering using a 3-task execution framework</li>
+                  <li>friction audits identifying where consistency breaks down</li>
+                  <li>decision rules for workouts, food, and schedule conflicts</li>
+                  <li>a weekly reset structure to prevent falling behind</li>
+                  <li>minimum viable week fallback planning for busy seasons</li>
+                  <li>consistency tracking across chosen habit targets</li>
+                  <li>structured planning inside a quarter-based timeline system</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> clients stop restarting routines and begin maintaining forward motion year-round.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">03</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#ffbd59"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Art Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Art Core restores creative output as part of identity rather than something postponed indefinitely.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>a weekly creative block built into their calendar structure</li>
+                  <li>one active project roadmap with milestones</li>
+                  <li>output cadence targets (daily, weekly, or seasonal)</li>
+                  <li>friction mapping around avoidance or perfectionism</li>
+                  <li>identity positioning around creator vs consumer</li>
+                  <li>accountability checkpoints tied to visible deliverables</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> creative work becomes scheduled behavior instead of future intention.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">04</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#aa70d7"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Soul Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Soul Core stabilizes energy, stress, and internal clarity so progress across other cores can hold.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>a structured weekly reflection system</li>
+                  <li>sleep rhythm anchoring routines</li>
+                  <li>stress reset protocols for high-pressure weeks</li>
+                  <li>meaning-alignment check-ins during transitions</li>
+                  <li>emotional pattern awareness across work and relationships</li>
+                  <li>routines that protect recovery without reducing ambition</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> clients feel steadier and clearer instead of oscillating between burnout and restart cycles.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">05</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#f02348"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Career Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Career Core evaluates whether current work supports long-term direction and lifestyle goals.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>a 5Ps alignment audit (Pay, Place, People, Problem, Passion)</li>
+                  <li>schedule-energy mapping across the workweek</li>
+                  <li>role-fit evaluation against strengths and constraints</li>
+                  <li>promotion vs pivot decision frameworks</li>
+                  <li>transition planning timelines when needed</li>
+                  <li>long-range positioning conversations tied to identity goals</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> clients understand whether to optimize their role or change direction entirely.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cc-core-section" style="padding:64px 24px; max-width:820px; margin:0 auto" data-accordion-card>
+        <div style="display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:start">
+          <span class="cc-core-numeral">06</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="cc-core-dot" style="background:#f58b1c"></span>
+              <h3 class="cc-a-heading" style="font-size:24px; margin:0">Life Core</h3>
+            </div>
+            <p style="margin:10px 0 0; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:560px">The Life Core installs the systems, structure, and environmental stability that make sustainable progress possible across every other core.</p>
+            <button type="button" class="cc-core-toggle cc-a-trigger" data-open-label="What this includes" data-close-label="Show less">What this includes</button>
+            <div class="cc-a-collapse">
+              <div style="margin-top:20px">
+                <ul class="cc-a-list">
+                  <li>calendar architecture that reflects real priorities, not wishful thinking</li>
+                  <li>household systems that reduce chaos and recurring stress</li>
+                  <li>environment design that makes better decisions easier</li>
+                  <li>relationship boundaries and social structure that protect your energy</li>
+                  <li>routine anchors that create consistency during busy or unpredictable seasons</li>
+                  <li>financial organization and life admin systems that reduce background pressure</li>
+                  <li>recovery rhythms that protect bandwidth, not just productivity</li>
+                  <li>experience planning so life feels intentionally lived, not endlessly managed</li>
+                </ul>
+                <p style="margin:12px 0 0; font-size:15px; line-height:1.6"><span style="font-weight:800">Result:</span> life stops feeling reactive, cluttered, or fragmented, and starts operating like a stable foundation you can build on.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="timeline" style="padding:100px 0; background:#f5f5f7; scroll-margin-top:64px">
+        <div style="max-width:1120px; margin:0 auto; padding:0 24px">
+          <p class="cc-a-kicker">Week by Week</p>
+          <h2 class="cc-a-heading" style="font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-0.01em; margin:12px 0 0">The 12-week arc</h2>
+          <p style="margin-top:16px; font-size:17px; line-height:1.6; color:rgba(7,31,53,0.68); max-width:640px">Coaching milestones and honest expectations — so you always know what's next.</p>
+        </div>
+        <div class="timeline-strip" style="margin-top:36px">
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 1</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Vision Board Round 1</li>
+              <li>Setting the 1st workout day and 1st cardio day.</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Early on, weight can drop fast. Mostly water and glycogen. Do not get addicted to the scale.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 2</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Master Grocery List</li>
+              <li>Chasing Change Core Planning</li>
+              <li>Setting the 2nd workout day and 2nd cardio day.</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Hunger can increase, especially as training quality and consistency improve.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 3</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Protein Anchor System</li>
+              <li>Setting the 3rd workout day.</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Water retention from carbs, sodium, stress, travel, and hard training can spike the scale even when things are going right.</li>
+              <li>Energy can fluctuate. Sleep, stress, hormones, and workload matter.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 4</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Mobility</li>
+              <li>The Gym Husband (or Wife)</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Imperfect days happen. The goal is to rebound fast, not to avoid mistakes forever.</li>
+              <li>Other core exploration.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 5</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Restaurant/Travel Strategy Map</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Strength can stall or drop before it climbs. Plateaus are data, not failure.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 6</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Progressive Overload Challenge</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Weight can rise while getting leaner. Recomposition happens when training quality improves and consistency holds.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 7</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Select Endurance Race</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Boredom often means it is working. Variables change only when the data says so.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 8</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Create Meal Plan</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Eating should start to feel intuitive. The meal plan is not the end goal, it is training wheels for the judgment being built.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 9</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Vision Board Round 2</li>
+              <li>Exercise Education</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>A reassessment week. Look at the identity shift, not just the physical change.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 10</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>The Split Sculptor</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>The body has fully adapted to the old split. A new one keeps progress moving instead of stagnating.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 11</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Set 1RM Goals</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>The goals that got you here will not keep you moving. New targets prevent the plateau.</li>
+            </ul>
+          </div>
+
+          <div class="timeline-card">
+            <p class="cc-a-kicker" style="font-size:12px; letter-spacing:0.14em">Week 12</p>
+            <h4>Coaching</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Graduation or Macrocycle II</li>
+            </ul>
+            <h4>Expectations</h4>
+            <ul class="cc-a-list" style="font-size:14px">
+              <li>Decision point: recommit with new goals, or wrap the program here.</li>
+              <li>Less about performance now, more about honesty.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer style="padding:44px 24px 120px; text-align:center; border-top:1px solid rgba(7,31,53,0.08)">
+        <p style="margin:0; font-size:13px; color:rgba(7,31,53,0.55)">© 2026 Chasing Change — 1% better every day.</p>
       </footer>
-    </div>
+
+      <a
+        id="aboutCta"
+        href="https://tally.so/r/w5JXKE"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Apply for Coaching</a
+      >
+    </main>
+
+    <style>
+      @media (max-width: 720px) {
+        .cc-a-two-col {
+          grid-template-columns: 1fr !important;
+        }
+        .cc-coach-article {
+          grid-template-columns: 1fr !important;
+        }
+        .cc-coach-article img {
+          max-width: 280px;
+          margin: 0 auto;
+        }
+        .cc-routes-grid {
+          grid-template-columns: 1fr !important;
+        }
+      }
+      @media (min-width: 721px) {
+        .cc-routes-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+
     <script>
       (() => {
+        // Generic accordion: any [data-accordion-card] with a .cc-a-trigger
+        // button and a sibling .cc-a-collapse content block.
         const cards = document.querySelectorAll("[data-accordion-card]");
         cards.forEach((card) => {
-          const trigger = card.querySelector(".cc-accordion-trigger");
-          const content = card.querySelector(".cc-accordion-content");
-          const icon = card.querySelector(".cc-accordion-icon");
+          const trigger = card.querySelector(".cc-a-trigger");
+          const content = card.querySelector(".cc-a-collapse");
           if (!trigger || !content) return;
+          const chevron = trigger.querySelector(".cc-a-chevron");
 
           let expanded = false;
 
           const setState = (isExpanded) => {
             expanded = isExpanded;
             trigger.setAttribute("aria-expanded", String(isExpanded));
-            if (icon) icon.classList.toggle("rotate-180", isExpanded);
-            content.classList.toggle("opacity-100", isExpanded);
-            content.classList.toggle("opacity-0", !isExpanded);
+            content.classList.toggle("is-open", isExpanded);
             content.style.maxHeight = isExpanded ? `${content.scrollHeight}px` : "0px";
+            if (chevron) chevron.classList.toggle("is-open", isExpanded);
+            if (trigger.dataset.openLabel && trigger.dataset.closeLabel) {
+              trigger.textContent = isExpanded ? trigger.dataset.closeLabel : trigger.dataset.openLabel;
+            }
           };
 
           trigger.addEventListener("click", () => setState(!expanded));
@@ -915,65 +925,35 @@
         });
       })();
     </script>
+
     <script>
       (() => {
         const trigger = document.getElementById("coachingAccordionTrigger");
         const content = document.getElementById("coachingAccordionContent");
-        const icon = document.getElementById("coachingAccordionIcon");
-        if (!trigger || !content || !icon) return;
+        if (!trigger || !content) return;
+        const chevron = trigger.querySelector(".cc-a-chevron");
 
-        let expanded = false;
-
-        const setAccordionState = (isExpanded) => {
-          expanded = isExpanded;
-          trigger.setAttribute("aria-expanded", String(isExpanded));
-          icon.classList.toggle("rotate-180", isExpanded);
-          content.classList.toggle("opacity-100", isExpanded);
-          content.classList.toggle("opacity-0", !isExpanded);
-          content.classList.toggle("pointer-events-none", !isExpanded);
-          content.classList.toggle("mt-5", isExpanded);
-          content.classList.toggle("mt-0", !isExpanded);
-          content.style.maxHeight = isExpanded ? `${content.scrollHeight}px` : "0px";
-        };
-
-        trigger.addEventListener("click", () => setAccordionState(!expanded));
-
-        window.addEventListener("resize", () => {
-          if (expanded) {
-            content.style.maxHeight = `${content.scrollHeight}px`;
-          }
-        });
-
-        setAccordionState(false);
-      })();
-    </script>
-    <script>
-      (() => {
-        const collapse = document.getElementById("timelineCollapse");
-        const fade = document.getElementById("timelineFade");
-        const toggle = document.getElementById("timelineToggle");
-        if (!collapse || !fade || !toggle) return;
-
-        const collapsedHeight = 460;
         let expanded = false;
 
         const setState = (isExpanded) => {
           expanded = isExpanded;
-          toggle.setAttribute("aria-expanded", String(isExpanded));
-          toggle.textContent = isExpanded ? "Show Fewer Weeks" : "Show Full 12-Week Timeline";
-          fade.style.opacity = isExpanded ? "0" : "1";
-          collapse.style.maxHeight = isExpanded ? `${collapse.scrollHeight}px` : `${collapsedHeight}px`;
+          trigger.setAttribute("aria-expanded", String(isExpanded));
+          trigger.classList.toggle("is-open", isExpanded);
+          content.classList.toggle("is-open", isExpanded);
+          content.style.maxHeight = isExpanded ? `${content.scrollHeight}px` : "0px";
+          if (chevron) chevron.classList.toggle("is-open", isExpanded);
         };
 
-        toggle.addEventListener("click", () => setState(!expanded));
+        trigger.addEventListener("click", () => setState(!expanded));
 
         window.addEventListener("resize", () => {
-          if (expanded) collapse.style.maxHeight = `${collapse.scrollHeight}px`;
+          if (expanded) content.style.maxHeight = `${content.scrollHeight}px`;
         });
 
         setState(false);
       })();
     </script>
+
     <script>
       (() => {
         const navLinks = Array.from(document.querySelectorAll("#aboutInPageNav [data-nav-link]"));
