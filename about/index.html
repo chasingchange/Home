@@ -90,6 +90,32 @@
           font-size: 1.05rem;
         }
       }
+
+      /* About page in-page nav */
+      #aboutInPageNav {
+        scrollbar-width: none;
+      }
+      #aboutInPageNav::-webkit-scrollbar {
+        display: none;
+      }
+      .cc-about-nav-link {
+        flex-shrink: 0;
+        white-space: nowrap;
+        border-radius: 9999px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: rgba(7, 31, 53, 0.65);
+        transition: color 0.2s ease, background-color 0.2s ease;
+      }
+      .cc-about-nav-link:hover {
+        color: #071f35;
+        background: rgba(7, 31, 53, 0.06);
+      }
+      .cc-about-nav-link.is-active {
+        color: #071f35;
+        background: #77d770;
+      }
     </style>
   </head>
 
@@ -105,11 +131,22 @@
           </p>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <nav id="aboutInPageNav" aria-label="On this page" class="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-cc-bg/95 backdrop-blur supports-[backdrop-filter]:bg-cc-bg/80 border-b border-black/10">
+          <div class="flex gap-1.5 overflow-x-auto">
+            <a href="#coaching" class="cc-about-nav-link" data-nav-link>Coaching</a>
+            <a href="#coaches" class="cc-about-nav-link" data-nav-link>Coaches</a>
+            <a href="#routes" class="cc-about-nav-link" data-nav-link>Routes</a>
+            <a href="#included" class="cc-about-nav-link" data-nav-link>What's Included</a>
+            <a href="#cores" class="cc-about-nav-link" data-nav-link>Six Cores</a>
+            <a href="#timeline" class="cc-about-nav-link" data-nav-link>Timeline</a>
+          </div>
+        </nav>
+
+        <section id="coaching" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Does a Life Coach Do?</h2>
           <p class="mt-4 text-sm sm:text-base text-cc-text/80">A life coach builds routines, delivers education, and provides accountability for key areas of life: your fitness, career, artistic endeavors, environments, and relationships.</p>
 
-          <div class="mt-6 rounded-2xl bg-cc-card ring-1 ring-black/5 p-5 sm:p-6">
+          <div class="mt-6 border-t border-black/10 pt-6">
             <button
               type="button"
               class="group flex w-full items-center justify-between gap-4 text-left"
@@ -165,7 +202,7 @@
           </div>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <section id="coaches" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Meet Your Coaches</p>
             <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold font-heading">Two coaches. One structured path toward change.</h2>
@@ -225,31 +262,58 @@
           </div>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <section id="routes" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">The Routes | Programming Cadence</h2>
           <p class="mt-3 text-sm sm:text-base text-cc-text/80">Transformation happens in layers. The length of your commitment determines how many areas of life we rebuild together.</p>
           <div class="mt-6 grid gap-4 lg:grid-cols-3">
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
-              <h3 class="text-xl font-extrabold font-heading">The 5K — Body Core Foundation (12 Weeks · Meets Weekly)</h3>
-              <p class="text-sm text-cc-text/80">Best for clients who want fast, focused momentum before expanding scope.</p>
-              <p class="text-sm"><span class="font-bold">Result:</span> a proven twelve-week arc of consistency, visible physical progress, and a system that's ready to expand into additional cores.</p>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
+              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
+                <h3 class="text-xl font-extrabold font-heading">The 5K (12 Weeks · Meets Weekly)</h3>
+                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </span>
+              </button>
+              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
+                <div class="pt-3 space-y-3">
+                  <p class="text-sm text-cc-text/80">Best for clients who want fast, focused momentum before expanding scope.</p>
+                  <p class="text-sm"><span class="font-bold">Result:</span> a proven twelve-week arc of consistency, visible physical progress, and a system that's ready to expand into additional cores.</p>
+                </div>
+              </div>
             </article>
 
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
-              <h3 class="text-xl font-extrabold font-heading">The 10K — Two-Core Transformation (6 Months · Meets Weekly)</h3>
-              <p class="text-sm text-cc-text/80">Best for clients ready to build momentum quickly.</p>
-              <p class="text-sm"><span class="font-bold">Result:</span> visible physical change paired with one additional life upgrade that makes progress sustainable.</p>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
+              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
+                <h3 class="text-xl font-extrabold font-heading">The 10K (6 Months · Meets Weekly)</h3>
+                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </span>
+              </button>
+              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
+                <div class="pt-3 space-y-3">
+                  <p class="text-sm text-cc-text/80">Best for clients ready to build momentum quickly.</p>
+                  <p class="text-sm"><span class="font-bold">Result:</span> visible physical change paired with one additional life upgrade that makes progress sustainable.</p>
+                </div>
+              </div>
             </article>
 
-            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5 space-y-3">
-              <h3 class="text-xl font-extrabold font-heading">The Marathon — Four-Core Alignment (9 Months · Meets Weekly)</h3>
-              <p class="text-sm text-cc-text/80">Best for clients ready to create structure across most of their week.</p>
-              <p class="text-sm"><span class="font-bold">Result:</span> clients stop living in disconnected routines and begin operating with alignment across multiple areas of life.</p>
+            <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
+              <button type="button" class="cc-accordion-trigger group flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
+                <h3 class="text-xl font-extrabold font-heading">The Marathon (9 Months · Meets Weekly)</h3>
+                <span class="cc-accordion-icon mt-0.5 shrink-0 text-cc-text/75 transition-transform duration-300 ease-in-out" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </span>
+              </button>
+              <div class="cc-accordion-content overflow-hidden opacity-0 transition-all duration-300 ease-in-out" style="max-height: 0px;">
+                <div class="pt-3 space-y-3">
+                  <p class="text-sm text-cc-text/80">Best for clients ready to create structure across most of their week.</p>
+                  <p class="text-sm"><span class="font-bold">Result:</span> clients stop living in disconnected routines and begin operating with alignment across multiple areas of life.</p>
+                </div>
+              </div>
             </article>
           </div>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <section id="included" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">What Every Client Receives</h2>
           <div class="mt-6 grid gap-4 md:grid-cols-2">
             <article class="rounded-2xl bg-cc-bg ring-1 ring-black/10 p-5" data-accordion-card>
@@ -371,7 +435,7 @@
           </article>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <section id="cores" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <h2 class="text-2xl sm:text-3xl font-extrabold font-heading">The Six Core System</h2>
           <p class="mt-3 text-sm sm:text-base text-cc-text/80">Most programs improve one area of life. Chasing Change installs structure underneath all of them.</p>
           <div class="mt-6 grid gap-4 lg:grid-cols-2">
@@ -515,7 +579,7 @@
           </div>
         </section>
 
-        <section class="rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
+        <section id="timeline" class="scroll-mt-16 rounded-3xl bg-white ring-1 ring-black/10 shadow-soft p-6 sm:p-8">
           <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cc-text/55 font-brand">Week by Week</p>
           <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold font-heading">Body Core Timeline</h2>
           <p class="mt-3 text-sm sm:text-base text-cc-text/80">A twelve-week arc of coaching milestones and honest expectations—so you always know what we're building next and what your body and mind may be doing along the way.</p>
@@ -890,6 +954,35 @@
         });
 
         setState(false);
+      })();
+    </script>
+    <script>
+      (() => {
+        const navLinks = Array.from(document.querySelectorAll("#aboutInPageNav [data-nav-link]"));
+        if (!navLinks.length) return;
+
+        const sections = navLinks
+          .map((link) => document.getElementById(link.getAttribute("href").slice(1)))
+          .filter(Boolean);
+        if (!sections.length) return;
+
+        const setActive = (id) => {
+          navLinks.forEach((link) => {
+            link.classList.toggle("is-active", link.getAttribute("href") === `#${id}`);
+          });
+        };
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const visible = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            if (visible[0]) setActive(visible[0].target.id);
+          },
+          { rootMargin: "-15% 0px -70% 0px", threshold: 0 }
+        );
+
+        sections.forEach((section) => observer.observe(section));
       })();
     </script>
   </body>
