@@ -913,7 +913,7 @@ main[class*="max-w-"],
 .cc-global-mega {
   margin-top: 0.75rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   border: 1px solid rgba(36, 39, 43, 0.08);
   box-shadow: 0 8px 24px rgba(36, 39, 43, 0.08);
   padding: 0.85rem 1rem;
@@ -971,13 +971,11 @@ main[class*="max-w-"],
   .cc-global-nav-wrap {
     padding-bottom: 0.45rem;
     border-radius: 1.25rem;
-    background: rgba(255, 255, 255, 0.72);
+    background: #fff;
     border: 1px solid rgba(36, 39, 43, 0.08);
     box-shadow: 0 14px 34px rgba(36, 39, 43, 0.08);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
     overflow: visible;
-    transition: background var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), box-shadow var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), backdrop-filter var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), -webkit-backdrop-filter var(--cc-nav-duration-premium) var(--cc-nav-ease-premium);
+    transition: background var(--cc-nav-duration-premium) var(--cc-nav-ease-premium), box-shadow var(--cc-nav-duration-premium) var(--cc-nav-ease-premium);
   }
 
   .cc-global-nav-mobile-bar {
@@ -993,8 +991,6 @@ main[class*="max-w-"],
     position: fixed;
     inset: 0;
     background: rgba(36, 39, 43, 0.16);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -1009,7 +1005,7 @@ main[class*="max-w-"],
     right: 0;
     z-index: 10022;
     border-radius: 1.1rem;
-    background: rgba(255, 255, 255, 0.96);
+    background: #fff;
     border: 1px solid rgba(36, 39, 43, 0.08);
     box-shadow: 0 22px 46px rgba(36, 39, 43, 0.16);
     opacity: 0;
@@ -1121,10 +1117,8 @@ main[class*="max-w-"],
   }
 
   .cc-mobile-nav-open.cc-global-nav-wrap {
-    background: rgba(255, 255, 255, 0.9);
+    background: #fff;
     box-shadow: 0 20px 40px rgba(36, 39, 43, 0.12);
-    backdrop-filter: blur(14px) saturate(165%);
-    -webkit-backdrop-filter: blur(14px) saturate(165%);
   }
 
   body.cc-mobile-nav-scroll-lock {
