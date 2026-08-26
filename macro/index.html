@@ -9,1763 +9,1304 @@
       content="Chasing Change macro calculator to estimate calories + macros based on your goal and activity level."
     />
 
-    <!-- Tailwind via CDN (embed-friendly) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
-    <script src="../shared-coach.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="../shared-coach-export.js"></script>
-
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              cc: {
-                text: "#071f35",
-                bg: "#f5f5f7",
-                outline: "#cceaff",
-                card: "#ffffff",
-              },
-            },
-            fontFamily: {
-              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-              brand: ["Museo Moderno", "Raleway", "sans-serif"],
-            },
-            boxShadow: {
-              soft: "0 10px 30px rgba(7,31,53,0.10)",
-              outline: "0 0 0 1px rgba(204, 234, 255,0.55)",
-              glow: "0 10px 50px rgba(204, 234, 255,0.25)",
-            },
-          },
-        },
-      };
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <style>
-      /* CENTER AND SPACE */
-      main {
-        margin-bottom: 2rem;
+      body.cc-page {
+        margin: 0;
+        background: #eaeaee;
+        color: #071f35;
+        font-family: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
 
-      /* RESULTS STYLING */
-      #results > .rounded-2xl {
-        border-width: 2px;
-        border-color: #cceaff;
+      .mc-page * { box-sizing: border-box; }
+
+      [hidden] { display: none !important; }
+
+      .mc-page input[type="number"]::-webkit-outer-spin-button,
+      .mc-page input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .mc-header {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 56px 44px 8px;
+      }
+
+      .mc-h1 {
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.03;
+        letter-spacing: -0.03em;
+        margin: 0;
+      }
+
+      .mc-dots {
+        display: flex;
+        gap: 7px;
+        margin: 22px 0 16px;
+      }
+
+      .mc-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+
+      .mc-kicker {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-family: "Raleway", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(7, 31, 53, 0.45);
+        margin: 0;
+      }
+
+      .mc-kicker span {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #77d770;
+      }
+
+      .mc-shell {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 12px 44px 100px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 420px;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .mc-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+      .mc-card {
+        background: #fff;
+        border: 1px solid rgba(7, 31, 53, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 18px 44px rgba(7, 31, 53, 0.07);
+        padding: 28px 30px;
+      }
+
+      .mc-card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .mc-card-title {
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+        margin: 0;
+      }
+
+      .mc-card-sub {
+        margin: 8px 0 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: rgba(7, 31, 53, 0.55);
+      }
+
+      .mc-seg {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(7, 31, 53, 0.05);
+      }
+
+      .mc-seg-btn {
+        cursor: pointer;
+        border: none;
+        appearance: none;
+        border-radius: 999px;
+        padding: 9px 15px;
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: transparent;
+        color: rgba(7, 31, 53, 0.55);
+        transition: background 160ms ease, color 160ms ease;
+        white-space: nowrap;
+      }
+
+      .mc-seg-btn.is-active {
+        background: #071f35;
+        color: #fff;
+      }
+
+      .mc-field-grid {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px 16px;
+      }
+
+      .mc-field { display: flex; flex-direction: column; gap: 8px; }
+      .mc-field--weight { grid-column: span 3; }
+      .mc-field--age { grid-column: span 2; }
+      .mc-field--height { grid-column: span 3; }
+      .mc-field--sex { grid-column: span 4; }
+      .mc-field--bf { grid-column: span 4; }
+
+      .mc-field-label {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: rgba(7, 31, 53, 0.6);
+      }
+
+      .mc-field-label b { font-weight: 400; }
+
+      .mc-input {
+        width: 100%;
+        height: 54px;
+        border-radius: 15px;
+        border: 1px solid rgba(7, 31, 53, 0.14);
+        background: #fff;
+        padding: 0 14px;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-size: 17px;
+        font-weight: 600;
+        color: #071f35;
+        outline: none;
+      }
+
+      .mc-input:focus { border-color: rgba(7, 31, 53, 0.4); }
+
+      .mc-height-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+      .mc-sex-toggle {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px;
+        border-radius: 999px;
+        background: rgba(7, 31, 53, 0.05);
+        height: 54px;
+      }
+
+      .mc-activity-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+      .mc-activity-row {
+        cursor: pointer;
+        appearance: none;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        width: 100%;
+        border-radius: 16px;
+        padding: 14px 16px;
+        border: 1px solid rgba(7, 31, 53, 0.1);
+        background: #fff;
+        color: #071f35;
+        text-align: left;
+        transition: all 160ms ease;
+      }
+
+      .mc-activity-row.is-active {
+        border: 1px solid #071f35;
+        background: rgba(7, 31, 53, 0.035);
+        box-shadow: inset 0 0 0 1px #071f35;
+      }
+
+      .mc-activity-dot {
+        flex: none;
+        margin-top: 8px;
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        opacity: 0.35;
+        transition: opacity 160ms ease;
+      }
+
+      .mc-activity-row.is-active .mc-activity-dot { opacity: 1; }
+
+      .mc-activity-body-wrap { display: flex; flex-direction: column; gap: 5px; }
+      .mc-activity-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+      .mc-activity-label {
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+
+      .mc-activity-sessions { font-size: 13px; font-weight: 700; color: rgba(7, 31, 53, 0.45); }
+
+      .mc-activity-body {
+        font-size: 14px;
+        line-height: 1.55;
+        font-weight: 300;
+        color: rgba(7, 31, 53, 0.62);
+      }
+
+      .mc-note {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(7, 31, 53, 0.08);
+        font-size: 14px;
+        line-height: 1.6;
+        color: rgba(7, 31, 53, 0.62);
+      }
+
+      .mc-looks-grid {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .mc-look-btn {
+        cursor: pointer;
+        appearance: none;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-radius: 18px;
+        padding: 18px 16px;
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        background: #fff;
+        color: #071f35;
+        transition: all 160ms ease;
+      }
+
+      .mc-look-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .mc-look-kicker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+
+      .mc-look-value {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 31px;
+        letter-spacing: -0.025em;
+      }
+
+      .mc-look-value span { font-size: 15px; font-weight: 700; opacity: 0.55; }
+      .mc-look-cta { font-size: 12px; font-weight: 700; opacity: 0.5; }
+
+      .mc-look-status {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(7, 31, 53, 0.08);
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .mc-look-status-label {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(7, 31, 53, 0.45);
+      }
+
+      .mc-look-status-value { font-size: 16px; font-weight: 700; }
+
+      .mc-goal-modes {
+        margin-top: 28px;
+        width: fit-content;
+      }
+
+      .mc-goal-grid {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .mc-goal-btn {
+        cursor: pointer;
+        appearance: none;
+        border-radius: 16px;
+        padding: 16px 12px;
+        border: 1px solid rgba(7, 31, 53, 0.12);
+        background: #fff;
+        color: #071f35;
+        font-family: "Raleway", sans-serif;
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+        transition: all 160ms ease;
+      }
+
+      .mc-goal-btn.is-active { border: 1px solid #071f35; background: #071f35; color: #fff; }
+
+      .mc-target-field { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+      .mc-hint { font-size: 13px; color: rgba(7, 31, 53, 0.5); }
+
+      .mc-goal-footer {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(7, 31, 53, 0.08);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+        align-items: end;
+      }
+
+      .mc-field-title { font-size: 13px; font-weight: 700; color: rgba(7, 31, 53, 0.6); }
+
+      select.mc-input {
+        padding: 0 12px;
+        font-family: "Muli", "Mulish", system-ui, sans-serif;
+        font-size: 15px;
+      }
+
+      .mc-pace-note {
+        margin: 18px 0 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: rgba(7, 31, 53, 0.6);
+      }
+
+      .mc-build-list { margin-top: 16px; display: flex; flex-direction: column; }
+
+      .mc-build-row {
+        display: flex;
+        gap: 14px;
+        padding: 14px 0;
+        border-top: 1px solid rgba(7, 31, 53, 0.08);
+      }
+
+      .mc-build-dot { flex: none; margin-top: 7px; width: 8px; height: 8px; border-radius: 999px; }
+
+      .mc-build-text {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: rgba(7, 31, 53, 0.7);
+      }
+
+      .mc-build-text strong { font-weight: 700; color: #071f35; }
+
+      .mc-aside {
+        position: sticky;
+        top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .mc-hero {
+        background: #071f35;
+        color: #fff;
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(7, 31, 53, 0.24);
+        padding: 28px 30px 26px;
+      }
+
+      .mc-hero-dots { display: flex; gap: 7px; }
+      .mc-hero-dots span { width: 7px; height: 7px; border-radius: 999px; }
+
+      .mc-hero-kicker {
+        margin: 20px 0 0;
+        font-family: "Raleway", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .mc-hero-cal {
+        margin: 10px 0 0;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 76px;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .mc-hero-cal span { font-size: 24px; font-weight: 600; color: rgba(255, 255, 255, 0.5); }
+
+      .mc-hero-stats { margin-top: 28px; display: flex; gap: 34px; flex-wrap: wrap; }
+
+      .mc-hero-stat-label {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      .mc-hero-stat-value {
+        margin: 6px 0 0;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-size: 21px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        text-transform: capitalize;
+      }
+
+      .mc-macros-card { background: #fff; border: 1px solid rgba(7, 31, 53, 0.08); border-radius: 24px; box-shadow: 0 18px 44px rgba(7, 31, 53, 0.07); padding: 24px 26px; }
+
+      .mc-macros-kicker {
+        margin: 0;
+        font-family: "Raleway", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(7, 31, 53, 0.45);
+      }
+
+      .mc-macros-list { margin-top: 18px; display: flex; flex-direction: column; gap: 20px; }
+
+      .mc-macro-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+      .mc-macro-name { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 700; }
+      .mc-macro-name span:first-child { width: 9px; height: 9px; border-radius: 999px; }
+
+      .mc-macro-value {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 25px;
+        letter-spacing: -0.02em;
+      }
+
+      .mc-macro-value span { font-size: 14px; opacity: 0.55; }
+
+      .mc-macro-bar-track {
+        margin-top: 9px;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(7, 31, 53, 0.08);
+        overflow: hidden;
+      }
+
+      .mc-macro-bar-fill { height: 100%; border-radius: 999px; transition: width 260ms ease; }
+
+      .mc-macro-share { margin: 7px 0 0; font-size: 13px; color: rgba(7, 31, 53, 0.5); }
+
+      .mc-timeline-card, .mc-warning-card {
+        background: #fff;
+        border: 1px solid rgba(7, 31, 53, 0.08);
+        border-radius: 24px;
+        padding: 22px 26px;
+      }
+
+      .mc-warning-card { border-color: rgba(240, 35, 72, 0.25); }
+
+      .mc-timeline-kicker, .mc-warning-kicker {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(7, 31, 53, 0.45);
+      }
+
+      .mc-warning-kicker { color: #f02348; }
+      .mc-warning-kicker span { width: 8px; height: 8px; border-radius: 999px; background: #f02348; }
+
+      .mc-timeline-value {
+        margin: 12px 0 0;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 26px;
+        letter-spacing: -0.02em;
+      }
+
+      .mc-timeline-detail { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: rgba(7, 31, 53, 0.55); }
+      .mc-warning-text { margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: rgba(7, 31, 53, 0.7); }
+
+      .mc-save-card { background: #fff; border: 1px solid rgba(7, 31, 53, 0.08); border-radius: 24px; padding: 22px 26px; }
+      .mc-save-title { margin: 0; font-size: 15px; font-weight: 700; }
+      .mc-save-status { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: rgba(7, 31, 53, 0.55); }
+      .mc-save-actions { margin-top: 16px; display: grid; gap: 10px; }
+
+      .mc-save-btn {
+        all: unset;
+        cursor: pointer;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        border-radius: 24px;
+        background: #071f35;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .mc-save-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        border-radius: 24px;
+        border: 1px solid rgba(7, 31, 53, 0.14);
+        font-size: 15px;
+        font-weight: 700;
+        color: #071f35;
+        text-decoration: none;
+        background: #fff;
+      }
+
+      .mc-save-btn--ghost {
+        background: #fff;
+        color: #071f35;
+        border: 1px solid rgba(7, 31, 53, 0.14);
+      }
+
+      @media (max-width: 980px) {
+        .mc-shell { grid-template-columns: 1fr; }
+        .mc-aside { position: static; }
+        .mc-header { padding: 40px 20px 8px; }
+        .mc-shell { padding: 12px 20px 80px; }
+        .mc-h1 { font-size: 40px; }
+      }
+
+      @media (max-width: 640px) {
+        .mc-field--weight, .mc-field--age, .mc-field--height, .mc-field--sex, .mc-field--bf {
+          grid-column: span 12;
+        }
+        .mc-goal-footer { grid-template-columns: 1fr; }
+        .mc-card { padding: 22px 18px; }
       }
     </style>
   </head>
 
-  <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
-      <div data-admin-edit-root class="relative cc-page-shell px-4 sm:px-6 py-6 sm:py-10">
-        <div class="absolute inset-0 -z-10 pointer-events-none">
-          
-          
+  <body class="cc-page">
+    <div class="mc-page">
+      <header class="mc-header">
+        <h1 class="mc-h1">Macro Calculator</h1>
+        <div class="mc-dots">
+          <span style="background:#77d770"></span>
+          <span style="background:#ffbd59"></span>
+          <span style="background:#2a9df0"></span>
+          <span style="background:#aa70d7"></span>
+          <span style="background:#f02348"></span>
+          <span style="background:#f58b1c"></span>
         </div>
-        <div class="mx-auto w-full">
-          <header class="max-w-3xl mx-auto px-6 pt-12 pb-6">
-            <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-cc-text">Macro Calculator</h1>
-            <p class="mt-6 text-lg sm:text-xl text-cc-text/75">Estimate what your body actually needs to move in the right direction.</p>
-            <p class="mt-4 max-w-3xl text-base text-cc-text/80">Nutrition progress gets easier when your targets are grounded in real data, not random guesses. Use this tool to set practical calories and macros based on your current stats, then adjust as your body responds.</p>
-          </header>
+        <p class="mc-kicker"><span></span>Body</p>
+      </header>
 
-        <!-- App Card -->
-        <div class="flex justify-center">
-          <main class="w-full max-w-[980px] rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
-            <div class="p-5 sm:p-8">
-              <div class="flex items-start gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-cc-outline/15 ring-1 ring-cc-outline/40 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-                    <path d="M9 6h6"/>
-                    <path d="M9 10h6"/>
-                    <path d="M9 14h2"/>
-                    <path d="M13 14h2"/>
-                    <path d="M9 18h2"/>
-                    <path d="M13 18h2"/>
-                  </svg>
+      <div class="mc-shell">
+        <div class="mc-col">
+
+          <!-- About you -->
+          <section class="mc-card">
+            <div class="mc-card-head">
+              <h2 class="mc-card-title">About you</h2>
+              <div class="mc-seg" role="group" aria-label="Units">
+                <button type="button" id="unitUS" class="mc-seg-btn is-active">US</button>
+                <button type="button" id="unitMetric" class="mc-seg-btn">Metric</button>
+              </div>
+            </div>
+            <p class="mc-card-sub">Your current stats — everything else is built from these.</p>
+
+            <div class="mc-field-grid">
+              <label class="mc-field mc-field--weight">
+                <span class="mc-field-label">Weight <b id="weightUnitLabel">(lbs)</b></span>
+                <input type="number" id="weightInput" class="mc-input" value="182" placeholder="e.g. 182" />
+              </label>
+              <label class="mc-field mc-field--age">
+                <span class="mc-field-label">Age</span>
+                <input type="number" id="ageInput" class="mc-input" value="34" placeholder="34" />
+              </label>
+
+              <div class="mc-field mc-field--height" id="heightWrapUS">
+                <span class="mc-field-label">Height</span>
+                <div class="mc-height-grid">
+                  <input type="number" id="heightFtInput" class="mc-input" value="5" placeholder="ft" />
+                  <input type="number" id="heightInInput" class="mc-input" value="11" placeholder="in" />
                 </div>
+              </div>
+              <label class="mc-field mc-field--height" id="heightWrapMetric" hidden>
+                <span class="mc-field-label">Height (cm)</span>
+                <input type="number" id="heightCmInput" class="mc-input" value="180" placeholder="178" />
+              </label>
 
-                <div>
-                  <h2 class="text-lg sm:text-xl font-bold font-heading">Input Your Stats</h2>
-                  <p class="text-sm opacity-80">Fill this out today. Run your race tomorrow.</p>
+              <div class="mc-field mc-field--sex">
+                <span class="mc-field-label">Sex</span>
+                <div class="mc-sex-toggle" role="group" aria-label="Sex">
+                  <button type="button" id="sexMale" class="mc-seg-btn is-active">Male</button>
+                  <button type="button" id="sexFemale" class="mc-seg-btn">Female</button>
                 </div>
               </div>
 
-              <div class="space-y-6">
-                <div class="rounded-2xl p-4 bg-cc-outline/10 ring-1 ring-cc-outline/35">
-                  <div class="flex items-baseline justify-between gap-2 mb-2 flex-wrap">
-                    <label for="quickProfileInput" class="block text-sm font-semibold">Quick Profile Paste</label>
-                    <span class="text-[11px] font-bold uppercase tracking-wide text-cc-text/60">Optional shortcut</span>
-                  </div>
-                  <textarea
-                    id="quickProfileInput"
-                    rows="3"
-                    placeholder="Example: 34F, 165 lbs, 5'7&quot;, moderately active, want to lose, target 150 lbs — or metric: 30M, 82 kg, 178 cm, bulk"
-                    class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10 focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                  ></textarea>
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    <button id="parseProfileBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Parse Into Fields</button>
-                    <p id="quickProfileStatus" class="text-xs opacity-80 self-center">Paste age, sex, weight, height, activity, and goal — most formats work (34F, 165 lbs, 5'7", 82 kg, 178 cm).</p>
-                  </div>
-                </div>
-
-                <!-- SECTION: About You -->
-                <div class="flex items-center gap-3 pt-4 mt-1 border-t border-black/10">
-                  <span class="flex-none w-8 h-8 rounded-full bg-cc-outline text-cc-text font-extrabold text-sm flex items-center justify-center ring-1 ring-cc-outline/40">1</span>
-                  <div>
-                    <h3 class="text-base sm:text-lg font-bold font-heading leading-tight">About You</h3>
-                    <p class="text-xs opacity-70">Your current stats — everything else is built from these.</p>
-                  </div>
-                </div>
-
-                <!-- Units toggle -->
-                <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
-                  <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                      <p class="text-sm font-semibold">Units</p>
-                      <p class="text-xs opacity-70">Choose US (lbs / ft) or Metric (kg / cm).</p>
-                    </div>
-                    <div class="inline-flex rounded-2xl bg-white ring-1 ring-black/10 p-1">
-                      <button id="unitUS" type="button" class="unitBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30">
-                        US
-                      </button>
-                      <button id="unitMetric" type="button" class="unitBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100">
-                        Metric
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Weight + Body Fat -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Weight -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Body Weight</label>
-
-                  <div id="weightUSWrap">
-                    <input
-                      id="weightLb"
-                      type="number"
-                      inputmode="decimal"
-                      placeholder="lbs (e.g. 165)"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                  </div>
-
-                  <div id="weightMetricWrap" class="hidden">
-                    <input
-                      id="weightKg"
-                      type="number"
-                      inputmode="decimal"
-                      placeholder="kg (e.g. 75)"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                  </div>
-
-                  <p id="weightError" class="hidden mt-2 text-sm text-red-600">Please enter a valid weight.</p>
-                </div>
-
-                <!-- Optional Body Fat -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Current Body Fat % (optional)</label>
-                  <input
-                    id="bodyFat"
-                    type="number"
-                    inputmode="decimal"
-                    placeholder="e.g. 22"
-                    class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                           focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                  />
-                  <p id="bodyFatError" class="hidden mt-2 text-sm text-red-600">
-                    Enter a valid body fat % (3–70).
-                  </p>
-                </div>
-                </div>
-
-                <!-- Sex + Age -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-semibold mb-2">Sex</label>
-                    <select
-                      id="sex"
-                     class="w-full px-4 py-3 rounded-xl bg-white
-       border border-black/10
-       ring-0
-       focus:border-cc-outline
-       focus:ring-2 focus:ring-cc-outline/70
-       focus:outline-none transition"
-
-                    >
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-semibold mb-2">Age</label>
-                    <input
-                      id="age"
-                      type="number"
-                      inputmode="numeric"
-                      placeholder="e.g. 25"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                    <p id="ageError" class="hidden mt-2 text-sm text-red-600">Please enter a valid age.</p>
-                  </div>
-                </div>
-
-                <!-- Height -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Height</label>
-
-                  <div id="heightUSWrap" class="grid grid-cols-2 gap-3">
-                    <input
-                      id="heightFt"
-                      type="number"
-                      inputmode="numeric"
-                      placeholder="Feet (e.g. 5)"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                    <input
-                      id="heightIn"
-                      type="number"
-                      inputmode="numeric"
-                      placeholder="Inches (e.g. 10)"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                  </div>
-
-                  <div id="heightMetricWrap" class="hidden">
-                    <input
-                      id="heightCm"
-                      type="number"
-                      inputmode="decimal"
-                      placeholder="cm (e.g. 178)"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                  </div>
-
-                  <p id="heightError" class="hidden mt-2 text-sm text-red-600">Please enter a valid height.</p>
-                </div>
-
-                <!-- Activity -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Activity Level</label>
-                  <select
-                    id="activityLevel"
-                  class="w-full px-4 py-3 rounded-xl bg-white
-       border border-black/10
-       ring-0
-       focus:border-cc-outline
-       focus:ring-2 focus:ring-cc-outline/70
-       focus:outline-none transition"
-
-                  >
-                    <option value="sedentary">Sedentary — desk job, little exercise</option>
-                    <option value="light">Light — 1–3 workouts/week</option>
-                    <option value="moderate" selected>Moderate — 3–5 workouts/week</option>
-                    <option value="active">Active — 5–6 workouts/week</option>
-                    <option value="veryActive">Very Active — hard training / physical job</option>
-                  </select>
-
-                  <div class="mt-2 rounded-2xl p-4 bg-black/5 ring-1 ring-black/5 text-sm">
-                    <p class="font-semibold mb-1">How to choose an activity level:</p>
-                    <ul class="list-disc list-inside opacity-90 space-y-1">
-                      <li>If your job is mostly sitting, start at <span class="font-semibold">Sedentary</span> or <span class="font-semibold">Light</span>.</li>
-                      <li>If you train 3–5x/week, <span class="font-semibold">Moderate</span> is usually right.</li>
-                      <li><span class="font-semibold">Active/Very Active</span> is for frequent training and/or physical work.</li>
-                    </ul>
-                  </div>
-                </div>
-
-                  <div class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
-                    <h3 class="text-base sm:text-lg font-bold mb-1 font-heading">Ideal Physique Weight Ranges</h3>
-                    <p class="text-sm opacity-80">
-                      Based on your age, weight, sex, height, and current weight. Tap a look to use it as your goal body weight.
-                    </p>
-
-                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <button
-                        id="leanLookBtn"
-                        type="button"
-                        data-look="lean"
-                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-cc-outline/15 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
-                      >
-                        <p class="text-xs uppercase tracking-wide opacity-70">Lean Look</p>
-                        <p class="text-2xl font-extrabold">
-                          <span id="leanWeightOut">--</span>
-                          <span id="lookWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
-                        </p>
-                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
-                      </button>
-
-                      <button
-                        id="athleticLookBtn"
-                        type="button"
-                        data-look="athletic"
-                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-black/5 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
-                      >
-                        <p class="text-xs uppercase tracking-wide opacity-70">Hybrid Athlete Look</p>
-                        <p class="text-2xl font-extrabold">
-                          <span id="athleticWeightOut">--</span>
-                          <span id="athleticWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
-                        </p>
-                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
-                      </button>
-
-                      <button
-                        id="muscularLookBtn"
-                        type="button"
-                        data-look="muscular"
-                        class="lookBtn text-left rounded-xl p-4 ring-1 ring-black/10 bg-black/5 hover:ring-cc-outline/70 hover:ring-2 focus:outline-none focus:ring-2 focus:ring-cc-outline/70 transition"
-                      >
-                        <p class="text-xs uppercase tracking-wide opacity-70">Muscular Look</p>
-                        <p class="text-2xl font-extrabold">
-                          <span id="muscularWeightOut">--</span>
-                          <span id="muscularWeightUnitOut" class="text-base font-semibold opacity-70">lbs</span>
-                        </p>
-                        <p class="text-[11px] font-semibold opacity-60 mt-1">Use as goal →</p>
-                      </button>
-                    </div>
-
-                    <div class="mt-3 rounded-xl p-3 bg-black/5 ring-1 ring-black/5">
-                      <p class="text-xs uppercase tracking-wide opacity-70">Closest Match Today</p>
-                      <p id="lookStatusOut" class="text-base font-bold mt-1">Enter age, weight, sex, and height</p>
-                    </div>
-
-                    <p id="lookPickedOut" class="hidden mt-3 text-xs font-semibold text-emerald-700"></p>
-
-                    <p class="mt-3 text-xs opacity-70">
-                      Estimates use fat-free mass index (FFMI) targets and sustainable body-fat ranges for each look, based on normalized natural-lifter FFMI norms from Kouri et al. (1995, <em>Clinical Journal of Sport Medicine</em>) — drug-free lifters top out around FFMI 25, averaging 21.8 — adjusted for your height, sex, and age. Values are rounded to the nearest pound.
-                    </p>
-                  </div>
-                  <div id="changeSummaryBox" class="hidden rounded-2xl p-4 ring-1 ring-black/10 bg-cc-bg">
-                    <p class="text-xs uppercase tracking-wide opacity-60 font-bold">Change From Last Saved Targets</p>
-                    <p id="changeSummaryText" class="mt-1 text-sm font-extrabold">No previous targets on file yet.</p>
-                  </div>
-
-                <!-- SECTION: Your Goal -->
-                <div class="flex items-center gap-3 pt-4 mt-1 border-t border-black/10">
-                  <span class="flex-none w-8 h-8 rounded-full bg-cc-outline text-cc-text font-extrabold text-sm flex items-center justify-center ring-1 ring-cc-outline/40">2</span>
-                  <div>
-                    <h3 class="text-base sm:text-lg font-bold font-heading leading-tight">Your Goal</h3>
-                    <p class="text-xs opacity-70">Where you're headed and how fast — this shapes your calories and macros.</p>
-                  </div>
-                </div>
-
-                <!-- Goal -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Goal</label>
-                  <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
-                    <div class="flex items-center justify-between gap-3 flex-wrap">
-                      <div>
-                        <p class="text-sm font-semibold">Goal Type</p>
-                        <p class="text-xs opacity-70">Choose a standard goal or target a specific outcome.</p>
-                      </div>
-                      <div class="inline-flex rounded-2xl bg-white ring-1 ring-black/10 p-1">
-                        <button
-                          id="goalModeStandard"
-                          type="button"
-                          class="goalModeBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30"
-                        >
-                          Standard
-                        </button>
-                        <button
-                          id="goalModeWeight"
-                          type="button"
-                          class="goalModeBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100"
-                        >
-                          Target Weight
-                        </button>
-                        <button
-                          id="goalModeBodyFat"
-                          type="button"
-                          class="goalModeBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100"
-                        >
-                          Target Body Fat %
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="standardGoalWrap" class="mt-4">
-                    <div class="grid grid-cols-3 gap-3">
-                      <button
-                        id="goalLose"
-                        type="button"
-                        class="goalBtn rounded-xl py-3 font-bold ring-1 ring-black/10 bg-white hover:opacity-90 transition"
-                      >
-                        Lose
-                      </button>
-                      <button
-                        id="goalMaintain"
-                        type="button"
-                        class="goalBtn rounded-xl py-3 font-bold ring-2 ring-cc-outline/70 bg-cc-outline/15 hover:opacity-90 transition"
-                      >
-                        Maintain
-                      </button>
-                      <button
-                        id="goalGain"
-                        type="button"
-                        class="goalBtn rounded-xl py-3 font-bold ring-1 ring-black/10 bg-white hover:opacity-90 transition"
-                      >
-                        Gain
-                      </button>
-                    </div>
-                    <p class="text-xs opacity-70 mt-2">
-                      Note: Protein + fat targets will adjust by goal (cut/maintain/bulk), not just carbs.
-                    </p>
-                  </div>
-
-                  <div id="targetWeightWrap" class="hidden mt-4">
-                    <label class="block text-sm font-semibold mb-2">Target Body Weight</label>
-                    <div id="targetWeightUSWrap">
-                      <input
-                        id="targetWeightLb"
-                        type="number"
-                        inputmode="decimal"
-                        placeholder="lbs (e.g. 155)"
-                        class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                               focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                      />
-                    </div>
-                    <div id="targetWeightMetricWrap" class="hidden">
-                      <input
-                        id="targetWeightKg"
-                        type="number"
-                        inputmode="decimal"
-                        placeholder="kg (e.g. 70)"
-                        class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                               focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                      />
-                    </div>
-                    <p id="targetWeightError" class="hidden mt-2 text-sm text-red-600">
-                      Please enter a valid target weight.
-                    </p>
-                    <p class="text-xs opacity-70 mt-2">We’ll infer lose/maintain/gain based on your target.</p>
-                  </div>
-
-                  <div id="targetBodyFatWrap" class="hidden mt-4">
-                    <label class="block text-sm font-semibold mb-2">Target Body Fat %</label>
-                    <input
-                      id="targetBodyFat"
-                      type="number"
-                      inputmode="decimal"
-                      placeholder="e.g. 18"
-                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-black/10
-                             focus:ring-2 focus:ring-cc-outline/70 focus:outline-none transition"
-                    />
-                    <p id="targetBodyFatError" class="hidden mt-2 text-sm text-red-600">
-                      Enter a valid target body fat % (3–70).
-                    </p>
-                    <p class="text-xs opacity-70 mt-2">
-                      Requires your current body fat % above to estimate direction.
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Macro Style -->
-                <div>
-                  <label class="block text-sm font-semibold mb-2">Macro Style</label>
-                  <div class="rounded-2xl p-4 bg-black/5 ring-1 ring-black/5">
-                    <div class="flex items-center justify-between gap-3 flex-wrap">
-                      <div>
-                        <p class="text-sm font-semibold">Nutrition Preference</p>
-                        <p class="text-xs opacity-70">Standard keeps carbs moderate. Keto sets carbs to 0g and shifts calories to fat.</p>
-                      </div>
-                      <div class="inline-flex rounded-2xl bg-white ring-1 ring-black/10 p-1">
-                        <button
-                          id="macroStyleStandard"
-                          type="button"
-                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30"
-                        >
-                          Standard
-                        </button>
-                        <button
-                          id="macroStyleKeto"
-                          type="button"
-                          class="macroStyleBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100"
-                        >
-                          Keto
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Weekly Change -->
-                <div id="weeklyWrap" class="hidden">
-                  <label id="weeklyLabel" class="block text-sm font-semibold mb-2">Weekly Change</label>
-                  <select
-                    id="weeklyChange"
-                   class="w-full px-4 py-3 rounded-xl bg-white
-       border border-black/10
-       ring-0
-       focus:border-cc-outline
-       focus:ring-2 focus:ring-cc-outline/70
-       focus:outline-none transition"
-
-                  ></select>
-                  <p class="text-xs opacity-70 mt-2">If adherence is hard, go smaller and stay consistent.</p>
-                  <p id="lossNote" class="hidden text-xs text-amber-700 mt-2">
-                    Losing more than about 1 lb a week is aggressive — at that pace you tend to give up muscle along with fat. A slower cut protects the muscle you've built.
-                  </p>
-                  <p id="gainNote" class="hidden text-xs text-amber-700 mt-2">
-                    Gaining more than about 0.5 lb a week is fast — the extra tends to come on as fat, not just muscle. A slower bulk keeps your gains leaner.
-                  </p>
-                </div>
-
-                <!-- Calculate -->
-                <button
-                  id="calcBtn"
-                  type="button"
-                  class="w-full rounded-2xl py-4 font-extrabold
-                         bg-cc-outline text-cc-text hover:opacity-90 transition shadow-outline"
-                >
-                  Calculate Macros
-                </button>
-
-                <!-- Results -->
-                <div id="results" class="hidden mt-6 space-y-4">
-                  <div id="macroExportActions" class="rounded-2xl p-4 ring-1 ring-black/10 bg-white"></div>
-                  <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-cc-outline/10">
-                    <p class="text-sm font-semibold">Send these targets to Split Sculptor</p>
-                    <p id="ledgerSyncStatus" class="text-xs opacity-75 mt-1">Calculate first, then save and open the ledger.</p>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                      <button id="saveToLedgerBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-cc-outline text-cc-text hover:opacity-90 transition">Save targets to Split Sculptor</button>
-                      <a href="../split-sculptor/index.html" class="rounded-xl px-4 py-2 font-bold bg-white ring-1 ring-black/10 hover:bg-black/5 transition">Open Split Sculptor</a>
-                    </div>
-                  </div>
-                  <div id="coachMacroCard" class="hidden rounded-2xl p-4 ring-1 ring-black/10 bg-white">
-                    <p class="text-sm font-semibold">Coach Mode: Client Save/Load</p>
-                    <p class="text-xs opacity-75 mt-1">Save these macro targets under a client profile or load their previous macro settings.</p>
-                    <div class="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-                      <select id="coachMacroClientSelect" class="rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-cc-outline/70"></select>
-                      <button id="coachMacroLoadBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-cc-bg ring-1 ring-black/10 hover:bg-black/5 transition">Load Client Data</button>
-                    </div>
-                    <div class="mt-2 grid gap-2 sm:grid-cols-2">
-                      <input id="coachMacroNewClientName" type="text" placeholder="New client full name"
-                        class="rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-cc-outline/70" />
-                      <button id="coachMacroCreateClientBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-cc-bg ring-1 ring-black/10 hover:bg-black/5 transition">Create Client</button>
-                    </div>
-                    <textarea id="coachMacroNotes" rows="2" placeholder="Coach notes for this macro save (optional)"
-                      class="mt-2 w-full rounded-xl bg-cc-bg px-4 py-3 ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-cc-outline/70"></textarea>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                      <button id="coachMacroSaveBtn" type="button" class="rounded-xl px-4 py-2 font-bold bg-cc-outline text-cc-text hover:opacity-90 transition">Save to Client</button>
-                    </div>
-                    <p id="coachMacroStatus" class="text-xs opacity-75 mt-2">Choose a client to begin.</p>
-                  </div>
-                  <div class="rounded-2xl p-5 ring-1 ring-black/10 bg-white">
-                    <h3 class="text-base sm:text-lg font-bold mb-2 font-heading">Daily Target</h3>
-                    <p class="text-3xl sm:text-4xl font-extrabold">
-                      <span id="caloriesOut">0</span>
-                      <span class="text-xl sm:text-2xl font-bold opacity-70"> calories</span>
-                    </p>
-
-                    <p class="text-sm mt-2 opacity-80">
-                      BMR: <span id="bmrOut">0</span> calories
-                      <span class="opacity-60">(at rest)</span>
-                    </p>
-                    <p class="text-sm mt-2 opacity-80">
-                      TDEE: <span id="tdeeOut">0</span> calories
-                      <span class="opacity-60">(BMR + activity)</span>
-                    </p>
-                  </div>
-
-                  <div id="timelineBox" class="hidden rounded-2xl p-4 text-sm ring-1 ring-black/10 bg-white">
-                    <p id="timelineTitle" class="font-bold">Estimated Timeline</p>
-                    <p id="timelineOut" class="text-base mt-1 font-semibold">--</p>
-                    <p id="timelineDetail" class="mt-1 opacity-75">Timeline updates when you choose a target weight or target body fat %.</p>
-                  </div>
-
-                  <div
-                    id="minCalWarning"
-                    class="hidden rounded-2xl p-4 text-sm ring-1 ring-red-300/60 bg-red-50 text-red-900"
-                  >
-                    <p class="font-semibold">⚠️ Calories raised to daily minimum</p>
-                    <p class="mt-1">
-                      Based on your goal settings, your target would have been
-                      <span class="font-bold"><span id="requestedCaloriesOut">0</span> calories</span>,
-                      which is below the daily minimum for your selected sex
-                      (<span class="font-bold"><span id="minCaloriesOut">0</span> calories</span>).
-                      Calories were adjusted upward for safety and sustainability.
-                    </p>
-                  </div>
-
-                  <div
-                    id="proteinCapBox"
-                    class="hidden rounded-2xl p-4 text-sm ring-1 ring-amber-300/60 bg-amber-50 text-amber-900"
-                  >
-                    <p class="font-semibold">⚠️ Protein capped</p>
-                    <p class="mt-1">
-                      Protein was capped to keep your macros balanced and sustainable
-                      based on your goal and calorie intake
-                      (<span id="proteinPctOut">0</span>% of total calories).
-                    </p>
-                  </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                    <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-[#cceaff]/20">
-                      <p class="text-sm font-semibold mb-1 opacity-80">Protein</p>
-                      <p class="text-2xl sm:text-3xl font-extrabold">
-                        <span id="proteinOut">0</span><span class="text-base font-semibold opacity-70">g</span>
-                      </p>
-                      <p class="text-xs opacity-70 mt-1"><span id="proteinShareOut">0</span>%</p>
-                    </div>
-
-                    <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-[#d8c3a5]/30">
-                      <p class="text-sm font-semibold mb-1 opacity-80">Carbs</p>
-                      <p class="text-2xl sm:text-3xl font-extrabold">
-                        <span id="carbsOut">0</span><span class="text-base font-semibold opacity-70">g</span>
-                      </p>
-                      <p class="text-xs opacity-70 mt-1"><span id="carbsShareOut">0</span>%</p>
-                    </div>
-
-                    <div class="rounded-2xl p-4 ring-1 ring-black/10 bg-[#f02348]/20">
-                      <p class="text-sm font-semibold mb-1 opacity-80">Fat</p>
-                      <p class="text-2xl sm:text-3xl font-extrabold">
-                        <span id="fatOut">0</span><span class="text-base font-semibold opacity-70">g</span>
-                      </p>
-                      <p class="text-xs opacity-70 mt-1"><span id="fatShareOut">0</span>%</p>
-                    </div>
-                  </div>
-
-                  <div class="rounded-2xl p-4 text-sm ring-1 ring-black/10 bg-white">
-                <div>
-  <p class="font-extrabold font-heading">Important Note</p>
-  <p class="mt-1 opacity-80">
-    This is a starting estimate. Your real-world maintenance can be higher/lower. Track for 10–14 days
-    and adjust by results.
-  </p>
-  <ul class="mt-3 space-y-1 list-disc list-inside opacity-90">
-    <li><span class="font-semibold">Protein</span> targets ~1g/lb, capped at 180g or 35% of calories.</li>
-    <li><span class="font-semibold">Fat</span> supports hormones + satiety.</li>
-    <li><span class="font-semibold">Carbs</span> fill remaining calories.</li>
-  </ul>
-</div>
-
-                    </div>
-                  </div>
-
-
-                </div>
-
-</div>
+              <label class="mc-field mc-field--bf">
+                <span class="mc-field-label">Body fat % <b>(optional)</b></span>
+                <input type="number" id="bodyFatInput" class="mc-input" placeholder="22" />
+              </label>
             </div>
-          </main>
+          </section>
+
+          <!-- Activity level -->
+          <section class="mc-card">
+            <h2 class="mc-card-title">Activity level</h2>
+            <p class="mc-card-sub">Count the sessions you actually completed over the last month — not the week you're planning. A workout counts when it's 30+ minutes of real effort, logged.</p>
+            <div class="mc-activity-list" id="activityList"></div>
+            <p class="mc-note">Between two levels? Pick the lower one. Overstating activity inflates your calories, the scale stalls, and it looks like the plan failed when it was really the input. It's easier to add food later than to unwind a month of guessing high.</p>
+          </section>
+
+          <!-- Physique ranges -->
+          <section class="mc-card">
+            <h2 class="mc-card-title">Physique ranges</h2>
+            <p class="mc-card-sub">Tap a look to use it as your goal weight. Estimated from FFMI targets at your height, sex, and age.</p>
+
+            <div class="mc-looks-grid">
+              <button type="button" class="mc-look-btn" id="lookLean" data-look="lean" disabled>
+                <span class="mc-look-kicker">Lean</span>
+                <span class="mc-look-value"><span id="leanWeightOut">--</span><span id="leanWeightUnit"> lbs</span></span>
+                <span class="mc-look-cta">Use as goal →</span>
+              </button>
+              <button type="button" class="mc-look-btn" id="lookAthletic" data-look="athletic" disabled>
+                <span class="mc-look-kicker">Hybrid athlete</span>
+                <span class="mc-look-value"><span id="athleticWeightOut">--</span><span id="athleticWeightUnit"> lbs</span></span>
+                <span class="mc-look-cta">Use as goal →</span>
+              </button>
+              <button type="button" class="mc-look-btn" id="lookMuscular" data-look="muscular" disabled>
+                <span class="mc-look-kicker">Muscular</span>
+                <span class="mc-look-value"><span id="muscularWeightOut">--</span><span id="muscularWeightUnit"> lbs</span></span>
+                <span class="mc-look-cta">Use as goal →</span>
+              </button>
+            </div>
+
+            <div class="mc-look-status">
+              <span class="mc-look-status-label">Closest match today</span>
+              <span class="mc-look-status-value" id="lookStatusOut">Enter age, weight, and height</span>
+            </div>
+          </section>
+
+          <!-- Your goal -->
+          <section class="mc-card">
+            <h2 class="mc-card-title">Your goal</h2>
+            <p class="mc-card-sub">Where you're headed and how fast — this shapes calories and macros.</p>
+
+            <div class="mc-seg mc-goal-modes" role="group" aria-label="Goal type">
+              <button type="button" id="modeStandard" class="mc-seg-btn is-active">Standard</button>
+              <button type="button" id="modeWeight" class="mc-seg-btn">Target weight</button>
+              <button type="button" id="modeBodyFat" class="mc-seg-btn">Target body fat</button>
+            </div>
+
+            <div class="mc-goal-grid" id="standardGoalWrap">
+              <button type="button" id="goalLose" class="mc-goal-btn">Lose</button>
+              <button type="button" id="goalMaintain" class="mc-goal-btn is-active">Maintain</button>
+              <button type="button" id="goalGain" class="mc-goal-btn">Gain</button>
+            </div>
+
+            <label class="mc-target-field" id="targetWeightWrap" hidden>
+              <span class="mc-field-title">Target body weight <span id="targetWeightUnitLabel">(lbs)</span></span>
+              <input type="number" id="targetWeightInput" class="mc-input" placeholder="e.g. 170" />
+              <span class="mc-hint">We infer lose, maintain, or gain from your target.</span>
+            </label>
+
+            <label class="mc-target-field" id="targetBodyFatWrap" hidden>
+              <span class="mc-field-title">Target body fat %</span>
+              <input type="number" id="targetBodyFatInput" class="mc-input" placeholder="e.g. 18" />
+              <span class="mc-hint">Needs your current body fat % above to estimate direction.</span>
+            </label>
+
+            <div class="mc-goal-footer">
+              <div>
+                <p class="mc-field-title" style="margin:0 0 8px">Nutrition style</p>
+                <div class="mc-seg" role="group" aria-label="Nutrition style">
+                  <button type="button" id="styleStandard" class="mc-seg-btn is-active">Standard</button>
+                  <button type="button" id="styleKeto" class="mc-seg-btn">Keto</button>
+                </div>
+              </div>
+              <label id="weeklyWrap" hidden>
+                <span class="mc-field-title" id="weeklyLabel">Weekly loss</span>
+                <select id="weeklySelect" class="mc-input" style="margin-top:8px"></select>
+              </label>
+            </div>
+
+            <p class="mc-pace-note" id="paceNote" hidden></p>
+          </section>
+
+          <!-- How built -->
+          <section class="mc-card">
+            <h2 class="mc-card-title" style="font-size:18px">How these numbers are built</h2>
+            <div class="mc-build-list">
+              <div class="mc-build-row">
+                <span class="mc-build-dot" style="background:#2a9df0"></span>
+                <p class="mc-build-text"><strong>Protein</strong> targets about 1g per pound, capped at 180g or 35% of calories.</p>
+              </div>
+              <div class="mc-build-row">
+                <span class="mc-build-dot" style="background:#f02348"></span>
+                <p class="mc-build-text"><strong>Fat</strong> holds a floor for hormones and satiety — higher on keto.</p>
+              </div>
+              <div class="mc-build-row">
+                <span class="mc-build-dot" style="background:#ffbd59"></span>
+                <p class="mc-build-text"><strong>Carbs</strong> fill whatever calories remain, and go to zero on keto.</p>
+              </div>
+              <div class="mc-build-row">
+                <span class="mc-build-dot" style="background:rgba(7,31,53,0.25)"></span>
+                <p class="mc-build-text">This is a starting estimate. Track for 10–14 days, then adjust by results.</p>
+              </div>
+            </div>
+          </section>
         </div>
+
+        <aside class="mc-aside" id="mcAside">
+          <section class="mc-hero" id="mcHero">
+            <div class="mc-hero-dots">
+              <span style="background:#77d770"></span>
+              <span style="background:#2a9df0"></span>
+              <span style="background:#f02348"></span>
+            </div>
+            <p class="mc-hero-kicker">Daily target</p>
+            <p class="mc-hero-cal"><span id="caloriesOut">0</span><span> kcal</span></p>
+            <div class="mc-hero-stats">
+              <div>
+                <p class="mc-hero-stat-label">BMR</p>
+                <p class="mc-hero-stat-value" id="bmrOut">0</p>
+              </div>
+              <div>
+                <p class="mc-hero-stat-label">TDEE</p>
+                <p class="mc-hero-stat-value" id="tdeeOut">0</p>
+              </div>
+              <div>
+                <p class="mc-hero-stat-label">Direction</p>
+                <p class="mc-hero-stat-value" id="directionOut">maintain</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="mc-macros-card" id="mcMacros">
+            <p class="mc-macros-kicker">Macros</p>
+            <div class="mc-macros-list">
+              <div>
+                <div class="mc-macro-head">
+                  <span class="mc-macro-name"><span style="background:#2a9df0"></span>Protein</span>
+                  <span class="mc-macro-value"><span id="proteinOut">0</span><span>g</span></span>
+                </div>
+                <div class="mc-macro-bar-track"><div class="mc-macro-bar-fill" id="proteinBar" style="background:#2a9df0;width:0%"></div></div>
+                <p class="mc-macro-share"><span id="proteinShareOut">0</span>% of calories</p>
+              </div>
+              <div>
+                <div class="mc-macro-head">
+                  <span class="mc-macro-name"><span style="background:#ffbd59"></span>Carbs</span>
+                  <span class="mc-macro-value"><span id="carbsOut">0</span><span>g</span></span>
+                </div>
+                <div class="mc-macro-bar-track"><div class="mc-macro-bar-fill" id="carbsBar" style="background:#ffbd59;width:0%"></div></div>
+                <p class="mc-macro-share"><span id="carbsShareOut">0</span>% of calories</p>
+              </div>
+              <div>
+                <div class="mc-macro-head">
+                  <span class="mc-macro-name"><span style="background:#f02348"></span>Fat</span>
+                  <span class="mc-macro-value"><span id="fatOut">0</span><span>g</span></span>
+                </div>
+                <div class="mc-macro-bar-track"><div class="mc-macro-bar-fill" id="fatBar" style="background:#f02348;width:0%"></div></div>
+                <p class="mc-macro-share"><span id="fatShareOut">0</span>% of calories</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="mc-timeline-card" id="timelineCard" hidden>
+            <p class="mc-timeline-kicker">Estimated timeline</p>
+            <p class="mc-timeline-value" id="timelineOut"></p>
+            <p class="mc-timeline-detail" id="timelineDetailOut"></p>
+          </section>
+
+          <section class="mc-warning-card" id="warningCard" hidden>
+            <p class="mc-warning-kicker"><span></span>Adjusted for safety</p>
+            <p class="mc-warning-text" id="warningTextOut"></p>
+          </section>
+
+          <section class="mc-save-card">
+            <p class="mc-save-title">Send these targets to Split Sculptor</p>
+            <p class="mc-save-status" id="saveStatusOut">Saves your calories and macros to the training ledger.</p>
+            <div class="mc-save-actions">
+              <button type="button" class="mc-save-btn" id="saveTargetsBtn">Save targets</button>
+              <a href="../split-sculptor/index.html" class="mc-save-link">Open Split Sculptor</a>
+              <button type="button" class="mc-save-btn mc-save-btn--ghost" id="saveImageBtn">Save as image</button>
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
 
+    <footer class="w-full px-5 pb-5 sm:px-8">
+      <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
+    </footer>
+
     <script>
-      // State
-      let goal = "maintain";
-      let unit = "us"; // "us" | "metric"
-      let goalMode = "standard"; // "standard" | "targetWeight" | "targetBodyFat"
-      let macroStyle = "standard"; // "standard" | "keto"
-
-      // Elements
-
-      const sexEl = document.getElementById("sex");
-      const ageEl = document.getElementById("age");
-
-      const weightUSWrap = document.getElementById("weightUSWrap");
-      const weightMetricWrap = document.getElementById("weightMetricWrap");
-      const weightLbEl = document.getElementById("weightLb");
-      const weightKgEl = document.getElementById("weightKg");
-      const bodyFatEl = document.getElementById("bodyFat");
-
-      const heightUSWrap = document.getElementById("heightUSWrap");
-      const heightMetricWrap = document.getElementById("heightMetricWrap");
-      const heightFtEl = document.getElementById("heightFt");
-      const heightInEl = document.getElementById("heightIn");
-      const heightCmEl = document.getElementById("heightCm");
-
-      const ageErrorEl = document.getElementById("ageError");
-      const heightErrorEl = document.getElementById("heightError");
-      const weightErrorEl = document.getElementById("weightError");
-      const bodyFatErrorEl = document.getElementById("bodyFatError");
-
-      const activityEl = document.getElementById("activityLevel");
-
-      const weeklyWrap = document.getElementById("weeklyWrap");
-      const weeklyLabel = document.getElementById("weeklyLabel");
-      const weeklyEl = document.getElementById("weeklyChange");
-      const gainNote = document.getElementById("gainNote");
-      const lossNote = document.getElementById("lossNote");
-      const macroStyleStandardBtn = document.getElementById("macroStyleStandard");
-      const macroStyleKetoBtn = document.getElementById("macroStyleKeto");
-
-      const goalModeStandardBtn = document.getElementById("goalModeStandard");
-      const goalModeWeightBtn = document.getElementById("goalModeWeight");
-      const goalModeBodyFatBtn = document.getElementById("goalModeBodyFat");
-      const standardGoalWrap = document.getElementById("standardGoalWrap");
-      const targetWeightWrap = document.getElementById("targetWeightWrap");
-      const targetBodyFatWrap = document.getElementById("targetBodyFatWrap");
-
-      const targetWeightUSWrap = document.getElementById("targetWeightUSWrap");
-      const targetWeightMetricWrap = document.getElementById("targetWeightMetricWrap");
-      const targetWeightLbEl = document.getElementById("targetWeightLb");
-      const targetWeightKgEl = document.getElementById("targetWeightKg");
-      const targetWeightErrorEl = document.getElementById("targetWeightError");
-
-      const targetBodyFatEl = document.getElementById("targetBodyFat");
-      const targetBodyFatErrorEl = document.getElementById("targetBodyFatError");
-      const quickProfileInputEl = document.getElementById("quickProfileInput");
-      const parseProfileBtn = document.getElementById("parseProfileBtn");
-      const quickProfileStatusEl = document.getElementById("quickProfileStatus");
-
-      const resultsEl = document.getElementById("results");
-      const proteinCapBox = document.getElementById("proteinCapBox");
-
-      const minCalWarningEl = document.getElementById("minCalWarning");
-      const requestedCaloriesOut = document.getElementById("requestedCaloriesOut");
-      const minCaloriesOut = document.getElementById("minCaloriesOut");
-      const timelineBox = document.getElementById("timelineBox");
-      const timelineTitle = document.getElementById("timelineTitle");
-      const timelineOut = document.getElementById("timelineOut");
-      const timelineDetail = document.getElementById("timelineDetail");
-
-      // Outputs
-      const caloriesOut = document.getElementById("caloriesOut");
-      const bmrOut = document.getElementById("bmrOut");
-      const tdeeOut = document.getElementById("tdeeOut");
-      const proteinOut = document.getElementById("proteinOut");
-      const carbsOut = document.getElementById("carbsOut");
-      const fatOut = document.getElementById("fatOut");
-      const leanWeightOut = document.getElementById("leanWeightOut");
-      const athleticWeightOut = document.getElementById("athleticWeightOut");
-      const muscularWeightOut = document.getElementById("muscularWeightOut");
-      const lookWeightUnitOut = document.getElementById("lookWeightUnitOut");
-      const athleticWeightUnitOut = document.getElementById("athleticWeightUnitOut");
-      const muscularWeightUnitOut = document.getElementById("muscularWeightUnitOut");
-      const lookStatusOut = document.getElementById("lookStatusOut");
-      const lookPickedOut = document.getElementById("lookPickedOut");
-      const lookButtons = Array.from(document.querySelectorAll(".lookBtn"));
-
-      // Raw (kg) physique range values from the latest preview, used when a look is applied as the goal weight.
-      let physiqueLookKg = null;
-
-      const proteinPctOut = document.getElementById("proteinPctOut");
-      const proteinShareOut = document.getElementById("proteinShareOut");
-      const carbsShareOut = document.getElementById("carbsShareOut");
-      const fatShareOut = document.getElementById("fatShareOut");
-      const ledgerSyncStatus = document.getElementById("ledgerSyncStatus");
-      const changeSummaryBox = document.getElementById("changeSummaryBox");
-      const changeSummaryText = document.getElementById("changeSummaryText");
-      const calcBtn = document.getElementById("calcBtn");
-
-      const coachApi = window.ChasingChangeCoach;
+      const LB = 0.45359237;
+      const ACT_FACTORS = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9 };
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
-      const COACH_TOOL_KEY = "macro_calculator";
+
+      const ACT_ROWS = [
+        { key: "sedentary", label: "Sedentary", sessions: "0 sessions a week", color: "#f02348",
+          body: "Desk work, no structured training, under about 5,000 steps a day. If you only walk to the car and back, this is you." },
+        { key: "light", label: "Light", sessions: "1–3 sessions a week", color: "#f58b1c",
+          body: "One to three workouts you'd actually log, and otherwise a mostly seated day. Where most people with a gym membership honestly land." },
+        { key: "moderate", label: "Moderate", sessions: "3–5 sessions a week", color: "#77d770",
+          body: "Three to five sessions completed, week after week, plus normal daily movement. Not five sessions on your best week — five most weeks." },
+        { key: "active", label: "Active", sessions: "5–6 hard sessions a week", color: "#2a9df0",
+          body: "Five to six demanding sessions a week, most of them near your limit, on top of an active day. Rare unless training is a scheduled priority." },
+        { key: "veryActive", label: "Very active", sessions: "Daily training or physical work", color: "#aa70d7",
+          body: "Two-a-days, an in-season athlete's schedule, or manual labor stacked on top of training. Almost nobody with an office job belongs here." },
+      ];
+
+      let unit = "us";
+      let sex = "male";
+      let goal = "maintain";
+      let goalMode = "standard";
+      let macroStyle = "standard";
+      let activity = "moderate";
+      let physiqueLookLb = null;
       let lastSavedOutputs = null;
 
-      const activityFactors = {
-        sedentary: 1.2,
-        light: 1.375,
-        moderate: 1.55,
-        active: 1.725,
-        veryActive: 1.9,
-      };
+      const el = (id) => document.getElementById(id);
+      const num = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 
-      function show(el) { el.classList.remove("hidden"); }
-      function hide(el) { el.classList.add("hidden"); }
+      const weightInput = el("weightInput");
+      const ageInput = el("ageInput");
+      const heightWrapUS = el("heightWrapUS");
+      const heightWrapMetric = el("heightWrapMetric");
+      const heightFtInput = el("heightFtInput");
+      const heightInInput = el("heightInInput");
+      const heightCmInput = el("heightCmInput");
+      const bodyFatInput = el("bodyFatInput");
+      const weightUnitLabel = el("weightUnitLabel");
+      const targetWeightUnitLabel = el("targetWeightUnitLabel");
 
-      function collectStoredMacroData() {
-        return {
-          profile: { goal, goalMode, unit, macroStyle },
-          inputs: {
-            sex: sexEl.value,
-            age: ageEl.value,
-            weightLb: weightLbEl.value,
-            weightKg: weightKgEl.value,
-            bodyFat: bodyFatEl.value,
-            heightFt: heightFtEl.value,
-            heightIn: heightInEl.value,
-            heightCm: heightCmEl.value,
-            activityLevel: activityEl.value,
-            weeklyChange: weeklyEl.value,
-            targetWeightLb: targetWeightLbEl.value,
-            targetWeightKg: targetWeightKgEl.value,
-            targetBodyFat: targetBodyFatEl.value,
-          },
-          outputs: {
-            calories: caloriesOut.textContent,
-            bmr: bmrOut.textContent,
-            tdee: tdeeOut.textContent,
-            protein: proteinOut.textContent,
-            carbs: carbsOut.textContent,
-            fat: fatOut.textContent,
-            proteinPct: proteinPctOut.textContent,
-            proteinShare: proteinShareOut.textContent,
-            carbsShare: carbsShareOut.textContent,
-            fatShare: fatShareOut.textContent,
-          },
-          updatedAt: new Date().toISOString(),
-        };
-      }
+      const targetWeightWrap = el("targetWeightWrap");
+      const targetBodyFatWrap = el("targetBodyFatWrap");
+      const targetWeightInput = el("targetWeightInput");
+      const targetBodyFatInput = el("targetBodyFatInput");
+      const standardGoalWrap = el("standardGoalWrap");
+      const weeklyWrap = el("weeklyWrap");
+      const weeklyLabel = el("weeklyLabel");
+      const weeklySelect = el("weeklySelect");
+      const paceNote = el("paceNote");
 
-      function applyStoredMacroData(data) {
-        if (!data) return;
+      const activityListEl = el("activityList");
 
-        const profile = data.profile || {};
-        const inputs = data.inputs || {};
-        const outputs = data.outputs || {};
-
-        weightLbEl.value = inputs.weightLb || "";
-        weightKgEl.value = inputs.weightKg || "";
-        bodyFatEl.value = inputs.bodyFat || "";
-        ageEl.value = inputs.age || "";
-        sexEl.value = inputs.sex || "male";
-        heightFtEl.value = inputs.heightFt || "";
-        heightInEl.value = inputs.heightIn || "";
-        heightCmEl.value = inputs.heightCm || "";
-        activityEl.value = inputs.activityLevel || "moderate";
-        targetWeightLbEl.value = inputs.targetWeightLb || "";
-        targetWeightKgEl.value = inputs.targetWeightKg || "";
-        targetBodyFatEl.value = inputs.targetBodyFat || "";
-
-        setGoal(profile.goal || "maintain");
-        setGoalMode(profile.goalMode || "standard");
-        setMacroStyle(profile.macroStyle || "standard");
-        setUnit(profile.unit || "us");
-
-        if (inputs.weeklyChange && Array.from(weeklyEl.options).some((opt) => opt.value === String(inputs.weeklyChange))) {
-          weeklyEl.value = String(inputs.weeklyChange);
-        }
-
-        if (outputs.calories) {
-          lastSavedOutputs = {
-            calories: Number(outputs.calories || 0),
-            protein: Number(outputs.protein || 0),
-            carbs: Number(outputs.carbs || 0),
-            fat: Number(outputs.fat || 0),
-          };
-          caloriesOut.textContent = outputs.calories || "0";
-          bmrOut.textContent = outputs.bmr || "0";
-          tdeeOut.textContent = outputs.tdee || "0";
-          proteinOut.textContent = outputs.protein || "0";
-          carbsOut.textContent = outputs.carbs || "0";
-          fatOut.textContent = outputs.fat || "0";
-          proteinPctOut.textContent = outputs.proteinPct || "0";
-          proteinShareOut.textContent = outputs.proteinShare || "0";
-          carbsShareOut.textContent = outputs.carbsShare || "0";
-          fatShareOut.textContent = outputs.fatShare || "0";
-          show(resultsEl);
-        }
-
-        updateWeeklyByTargets();
-        updateIdealBodyWeightPreview();
-      }
-
-      function renderChangeSummary(currentOutputs) {
-        if (!lastSavedOutputs || !currentOutputs) {
-          hide(changeSummaryBox);
-          return;
-        }
-
-        const flow = (previous, value, unit = "") => `${Number(previous || 0)}${unit} -> ${Number(value || 0)}${unit}`;
-        changeSummaryText.textContent = `Calories ${flow(lastSavedOutputs.calories, currentOutputs.calories)} · Protein ${flow(lastSavedOutputs.protein, currentOutputs.protein, "g")} · Carbs ${flow(lastSavedOutputs.carbs, currentOutputs.carbs, "g")} · Fat ${flow(lastSavedOutputs.fat, currentOutputs.fat, "g")}`;
-        show(changeSummaryBox);
-      }
-
-      function updateCalcButtonLabel() {
-        if (!calcBtn) return;
-        calcBtn.textContent = lastSavedOutputs ? "Recalculate Macros" : "Calculate Macros";
-      }
-
-      function restoreSessionData() {
-        updateCalcButtonLabel();
-        syncCoachMacroCard();
-      }
-
-      function syncCoachMacroCard() {
-        const card = document.getElementById("coachMacroCard");
-        if (!card || !coachApi) return;
-        const isCoach = coachApi.isCoachMode?.();
-        card.classList.toggle("hidden", !isCoach);
-        if (!isCoach) return;
-
-        const clients = coachApi.listClients?.() || [];
-        const select = document.getElementById("coachMacroClientSelect");
-        const activeClientId = coachApi.getActiveClientId?.();
-        select.innerHTML = clients.length
-          ? clients.map((client) => `<option value="${client.id}"${activeClientId === client.id ? " selected" : ""}>${client.name}</option>`).join("")
-          : `<option value="">No clients yet</option>`;
-      }
-
-      function getCoachSelectedClientId() {
-        return document.getElementById("coachMacroClientSelect")?.value || "";
-      }
-
-      function setCoachMacroStatus(message, isError = false) {
-        const el = document.getElementById("coachMacroStatus");
-        el.textContent = message || "";
-        el.classList.toggle("text-red-700", !!isError);
-      }
-
-      function setUnit(next) {
-        unit = next;
-
-        const usBtn = document.getElementById("unitUS");
-        const metBtn = document.getElementById("unitMetric");
-
-        if (unit === "us") {
-          usBtn.className = "unitBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30";
-          metBtn.className = "unitBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100";
-          show(weightUSWrap); hide(weightMetricWrap);
-          show(heightUSWrap); hide(heightMetricWrap);
-          show(targetWeightUSWrap); hide(targetWeightMetricWrap);
-        } else {
-          metBtn.className = "unitBtn px-4 py-2 rounded-xl text-sm font-bold bg-cc-outline/20 ring-1 ring-cc-outline/30";
-          usBtn.className = "unitBtn px-4 py-2 rounded-xl text-sm font-bold opacity-70 hover:opacity-100";
-          hide(weightUSWrap); show(weightMetricWrap);
-          hide(heightUSWrap); show(heightMetricWrap);
-          hide(targetWeightUSWrap); show(targetWeightMetricWrap);
-        }
-
-        updateIdealBodyWeightPreview();
-      }
-
-      function updateWeeklyByGoal(goalValue) {
-        if (goalValue === "lose") {
-          show(weeklyWrap);
-          weeklyLabel.textContent = "Weight Loss per Week";
-          hide(gainNote);
-          show(lossNote);
-          populateWeeklyOptions([0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]);
-        } else if (goalValue === "gain") {
-          show(weeklyWrap);
-          weeklyLabel.textContent = "Weight Gain per Week";
-          show(gainNote);
-          hide(lossNote);
-          populateWeeklyOptions([0.25, 0.5, 0.75, 1]);
-        } else {
-          hide(weeklyWrap);
-          hide(gainNote);
-          hide(lossNote);
-        }
-      }
-
-      function setMacroStyle(nextStyle) {
-        macroStyle = nextStyle;
-
-        if (macroStyle === "keto") {
-          macroStyleKetoBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          macroStyleKetoBtn.classList.remove("opacity-70");
-          macroStyleStandardBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          macroStyleStandardBtn.classList.add("opacity-70");
-        } else {
-          macroStyleStandardBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          macroStyleStandardBtn.classList.remove("opacity-70");
-          macroStyleKetoBtn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          macroStyleKetoBtn.classList.add("opacity-70");
-        }
-      }
-
-      function updateWeeklyByTargets() {
-        if (goalMode === "standard") return;
-
-        const { weightLb } = getInputsAsLbsAndInches();
-        const bodyFat = parseFloat(bodyFatEl.value);
-        const targetWeightLb = getTargetWeightLbs();
-        const targetBodyFat = parseFloat(targetBodyFatEl.value);
-        const inferredGoal = inferGoalFromTargets(weightLb, bodyFat, targetWeightLb, targetBodyFat);
-
-        updateWeeklyByGoal(inferredGoal);
-      }
-
-      function setGoal(newGoal) {
-        goal = newGoal;
-
-        document.querySelectorAll(".goalBtn").forEach((btn) => {
-          btn.classList.remove("ring-2", "ring-cc-outline/70", "bg-cc-outline/15");
-          btn.classList.add("ring-1", "ring-black/10", "bg-white");
+      function buildActivityRows() {
+        activityListEl.innerHTML = ACT_ROWS.map((row) => `
+          <button type="button" class="mc-activity-row" data-activity="${row.key}">
+            <span class="mc-activity-dot" style="background:${row.color}"></span>
+            <span class="mc-activity-body-wrap">
+              <span class="mc-activity-head">
+                <span class="mc-activity-label">${row.label}</span>
+                <span class="mc-activity-sessions">${row.sessions}</span>
+              </span>
+              <span class="mc-activity-body">${row.body}</span>
+            </span>
+          </button>
+        `).join("");
+        activityListEl.querySelectorAll(".mc-activity-row").forEach((btn) => {
+          btn.addEventListener("click", () => { activity = btn.dataset.activity; render(); });
         });
-
-        const activeBtn =
-          goal === "lose"
-            ? document.getElementById("goalLose")
-            : goal === "gain"
-            ? document.getElementById("goalGain")
-            : document.getElementById("goalMaintain");
-
-        activeBtn.classList.remove("ring-1", "ring-black/10", "bg-white");
-        activeBtn.classList.add("ring-2", "ring-cc-outline/70", "bg-cc-outline/15");
-
-        updateWeeklyByGoal(goal);
       }
 
-      function setGoalMode(mode) {
-        goalMode = mode;
-
-        [goalModeStandardBtn, goalModeWeightBtn, goalModeBodyFatBtn].forEach((btn) => {
-          btn.classList.remove("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          btn.classList.add("opacity-70");
-        });
-
-        if (goalMode === "standard") {
-          goalModeStandardBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          goalModeStandardBtn.classList.remove("opacity-70");
-          show(standardGoalWrap);
-          hide(targetWeightWrap);
-          hide(targetBodyFatWrap);
-          updateWeeklyByGoal(goal);
-        } else if (goalMode === "targetWeight") {
-          goalModeWeightBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          goalModeWeightBtn.classList.remove("opacity-70");
-          hide(standardGoalWrap);
-          show(targetWeightWrap);
-          hide(targetBodyFatWrap);
-          updateWeeklyByTargets();
-        } else {
-          goalModeBodyFatBtn.classList.add("bg-cc-outline/20", "ring-1", "ring-cc-outline/30");
-          goalModeBodyFatBtn.classList.remove("opacity-70");
-          hide(standardGoalWrap);
-          hide(targetWeightWrap);
-          show(targetBodyFatWrap);
-          updateWeeklyByTargets();
-        }
-      }
-
-      function populateWeeklyOptions(values = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]) {
-        const previousValue = weeklyEl.value;
-        weeklyEl.innerHTML = "";
-        values.forEach((v) => {
-          const opt = document.createElement("option");
-          opt.value = String(v);
-          opt.textContent = `${v} lb / week`;
-          weeklyEl.appendChild(opt);
-        });
-        if (values.map(String).includes(previousValue)) {
-          weeklyEl.value = previousValue;
-        } else {
-          weeklyEl.value = values.includes(1) ? "1" : String(values[0]);
-        }
+      function setSeg(activeEl, group) {
+        group.forEach((b) => b.classList.remove("is-active"));
+        activeEl.classList.add("is-active");
       }
 
       function getInputsAsLbsAndInches() {
-        let weightLb;
-        let totalInches;
-
+        let weightLb, totalInches;
         if (unit === "us") {
-          weightLb = parseFloat(weightLbEl.value);
-          const ft = parseInt(heightFtEl.value, 10);
-          const inch = parseInt(heightInEl.value, 10);
-          totalInches = (ft || 0) * 12 + (inch || 0);
+          weightLb = num(weightInput.value);
+          totalInches = num(heightFtInput.value) * 12 + num(heightInInput.value);
         } else {
-          const weightKg = parseFloat(weightKgEl.value);
-          const heightCm = parseFloat(heightCmEl.value);
-          weightLb = weightKg * 2.2046226218;
-          totalInches = heightCm / 2.54;
+          weightLb = num(weightInput.value) / LB;
+          totalInches = num(heightCmInput.value) / 2.54;
         }
-
         return { weightLb, totalInches };
       }
 
-      function getTargetWeightLbs() {
-        if (unit === "us") {
-          return parseFloat(targetWeightLbEl.value);
-        }
-        const targetWeightKg = parseFloat(targetWeightKgEl.value);
-        return targetWeightKg * 2.2046226218;
+      function getTargetWeightLb() {
+        const v = num(targetWeightInput.value);
+        return unit === "us" ? v : v / LB;
+      }
+
+      function toDisplayLb(lb) {
+        return unit === "us" ? Math.round(lb) : Math.round(lb * LB);
       }
 
       function inferGoalFromTargets(currentWeightLb, currentBodyFat, targetWeightLb, targetBodyFat) {
         if (goalMode === "targetWeight" && targetWeightLb) {
-          if (targetWeightLb < currentWeightLb) return "lose";
-          if (targetWeightLb > currentWeightLb) return "gain";
-          return "maintain";
+          if (Math.abs(targetWeightLb - currentWeightLb) < 0.5) return "maintain";
+          return targetWeightLb < currentWeightLb ? "lose" : "gain";
         }
-
         if (goalMode === "targetBodyFat" && targetBodyFat && currentBodyFat) {
-          if (targetBodyFat < currentBodyFat) return "lose";
-          if (targetBodyFat > currentBodyFat) return "gain";
-          return "maintain";
+          if (Math.abs(targetBodyFat - currentBodyFat) < 0.5) return "maintain";
+          return targetBodyFat < currentBodyFat ? "lose" : "gain";
         }
-
         return goal;
       }
 
-      function renderTimeline(weeks, summary, detail) {
-        if (!summary) {
-          hide(timelineBox);
-          return;
-        }
-
-        if (Number.isFinite(weeks) && weeks > 0) {
-          const months = weeks / 4.345;
-          timelineOut.textContent = `${weeks.toFixed(1)} weeks (${months.toFixed(1)} months)`;
+      function populateWeeklyOptions(values, derivedGoal) {
+        const previous = weeklySelect.value;
+        weeklySelect.innerHTML = values.map((v) => {
+          const label = unit === "us" ? `${v} lb per week` : `${(v * LB).toFixed(2)} kg per week`;
+          return `<option value="${v}">${label}</option>`;
+        }).join("");
+        if (values.map(String).includes(previous)) {
+          weeklySelect.value = previous;
         } else {
-          timelineOut.textContent = "You are already at your target.";
+          weeklySelect.value = values.includes(0.5) ? "0.5" : String(values[0]);
         }
-
-        timelineTitle.textContent = summary;
-        timelineDetail.textContent = detail;
-        show(timelineBox);
+        weeklyLabel.textContent = derivedGoal === "lose" ? "Weekly loss" : "Weekly gain";
       }
 
-      function setLookButtonsEnabled(enabled) {
-        lookButtons.forEach((btn) => {
-          btn.disabled = !enabled;
-          btn.classList.toggle("opacity-50", !enabled);
-          btn.classList.toggle("cursor-not-allowed", !enabled);
-          btn.classList.toggle("cursor-pointer", enabled);
-        });
-        if (!enabled && lookPickedOut) {
-          hide(lookPickedOut);
-        }
-      }
-
-      function applyLookAsGoal(lookKey) {
-        if (!physiqueLookKg || !physiqueLookKg[lookKey]) return;
-
-        const kg = physiqueLookKg[lookKey];
-        setGoalMode("targetWeight");
-
-        if (unit === "us") {
-          targetWeightLbEl.value = String(Math.round(kg * 2.2046226218));
-        } else {
-          targetWeightKgEl.value = String(Math.round(kg));
-        }
-
-        const displayValue = unit === "us" ? Math.round(kg * 2.2046226218) : Math.round(kg);
-        const unitLabel = unit === "us" ? "lbs" : "kg";
-        const lookLabels = { lean: "Lean", athletic: "Hybrid Athlete", muscular: "Muscular" };
-        const lookLabel = lookLabels[lookKey] || (lookKey.charAt(0).toUpperCase() + lookKey.slice(1));
-
-        if (lookPickedOut) {
-          lookPickedOut.textContent = `${lookLabel} look (${displayValue} ${unitLabel}) set as your goal body weight.`;
-          show(lookPickedOut);
-        }
-
-        updateWeeklyByTargets();
-      }
-
-      function updateIdealBodyWeightPreview() {
-        const age = parseInt(ageEl.value, 10);
+      function updateIdealBodyWeights() {
+        const age = num(ageInput.value);
         const { weightLb, totalInches } = getInputsAsLbsAndInches();
+        const isMale = sex === "male";
 
         if (!age || age < 10 || age > 100 || !weightLb || weightLb <= 0 || !totalInches || totalInches < 48 || totalInches > 84) {
-          leanWeightOut.textContent = "--";
-          athleticWeightOut.textContent = "--";
-          muscularWeightOut.textContent = "--";
-          lookStatusOut.textContent = "Enter age, weight, sex, and height";
-          physiqueLookKg = null;
-          setLookButtonsEnabled(false);
+          el("leanWeightOut").textContent = "--";
+          el("athleticWeightOut").textContent = "--";
+          el("muscularWeightOut").textContent = "--";
+          el("lookStatusOut").textContent = "Enter age, weight, and height";
+          physiqueLookLb = null;
+          document.querySelectorAll(".mc-look-btn").forEach((b) => (b.disabled = true));
           return;
         }
 
-        const isMale = sexEl.value === "male";
         const heightM = totalInches * 0.0254;
         const heightM2 = heightM * heightM;
-
-        // Kouri et al. (1995, Clinical Journal of Sport Medicine) height-normalizes
-        // FFMI to a 1.8m reference: normFFMI = FFMI + 6.3 * (1.8 - height_m).
-        // Solving for FFMI at this person's actual height:
         const heightCorrection = 6.3 * (1.8 - heightM);
-
-        // Target normalized FFMI + sustainable body-fat % per look, grounded in:
-        // - Men: Kouri et al. 1995 found drug-free lifters cap out at a normalized
-        //   FFMI of 25.0, with a natural mean of 21.8 +/- 1.8. "Muscular" here sits
-        //   near the high end of that natural range without approaching the ceiling.
-        // - Women: published FFMI norms put the population average near 15.5,
-        //   trained/athletic women at 17-19, and elite natural physiques at 20-22.
-        // - Body-fat ranges follow ACSM's athletic/fitness categories per sex.
         const tiers = isMale
-          ? {
-              lean: { ffmi: 18.0, bf: 0.10 },
-              athletic: { ffmi: 21.0, bf: 0.13 },
-              muscular: { ffmi: 23.5, bf: 0.11 },
-            }
-          : {
-              lean: { ffmi: 15.5, bf: 0.22 },
-              athletic: { ffmi: 17.5, bf: 0.21 },
-              muscular: { ffmi: 19.5, bf: 0.19 },
-            };
-
-        // Lean mass naturally declines with age (~3-8% per decade past 30; Volpi et
-        // al., 2004), so nudge the attainable FFMI down slightly past that point.
+          ? { lean: { ffmi: 18.0, bf: 0.10 }, athletic: { ffmi: 21.0, bf: 0.13 }, muscular: { ffmi: 23.5, bf: 0.11 } }
+          : { lean: { ffmi: 15.5, bf: 0.22 }, athletic: { ffmi: 17.5, bf: 0.21 }, muscular: { ffmi: 19.5, bf: 0.19 } };
         const ageFfmiPenalty = Math.min(1.2, Math.max(0, age - 30) * 0.03);
-
         const weightKgFromTier = (tier) => {
           const actualFfmi = tier.ffmi - ageFfmiPenalty - heightCorrection;
           const leanMassKg = Math.max(0, actualFfmi) * heightM2;
           return leanMassKg / (1 - tier.bf);
         };
 
-        const leanKg = weightKgFromTier(tiers.lean);
-        const athleticKg = weightKgFromTier(tiers.athletic);
-        const muscularKg = weightKgFromTier(tiers.muscular);
-        const currentWeightKg = weightLb * 0.45359237;
+        const leanLb = weightKgFromTier(tiers.lean) / LB;
+        const athleticLb = weightKgFromTier(tiers.athletic) / LB;
+        const muscularLb = weightKgFromTier(tiers.muscular) / LB;
 
-        const toDisplay = (kg) => unit === "us" ? kg * 2.20462262 : kg;
-        const unitLabel = unit === "us" ? "lbs" : "kg";
+        const unitLabel = unit === "us" ? " lbs" : " kg";
+        el("leanWeightOut").textContent = toDisplayLb(leanLb);
+        el("athleticWeightOut").textContent = toDisplayLb(athleticLb);
+        el("muscularWeightOut").textContent = toDisplayLb(muscularLb);
+        el("leanWeightUnit").textContent = unitLabel;
+        el("athleticWeightUnit").textContent = unitLabel;
+        el("muscularWeightUnit").textContent = unitLabel;
 
-        // Round each physique range to the nearest whole pound (or kg in metric).
-        leanWeightOut.textContent = String(Math.round(toDisplay(leanKg)));
-        athleticWeightOut.textContent = String(Math.round(toDisplay(athleticKg)));
-        muscularWeightOut.textContent = String(Math.round(toDisplay(muscularKg)));
-        lookWeightUnitOut.textContent = unitLabel;
-        athleticWeightUnitOut.textContent = unitLabel;
-        muscularWeightUnitOut.textContent = unitLabel;
+        physiqueLookLb = { lean: leanLb, athletic: athleticLb, muscular: muscularLb };
+        document.querySelectorAll(".mc-look-btn").forEach((b) => (b.disabled = false));
 
-        // Store the raw kg values so a tapped look can be applied as the goal weight in any unit.
-        physiqueLookKg = { lean: leanKg, athletic: athleticKg, muscular: muscularKg };
-        setLookButtonsEnabled(true);
-
-        const distanceLean = Math.abs(currentWeightKg - leanKg);
-        const distanceAthletic = Math.abs(currentWeightKg - athleticKg);
-        const distanceMuscular = Math.abs(currentWeightKg - muscularKg);
-        const minDistance = Math.min(distanceLean, distanceAthletic, distanceMuscular);
-
-        if (minDistance === distanceLean) {
-          lookStatusOut.textContent = "Closest to Lean look range";
-        } else if (minDistance === distanceMuscular) {
-          lookStatusOut.textContent = "Closest to Muscular look range";
-        } else {
-          lookStatusOut.textContent = "Closest to Hybrid Athlete look range";
-        }
+        const entries = [["Lean", leanLb], ["Hybrid athlete", athleticLb], ["Muscular", muscularLb]];
+        const best = entries.reduce((a, b) => (Math.abs(b[1] - weightLb) < Math.abs(a[1] - weightLb) ? b : a));
+        el("lookStatusOut").textContent = `${best[0]} · ${toDisplayLb(best[1])}${unitLabel}`;
       }
 
-      function setQuickProfileStatus(message, isError = false) {
-        if (!quickProfileStatusEl) return;
-        quickProfileStatusEl.textContent = message;
-        quickProfileStatusEl.classList.toggle("text-red-700", !!isError);
-        quickProfileStatusEl.classList.toggle("text-emerald-700", !isError);
+      function timelineFor(dg, weeklyLb, weightLb) {
+        let deltaLb = null, label = "";
+        if (goalMode === "targetWeight") {
+          const t = getTargetWeightLb();
+          if (t) { deltaLb = Math.abs(t - weightLb); label = `${deltaLb.toFixed(1)} lb change at ${weeklyLb} lb/week.`; }
+        } else if (goalMode === "targetBodyFat") {
+          const cur = num(bodyFatInput.value), tgt = num(targetBodyFatInput.value);
+          if (cur && tgt) {
+            const lean = weightLb * (1 - cur / 100);
+            deltaLb = Math.abs(lean / (1 - tgt / 100) - weightLb);
+            label = `Assumes lean mass holds. ${deltaLb.toFixed(1)} lb change at ${weeklyLb} lb/week.`;
+          }
+        }
+        if (deltaLb === null) return { text: "", detail: "" };
+        if (dg === "maintain" || deltaLb < 0.5) return { text: "You're already there", detail: "Current and target are effectively the same." };
+        if (!weeklyLb) return { text: "", detail: "" };
+        const weeks = deltaLb / weeklyLb;
+        const text = weeks < 8 ? `${Math.round(weeks)} weeks` : `${Math.round(weeks)} weeks · about ${(weeks / 4.345).toFixed(1)} months`;
+        return { text, detail: label };
       }
 
-      function parseQuickProfileText() {
-        const raw = quickProfileInputEl?.value?.trim();
-        if (!raw) {
-          setQuickProfileStatus("Add details first, then parse.", true);
-          return;
-        }
-
-        const text = raw.toLowerCase();
-        let applied = 0;
-
-        // "34F" / "28 m" shorthand — a bounded number+letter token gives us both age and sex.
-        const shorthandMatch = text.match(/(?:^|[\s,(])(\d{1,3})\s?(m|f)(?=$|[\s,.)])/);
-
-        // Sex — test female first so it wins over the "male" contained inside "female".
-        if (/\bfemale\b|\bwoman\b|\bwomen\b|\bgirl\b/.test(text) || (shorthandMatch && shorthandMatch[2] === "f")) {
-          sexEl.value = "female";
-          applied += 1;
-        } else if (/\bmale\b|\bman\b|\bmen\b|\bguy\b|\bboy\b/.test(text) || (shorthandMatch && shorthandMatch[2] === "m")) {
-          sexEl.value = "male";
-          applied += 1;
-        }
-
-        // Age — "34yo", "34 years old", "34-year-old", "aged 34", "age: 34", or the shorthand above.
-        const ageMatch =
-          text.match(/(\d{1,3})[\s-]*(?:years?[\s-]*old|yrs?\.?[\s-]*old|yo\b|y\/o\b|yrs?\b)/) ||
-          text.match(/\bage[d]?\s*[:=-]?\s*(\d{1,3})\b/);
-        if (ageMatch) {
-          ageEl.value = ageMatch[1];
-          applied += 1;
-        } else if (shorthandMatch) {
-          ageEl.value = shorthandMatch[1];
-          applied += 1;
-        }
-
-        // Body weight — a number followed by a weight unit (lb / lbs / pounds / # / kg / kilos).
-        const lbMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:lbs?|pounds?|#)/);
-        const kgMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*(?:kgs?|kilos?|kilograms?)\b/);
-        if (lbMatch) {
-          setUnit("us");
-          weightLbEl.value = lbMatch[1];
-          applied += 1;
-        } else if (kgMatch) {
-          setUnit("metric");
-          weightKgEl.value = kgMatch[1];
-          applied += 1;
-        }
-
-        // Height — feet/inches ("5'7", "5 ft 7 in"), inches only ("67 in"), centimetres, or metres ("1.75 m").
-        const usHeightMatch = text.match(/(\d)\s*(?:ft|feet|foot|')\s*(\d{1,2})?\s*(?:in|ins|inches|")?/);
-        const inchesOnlyMatch = text.match(/(\d{2})\s*(?:in|ins|inches|")\b/);
-        const cmMatch = text.match(/(\d{3}(?:\.\d+)?)\s*(?:cm|centimet(?:er|re)s?)\b/);
-        const metreMatch = text.match(/(\d)\.(\d{1,2})\s*m\b/);
-        if (usHeightMatch) {
-          setUnit("us");
-          heightFtEl.value = usHeightMatch[1];
-          heightInEl.value = usHeightMatch[2] || "0";
-          applied += 1;
-        } else if (inchesOnlyMatch) {
-          setUnit("us");
-          const totalIn = parseInt(inchesOnlyMatch[1], 10);
-          heightFtEl.value = String(Math.floor(totalIn / 12));
-          heightInEl.value = String(totalIn % 12);
-          applied += 1;
-        } else if (cmMatch) {
-          setUnit("metric");
-          heightCmEl.value = cmMatch[1];
-          applied += 1;
-        } else if (metreMatch) {
-          setUnit("metric");
-          heightCmEl.value = String(Math.round(parseFloat(`${metreMatch[1]}.${metreMatch[2]}`) * 100));
-          applied += 1;
-        }
-
-        // Order matters: qualified levels ("moderately/lightly active") must be tested before bare "active".
-        const activityMap = [
-          { pattern: /\bvery active\b|hard training|physical job|athlete/, value: "veryActive" },
-          { pattern: /\bmoderate(?:ly)?\b/, value: "moderate" },
-          { pattern: /\blight(?:ly)?\b/, value: "light" },
-          { pattern: /\bactive\b/, value: "active" },
-          { pattern: /\bsedentary\b|little exercise|desk job|no exercise/, value: "sedentary" },
-        ];
-        const matchedActivity = activityMap.find((item) => item.pattern.test(text));
-        if (matchedActivity) {
-          activityEl.value = matchedActivity.value;
-          applied += 1;
-        }
-
-        if (/\b(?:lose|losing|cut(?:ting)?|shred(?:ding)?|lean out|leaning out|fat loss|deficit|slim down)\b/.test(text)) {
-          setGoalMode("standard"); setGoal("lose"); applied += 1;
-        } else if (/\b(?:gain|gaining|bulk(?:ing)?|build(?:ing)?|mass|surplus|grow|put on)\b/.test(text)) {
-          setGoalMode("standard"); setGoal("gain"); applied += 1;
-        } else if (/\b(?:maintain|maintenance|recomp(?:osition)?|stay the same|hold)\b/.test(text)) {
-          setGoalMode("standard"); setGoal("maintain"); applied += 1;
-        }
-
-        const targetWeightLbMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*(?:lb|lbs|pounds?)/);
-        const targetWeightKgMatch = text.match(/target(?:\s*weight)?[^0-9]*(\d{2,3}(?:\.\d+)?)\s*kg\b/);
-        if (targetWeightLbMatch) {
-          setGoalMode("targetWeight");
-          setUnit("us");
-          targetWeightLbEl.value = targetWeightLbMatch[1];
-          applied += 1;
-        } else if (targetWeightKgMatch) {
-          setGoalMode("targetWeight");
-          setUnit("metric");
-          targetWeightKgEl.value = targetWeightKgMatch[1];
-          applied += 1;
-        }
-
-        const targetBodyFatMatch = text.match(/target(?:\s*body\s*fat)?[^0-9]*(\d{1,2}(?:\.\d+)?)\s*%/);
-        if (targetBodyFatMatch && /body\s*fat/.test(text)) {
-          setGoalMode("targetBodyFat");
-          targetBodyFatEl.value = targetBodyFatMatch[1];
-          applied += 1;
-        }
-
-        const currentBodyFatMatch = text.match(/(?:body\s*fat|bf)[^0-9]*(\d{1,2}(?:\.\d+)?)\s*%/);
-        if (currentBodyFatMatch) {
-          bodyFatEl.value = currentBodyFatMatch[1];
-          applied += 1;
-        }
-
-        updateWeeklyByTargets();
-        updateIdealBodyWeightPreview();
-        setQuickProfileStatus(applied > 0 ? `Parsed ${applied} field${applied === 1 ? "" : "s"} from your text.` : "Could not find known values. Try including units like lbs/kg and ft/in or cm.", applied === 0);
-      }
-
-      function calculate() {
-        hide(weightErrorEl);
-        hide(ageErrorEl);
-        hide(heightErrorEl);
-        hide(bodyFatErrorEl);
-        hide(targetWeightErrorEl);
-        hide(targetBodyFatErrorEl);
-
-        const age = parseInt(ageEl.value, 10);
+      function render() {
+        const isUS = unit === "us";
         const { weightLb, totalInches } = getInputsAsLbsAndInches();
-        const bodyFat = parseFloat(bodyFatEl.value);
-        const targetWeightLb = getTargetWeightLbs();
-        const targetBodyFat = parseFloat(targetBodyFatEl.value);
+        const age = num(ageInput.value);
+        const isMale = sex === "male";
+        const bodyFat = num(bodyFatInput.value);
+        const targetWeightLb = getTargetWeightLb();
+        const targetBodyFat = num(targetBodyFatInput.value);
 
-        let hasError = false;
+        const kg = weightLb * LB;
+        const cm = totalInches * 2.54;
+        const bmr = 10 * kg + 6.25 * cm - 5 * age + (isMale ? 5 : -161);
+        const tdee = bmr * (ACT_FACTORS[activity] || 1.55);
 
-        if (!weightLb || weightLb <= 0) {
-          show(weightErrorEl);
-          hasError = true;
+        const dg = inferGoalFromTargets(weightLb, bodyFat, targetWeightLb, targetBodyFat);
+        const weeklyLb = num(weeklySelect.value);
+
+        weeklyWrap.hidden = dg === "maintain";
+        if (dg !== "maintain") {
+          const values = dg === "gain" ? [0.25, 0.5, 0.75, 1] : [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
+          populateWeeklyOptions(values, dg);
         }
+        const weeklyLbFinal = num(weeklySelect.value);
 
-        if (!age || age < 10 || age > 100) {
-          show(ageErrorEl);
-          hasError = true;
+        let target = tdee;
+        if (dg === "lose") target = tdee - weeklyLbFinal * 500;
+        if (dg === "gain") target = tdee + weeklyLbFinal * 300;
+
+        const minCal = isMale ? 1500 : 1200;
+        const requested = target;
+        const raised = requested < minCal;
+        target = Math.max(minCal, target);
+
+        const proteinPerLb = dg === "maintain" ? 1.0 : 1.1;
+        const wanted = weightLb * proteinPerLb;
+        let protein = Math.min(wanted, 180, (target * 0.35) / 4);
+        const keto = macroStyle === "keto";
+        const fatPct = keto ? 0.6 : dg === "lose" ? 0.25 : dg === "gain" ? 0.3 : 0.28;
+        const fatMin = keto ? 70 : 45;
+        let fat = Math.max(fatMin, (target * fatPct) / 9);
+
+        let pCal = protein * 4, fCal = fat * 9;
+        if (pCal + fCal > target) {
+          fat = Math.max(fatMin, (target - pCal) / 9); fCal = fat * 9;
+          if (pCal + fCal > target) { protein = Math.max(0, (target - fCal) / 4); pCal = protein * 4; }
         }
+        let carbs = Math.max(0, (target - pCal - fCal) / 4);
+        if (keto) { carbs = 0; fCal = Math.max(0, target - pCal); fat = fCal / 9; }
+        const cCal = carbs * 4;
 
-        if (!totalInches || totalInches < 48 || totalInches > 84) {
-          show(heightErrorEl);
-          hasError = true;
-        }
-
-        if (bodyFatEl.value && (isNaN(bodyFat) || bodyFat < 3 || bodyFat > 70)) {
-          show(bodyFatErrorEl);
-          hasError = true;
-        }
-
-        if (goalMode === "targetWeight") {
-          if (!targetWeightLb || targetWeightLb <= 0) {
-            show(targetWeightErrorEl);
-            hasError = true;
-          }
-        }
-
-        if (goalMode === "targetBodyFat") {
-          if (!targetBodyFat || targetBodyFat < 3 || targetBodyFat > 70) {
-            show(targetBodyFatErrorEl);
-            hasError = true;
-          }
-          if (!bodyFat || bodyFat < 3 || bodyFat > 70) {
-            show(bodyFatErrorEl);
-            hasError = true;
-          }
-        }
-
-        if (hasError) return;
-
-        // Conversions for BMR
-        const weightKg = weightLb * 0.45359237;
-        const heightCm = totalInches * 2.54;
-
-        // Mifflin-St Jeor BMR
-        const isMale = sexEl.value === "male";
-        const bmr = isMale
-          ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
-          : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-
-        const tdee = bmr * activityFactors[activityEl.value];
-
-        // Weekly change adjustment
-        const weeklyChangeLb = parseFloat(weeklyEl.value || "0");
-        const derivedGoal = inferGoalFromTargets(weightLb, bodyFat, targetWeightLb, targetBodyFat);
-        let targetCalories = tdee;
-
-        if (derivedGoal === "lose") targetCalories = tdee - weeklyChangeLb * 500; // ~500/day per 1 lb/week
-        if (derivedGoal === "gain") targetCalories = tdee + weeklyChangeLb * 300;
-
-        let timelineWeeks = null;
-        let timelineSummary = "";
-        let timelineAssumption = "";
-
-        if (goalMode === "targetWeight") {
-          const deltaLb = Math.abs(targetWeightLb - weightLb);
-          if (derivedGoal === "maintain" || deltaLb < 0.05) {
-            timelineWeeks = 0;
-            timelineSummary = "Target Weight Timeline";
-            timelineAssumption = "Current and target weight are effectively the same.";
-          } else if (weeklyChangeLb > 0) {
-            timelineWeeks = deltaLb / weeklyChangeLb;
-            timelineSummary = "Target Weight Timeline";
-            timelineAssumption = `Estimated using ${weeklyChangeLb} lb/week and a ${deltaLb.toFixed(1)} lb change.`;
-          }
-        } else if (goalMode === "targetBodyFat" && bodyFat > 0 && targetBodyFat > 0 && targetBodyFat < 100) {
-          const currentLeanMassLb = weightLb * (1 - bodyFat / 100);
-          const targetWeightFromBodyFat = currentLeanMassLb / (1 - targetBodyFat / 100);
-          const deltaLb = Math.abs(targetWeightFromBodyFat - weightLb);
-
-          if (derivedGoal === "maintain" || deltaLb < 0.05) {
-            timelineWeeks = 0;
-            timelineSummary = "Target Body Fat Timeline";
-            timelineAssumption = "Current and target body fat are effectively the same.";
-          } else if (weeklyChangeLb > 0) {
-            timelineWeeks = deltaLb / weeklyChangeLb;
-            timelineSummary = "Target Body Fat Timeline";
-            timelineAssumption = `Assumes lean mass is maintained. Estimated ${deltaLb.toFixed(1)} lb change at ${weeklyChangeLb} lb/week.`;
-          }
-        }
-
-        // Daily minimum calories (Male 1500 / Female 1200) + warning
-        const minCalories = isMale ? 1500 : 1200;
-        const requestedCalories = targetCalories;
-        const wasBelowMin = requestedCalories < minCalories;
-
-        targetCalories = Math.max(minCalories, targetCalories);
-
-        if (wasBelowMin) {
-          requestedCaloriesOut.textContent = Math.round(requestedCalories);
-          minCaloriesOut.textContent = minCalories;
-          show(minCalWarningEl);
-        } else {
-          hide(minCalWarningEl);
-        }
-
-        // --- MACROS ---
-        // Protein priority: ~1g/lb+, capped by 180g OR 35% calories (whichever comes first)
-const proteinPerLb =
-  derivedGoal === "lose" ? 1.10 :
-  derivedGoal === "gain" ? 1.10 :  // or 1.10 if you want
-  1.00;
-        const proteinTarget = weightLb * proteinPerLb;
-
-        const proteinHardCap = 180;
-        const proteinCalCap = (targetCalories * 0.35) / 4;
-
-        let protein = Math.min(proteinTarget, proteinHardCap, proteinCalCap);
-        const proteinCapped = protein < proteinTarget;
-
-        // Fat: % calories + minimum floor
-        const fatPct = macroStyle === "keto"
-          ? 0.60
-          : (derivedGoal === "lose" ? 0.25 : derivedGoal === "gain" ? 0.30 : 0.28);
-        const fatMin = macroStyle === "keto" ? 70 : 45;
-        const fatCalTarget = targetCalories * fatPct;
-
-        let fat = Math.max(fatMin, fatCalTarget / 9);
-
-        // Feasibility guard: if protein+fat exceed calories, reduce fat first, then protein
-        let proteinCals = protein * 4;
-        let fatCals = fat * 9;
-
-        if (proteinCals + fatCals > targetCalories) {
-          const remainingForFat = targetCalories - proteinCals;
-          fat = Math.max(fatMin, remainingForFat / 9);
-          fatCals = fat * 9;
-
-          if (proteinCals + fatCals > targetCalories) {
-            const remainingForProtein = targetCalories - fatCals;
-            protein = Math.max(0, remainingForProtein / 4);
-            proteinCals = protein * 4;
-          }
-        }
-
-        // Carbs fill remaining calories (keto forces 0g carbs)
-        let carbCals = targetCalories - proteinCals - fatCals;
-        let carbs = Math.max(0, carbCals / 4);
-
-        if (macroStyle === "keto") {
-          carbs = 0;
-          carbCals = 0;
-          fatCals = Math.max(0, targetCalories - proteinCals);
-          fat = fatCals / 9;
-        }
-
-        // Round outputs
-        const caloriesR = Math.round(targetCalories);
-        const bmrR = Math.round(bmr);
-        const tdeeR = Math.round(tdee);
+        const caloriesR = Math.round(target);
         const proteinR = Math.round(protein);
-        const fatR = Math.round(fat);
         const carbsR = Math.round(carbs);
+        const fatR = Math.round(fat);
+        const proteinShare = caloriesR ? Math.round((pCal / caloriesR) * 100) : 0;
+        const carbsShare = caloriesR ? Math.round((cCal / caloriesR) * 100) : 0;
+        const fatShare = caloriesR ? Math.round((fCal / caloriesR) * 100) : 0;
+        const proteinCapped = protein < wanted - 0.5;
 
-        caloriesOut.textContent = caloriesR;
-        bmrOut.textContent = bmrR;
-        tdeeOut.textContent = tdeeR;
-        proteinOut.textContent = proteinR;
-        carbsOut.textContent = carbsR;
-        fatOut.textContent = fatR;
-        renderChangeSummary({
-          calories: caloriesR,
-          protein: proteinR,
-          carbs: carbsR,
-          fat: fatR,
-        });
+        el("caloriesOut").textContent = caloriesR.toLocaleString();
+        el("bmrOut").textContent = Math.round(bmr).toLocaleString();
+        el("tdeeOut").textContent = Math.round(tdee).toLocaleString();
+        el("directionOut").textContent = dg;
+        el("proteinOut").textContent = proteinR;
+        el("carbsOut").textContent = carbsR;
+        el("fatOut").textContent = fatR;
+        el("proteinShareOut").textContent = proteinShare;
+        el("carbsShareOut").textContent = carbsShare;
+        el("fatShareOut").textContent = fatShare;
+        el("proteinBar").style.width = Math.max(0, Math.min(100, proteinShare)) + "%";
+        el("carbsBar").style.width = Math.max(0, Math.min(100, carbsShare)) + "%";
+        el("fatBar").style.width = Math.max(0, Math.min(100, fatShare)) + "%";
 
-        // Shares
-        const proteinPct = Math.round((protein * 4 / targetCalories) * 100);
-        const proteinShare = Math.round((proteinR * 4 / caloriesR) * 100);
-        const carbsShare = Math.round((carbsR * 4 / caloriesR) * 100);
-        const fatShare = Math.round((fatR * 9 / caloriesR) * 100);
+        const paceNoteText = dg === "lose" && weeklyLbFinal > 1
+          ? "Losing more than about 1 lb a week is aggressive — at that pace you tend to give up muscle with the fat."
+          : dg === "gain" && weeklyLbFinal > 0.5
+            ? "Gaining more than about 0.5 lb a week is fast — the extra tends to arrive as fat. A slower bulk stays leaner."
+            : proteinCapped
+              ? `Protein was capped at ${proteinShare}% of calories to keep the split sustainable.`
+              : "";
+        paceNote.textContent = paceNoteText;
+        paceNote.hidden = !paceNoteText;
 
-        proteinPctOut.textContent = proteinPct;
-        proteinShareOut.textContent = proteinShare;
-        carbsShareOut.textContent = carbsShare;
-        fatShareOut.textContent = fatShare;
+        const tl = timelineFor(dg, weeklyLbFinal, weightLb);
+        el("timelineOut").textContent = tl.text;
+        el("timelineDetailOut").textContent = tl.detail;
+        el("timelineCard").hidden = !tl.text;
 
-        updateIdealBodyWeightPreview();
+        el("warningCard").hidden = !raised;
+        if (raised) {
+          el("warningTextOut").textContent = `Your settings landed at ${Math.round(requested).toLocaleString()} kcal, below the ${minCal.toLocaleString()} kcal daily floor for your sex. Calories were raised to the floor.`;
+        }
 
-        if (proteinCapped) show(proteinCapBox);
-        else hide(proteinCapBox);
+        updateIdealBodyWeights();
 
-        renderTimeline(timelineWeeks, timelineSummary, timelineAssumption);
-
-        show(resultsEl);
         lastSavedOutputs = { calories: caloriesR, protein: proteinR, carbs: carbsR, fat: fatR };
-        updateCalcButtonLabel();
       }
 
-      function saveTargetsToLedger() {
-        const calories = Number(caloriesOut.textContent || 0);
-        const protein = Number(proteinOut.textContent || 0);
-        const carbs = Number(carbsOut.textContent || 0);
-        const fat = Number(fatOut.textContent || 0);
-
-        if (!calories || !protein || !fat || carbs < 0) {
-          ledgerSyncStatus.textContent = "Run Calculate Macros first so we have targets to save.";
-          return;
+      // Units
+      const unitUSBtn = el("unitUS"), unitMetricBtn = el("unitMetric");
+      function setUnit(next) {
+        if (next === unit) return;
+        const conv = (v, toMetric) => { const n = parseFloat(v); return isFinite(n) ? String(Math.round(toMetric ? n * LB : n / LB)) : ""; };
+        const toMetric = next === "metric";
+        weightInput.value = conv(weightInput.value, toMetric);
+        targetWeightInput.value = conv(targetWeightInput.value, toMetric);
+        if (toMetric) {
+          const inches = num(heightFtInput.value) * 12 + num(heightInInput.value);
+          if (inches) heightCmInput.value = String(Math.round(inches * 2.54));
+        } else {
+          const inches = num(heightCmInput.value) / 2.54;
+          if (inches) { heightFtInput.value = String(Math.floor(inches / 12)); heightInInput.value = String(Math.round(inches % 12)); }
         }
-
-        const payload = {
-          calories,
-          protein,
-          carbs,
-          fat,
-          source: "Macro Calculator",
-          savedAt: new Date().toISOString(),
-        };
-
-        localStorage.setItem(LEDGER_TARGETS_KEY, JSON.stringify(payload));
-        ledgerSyncStatus.textContent = "Saved. Open Split Sculptor to review your macro targets in Step 8.";
+        unit = next;
+        setSeg(unit === "us" ? unitUSBtn : unitMetricBtn, [unitUSBtn, unitMetricBtn]);
+        heightWrapUS.hidden = unit !== "us";
+        heightWrapMetric.hidden = unit === "us";
+        weightUnitLabel.textContent = unit === "us" ? "(lbs)" : "(kg)";
+        targetWeightUnitLabel.textContent = unit === "us" ? "(lbs)" : "(kg)";
+        weightInput.placeholder = unit === "us" ? "e.g. 182" : "e.g. 83";
+        targetWeightInput.placeholder = unit === "us" ? "e.g. 170" : "e.g. 77";
+        render();
       }
+      unitUSBtn.addEventListener("click", () => setUnit("us"));
+      unitMetricBtn.addEventListener("click", () => setUnit("metric"));
 
-      function saveMacroToCoachClient() {
-        const clientId = getCoachSelectedClientId();
-        if (!clientId) {
-          setCoachMacroStatus("Select a client first.", true);
-          return;
-        }
-        const payload = collectStoredMacroData();
-        if (!payload?.outputs?.calories) {
-          setCoachMacroStatus("Run Calculate Macros before saving to a client.", true);
-          return;
-        }
-        const notes = document.getElementById("coachMacroNotes").value.trim();
-        const result = coachApi.saveToolData?.(clientId, COACH_TOOL_KEY, {
-          savedValues: payload,
-          coachNotes: notes,
+      // Sex
+      const sexMaleBtn = el("sexMale"), sexFemaleBtn = el("sexFemale");
+      sexMaleBtn.addEventListener("click", () => { sex = "male"; setSeg(sexMaleBtn, [sexMaleBtn, sexFemaleBtn]); render(); });
+      sexFemaleBtn.addEventListener("click", () => { sex = "female"; setSeg(sexFemaleBtn, [sexMaleBtn, sexFemaleBtn]); render(); });
+
+      // Goal mode
+      const modeStandardBtn = el("modeStandard"), modeWeightBtn = el("modeWeight"), modeBodyFatBtn = el("modeBodyFat");
+      function setGoalMode(mode) {
+        goalMode = mode;
+        setSeg(mode === "standard" ? modeStandardBtn : mode === "targetWeight" ? modeWeightBtn : modeBodyFatBtn,
+          [modeStandardBtn, modeWeightBtn, modeBodyFatBtn]);
+        standardGoalWrap.hidden = mode !== "standard";
+        targetWeightWrap.hidden = mode !== "targetWeight";
+        targetBodyFatWrap.hidden = mode !== "targetBodyFat";
+        render();
+      }
+      modeStandardBtn.addEventListener("click", () => setGoalMode("standard"));
+      modeWeightBtn.addEventListener("click", () => setGoalMode("targetWeight"));
+      modeBodyFatBtn.addEventListener("click", () => setGoalMode("targetBodyFat"));
+
+      // Goal (standard)
+      const goalLoseBtn = el("goalLose"), goalMaintainBtn = el("goalMaintain"), goalGainBtn = el("goalGain");
+      function setGoal(next) {
+        goal = next;
+        setSeg(next === "lose" ? goalLoseBtn : next === "gain" ? goalGainBtn : goalMaintainBtn,
+          [goalLoseBtn, goalMaintainBtn, goalGainBtn]);
+        render();
+      }
+      goalLoseBtn.addEventListener("click", () => setGoal("lose"));
+      goalMaintainBtn.addEventListener("click", () => setGoal("maintain"));
+      goalGainBtn.addEventListener("click", () => setGoal("gain"));
+
+      // Macro style
+      const styleStandardBtn = el("styleStandard"), styleKetoBtn = el("styleKeto");
+      styleStandardBtn.addEventListener("click", () => { macroStyle = "standard"; setSeg(styleStandardBtn, [styleStandardBtn, styleKetoBtn]); render(); });
+      styleKetoBtn.addEventListener("click", () => { macroStyle = "keto"; setSeg(styleKetoBtn, [styleStandardBtn, styleKetoBtn]); render(); });
+
+      // Physique look buttons
+      document.querySelectorAll(".mc-look-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (!physiqueLookLb) return;
+          const lookLb = physiqueLookLb[btn.dataset.look];
+          if (!lookLb) return;
+          setGoalMode("targetWeight");
+          targetWeightInput.value = String(toDisplayLb(lookLb));
+          render();
         });
-        if (!result?.ok) {
-          setCoachMacroStatus(result?.error || "Could not save macro data.", true);
-          return;
-        }
-        coachApi.setActiveClientId?.(clientId);
-        setCoachMacroStatus(`Saved macro targets to ${result.client.name}.`);
-        syncCoachMacroCard();
-      }
+      });
 
-      function loadMacroFromCoachClient() {
-        const clientId = getCoachSelectedClientId();
-        if (!clientId) {
-          setCoachMacroStatus("Select a client first.", true);
-          return;
-        }
-        const toolRecord = coachApi.loadToolData?.(clientId, COACH_TOOL_KEY);
-        const payload = toolRecord?.savedValues;
-        if (!payload) {
-          setCoachMacroStatus("No saved macro data for this client yet.", true);
-          return;
-        }
-        applyStoredMacroData(payload);
-        lastSavedOutputs = {
-          calories: Number(payload?.outputs?.calories || 0),
-          protein: Number(payload?.outputs?.protein || 0),
-          carbs: Number(payload?.outputs?.carbs || 0),
-          fat: Number(payload?.outputs?.fat || 0),
-        };
-        updateCalcButtonLabel();
-        setCoachMacroStatus(`Loaded saved macro data (updated ${new Date(toolRecord.updatedAt).toLocaleString()}).`);
-      }
+      // Weekly select + free inputs re-render
+      weeklySelect.addEventListener("change", render);
+      [weightInput, ageInput, heightFtInput, heightInInput, heightCmInput, bodyFatInput, targetWeightInput, targetBodyFatInput].forEach((input) => {
+        input.addEventListener("input", render);
+      });
 
-      function createCoachClientFromMacro() {
-        const name = document.getElementById("coachMacroNewClientName").value.trim();
-        if (!name) {
-          setCoachMacroStatus("Enter a full name to create a new client.", true);
+      // Save targets to Split Sculptor ledger
+      el("saveTargetsBtn").addEventListener("click", () => {
+        if (!lastSavedOutputs || !lastSavedOutputs.calories) {
+          el("saveStatusOut").textContent = "Enter your stats first so we have targets to save.";
           return;
         }
-        const result = coachApi.createClient?.({ name });
-        if (!result?.ok) {
-          setCoachMacroStatus(result?.error || "Could not create client.", true);
-          return;
+        const payload = { ...lastSavedOutputs, source: "Macro Calculator", savedAt: new Date().toISOString() };
+        localStorage.setItem(LEDGER_TARGETS_KEY, JSON.stringify(payload));
+        el("saveStatusOut").textContent = `Saved ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" })} — open Split Sculptor to review your targets.`;
+      });
+
+      // Save results as an image
+      el("saveImageBtn").addEventListener("click", async () => {
+        if (typeof window.html2canvas !== "function") return;
+        const statusEl = el("saveStatusOut");
+        const previousStatus = statusEl.textContent;
+        statusEl.textContent = "Preparing image…";
+
+        const capture = document.createElement("div");
+        capture.style.position = "fixed";
+        capture.style.left = "-20000px";
+        capture.style.top = "0";
+        capture.style.width = "420px";
+        capture.style.zIndex = "-1";
+        capture.style.fontFamily = "'Muli','Mulish',system-ui,-apple-system,'Segoe UI',sans-serif";
+        capture.appendChild(el("mcHero").cloneNode(true));
+        capture.appendChild(el("mcMacros").cloneNode(true));
+        capture.querySelectorAll("button").forEach((b) => b.remove());
+        capture.style.display = "flex";
+        capture.style.flexDirection = "column";
+        capture.style.gap = "16px";
+        capture.style.padding = "4px";
+        capture.style.background = "#eaeaee";
+        document.body.appendChild(capture);
+
+        try {
+          const canvas = await window.html2canvas(capture, { backgroundColor: "#eaeaee", scale: 2, useCORS: true });
+          canvas.toBlob((blob) => {
+            if (!blob) { statusEl.textContent = previousStatus; return; }
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "macro-targets.png";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            statusEl.textContent = previousStatus;
+          }, "image/png");
+        } catch (err) {
+          statusEl.textContent = previousStatus;
+        } finally {
+          capture.remove();
         }
-        document.getElementById("coachMacroNewClientName").value = "";
-        coachApi.setActiveClientId?.(result.client.id);
-        syncCoachMacroCard();
-        setCoachMacroStatus(`Created client ${result.client.name}.`);
-      }
+      });
 
       // Init
-      setGoal("maintain");
-      setGoalMode("standard");
-      setMacroStyle("standard");
-      setUnit("us");
-
-      document.getElementById("unitUS").addEventListener("click", () => setUnit("us"));
-      document.getElementById("unitMetric").addEventListener("click", () => setUnit("metric"));
-      parseProfileBtn?.addEventListener("click", parseQuickProfileText);
-
-      lookButtons.forEach((btn) => {
-        btn.addEventListener("click", () => applyLookAsGoal(btn.dataset.look));
-      });
-
-      document.getElementById("goalLose").addEventListener("click", () => setGoal("lose"));
-      document.getElementById("goalMaintain").addEventListener("click", () => setGoal("maintain"));
-      document.getElementById("goalGain").addEventListener("click", () => setGoal("gain"));
-      goalModeStandardBtn.addEventListener("click", () => setGoalMode("standard"));
-      goalModeWeightBtn.addEventListener("click", () => setGoalMode("targetWeight"));
-      goalModeBodyFatBtn.addEventListener("click", () => setGoalMode("targetBodyFat"));
-      macroStyleStandardBtn.addEventListener("click", () => setMacroStyle("standard"));
-      macroStyleKetoBtn.addEventListener("click", () => setMacroStyle("keto"));
-      [weightLbEl, weightKgEl, bodyFatEl, targetWeightLbEl, targetWeightKgEl, targetBodyFatEl].forEach((el) => {
-        el.addEventListener("input", updateWeeklyByTargets);
-      });
-
-      [weightLbEl, weightKgEl, ageEl, heightFtEl, heightInEl, heightCmEl, sexEl].forEach((el) => {
-        el.addEventListener("input", updateIdealBodyWeightPreview);
-        el.addEventListener("change", updateIdealBodyWeightPreview);
-      });
-
-      calcBtn.addEventListener("click", calculate);
-      document.getElementById("saveToLedgerBtn").addEventListener("click", saveTargetsToLedger);
-      document.getElementById("coachMacroSaveBtn")?.addEventListener("click", saveMacroToCoachClient);
-      document.getElementById("coachMacroLoadBtn")?.addEventListener("click", loadMacroFromCoachClient);
-      document.getElementById("coachMacroCreateClientBtn")?.addEventListener("click", createCoachClientFromMacro);
-      document.getElementById("coachMacroClientSelect")?.addEventListener("change", (event) => {
-        coachApi?.setActiveClientId?.(event.target.value);
-      });
-      window.addEventListener("cc-coach-clients-changed", syncCoachMacroCard);
-      window.addEventListener("storage", (event) => {
-        if (!event.key || event.key === "ccCoachClients" || event.key === "ccAdminAuthed") syncCoachMacroCard();
-      });
-      restoreSessionData();
-      updateIdealBodyWeightPreview();
-
-      window.CCCoachExport?.registerTool({
-        toolName: "Macro Calculator",
-        toolSlug: "macro-checkin",
-        buttonTarget: "#macroExportActions",
-        emailButtonClass: "rounded-xl px-4 py-2 font-bold bg-cc-outline text-cc-text hover:opacity-90 transition",
-        downloadButtonClass: "rounded-xl px-4 py-2 font-bold bg-cc-bg ring-1 ring-black/10 hover:bg-black/5 transition",
-        extract: () => {
-          const snapshot = collectStoredMacroData();
-          return {
-            sections: [
-              {
-                title: "Profile",
-                fields: [
-                  { label: "Goal", value: snapshot.profile.goal },
-                  { label: "Goal Mode", value: snapshot.profile.goalMode },
-                  { label: "Units", value: snapshot.profile.unit },
-                  { label: "Macro Style", value: snapshot.profile.macroStyle },
-                ],
-              },
-              {
-                title: "Inputs",
-                fields: Object.entries(snapshot.inputs || {}).map(([label, value]) => ({ label, value: String(value || "—") })),
-              },
-              {
-                title: "Calculated Outputs",
-                fields: Object.entries(snapshot.outputs || {}).map(([label, value]) => ({ label, value: String(value || "—") })),
-              },
-            ],
-          };
-        },
-      });
+      buildActivityRows();
+      activityListEl.querySelector('[data-activity="moderate"]').classList.add("is-active");
+      render();
     </script>
-  
-    <footer class="w-full px-5 pb-5 sm:px-8">
-      <p class="text-center text-xs text-cc-text/70 sm:text-sm">© 2026 Chasing Change — 1% better every day.</p>
-    </footer>
-
   </body>
 </html>
