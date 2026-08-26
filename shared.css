@@ -465,13 +465,10 @@ input[type="button"] {
   font-family: var(--cc-heading-font);
   font-weight: 700;
   color: #0b2b47;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0) 42%),
-    linear-gradient(160deg, var(--cc-glass-1) 0%, var(--cc-glass-2) 55%, var(--cc-glass-3) 100%);
+  background: #ffffff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -8px 14px rgba(120, 170, 210, 0.25),
-    0 8px 20px rgba(31, 84, 130, 0.16);
+    0 8px 20px rgba(7, 31, 53, 0.1);
   transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
 }
 
@@ -483,8 +480,7 @@ input[type="button"]:hover {
   filter: brightness(1.03);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -8px 14px rgba(120, 170, 210, 0.3),
-    0 12px 26px rgba(31, 84, 130, 0.22);
+    0 12px 26px rgba(7, 31, 53, 0.14);
 }
 
 .cc-btn:active,
@@ -494,8 +490,7 @@ input[type="button"]:active {
   transform: translateY(0);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 4px 10px rgba(31, 84, 130, 0.2),
-    0 4px 10px rgba(31, 84, 130, 0.14);
+    0 4px 10px rgba(7, 31, 53, 0.1);
 }
 
 .cc-btn-primary {
