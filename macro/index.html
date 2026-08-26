@@ -30,6 +30,20 @@
 
       .mc-page * { box-sizing: border-box; }
 
+      .mc-page button {
+        font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .mc-page button:focus {
+        outline: none;
+      }
+
+      .mc-page button:focus-visible {
+        outline: 2px solid #2a9df0;
+        outline-offset: 2px;
+      }
+
       [hidden] { display: none !important; }
 
       .mc-page input[type="number"]::-webkit-outer-spin-button,
@@ -232,7 +246,6 @@
       .mc-activity-row.is-active {
         border: 1px solid #071f35;
         background: rgba(7, 31, 53, 0.035);
-        box-shadow: inset 0 0 0 1px #071f35;
       }
 
       .mc-activity-dot {
@@ -453,13 +466,14 @@
         margin: 10px 0 0;
         font-family: -apple-system, BlinkMacSystemFont, system-ui, Arial, sans-serif;
         font-variant-numeric: tabular-nums;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 76px;
         line-height: 0.95;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.02em;
+        color: #fff;
       }
 
-      .mc-hero-cal span { font-size: 24px; font-weight: 600; color: rgba(255, 255, 255, 0.5); }
+      .mc-hero-cal span { font-size: 24px; font-weight: 700; color: rgba(255, 255, 255, 0.65); }
 
       .mc-hero-stats { margin-top: 28px; display: flex; gap: 34px; flex-wrap: wrap; }
 
@@ -941,7 +955,11 @@
           </button>
         `).join("");
         activityListEl.querySelectorAll(".mc-activity-row").forEach((btn) => {
-          btn.addEventListener("click", () => { activity = btn.dataset.activity; render(); });
+          btn.addEventListener("click", () => {
+            activity = btn.dataset.activity;
+            setSeg(btn, activityListEl.querySelectorAll(".mc-activity-row"));
+            render();
+          });
         });
       }
 
