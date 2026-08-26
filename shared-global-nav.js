@@ -43,6 +43,7 @@
     <div class="cc-global-nav-mobile-panel" id="ccGlobalNavPanel">
       <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
         <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
+        <a href="${root}client-portal/index.html" class="cc-global-nav-link">Portal</a>
         <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
         <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
         <a href="https://chasingchange.beehiiv.com/" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Science of Chasing Change</a>
