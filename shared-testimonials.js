@@ -100,6 +100,15 @@
       ],
     },
     {
+      name: "Owen Bramanti",
+      year: "2026",
+      paragraphs: [
+        "Working with Tyler at the beginning of the year was one of the highlights to jumpstart my 2026. He was able to understand me and meet me where I was at, figuring out what would work best for me and my life. He was able to challenge me in ways that I didn’t think was possible and allowed me to reflect on what exactly I wanted to get out of his program. He constantly pushed me to get better everyday even if it was by 1%. This was what kept me and keeps me going every day when I enter the gym, getting a little bit better each day.",
+        "When I first started I just wanted to lose weight but didn’t know where to start. He was able to uncover a confidence in me that I did not know was there. Now I’ve been getting more active, and have been running up to 9 miles at a time, where at the beginning could barely run 2.",
+        "This journey has definitely been a marathon and not a sprint with some bumps in the road, but Tyler was always there encouraging my progression and making sure to remind me that life happens and that it’s about a balance.",
+      ],
+    },
+    {
       name: "Tommy Allegreto",
       year: "2026",
       note: "Scholarship Recipient",
