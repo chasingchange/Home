@@ -78,6 +78,7 @@
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
     { title: "Founder’s Calendar", core: "Life", url: `${root}founders-calendar/index.html` },
+    { title: "The Companion Chart", core: "Life", url: `${root}companion-chart/index.html` },
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");

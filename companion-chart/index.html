@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chasing Change — The Companion Chart</title>
+    <meta
+      name="description"
+      content="The Companion Chart helps you weigh what matters most in a partner and score how the people in your life measure up."
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Museo+Moderno:wght@500;700&family=Raleway:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+    <script src="../shared-global-nav.js" defer></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cc: {
+                text: "#071f35",
+                bg: "#f5f5f7",
+                outline: "#cceaff",
+                card: "#ffffff",
+              },
+            },
+            fontFamily: {
+              body: ["Muli", "Mulish", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              heading: ["Raleway", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+              brand: ["Museo Moderno", "Raleway", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(7,31,53,0.10)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @media print {
+        .cc-global-nav-wrap,
+        [data-no-print="true"] {
+          display: none !important;
+        }
+
+        body {
+          background: #fff !important;
+        }
+
+        .print-shell {
+          box-shadow: none !important;
+          border: 1px solid rgba(7, 31, 53, 0.12);
+        }
+      }
+
+      .cc-dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 999px;
+        flex: none;
+        border: 1.5px solid rgba(7, 31, 53, 0.18);
+        background: transparent;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .cc-dot.is-filled {
+        background: #071f35;
+        border-color: #071f35;
+      }
+
+      .cc-dot.is-filled.is-heavy {
+        background: #f58b1c;
+        border-color: #f58b1c;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-cc-bg text-cc-text font-body cc-page">
+    <div data-admin-edit-root class="relative cc-page-shell px-4 sm:px-6 py-8 sm:py-10">
+      <div class="mx-auto w-full max-w-7xl">
+        <header class="max-w-3xl px-1 sm:px-2">
+          <p class="font-brand text-sm uppercase tracking-[0.16em] text-cc-text/70">Life Core Tool</p>
+          <h1 class="mt-3 font-heading text-4xl sm:text-5xl font-extrabold">The Companion Chart</h1>
+          <p class="mt-4 text-lg text-cc-text/80 font-heading">
+            Name what matters, weigh it honestly, and see how the people you're considering actually measure up.
+          </p>
+        </header>
+
+        <main class="mt-8 rounded-3xl bg-white shadow-soft ring-1 ring-black/5 p-4 sm:p-6 lg:p-8 print-shell">
+          <div class="overflow-x-auto">
+            <div id="chartGrid" style="min-width: 700px"></div>
+          </div>
+
+          <section data-no-print="true" class="mt-8 flex flex-wrap items-center gap-3">
+            <p class="text-sm text-cc-text/70 flex-1 min-w-[260px]">
+              Weight decides how much a row counts: nice to have counts once, important twice, non-negotiable three
+              times. Your answers save on this device automatically.
+            </p>
+            <button id="copyBtn" type="button" class="rounded-xl px-4 py-2.5 bg-white text-cc-text font-semibold ring-1 ring-black/15 hover:bg-cc-bg">
+              Copy my answers
+            </button>
+            <button id="printBtn" type="button" class="rounded-xl px-4 py-2.5 bg-white text-cc-text font-semibold ring-1 ring-black/15 hover:bg-cc-bg">
+              Print / PDF
+            </button>
+            <button id="resetBtn" type="button" class="rounded-xl px-4 py-2.5 bg-cc-outline text-cc-text font-semibold ring-1 ring-cc-outline/80 hover:opacity-90">
+              Start Over
+            </button>
+          </section>
+          <p id="statusMessage" data-no-print="true" class="mt-2 text-sm text-cc-text/75" aria-live="polite"></p>
+        </main>
+
+        <footer class="mt-6 pb-3">
+          <p class="text-center text-xs sm:text-sm text-cc-text/70">
+            Clarity about what you need makes it a lot easier to recognize who's actually giving it to you.
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const KEY = "cc-companion-chart-v1";
+      const SCALE = 5;
+      const uid = () => Math.random().toString(36).slice(2, 8);
+
+      const seedAttrs = () =>
+        [
+          ["Makes me laugh", 3],
+          ["Emotionally available", 3],
+          ["Treats other people well", 3],
+          ["Drive of their own", 2],
+          ["Wants the same life I want", 2],
+          ["Handles money like an adult", 1],
+        ].map(([label, weight]) => ({ id: uid(), label, weight }));
+
+      const blankPerson = () => ({ id: uid(), name: "", status: "", scores: {} });
+      const seedPeople = () => [blankPerson(), blankPerson(), blankPerson()];
+
+      let attrs = seedAttrs();
+      let people = seedPeople();
+      let copyResetTimer = null;
+
+      const chartGrid = document.getElementById("chartGrid");
+      const statusMessage = document.getElementById("statusMessage");
+      const copyBtn = document.getElementById("copyBtn");
+      const printBtn = document.getElementById("printBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      function load() {
+        try {
+          const d = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (d && Array.isArray(d.attrs) && Array.isArray(d.people) && d.people.length) {
+            attrs = d.attrs;
+            people = d.people;
+          }
+        } catch (e) {}
+      }
+
+      function persist() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify({ attrs, people, savedAt: Date.now() }));
+        } catch (e) {}
+      }
+
+      function pct(person) {
+        let num = 0;
+        let den = 0;
+        attrs.forEach((a) => {
+          den += SCALE * a.weight;
+          num += (person.scores[a.id] || 0) * a.weight;
+        });
+        return den ? Math.round((num / den) * 100) : 0;
+      }
+
+      function tier(value) {
+        if (value >= 78) return { color: "#3aa832", verdict: "Rare air" };
+        if (value >= 58) return { color: "#f58b1c", verdict: "Worth the work" };
+        if (value >= 35) return { color: "#f02348", verdict: "Check your reasons" };
+        return { color: "rgba(7,31,53,0.35)", verdict: "Not it" };
+      }
+
+      function setScore(personId, attrId, value) {
+        const person = people.find((p) => p.id === personId);
+        if (!person) return;
+        const current = person.scores[attrId] || 0;
+        person.scores[attrId] = current === value ? 0 : value;
+        persist();
+        render();
+      }
+
+      function renderPersonHeaderCell(person) {
+        const wrap = document.createElement("div");
+        wrap.className = "flex-1 min-w-[140px] flex flex-col gap-1.5";
+
+        const row = document.createElement("div");
+        row.className = "flex items-center gap-1.5";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = person.name;
+        nameInput.placeholder = "Their name";
+        nameInput.className =
+          "flex-1 min-w-0 border-0 border-b border-black/15 bg-transparent px-0 pb-1 font-heading text-base font-extrabold tracking-tight text-cc-text outline-none focus:border-cc-text";
+        nameInput.addEventListener("input", (e) => {
+          person.name = e.target.value;
+          persist();
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.title = "Remove person";
+        removeBtn.textContent = "×";
+        removeBtn.className = "flex-none text-lg leading-none text-cc-text/30 hover:text-red-600";
+        removeBtn.addEventListener("click", () => {
+          if (people.length <= 1) return;
+          people = people.filter((p) => p.id !== person.id);
+          persist();
+          render();
+        });
+
+        row.append(nameInput, removeBtn);
+
+        const statusInput = document.createElement("input");
+        statusInput.type = "text";
+        statusInput.value = person.status || "";
+        statusInput.placeholder = "Past · present · curious";
+        statusInput.className = "w-full border-0 bg-transparent p-0 text-xs font-bold text-cc-text/50 outline-none";
+        statusInput.addEventListener("input", (e) => {
+          person.status = e.target.value;
+          persist();
+        });
+
+        wrap.append(row, statusInput);
+        return wrap;
+      }
+
+      function renderHeaderRow() {
+        const row = document.createElement("div");
+        row.className = "flex items-end gap-2.5 border-b border-black/10 pb-4";
+
+        const label = document.createElement("div");
+        label.className = "w-[220px] flex-none";
+        label.innerHTML =
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">What matters to me</p>';
+        row.appendChild(label);
+
+        people.forEach((p) => row.appendChild(renderPersonHeaderCell(p)));
+
+        const addWrap = document.createElement("div");
+        addWrap.className = "flex-none w-24 flex justify-end";
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.textContent = "+ Person";
+        addBtn.setAttribute("data-no-print", "true");
+        addBtn.className =
+          "rounded-full border border-black/10 px-3 py-1.5 text-xs font-extrabold text-cc-text/60 hover:border-cc-text hover:text-cc-text whitespace-nowrap";
+        addBtn.addEventListener("click", () => {
+          people.push(blankPerson());
+          persist();
+          render();
+        });
+        addWrap.appendChild(addBtn);
+        row.appendChild(addWrap);
+
+        return row;
+      }
+
+      function renderAttrRow(attr, index) {
+        const row = document.createElement("div");
+        row.className =
+          "flex items-center gap-2.5 py-4 border-b border-black/5" + (index % 2 ? " bg-cc-bg/40" : "");
+
+        const labelCol = document.createElement("div");
+        labelCol.className = "w-[220px] flex-none flex flex-col gap-2";
+
+        const labelRow = document.createElement("div");
+        labelRow.className = "flex items-center gap-1.5";
+
+        const labelInput = document.createElement("input");
+        labelInput.type = "text";
+        labelInput.value = attr.label;
+        labelInput.placeholder = "Attribute";
+        labelInput.className = "flex-1 min-w-0 border-0 bg-transparent p-0 text-sm font-bold text-cc-text outline-none";
+        labelInput.addEventListener("input", (e) => {
+          attr.label = e.target.value;
+          persist();
+        });
+
+        const removeAttrBtn = document.createElement("button");
+        removeAttrBtn.type = "button";
+        removeAttrBtn.title = "Remove attribute";
+        removeAttrBtn.textContent = "×";
+        removeAttrBtn.className = "flex-none text-base leading-none text-cc-text/30 hover:text-red-600";
+        removeAttrBtn.addEventListener("click", () => {
+          attrs = attrs.filter((a) => a.id !== attr.id);
+          persist();
+          render();
+        });
+
+        labelRow.append(labelInput, removeAttrBtn);
+
+        const weightSelect = document.createElement("select");
+        weightSelect.className =
+          "w-[150px] cursor-pointer rounded-full border px-2.5 py-1 font-heading text-[10px] font-extrabold uppercase tracking-wide outline-none " +
+          (attr.weight === 3
+            ? "border-orange-400/60 bg-orange-50 text-orange-600"
+            : attr.weight === 2
+              ? "border-black/10 bg-black/5 text-cc-text"
+              : "border-black/10 bg-black/[0.03] text-cc-text/50");
+        weightSelect.innerHTML = `
+          <option value="1"${attr.weight === 1 ? " selected" : ""}>Nice to have</option>
+          <option value="2"${attr.weight === 2 ? " selected" : ""}>Important</option>
+          <option value="3"${attr.weight === 3 ? " selected" : ""}>Non-negotiable</option>
+        `;
+        weightSelect.addEventListener("change", (e) => {
+          attr.weight = parseInt(e.target.value, 10) || 1;
+          persist();
+          render();
+        });
+
+        labelCol.append(labelRow, weightSelect);
+        row.appendChild(labelCol);
+
+        people.forEach((person) => {
+          const cell = document.createElement("div");
+          cell.className = "flex-1 min-w-[140px] flex items-center gap-1.5";
+          const value = person.scores[attr.id] || 0;
+          for (let n = 1; n <= SCALE; n += 1) {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.title = `${n} of ${SCALE}`;
+            dot.className = "cc-dot" + (n <= value ? " is-filled" : "") + (attr.weight === 3 ? " is-heavy" : "");
+            dot.addEventListener("click", () => setScore(person.id, attr.id, n));
+            cell.appendChild(dot);
+          }
+          row.appendChild(cell);
+        });
+
+        const spacer = document.createElement("div");
+        spacer.className = "flex-none w-24";
+        row.appendChild(spacer);
+
+        return row;
+      }
+
+      function renderAddAttrRow() {
+        const row = document.createElement("div");
+        row.setAttribute("data-no-print", "true");
+        row.className = "flex items-center gap-2.5 pt-4";
+        const labelCol = document.createElement("div");
+        labelCol.className = "w-[220px] flex-none";
+        const addAttrBtn = document.createElement("button");
+        addAttrBtn.type = "button";
+        addAttrBtn.textContent = "+ Add an attribute";
+        addAttrBtn.className = "font-heading text-sm font-extrabold text-cc-text/50 hover:text-cc-text";
+        addAttrBtn.addEventListener("click", () => {
+          attrs.push({ id: uid(), label: "", weight: 2 });
+          persist();
+          render();
+        });
+        labelCol.appendChild(addAttrBtn);
+        row.appendChild(labelCol);
+        return row;
+      }
+
+      function renderMatchRow() {
+        const row = document.createElement("div");
+        row.className = "mt-4 flex items-end gap-2.5 rounded-2xl bg-cc-bg/60 px-1 py-5";
+
+        const label = document.createElement("div");
+        label.className = "w-[220px] flex-none pl-3";
+        label.innerHTML =
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">Weighted match</p>';
+        row.appendChild(label);
+
+        people.forEach((person) => {
+          const value = pct(person);
+          const t = tier(value);
+
+          const cell = document.createElement("div");
+          cell.className = "flex-1 min-w-[140px]";
+
+          const numRow = document.createElement("div");
+          numRow.className = "flex items-baseline gap-1";
+          numRow.innerHTML = `
+            <span style="color:${t.color}" class="text-3xl font-semibold tabular-nums tracking-tight">${value}</span>
+            <span class="text-xs font-bold text-cc-text/40">%</span>
+          `;
+
+          const track = document.createElement("div");
+          track.className = "mt-2 h-[3px] rounded-full bg-black/10 overflow-hidden";
+          const fill = document.createElement("div");
+          fill.style.width = `${value}%`;
+          fill.style.background = t.color;
+          fill.className = "h-full rounded-full transition-all";
+          track.appendChild(fill);
+
+          const verdict = document.createElement("p");
+          verdict.className = "mt-2 font-heading text-[9px] font-extrabold uppercase tracking-wide text-cc-text/40";
+          verdict.textContent = t.verdict;
+
+          cell.append(numRow, track, verdict);
+          row.appendChild(cell);
+        });
+
+        const spacer = document.createElement("div");
+        spacer.className = "flex-none w-24";
+        row.appendChild(spacer);
+
+        return row;
+      }
+
+      function render() {
+        chartGrid.innerHTML = "";
+        chartGrid.appendChild(renderHeaderRow());
+        attrs.forEach((attr, i) => chartGrid.appendChild(renderAttrRow(attr, i)));
+        chartGrid.appendChild(renderAddAttrRow());
+        chartGrid.appendChild(renderMatchRow());
+      }
+
+      copyBtn.addEventListener("click", () => {
+        const lines = people.map((person) => {
+          const parts = attrs.map((a) => `${a.label || "Untitled"}: ${person.scores[a.id] || 0}/${SCALE}`);
+          return `${person.name || "Unnamed"} — ${pct(person)}% — ${parts.join(", ")}`;
+        });
+        const text = `The Companion Chart\n\n${lines.join("\n")}`;
+        clearTimeout(copyResetTimer);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            statusMessage.textContent = "Copied to clipboard.";
+            copyResetTimer = setTimeout(() => {
+              statusMessage.textContent = "";
+            }, 2200);
+          })
+          .catch(() => {
+            statusMessage.textContent = "Could not copy. Please try again.";
+          });
+      });
+
+      printBtn.addEventListener("click", () => {
+        window.print();
+      });
+
+      resetBtn.addEventListener("click", () => {
+        attrs = seedAttrs();
+        people = seedPeople();
+        persist();
+        render();
+        statusMessage.textContent = "Chart reset.";
+      });
+
+      load();
+      render();
+    </script>
+  </body>
+</html>
