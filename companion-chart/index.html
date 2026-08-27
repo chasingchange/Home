@@ -126,6 +126,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
     <script>
       const KEY = "cc-companion-chart-v1";
       const SCALE = 5;
@@ -169,86 +170,23 @@
         try {
           localStorage.setItem(KEY, JSON.stringify({ attrs, people, savedAt: Date.now() }));
         } catch (e) {}
-        queueCloudSave();
+        if (toolSync) toolSync.save();
       }
 
-      // ─── Cross-device sync (Supabase) ──────────────────────────────────
-      const TOOL_KEY = "companion-chart";
-      const SUPABASE_URL = "https://datrgkjqwyfcbmtwwifm.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9";
-      const sb =
-        window.supabase && window.supabase.createClient
-          ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-          : null;
-
-      let currentUser = null;
-      let cloudSaveTimer = null;
-      let pullingFromCloud = false;
-
-      function updateSyncUI() {
-        if (!syncStatus) return;
-        if (currentUser) {
-          syncStatus.textContent = `Signed in as ${currentUser.email} — synced across your devices.`;
-        } else {
-          syncStatus.innerHTML =
-            'Saved on this device only. <a href="../client-portal/index.html" class="underline font-semibold">Sign in</a> to sync across devices.';
-        }
-      }
-
-      async function pullFromCloud() {
-        if (!sb || !currentUser) return;
-        const { data, error } = await sb
-          .from("tool_saves")
-          .select("data")
-          .eq("user_id", currentUser.id)
-          .eq("tool_key", TOOL_KEY)
-          .maybeSingle();
-
-        if (error) return;
-
-        if (data && data.data && Array.isArray(data.data.attrs) && Array.isArray(data.data.people) && data.data.people.length) {
-          pullingFromCloud = true;
-          attrs = data.data.attrs;
-          people = data.data.people;
-          persist();
-          render();
-          pullingFromCloud = false;
-        } else {
-          // No cloud save yet for this account — push whatever's on this device up.
-          queueCloudSave(true);
-        }
-      }
-
-      function queueCloudSave(immediate) {
-        if (!sb || !currentUser || pullingFromCloud) return;
-        clearTimeout(cloudSaveTimer);
-        const run = () => {
-          sb.from("tool_saves").upsert({
-            user_id: currentUser.id,
-            tool_key: TOOL_KEY,
-            data: { attrs, people },
-            updated_at: new Date().toISOString(),
-          });
-        };
-        if (immediate) run();
-        else cloudSaveTimer = setTimeout(run, 600);
-      }
-
-      async function initSync() {
-        if (!sb) return;
-        const {
-          data: { session },
-        } = await sb.auth.getSession();
-        currentUser = session && session.user ? session.user : null;
-        if (currentUser) await pullFromCloud();
-        updateSyncUI();
-
-        sb.auth.onAuthStateChange(async (_event, session) => {
-          currentUser = session && session.user ? session.user : null;
-          if (currentUser) await pullFromCloud();
-          updateSyncUI();
-        });
-      }
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init("companion-chart", {
+            statusEl: syncStatus,
+            getData: () => ({ attrs, people }),
+            setData: (data) => {
+              if (Array.isArray(data.attrs) && Array.isArray(data.people) && data.people.length) {
+                attrs = data.attrs;
+                people = data.people;
+                persist();
+                render();
+              }
+            },
+          })
+        : null;
 
       function pct(person) {
         let num = 0;
@@ -540,7 +478,6 @@
 
       load();
       render();
-      initSync();
     </script>
   </body>
 </html>

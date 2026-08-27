@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
 
     <style>
       body.cc-page {
@@ -879,6 +881,7 @@
               <a href="../split-sculptor/index.html" class="mc-save-link">Open Split Sculptor</a>
               <button type="button" class="mc-save-btn mc-save-btn--ghost" id="saveImageBtn">Save as image</button>
             </div>
+            <p id="syncStatus" class="mt-2 text-xs text-cc-text/60" aria-live="polite"></p>
           </section>
         </aside>
       </div>
@@ -892,6 +895,13 @@
       const LB = 0.45359237;
       const ACT_FACTORS = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9 };
       const LEDGER_TARGETS_KEY = "physiqueLedgerTargets";
+
+      const targetsSync = window.ToolSync
+        ? window.ToolSync.init("physique-ledger-targets", {
+            statusEl: document.getElementById("syncStatus"),
+            getData: () => JSON.parse(localStorage.getItem(LEDGER_TARGETS_KEY) || "null")
+          })
+        : null;
 
       const ACT_ROWS = [
         { key: "sedentary", label: "Sedentary", sessions: "0 sessions a week", color: "#f02348",
@@ -1273,6 +1283,7 @@
         }
         const payload = { ...lastSavedOutputs, source: "Macro Calculator", savedAt: new Date().toISOString() };
         localStorage.setItem(LEDGER_TARGETS_KEY, JSON.stringify(payload));
+        if (targetsSync) targetsSync.save();
         el("saveStatusOut").textContent = `Saved ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" })} — open Split Sculptor to review your targets.`;
       });
 

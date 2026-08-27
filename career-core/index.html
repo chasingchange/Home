@@ -59,6 +59,8 @@
   </style>
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
   </head>
 
 <body class="font-body antialiased cc-page">
@@ -240,6 +242,7 @@
               <button id="resetBtn" type="button" class="focus-ring rounded-full bg-slate-200 px-5 py-2.5 font-heading font-semibold">Reset</button>
             </div>
             <p id="actionMessage" class="mt-3 text-sm text-brandDark/70"></p>
+            <p id="syncStatus" class="mt-1 text-xs text-brandDark/60" aria-live="polite"></p>
           </section>
         </div>
 
@@ -320,6 +323,7 @@
 
       function saveState() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (toolSync) toolSync.save();
       }
 
       function loadState() {
@@ -332,6 +336,18 @@
           localStorage.removeItem(STORAGE_KEY);
         }
       }
+
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init('5ps-career-fit', {
+            statusEl: document.getElementById('syncStatus'),
+            getData: () => state,
+            setData: (data) => {
+              Object.assign(state, data);
+              renderAll();
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+          })
+        : null;
 
       function updateButtonGroup(selector, selectedValue) {
         document.querySelectorAll(selector).forEach((button) => {

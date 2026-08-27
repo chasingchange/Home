@@ -14,6 +14,8 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="../shared-coach-export.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../shared-tool-sync.js"></script>
 <style>
 :root {
   --bg: #f5f5f7;
@@ -516,11 +518,11 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
             <p class="split-warning">Warning: saving a Split Sculptor view to a quarter replaces any previously saved split data for that same year + quarter.</p>
             <p class="past-split-msg" id="summary-save-msg"></p>
           </div>
-          <p class="step-sub" id="summary-save-login-prompt">Log in to save your summary to a quarter.</p>
+          <p class="step-sub" id="summary-save-login-prompt"><a href="../client-portal/index.html">Sign in</a> to save your summary to a quarter.</p>
         </div>
         <div class="week">
           <h3>Past Macrocycles</h3>
-          <p class="step-sub" id="past-split-login-prompt">Log in to view and manage your saved splits by quarter.</p>
+          <p class="step-sub" id="past-split-login-prompt"><a href="../client-portal/index.html">Sign in</a> to view and manage your saved splits by quarter.</p>
           <div id="past-split-controls-wrap" style="display:none;">
             <div class="past-split-controls">
               <div>
@@ -2361,20 +2363,55 @@ function loadSplitArchive() {
 
 function persistSplitArchive() {
   localStorage.setItem(SPLIT_ARCHIVE_STORAGE_KEY, JSON.stringify(splitArchive));
+  if (splitArchiveSync) splitArchiveSync.save();
   return true;
 }
 
+const splitArchiveSync = window.ToolSync
+  ? window.ToolSync.init('split-sculptor-archive', {
+      getData: () => splitArchive,
+      setData: (data) => {
+        if (data) {
+          splitArchive = data;
+          localStorage.setItem(SPLIT_ARCHIVE_STORAGE_KEY, JSON.stringify(splitArchive));
+          refreshSplitArchiveUi();
+        }
+      }
+    })
+  : null;
+
+// Read-only: latest macro targets, shared with the Macro Calculator and Physique Ledger.
+const macroTargetsSync = window.ToolSync
+  ? window.ToolSync.init('physique-ledger-targets', {
+      setData: (data) => {
+        if (data) localStorage.setItem('physiqueLedgerTargets', JSON.stringify(data));
+      }
+    })
+  : null;
+
+if (window.ToolSync) {
+  window.ToolSync.onUser((user) => {
+    splitSculptorUser = user;
+    syncPastSplitsPanel();
+  });
+}
+
+let splitSculptorUser = null;
+
 function syncPastSplitsPanel() {
   const controls = getArchiveControls();
-  if (controls.loginPrompt) controls.loginPrompt.style.display = 'none';
-  controls.controlsWrap.style.display = 'block';
-  if (controls.summaryLoginPrompt) controls.summaryLoginPrompt.style.display = 'none';
-  controls.summaryControlsWrap.style.display = 'block';
+  const loggedIn = Boolean(splitSculptorUser);
+  if (controls.loginPrompt) controls.loginPrompt.style.display = loggedIn ? 'none' : 'block';
+  controls.controlsWrap.style.display = loggedIn ? 'block' : 'none';
+  if (controls.summaryLoginPrompt) controls.summaryLoginPrompt.style.display = loggedIn ? 'none' : 'block';
+  controls.summaryControlsWrap.style.display = loggedIn ? 'block' : 'none';
   controls.msg.textContent = '';
   controls.saveMsg.textContent = '';
-  renderPastSplitSelectors();
-  renderStartupMacrocycleCard();
-  syncCoachSplitPanel();
+  if (loggedIn) {
+    renderPastSplitSelectors();
+    renderStartupMacrocycleCard();
+    syncCoachSplitPanel();
+  }
 }
 
 function setCoachSplitMessage(message, isError = false) {

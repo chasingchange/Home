@@ -16,6 +16,8 @@
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
     <style>
       :root {
         --bg: #f5f5f7;
@@ -108,6 +110,7 @@
       <header class="hero">
         <h1>Physique Ledger</h1>
         <p>Build one repeatable week in minutes. Then adjust only what changes.</p>
+        <p id="syncStatus" class="no-print" style="margin-top:.35rem;font-size:.75rem;opacity:.65;" aria-live="polite"></p>
       </header>
 
       <section class="card section">
@@ -306,7 +309,38 @@
       function saveState() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets));
+        if (toolSync) toolSync.save();
+        if (targetsSync) targetsSync.save();
       }
+
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init("physique-ledger", {
+            statusEl: document.getElementById("syncStatus"),
+            getData: () => state,
+            setData: (data) => {
+              if (data) {
+                state = { ...clone(defaultState), ...data, coach: { ...defaultState.coach, ...(data.coach || {}) }, targets: { ...defaultState.targets, ...(data.targets || {}) } };
+                days.forEach((d) => {
+                  if (!state.weekPlan[d]) state.weekPlan[d] = blankMealPlan();
+                  meals.forEach((m) => { if (!Array.isArray(state.weekPlan[d][m])) state.weekPlan[d][m] = []; });
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets));
+                renderAll();
+              }
+            }
+          })
+        : null;
+
+      // Shared targets, also written by the Macro Calculator, read by Split Sculptor.
+      const targetsSync = window.ToolSync
+        ? window.ToolSync.init("physique-ledger-targets", {
+            getData: () => JSON.parse(localStorage.getItem(TARGETS_KEY) || "null"),
+            setData: (data) => {
+              if (data) localStorage.setItem(TARGETS_KEY, JSON.stringify(data));
+            }
+          })
+        : null;
 
       function allFoods() { return [...builtInFoods, ...state.customFoods, ...state.recipes.map(recipeAsFood)]; }
       function allSearchItems() {

@@ -18,6 +18,8 @@
     />
     <link rel="stylesheet" href="../../shared.css" />
     <script src="../../shared-global-nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../../shared-tool-sync.js"></script>
 
     <script>
       tailwind.config = {
@@ -165,6 +167,7 @@
             </div>
 
             <p id="statusText" class="mt-4 rounded-xl border border-black/10 bg-white p-3 text-sm font-semibold"></p>
+            <p id="syncStatus" class="mt-2 text-xs text-cc-text/60" aria-live="polite"></p>
           </div>
         </section>
       </main>
@@ -208,7 +211,21 @@
 
       const saveProject = (project) => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+        if (toolSync) toolSync.save();
       };
+
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init("scriptor-system", {
+            statusEl: document.getElementById("syncStatus"),
+            getData: () => loadProject(),
+            setData: (data) => {
+              if (data) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                render();
+              }
+            }
+          })
+        : null;
 
       const getExpectedRatio = (startDateISO, dueDateISO) => {
         const start = new Date(`${startDateISO}T00:00:00`);
