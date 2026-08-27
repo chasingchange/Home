@@ -39,7 +39,6 @@
 
   var details = {
     plan:      { kicker:"This Week", title:"Week 14 assignments", lede:"Six assignments across three active cores. Everything here was set on Thursday's call.", rows:[ {label:"Body — training",meta:"4 sessions",body:"Squat wave 3 on Monday, upper push Tuesday, lower accessory Friday, optional conditioning Saturday."},{label:"Body — nutrition",meta:"2,650 kcal",body:"Four weekday hits is the target. Use the five-meal rotation."},{label:"Mind — weekly reset",meta:"Sunday",body:"Three tasks, written down, before the week starts."},{label:"Art — creative block",meta:"90 min",body:"One block, phone in another room, project roadmap open."},{label:"Soul — sleep anchor",meta:"5 nights",body:"Lights out by 10:45. This is the anchor the rest of the week hangs on."} ] },
-    cores:     { kicker:"Six Core System", title:"Structure installed to date", lede:"Each core is scored on structure in place, not effort spent.", rows:[ {label:"Body Core",meta:"78%",body:"Personalized weekly split, calorie targets, five-meal rotation, and travel matrix live."},{label:"Mind Core",meta:"64%",body:"Three-task execution framework and weekly reset running."},{label:"Art Core",meta:"41%",body:"Weekly creative block on the calendar four weeks running."},{label:"Soul Core",meta:"52%",body:"Sleep rhythm anchoring and weekly reflection in place."},{label:"Career Core",meta:"70%",body:"5Ps alignment audit complete — place unresolved."},{label:"Life Core",meta:"35%",body:"Opens in week 18. Calendar architecture is the first block."} ] },
     session:   { kicker:"Upcoming Session", title:"Thursday, 9:00 AM", lede:"45 minutes with Tyler.", rows:[ {label:"Agenda",meta:"45 min",body:"Travel week adjustments, the 5Ps place question, and Art block cadence."},{label:"Bring with you",meta:"Prep",body:"Your pay/place notes and which two assignments felt heaviest."},{label:"Reschedule window",meta:"Open",body:"Any slot Tuesday through Friday before noon."} ] },
     notes:     { kicker:"Session Notes", title:"Recaps & decisions", lede:"Every call ends with a written recap.", rows:[ {label:"Week 13 recap",meta:"Aug 14",body:"Held Art block at weekly. Lower session moved to Friday for travel."},{label:"Week 12 recap",meta:"Aug 7",body:"Squat wave reset. Added five-meal rotation."},{label:"Week 11 recap",meta:"Jul 31",body:"5Ps audit run. Place scored low."},{label:"Week 10 recap",meta:"Jul 24",body:"First full week with three-task filter."} ] },
     streaks:   { kicker:"Consistency", title:"Fourteen weeks of adherence", lede:"Adherence is measured against the assignments set that week.", rows:[ {label:"Current streak",meta:"6 weeks",body:"Six consecutive weeks above 70% adherence."},{label:"Weakest link",meta:"Sleep",body:"The sleep anchor slips first in a heavy week."},{label:"Minimum viable week",meta:"Fallback",body:"Two sessions, one creative block, Sunday reset."} ] },
@@ -82,7 +81,6 @@
 
   var state = {view:"client",openCard:null,openRows:{},done:{},remOn:true,remDayIdx:1,remChIdx:0};
   var pwOpen = true;
-  var countdownInterval = null;
   var pendingUser = null;
   var pendingProfile = null;
   var needsPassword = (urlAuthType === 'invite');
@@ -203,12 +201,12 @@
     $('cpPwField').classList.toggle('is-open', pwOpen);
     $('cpPasswordSubmit').hidden = !pwOpen;
     $('cpEmailSubmit').hidden = pwOpen;
-    $('cpPwRevealBtn').textContent = pwOpen ? 'Email me a sign-in code instead' : 'I know my password';
+    $('cpPwRevealBtn').textContent = pwOpen ? 'Email me a sign-in link instead' : 'I know my password';
     $('cpEmailHint').hidden = pwOpen;
     if (pwOpen) $('cpPasswordInput').focus(); else $('cpEmailInput').focus();
   });
 
-  // ─── Send OTP / magic link ────────────────────────────────────────────
+  // ─── Send magic link ──────────────────────────────────────────────────
   $('cpEmailSubmit').addEventListener('click', async function(){
     var email = $('cpEmailInput').value.trim();
     if (!email) { showErr('cpEmailError','Enter your email address.'); return; }
@@ -216,33 +214,20 @@
     setLoading($('cpEmailSubmit'), true, 'Sending…');
     hideErr('cpEmailError');
 
-    // Try OTP first
     var { error } = await sb.auth.signInWithOtp({
       email: email,
-      options: { shouldCreateUser: false }
+      options: { emailRedirectTo: window.location.href, shouldCreateUser: false }
     });
 
-    setLoading($('cpEmailSubmit'), false, 'Email me a sign-in code');
+    setLoading($('cpEmailSubmit'), false, 'Email me a sign-in link');
 
     if (error) {
-      // OTP failed — fall back to magic link
-      var res = await sb.auth.signInWithOtp({
-        email: email,
-        options: { emailRedirectTo: window.location.href, shouldCreateUser: false }
-      });
-      if (res.error) {
-        showErr('cpEmailError','No account found for that email. Ask your coach for an invite.');
-        return;
-      }
-      $('cpMagicEmail').textContent = email;
-      showStep('cpStepMagic');
+      showErr('cpEmailError','No account found for that email. Ask your coach for an invite.');
       return;
     }
 
-    $('cpSentTo').textContent = email;
-    showStep('cpStepCode');
-    startCountdown();
-    setTimeout(function(){ var f=$('cpCodeRow').querySelector('input'); if(f) f.focus(); }, 50);
+    $('cpMagicEmail').textContent = email;
+    showStep('cpStepMagic');
   });
 
   // ─── Password sign in ─────────────────────────────────────────────────
@@ -264,68 +249,12 @@
     showDash(data.user);
   });
 
-  // ─── OTP code inputs ──────────────────────────────────────────────────
-  var codeRow = $('cpCodeRow');
-  for (var ci = 0; ci < 6; ci++) {
-    (function(){
-      var inp = document.createElement('input');
-      inp.type='text'; inp.maxLength=1; inp.inputMode='numeric'; inp.className='cp-code-input';
-      inp.addEventListener('input', function(e){
-        e.target.value = e.target.value.replace(/[^0-9]/g,'');
-        if (e.target.value && e.target.nextElementSibling) e.target.nextElementSibling.focus();
-      });
-      inp.addEventListener('keydown', function(e){
-        if (e.key==='Backspace' && !e.target.value && e.target.previousElementSibling) e.target.previousElementSibling.focus();
-      });
-      codeRow.appendChild(inp);
-    })();
-  }
-
-  $('cpOpenPortal').addEventListener('click', async function(){
-    var inputs = codeRow.querySelectorAll('input');
-    var token  = Array.from(inputs).map(function(i){ return i.value; }).join('');
-    if (token.length < 6) { showErr('cpCodeError','Enter all six digits.'); return; }
-
-    var email = $('cpSentTo').textContent;
-    setLoading($('cpOpenPortal'), true, 'Verifying…');
-    hideErr('cpCodeError');
-
-    var { data, error } = await sb.auth.verifyOtp({ email, token, type:'email' });
-
-    setLoading($('cpOpenPortal'), false, 'Open my portal');
-
-    if (error) { showErr('cpCodeError','That code didn\'t work. Check it or resend.'); return; }
-    showDash(data.user);
-  });
-
-  $('cpBackToEmail').addEventListener('click', function(){ stopCountdown(); showStep('cpStepEmail'); });
   $('cpBackFromMagic').addEventListener('click', function(){ showStep('cpStepEmail'); });
-
-  $('cpResend').addEventListener('click', async function(e){
-    e.preventDefault();
-    var email = $('cpSentTo').textContent;
-    await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    stopCountdown(); startCountdown();
-  });
-
-  // ─── Countdown timer ──────────────────────────────────────────────────
-  function startCountdown(){
-    var secs = 599;
-    $('cpCountdown').textContent = 'Code expires in 9:59';
-    countdownInterval = setInterval(function(){
-      secs--;
-      if (secs <= 0){ stopCountdown(); $('cpCountdown').textContent = 'Code expired — resend above'; return; }
-      var m = Math.floor(secs/60), s = secs % 60;
-      $('cpCountdown').textContent = 'Code expires in '+m+':'+(s<10?'0':'')+s;
-    }, 1000);
-  }
-
-  function stopCountdown(){ if(countdownInterval){ clearInterval(countdownInterval); countdownInterval=null; } }
 
   // ─── Helpers ──────────────────────────────────────────────────────────
   function showStep(id){
-    ['cpStepEmail','cpStepCode','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent','cpStepBiometric'].forEach(function(s){ $(s).hidden = s!==id; });
-    hideErr('cpEmailError'); hideErr('cpCodeError'); hideErr('cpNameError'); hideErr('cpSetPasswordError'); hideErr('cpBiometricError');
+    ['cpStepEmail','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent','cpStepBiometric'].forEach(function(s){ $(s).hidden = s!==id; });
+    hideErr('cpEmailError'); hideErr('cpNameError'); hideErr('cpSetPasswordError'); hideErr('cpBiometricError');
   }
 
   function showErr(id, msg){ var e=$(id); e.textContent=msg; e.classList.add('show'); }
@@ -338,8 +267,6 @@
 
   // ─── Show dashboard ───────────────────────────────────────────────────
   async function showDash(user){
-    stopCountdown();
-
     // Get profile from Supabase (role + name)
     var { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
 
@@ -366,7 +293,6 @@
   }
 
   function showSetPasswordStep(user){
-    stopCountdown();
     pendingUser = user;
     $('cpAuth').hidden = false;
     $('cpDash').hidden = true;
@@ -511,7 +437,7 @@
 
   // ─── Render functions (identical to original) ─────────────────────────
   function renderAll(){
-    renderCoreList(); renderCoreGrid(); renderTasks(); renderBars();
+    renderCoreList(); renderTasks(); renderBars();
     renderNotes(); renderWins(); renderMetrics(); renderChips();
     renderRoster(); renderFlags(); renderQueue(); renderReminder();
     renderViewToggle();
@@ -520,11 +446,6 @@
   function renderCoreList(){
     var h=''; cores.forEach(function(c){ h+='<div class="cp-core-row"><div class="cp-core-row-top"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+c.label+'</span><span class="cp-core-pct">'+c.pct+'%</span></div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>'; });
     $('cpCoreList').innerHTML=h;
-  }
-
-  function renderCoreGrid(){
-    var h=''; cores.forEach(function(c){ h+='<div class="cp-core-cell"><span class="cp-core-cell-n">'+c.n+'</span><div class="cp-core-cell-label"><span class="cp-dot" style="background:'+c.color+'"></span><span>'+c.label+'</span></div><p class="cp-core-cell-note">'+c.note+'</p><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>'; });
-    $('cpCoreGrid').innerHTML=h;
   }
 
   function renderTasks(){

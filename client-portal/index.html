@@ -53,13 +53,6 @@
       .cp-auth-footer span{color:rgba(7,31,53,.55);}
       .cp-auth-footer a{font-weight:700;text-decoration:underline;text-underline-offset:4px;}
       .cp-back{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.5);}
-      .cp-code-row{margin-top:34px;display:flex;gap:10px;}
-      .cp-code-input{width:100%;height:64px;border-radius:14px;border:1px solid rgba(7,31,53,.15);background:#fff;text-align:center;font-family:"Raleway",sans-serif;font-weight:800;font-size:24px;color:#071f35;outline:none;box-sizing:border-box;}
-      .cp-code-input:focus{border-color:rgba(7,31,53,.35);}
-      .cp-code-meta{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:14px;}
-      .cp-code-meta span{color:rgba(7,31,53,.5);}
-      .cp-code-meta a{font-weight:700;text-decoration:underline;text-underline-offset:4px;}
-      #cpStepCode .cp-btn-primary{margin-top:26px;}
       .cp-magic-sent{text-align:center;padding:20px 0;}
       .cp-magic-icon{font-size:40px;margin-bottom:16px;}
       .cp-magic-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;margin:0 0 12px;}
@@ -139,12 +132,6 @@
       .cp-message-input{border-radius:14px;border:1px solid rgba(7,31,53,.1);padding:14px 16px;font-size:15px;color:rgba(7,31,53,.4);}
       .cp-chip-row{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;}
       .cp-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.1);font-size:13px;font-weight:700;color:rgba(7,31,53,.75);}
-      .cp-core-grid{margin-top:20px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;}
-      .cp-core-cell-n{font-family:"Raleway",sans-serif;font-weight:800;font-size:38px;line-height:1;color:rgba(7,31,53,.12);}
-      .cp-core-cell-label{margin-top:10px;display:flex;align-items:center;gap:7px;}
-      .cp-core-cell-label span:last-child{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;}
-      .cp-core-cell-note{margin:8px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.6);}
-      .cp-core-cell .cp-meter{margin-top:10px;}
       .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
@@ -200,7 +187,7 @@
       .cp-assign-add{all:unset;cursor:pointer;margin-top:4px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
       .cp-assign-add:hover{color:rgba(7,31,53,.85);}
       .cp-edit-actions{margin-top:32px;display:flex;gap:10px;}
-      @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view,.cp-core-grid{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
+      @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
   <body class="cc-page">
@@ -227,34 +214,19 @@
             </div>
             <div class="cp-pw-reveal">
               <div class="cp-pw-reveal-line"></div>
-              <button type="button" class="cp-pw-reveal-btn" id="cpPwRevealBtn">Email me a sign-in code instead</button>
+              <button type="button" class="cp-pw-reveal-btn" id="cpPwRevealBtn">Email me a sign-in link instead</button>
               <div class="cp-pw-reveal-line"></div>
             </div>
             <div class="cp-auth-error" id="cpEmailError"></div>
             <div class="cp-actions">
               <button type="button" class="cp-btn-primary" id="cpPasswordSubmit">Sign in with password</button>
-              <button type="button" class="cp-btn-secondary" id="cpEmailSubmit" hidden>Email me a sign-in code</button>
+              <button type="button" class="cp-btn-secondary" id="cpEmailSubmit" hidden>Email me a sign-in link</button>
             </div>
-            <p class="cp-hint" id="cpEmailHint" hidden>No password. We send a six-digit code that expires in ten minutes.</p>
+            <p class="cp-hint" id="cpEmailHint" hidden>No password. We'll email you a link to sign in.</p>
             <div class="cp-auth-footer">
               <span>Not a client yet?</span>
               <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noopener noreferrer">Apply for 1:1 Coaching</a>
             </div>
-          </div>
-
-          <!-- Step: OTP code -->
-          <div class="cp-auth-step" id="cpStepCode" hidden>
-            <button type="button" class="cp-back" id="cpBackToEmail">← Use a different email</button>
-            <p class="cp-kicker" style="margin-top:34px">Check your inbox</p>
-            <h1 class="cp-h1">Enter the code.</h1>
-            <p class="cp-lede">We sent a six-digit code to <strong id="cpSentTo">your email</strong>.</p>
-            <div class="cp-code-row" id="cpCodeRow"></div>
-            <div class="cp-code-meta">
-              <span id="cpCountdown">Code expires in 9:59</span>
-              <a href="#" id="cpResend">Resend</a>
-            </div>
-            <div class="cp-auth-error" id="cpCodeError"></div>
-            <button type="button" class="cp-btn-primary" id="cpOpenPortal">Open my portal</button>
           </div>
 
           <!-- Step: Magic link sent -->
@@ -419,13 +391,6 @@
               <p class="cp-kicker">Milestones</p>
               <h3 class="cp-card-title">Wins on record</h3>
               <div class="cp-win-list" id="cpWinList"></div>
-            </div>
-            <div class="cp-card cp-card--wide" data-open="cores">
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Six Core System</p><h3 class="cp-card-title">Structure installed to date</h3></div>
-                <span class="cp-meta">Open detail</span>
-              </div>
-              <div class="cp-core-grid" id="cpCoreGrid"></div>
             </div>
           </div>
         </div>
