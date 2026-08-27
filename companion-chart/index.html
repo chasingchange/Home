@@ -216,7 +216,7 @@
         removeBtn.type = "button";
         removeBtn.title = "Remove person";
         removeBtn.textContent = "×";
-        removeBtn.className = "flex-none text-lg leading-none text-cc-text/30 hover:text-red-600";
+        removeBtn.className = "flex-none text-lg leading-none text-cc-text/45 hover:text-red-600";
         removeBtn.addEventListener("click", () => {
           if (people.length <= 1) return;
           people = people.filter((p) => p.id !== person.id);
@@ -230,7 +230,7 @@
         statusInput.type = "text";
         statusInput.value = person.status || "";
         statusInput.placeholder = "Past · present · curious";
-        statusInput.className = "w-full border-0 bg-transparent p-0 text-xs font-bold text-cc-text/50 outline-none";
+        statusInput.className = "w-full border-0 bg-transparent p-0 text-xs font-bold text-cc-text/70 outline-none";
         statusInput.addEventListener("input", (e) => {
           person.status = e.target.value;
           persist();
@@ -247,7 +247,7 @@
         const label = document.createElement("div");
         label.className = "w-[220px] flex-none";
         label.innerHTML =
-          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">What matters to me</p>';
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/65">What matters to me</p>';
         row.appendChild(label);
 
         people.forEach((p) => row.appendChild(renderPersonHeaderCell(p)));
@@ -296,7 +296,7 @@
         removeAttrBtn.type = "button";
         removeAttrBtn.title = "Remove attribute";
         removeAttrBtn.textContent = "×";
-        removeAttrBtn.className = "flex-none text-base leading-none text-cc-text/30 hover:text-red-600";
+        removeAttrBtn.className = "flex-none text-base leading-none text-cc-text/45 hover:text-red-600";
         removeAttrBtn.addEventListener("click", () => {
           attrs = attrs.filter((a) => a.id !== attr.id);
           persist();
@@ -312,7 +312,7 @@
             ? "border-orange-400/60 bg-orange-50 text-orange-600"
             : attr.weight === 2
               ? "border-black/10 bg-black/5 text-cc-text"
-              : "border-black/10 bg-black/[0.03] text-cc-text/50");
+              : "border-black/10 bg-black/[0.03] text-cc-text/70");
         weightSelect.innerHTML = `
           <option value="1"${attr.weight === 1 ? " selected" : ""}>Nice to have</option>
           <option value="2"${attr.weight === 2 ? " selected" : ""}>Important</option>
@@ -358,7 +358,7 @@
         const addAttrBtn = document.createElement("button");
         addAttrBtn.type = "button";
         addAttrBtn.textContent = "+ Add an attribute";
-        addAttrBtn.className = "font-heading text-sm font-extrabold text-cc-text/50 hover:text-cc-text";
+        addAttrBtn.className = "font-heading text-sm font-extrabold text-cc-text/70 hover:text-cc-text";
         addAttrBtn.addEventListener("click", () => {
           attrs.push({ id: uid(), label: "", weight: 2 });
           persist();
@@ -376,7 +376,7 @@
         const label = document.createElement("div");
         label.className = "w-[220px] flex-none pl-3";
         label.innerHTML =
-          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">Weighted match</p>';
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/65">Weighted match</p>';
         row.appendChild(label);
 
         people.forEach((person) => {
@@ -390,7 +390,7 @@
           numRow.className = "flex items-baseline gap-1";
           numRow.innerHTML = `
             <span style="color:${t.color}" class="text-3xl font-semibold tabular-nums tracking-tight">${value}</span>
-            <span class="text-xs font-bold text-cc-text/40">%</span>
+            <span class="text-xs font-bold text-cc-text/65">%</span>
           `;
 
           const track = document.createElement("div");
@@ -402,7 +402,7 @@
           track.appendChild(fill);
 
           const verdict = document.createElement("p");
-          verdict.className = "mt-2 font-heading text-[9px] font-extrabold uppercase tracking-wide text-cc-text/40";
+          verdict.className = "mt-2 font-heading text-[9px] font-extrabold uppercase tracking-wide text-cc-text/65";
           verdict.textContent = t.verdict;
 
           cell.append(numRow, track, verdict);

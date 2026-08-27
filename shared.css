@@ -542,7 +542,7 @@ a:focus-visible {
 }
 
 ::placeholder {
-  color: rgba(7, 31, 53, 0.48);
+  color: rgba(7, 31, 53, 0.58);
 }
 
 /* ===== Site-wide visual normalization (search homepage authority) ===== */
