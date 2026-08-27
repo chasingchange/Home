@@ -40,3 +40,41 @@ end $$;
 --    on the portal correctly, add this site's client-portal URL (both the
 --    exact page and, if you use it, a wildcard) to
 --    Supabase → Authentication → URL Configuration → Redirect URLs.
+
+-- 4. Fix "infinite recursion detected in policy for relation profiles".
+--    This happens when a policy on public.profiles (commonly a "coaches/
+--    admins can view all profiles" policy added by hand in the Supabase
+--    dashboard) checks the caller's role by querying public.profiles
+--    itself, e.g.:
+--      using (exists (
+--        select 1 from public.profiles where id = auth.uid() and role = 'coach'
+--      ))
+--    Postgres has to re-run the profiles SELECT policy to evaluate that
+--    subquery, which re-runs the same policy again, forever.
+--
+--    The fix is to read the caller's role through a SECURITY DEFINER
+--    function, which runs with the function owner's privileges and so
+--    bypasses RLS on profiles instead of re-triggering it.
+
+create or replace function public.is_coach(uid uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles where id = uid and role = 'coach'
+  );
+$$;
+
+grant execute on function public.is_coach(uuid) to authenticated;
+
+-- Drop any existing self-referencing "coach"/"admin" policy on profiles
+-- before re-creating it — adjust the name(s) below to match whatever shows
+-- up in Supabase → Authentication → Policies for the profiles table.
+drop policy if exists "Coaches can view all profiles" on public.profiles;
+drop policy if exists "Admins can view all profiles" on public.profiles;
+
+create policy "Coaches can view all profiles" on public.profiles
+  for select using (public.is_coach(auth.uid()));
