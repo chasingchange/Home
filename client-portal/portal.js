@@ -71,7 +71,7 @@
   var remChans  = ["text","email","push"];
 
   var state = {view:"client",openCard:null,openRows:{},done:{},remOn:true,remDayIdx:1,remChIdx:0};
-  var pwOpen = false;
+  var pwOpen = true;
   var countdownInterval = null;
 
   var $ = function(id){ return document.getElementById(id); };
@@ -96,9 +96,10 @@
     pwOpen = !pwOpen;
     $('cpPwField').classList.toggle('is-open', pwOpen);
     $('cpPasswordSubmit').hidden = !pwOpen;
-    $('cpPwRevealBtn').textContent = pwOpen ? 'Sign in without password' : 'I know my password';
+    $('cpEmailSubmit').hidden = pwOpen;
+    $('cpPwRevealBtn').textContent = pwOpen ? 'Email me a sign-in code instead' : 'I know my password';
     $('cpEmailHint').hidden = pwOpen;
-    if (pwOpen) $('cpPasswordInput').focus();
+    if (pwOpen) $('cpPasswordInput').focus(); else $('cpEmailInput').focus();
   });
 
   // ─── Send OTP / magic link ────────────────────────────────────────────
