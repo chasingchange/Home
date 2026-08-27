@@ -408,7 +408,7 @@
     var fullName = first + ' ' + last;
     var { error } = await sb
       .from('profiles')
-      .upsert({ id: pendingUser.id, full_name: fullName }, { onConflict: 'id' });
+      .upsert({ id: pendingUser.id, email: pendingUser.email, full_name: fullName }, { onConflict: 'id' });
 
     setLoading($('cpNameSubmit'), false, 'Continue');
 
@@ -441,7 +441,7 @@
 
     var user = (data && data.user) || pendingUser;
 
-    await sb.from('profiles').upsert({ id: user.id, has_password: true }, { onConflict: 'id' });
+    await sb.from('profiles').upsert({ id: user.id, email: user.email, has_password: true }, { onConflict: 'id' });
 
     if (!pendingProfile) {
       var res = await sb.from('profiles').select('*').eq('id', user.id).single();
