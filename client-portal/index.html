@@ -149,7 +149,8 @@
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
       .cp-roster-list{margin-top:20px;display:grid;}
-      .cp-roster-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr 110px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-roster-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr 110px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);cursor:pointer;}
+      .cp-roster-row:hover{background:rgba(7,31,53,.03);}
       .cp-roster-name{font-family:"Raleway",sans-serif;font-weight:700;font-size:16px;}
       .cp-roster-route,.cp-roster-week{font-size:14px;color:rgba(7,31,53,.6);}
       .cp-roster-flag{display:block;margin-top:6px;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
@@ -186,6 +187,19 @@
       .cp-sheet-row.is-open .cp-sheet-row-plus{transform:rotate(45deg);}
       .cp-sheet-row-body{margin:14px 0 0;font-size:16px;line-height:1.75;font-weight:300;color:rgba(7,31,53,.72);max-width:480px;display:none;}
       .cp-sheet-row.is-open .cp-sheet-row-body{display:block;}
+      .cp-edit-field{margin-top:22px;}
+      .cp-edit-field label{display:block;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);margin-bottom:8px;}
+      .cp-edit-week-row{display:flex;align-items:center;gap:10px;}
+      .cp-edit-week-row input{width:90px;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:15px;color:#071f35;box-sizing:border-box;}
+      .cp-edit-week-row span{color:rgba(7,31,53,.4);font-size:14px;}
+      .cp-assign-list{margin-top:6px;display:grid;gap:8px;}
+      .cp-assign-row{display:flex;align-items:center;gap:8px;}
+      .cp-assign-row input{flex:1;height:42px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
+      .cp-assign-remove{all:unset;cursor:pointer;width:32px;height:32px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.4);font-size:16px;}
+      .cp-assign-remove:hover{background:rgba(7,31,53,.06);}
+      .cp-assign-add{all:unset;cursor:pointer;margin-top:4px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
+      .cp-assign-add:hover{color:rgba(7,31,53,.85);}
+      .cp-edit-actions{margin-top:32px;display:flex;gap:10px;}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view,.cp-core-grid{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
@@ -452,6 +466,37 @@
         </div>
         <p class="cp-sheet-lede" id="cpSheetLede"></p>
         <div class="cp-sheet-rows" id="cpSheetRows"></div>
+      </div>
+    </div>
+
+    <div class="cp-sheet-overlay" id="cpEditOverlay" hidden>
+      <div class="cp-sheet-backdrop" id="cpEditBackdrop"></div>
+      <div class="cp-sheet">
+        <div class="cp-sheet-head">
+          <div><p class="cp-kicker">Coach Edit</p><h2 class="cp-sheet-title" id="cpEditTitle"></h2></div>
+          <button type="button" class="cp-sheet-close" id="cpEditClose" aria-label="Close">×</button>
+        </div>
+        <p class="cp-sheet-lede">Update this client's progress and assignments.</p>
+
+        <div class="cp-edit-field">
+          <label>Week</label>
+          <div class="cp-edit-week-row">
+            <input type="number" min="0" id="cpEditWeekNow" />
+            <span>of</span>
+            <input type="number" min="1" id="cpEditWeekTotal" />
+          </div>
+        </div>
+
+        <div class="cp-edit-field">
+          <label>Assignments</label>
+          <div class="cp-assign-list" id="cpEditAssignList"></div>
+          <button type="button" class="cp-assign-add" id="cpEditAssignAdd">+ Add assignment</button>
+        </div>
+
+        <div class="cp-edit-actions">
+          <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 24px;">Save</button>
+          <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;">Cancel</button>
+        </div>
       </div>
     </div>
 

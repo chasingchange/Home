@@ -17,7 +17,7 @@
 
   // ─── Demo data (same as original — swap per-client later) ────────────
   var route    = "The 10K";
-  var weekLine = "week 14 of 26";
+  var weekLine = "Week 14 of 26";
 
   var cores = [
     { n:"01", label:"Body",   color:"#77d770", pct:78, note:"Strength split + meal rotation" },
@@ -51,12 +51,14 @@
   };
 
   var roster = [
-    {name:"Marcus T.", route:"The 10K",     week:"Wk 14 / 26",adh:86,flag:"On track",     color:"#77d770",next:"Tue 9:00 AM"},
-    {name:"Devon R.",  route:"The Marathon", week:"Wk 22 / 39",adh:74,flag:"On track",     color:"#77d770",next:"Tue 4:30 PM"},
-    {name:"Priya S.",  route:"The 5K",       week:"Wk 6 / 12", adh:58,flag:"Needs a nudge",color:"#f58b1c",next:"Wed 8:00 AM"},
-    {name:"Alex M.",   route:"The 10K",      week:"Wk 3 / 26", adh:91,flag:"On track",     color:"#77d770",next:"Wed 12:00 PM"},
-    {name:"Jamie L.",  route:"The 5K",       week:"Wk 9 / 12", adh:34,flag:"At risk",      color:"#f02348",next:"Thu 7:30 AM"}
+    {name:"Marcus T.", route:"The 10K",     weekNow:14, weekTotal:26, adh:86,flag:"On track",     color:"#77d770",next:"Tue 9:00 AM", assignments:["Squat wave 3","2,650 kcal / day","Sunday reset"]},
+    {name:"Devon R.",  route:"The Marathon", weekNow:22, weekTotal:39, adh:74,flag:"On track",     color:"#77d770",next:"Tue 4:30 PM", assignments:["Long run — 18 mi","Life Core calendar audit"]},
+    {name:"Priya S.",  route:"The 5K",       weekNow:6,  weekTotal:12, adh:58,flag:"Needs a nudge",color:"#f58b1c",next:"Wed 8:00 AM", assignments:["Sleep anchor — 5 nights","Tempo run Thursday"]},
+    {name:"Alex M.",   route:"The 10K",      weekNow:3,  weekTotal:26, adh:91,flag:"On track",     color:"#77d770",next:"Wed 12:00 PM", assignments:["Base building — 3 runs","I AM Worksheet"]},
+    {name:"Jamie L.",  route:"The 5K",       weekNow:9,  weekTotal:12, adh:34,flag:"At risk",      color:"#f02348",next:"Thu 7:30 AM", assignments:["Check-in call","Interval session"]}
   ];
+
+  function rosterWeekLabel(c){ return 'Wk ' + c.weekNow + ' / ' + c.weekTotal; }
 
   var flags = [
     {name:"Jamie L.", why:"Two missed calls and no check-in for 11 days. Route ends in three weeks."},
@@ -72,7 +74,7 @@
 
   var metrics   = [{label:"Bodyweight trend",value:"−8.4 lb"},{label:"Est. squat 1RM",value:"+35 lb"},{label:"Last photo",value:"Week 14"}];
   var resources = [{label:"Split Sculptor",color:"#77d770"},{label:"Macro Calculator",color:"#77d770"},{label:"1RM Calculator",color:"#77d770"},{label:"5 Ps Career Fit",color:"#f02348"},{label:"I AM Worksheet",color:"#2a9df0"}];
-  var noteList  = [{label:"Held Art block at weekly cadence",meta:"Wk 13"},{label:"Squat wave reset after stalled top set",meta:"Wk 12"},{label:"5Ps audit — place scored low",meta:"Wk 11"}];
+  var noteList  = [{label:"Held Art block again",meta:"Wk 13"},{label:"Squat wave reset after stalled top set",meta:"Wk 12"},{label:"5Ps audit — place scored low",meta:"Wk 11"}];
   var wins      = [{label:"Squat +35 lb from baseline",meta:"Wk 12",color:"#77d770"},{label:"Six consecutive green weeks",meta:"Wk 14",color:"#2a9df0"},{label:"Creative block held four weeks",meta:"Wk 13",color:"#ffbd59"}];
   var barValues = [42,55,38,61,70,48,66,74,58,80,86,72,91,84];
   var remDays   = ["Monday","Tuesday","Sunday"];
@@ -384,7 +386,7 @@
     $('cpViewToggle').hidden = !isCoach;
 
     $('cpWelcome').textContent    = 'Welcome to Your Race, ' + firstName + '.';
-    $('cpRouteLine').textContent  = route + ' · ' + weekLine + ' · weekly cadence';
+    $('cpRouteLine').textContent  = route + ' · ' + weekLine;
     $('cpRoute').textContent      = route;
     $('cpWeek').textContent       = weekLine;
     $('cpWeekLine2').textContent  = weekLine;
@@ -558,7 +560,7 @@
   }
 
   function renderRoster(){
-    var h=''; roster.forEach(function(c){ h+='<div class="cp-roster-row"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+c.route+'</span><span class="cp-roster-week">'+c.week+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.adh+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+c.flag+'</span></div><span class="cp-roster-next">'+c.next+'</span></div>'; });
+    var h=''; roster.forEach(function(c,i){ h+='<div class="cp-roster-row" data-edit-client="'+i+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+c.route+'</span><span class="cp-roster-week">'+rosterWeekLabel(c)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.adh+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+c.flag+'</span></div><span class="cp-roster-next">'+c.next+'</span></div>'; });
     $('cpRosterList').innerHTML=h;
   }
 
@@ -637,6 +639,68 @@
     row.classList.toggle('is-open',!!state.openRows[rk]);
   });
 
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !$('cpSheetOverlay').hidden) closeSheet(); });
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape') return;
+    if(!$('cpSheetOverlay').hidden) closeSheet();
+    if(!$('cpEditOverlay').hidden) closeEditClient();
+  });
+
+  // ─── Coach: edit client (weeks + assignments) ──────────────────────────
+  var editingIndex = null;
+  var editAssignments = [];
+
+  function renderEditAssignList(){
+    var h=''; editAssignments.forEach(function(a,i){
+      h+='<div class="cp-assign-row"><input type="text" value="'+esc(a)+'" data-assign-idx="'+i+'" /><button type="button" class="cp-assign-remove" data-remove-idx="'+i+'">×</button></div>';
+    });
+    $('cpEditAssignList').innerHTML=h;
+  }
+
+  function openEditClient(i){
+    var c=roster[i]; if(!c) return;
+    editingIndex=i;
+    editAssignments=(c.assignments||[]).slice();
+    $('cpEditTitle').textContent=c.name;
+    $('cpEditWeekNow').value=c.weekNow;
+    $('cpEditWeekTotal').value=c.weekTotal;
+    renderEditAssignList();
+    $('cpEditOverlay').hidden=false;
+  }
+
+  function closeEditClient(){ editingIndex=null; $('cpEditOverlay').hidden=true; }
+
+  $('cpRosterList').addEventListener('click',function(e){
+    var row=e.target.closest('[data-edit-client]'); if(!row) return;
+    openEditClient(parseInt(row.getAttribute('data-edit-client'),10));
+  });
+
+  $('cpEditAssignAdd').addEventListener('click',function(){ editAssignments.push(''); renderEditAssignList(); });
+
+  $('cpEditAssignList').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-remove-idx]'); if(!btn) return;
+    editAssignments.splice(parseInt(btn.getAttribute('data-remove-idx'),10),1);
+    renderEditAssignList();
+  });
+
+  $('cpEditAssignList').addEventListener('input',function(e){
+    var inp=e.target.closest('[data-assign-idx]'); if(!inp) return;
+    editAssignments[parseInt(inp.getAttribute('data-assign-idx'),10)]=inp.value;
+  });
+
+  $('cpEditSave').addEventListener('click',function(){
+    if(editingIndex===null) return;
+    var c=roster[editingIndex];
+    var weekNow=parseInt($('cpEditWeekNow').value,10);
+    var weekTotal=parseInt($('cpEditWeekTotal').value,10);
+    c.weekNow=isNaN(weekNow)?c.weekNow:weekNow;
+    c.weekTotal=isNaN(weekTotal)?c.weekTotal:weekTotal;
+    c.assignments=editAssignments.filter(function(a){ return a.trim().length; });
+    closeEditClient();
+    renderRoster();
+  });
+
+  $('cpEditCancel').addEventListener('click',closeEditClient);
+  $('cpEditClose').addEventListener('click',closeEditClient);
+  $('cpEditBackdrop').addEventListener('click',closeEditClient);
 
 })();
