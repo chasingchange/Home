@@ -200,20 +200,20 @@
             <h1 class="cp-h1">Sign in.</h1>
             <p class="cp-lede" style="max-width:333px">Your route | Your pace&nbsp;— all in one place.</p>
             <input type="email" id="cpEmailInput" placeholder="you@email.com" class="cp-input" autocomplete="email" />
+            <div class="cp-pw-field is-open" id="cpPwField">
+              <input type="password" id="cpPasswordInput" placeholder="Password" class="cp-input" autocomplete="current-password" />
+            </div>
             <div class="cp-pw-reveal">
               <div class="cp-pw-reveal-line"></div>
-              <button type="button" class="cp-pw-reveal-btn" id="cpPwRevealBtn">I know my password</button>
+              <button type="button" class="cp-pw-reveal-btn" id="cpPwRevealBtn">Email me a sign-in code instead</button>
               <div class="cp-pw-reveal-line"></div>
-            </div>
-            <div class="cp-pw-field" id="cpPwField">
-              <input type="password" id="cpPasswordInput" placeholder="Password" class="cp-input" autocomplete="current-password" />
             </div>
             <div class="cp-auth-error" id="cpEmailError"></div>
             <div class="cp-actions">
-              <button type="button" class="cp-btn-primary" id="cpEmailSubmit">Email me a sign-in code</button>
-              <button type="button" class="cp-btn-secondary" id="cpPasswordSubmit" hidden>Sign in with password</button>
+              <button type="button" class="cp-btn-primary" id="cpPasswordSubmit">Sign in with password</button>
+              <button type="button" class="cp-btn-secondary" id="cpEmailSubmit" hidden>Email me a sign-in code</button>
             </div>
-            <p class="cp-hint" id="cpEmailHint">No password. We send a six-digit code that expires in ten minutes.</p>
+            <p class="cp-hint" id="cpEmailHint" hidden>No password. We send a six-digit code that expires in ten minutes.</p>
             <div class="cp-auth-footer">
               <span>Not a client yet?</span>
               <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noopener noreferrer">Apply for 1:1 Coaching</a>
