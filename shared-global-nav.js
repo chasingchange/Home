@@ -55,10 +55,10 @@
         <button type="button" data-core="Mind" class="cc-global-nav-core">Mind</button>
         <button type="button" data-core="Soul" class="cc-global-nav-core">Soul</button>
         <button type="button" data-core="Career" class="cc-global-nav-core">Career</button>
-        <button type="button" data-core="Life" class="cc-global-nav-core">Life</button>
+        <button type="button" data-core="Environment" class="cc-global-nav-core">Environment</button>
+        <button type="button" data-core="Relationships" class="cc-global-nav-core">Relationships</button>
       </nav>
       <section id="ccGlobalMegaMenu" class="cc-global-mega cc-is-hidden" aria-live="polite">
-        <p id="ccGlobalMegaTitle" class="cc-global-mega-title"></p>
         <div id="ccGlobalMegaItems" class="cc-global-mega-items"></div>
       </section>
     </div>
@@ -77,15 +77,14 @@
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
-    { title: "Founder’s Calendar", core: "Life", url: `${root}founders-calendar/index.html` },
-    { title: "The Companion Chart", core: "Life", url: `${root}companion-chart/index.html` },
+    { title: "Founder’s Calendar", core: "Environment", url: `${root}founders-calendar/index.html` },
+    { title: "The Companion Chart", core: "Relationships", url: `${root}companion-chart/index.html` },
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");
   const mobileBackdrop = nav.querySelector("#ccGlobalNavBackdrop");
   const mobileToggle = nav.querySelector("#ccGlobalNavToggle");
   const coreMegaMenu = nav.querySelector("#ccGlobalMegaMenu");
-  const coreMegaMenuTitle = nav.querySelector("#ccGlobalMegaTitle");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
   const MOBILE_BREAKPOINT = 640;
   const MOBILE_CLOSE_DURATION_MS = 360;
@@ -187,8 +186,6 @@
       coreMegaMenu.classList.add("cc-is-hidden");
       return;
     }
-
-    coreMegaMenuTitle.textContent = `Explore ${activeCore}`;
 
     const sectionOrder = [...new Set(coreMatches.map((resource) => resource.section).filter(Boolean))];
     if (sectionOrder.length) {
