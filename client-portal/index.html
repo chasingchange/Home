@@ -4,1127 +4,251 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Client Portal | Chasing Change</title>
-    <meta
-      name="description"
-      content="Sign in to your Chasing Change client portal — this week's plan, sessions, metrics, and coach messages, all in one place."
-    />
-
+    <meta name="description" content="Sign in to your Chasing Change client portal." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
-
     <style>
-      body.cc-page {
-        margin: 0;
-        background: #eaeaee;
-        color: #071f35;
-        font-family: "Muli", "Mulish", system-ui, -apple-system, "Segoe UI", sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      .cp-kicker {
-        font-family: "Raleway", sans-serif;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: rgba(7, 31, 53, 0.45);
-        margin: 0;
-      }
-
-      .cp-kicker--light {
-        color: rgba(255, 255, 255, 0.5);
-      }
-
-      .cp-h1 {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        margin: 16px 0 0;
-        line-height: 1.06;
-      }
-
-      /* ===== Auth ===== */
-      .cp-auth {
-        min-height: calc(100vh - 5.5rem);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-      }
-
-      .cp-auth-card {
-        width: 100%;
-        max-width: 400px;
-      }
-
-      .cp-dots {
-        display: flex;
-        gap: 7px;
-        margin-bottom: 26px;
-      }
-
-      .cp-dots span {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-      }
-
-      .cp-lede {
-        margin: 16px 0 0;
-        font-size: 17px;
-        line-height: 1.6;
-        font-weight: 300;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-input {
-        margin-top: 34px;
-        width: 100%;
-        height: 52px;
-        border-radius: 14px;
-        border: 1px solid rgba(7, 31, 53, 0.15);
-        background: #fff;
-        padding: 0 16px;
-        font-family: "Muli", "Mulish", system-ui, sans-serif;
-        font-size: 16px;
-        color: #071f35;
-        outline: none;
-      }
-
-      .cp-input:focus {
-        border-color: rgba(7, 31, 53, 0.35);
-      }
-
-      .cp-actions {
-        margin-top: 12px;
-        display: grid;
-        gap: 12px;
-      }
-
-      .cp-btn-primary {
-        all: unset;
-        box-sizing: border-box;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 52px;
-        border-radius: 26px;
-        background: #071f35;
-        color: #fff;
-        font-size: 15px;
-        font-weight: 700;
-        text-align: center;
-        transition: opacity 0.15s ease;
-      }
-
-      .cp-btn-primary:hover {
-        opacity: 0.9;
-      }
-
-      .cp-hint {
-        margin: 20px 0 0;
-        font-size: 14px;
-        line-height: 1.6;
-        color: rgba(7, 31, 53, 0.5);
-      }
-
-      .cp-auth-footer {
-        margin-top: 36px;
-        padding-top: 24px;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-        font-size: 14px;
-      }
-
-      .cp-auth-footer span {
-        color: rgba(7, 31, 53, 0.55);
-      }
-
-      .cp-auth-footer a {
-        font-weight: 700;
-        text-decoration: underline;
-        text-underline-offset: 4px;
-      }
-
-      .cp-back {
-        all: unset;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: rgba(7, 31, 53, 0.5);
-      }
-
-      .cp-code-row {
-        margin-top: 34px;
-        display: flex;
-        gap: 10px;
-      }
-
-      .cp-code-input {
-        width: 100%;
-        height: 64px;
-        border-radius: 14px;
-        border: 1px solid rgba(7, 31, 53, 0.15);
-        background: #fff;
-        text-align: center;
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 24px;
-        color: #071f35;
-        outline: none;
-      }
-
-      .cp-code-input:focus {
-        border-color: rgba(7, 31, 53, 0.35);
-      }
-
-      .cp-code-meta {
-        margin-top: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        font-size: 14px;
-      }
-
-      .cp-code-meta span {
-        color: rgba(7, 31, 53, 0.5);
-      }
-
-      .cp-code-meta a {
-        font-weight: 700;
-        text-decoration: underline;
-        text-underline-offset: 4px;
-      }
-
-      #cpStepCode .cp-btn-primary {
-        margin-top: 26px;
-      }
-
-      /* ===== Dashboard ===== */
-      .cp-dash {
-        width: min(100%, 1120px);
-        margin: 0 auto;
-        padding: 24px 24px 96px;
-      }
-
-      .cp-dash-head {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 32px;
-        padding: 24px 0 36px;
-        flex-wrap: wrap;
-      }
-
-      .cp-route-line {
-        margin: 14px 0 0;
-        font-size: 17px;
-        line-height: 1.6;
-        color: rgba(7, 31, 53, 0.62);
-      }
-
-      .cp-view-toggle {
-        display: flex;
-        gap: 2px;
-        padding: 4px;
-        border-radius: 999px;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        background: #fff;
-        flex-shrink: 0;
-      }
-
-      .cp-view-btn {
-        all: unset;
-        cursor: pointer;
-        border-radius: 999px;
-        padding: 8px 16px;
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.55);
-      }
-
-      .cp-view-btn.is-active {
-        color: #071f35;
-        background: rgba(7, 31, 53, 0.06);
-      }
-
-      .cp-client-view {
-        display: grid;
-        grid-template-columns: 264px 1fr;
-        gap: 28px;
-        align-items: start;
-      }
-
-      .cp-core-rail {
-        background: #fff;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        border-radius: 18px;
-        padding: 22px;
-      }
-
-      .cp-core-list {
-        margin-top: 16px;
-        display: grid;
-        gap: 2px;
-      }
-
-      .cp-core-row {
-        display: grid;
-        gap: 7px;
-        padding: 11px 10px;
-        border-radius: 12px;
-      }
-
-      .cp-core-row-top {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .cp-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        flex-shrink: 0;
-      }
-
-      .cp-core-label {
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        flex: 1;
-      }
-
-      .cp-core-pct {
-        font-size: 12px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.45);
-      }
-
-      .cp-meter {
-        height: 4px;
-        border-radius: 999px;
-        background: rgba(7, 31, 53, 0.07);
-        overflow: hidden;
-      }
-
-      .cp-meter-fill {
-        height: 100%;
-        border-radius: 999px;
-      }
-
-      .cp-route-box {
-        margin-top: 20px;
-        padding-top: 18px;
-        border-top: 1px solid rgba(7, 31, 53, 0.1);
-      }
-
-      .cp-label {
-        margin: 0;
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.5);
-      }
-
-      .cp-route {
-        margin: 6px 0 0;
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 17px;
-      }
-
-      .cp-week {
-        margin: 4px 0 0;
-        font-size: 13px;
-        color: rgba(7, 31, 53, 0.55);
-      }
-
-      .cp-card-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
-
-      .cp-reminder-bar {
-        grid-column: 1 / -1;
-        background: #071f35;
-        border-radius: 18px;
-        padding: 22px 26px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 32px;
-        flex-wrap: wrap;
-      }
-
-      .cp-reminder-text {
-        cursor: pointer;
-      }
-
-      .cp-reminder-line {
-        margin: 8px 0 0;
-        font-size: 17px;
-        line-height: 1.5;
-        color: #fff;
-      }
-
-      .cp-reminder-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-shrink: 0;
-      }
-
-      .cp-pill-btn {
-        all: unset;
-        cursor: pointer;
-        padding: 8px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.85);
-        text-transform: capitalize;
-      }
-
-      .cp-toggle {
-        all: unset;
-        cursor: pointer;
-        width: 44px;
-        height: 26px;
-        border-radius: 999px;
-        padding: 3px;
-        display: flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.25);
-        transition: background 0.2s ease;
-        box-sizing: border-box;
-      }
-
-      .cp-toggle.is-on {
-        background: #77d770;
-      }
-
-      .cp-toggle-knob {
-        width: 20px;
-        height: 20px;
-        border-radius: 999px;
-        background: #fff;
-        transition: transform 0.22s ease;
-        transform: translateX(0);
-        display: block;
-      }
-
-      .cp-toggle.is-on .cp-toggle-knob {
-        transform: translateX(18px);
-      }
-
-      .cp-toggle--sm {
-        width: 38px;
-        height: 22px;
-        background: rgba(255, 255, 255, 0.25);
-      }
-
-      .cp-toggle--sm.is-on {
-        background: #77d770;
-      }
-
-      .cp-toggle--sm .cp-toggle-knob {
-        width: 16px;
-        height: 16px;
-      }
-
-      .cp-toggle--sm.is-on .cp-toggle-knob {
-        transform: translateX(16px);
-      }
-
-      .cp-card {
-        background: #fff;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        border-radius: 18px;
-        padding: 26px;
-        cursor: pointer;
-        transition: box-shadow 0.18s ease;
-      }
-
-      .cp-card:hover {
-        box-shadow: 0 14px 34px rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-card--wide {
-        grid-column: 1 / -1;
-      }
-
-      .cp-card-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .cp-card-title {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 20px;
-        margin: 8px 0 0;
-      }
-
-      .cp-meta {
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.45);
-        flex-shrink: 0;
-      }
-
-      .cp-body-text {
-        margin: 12px 0 0;
-        font-size: 15px;
-        line-height: 1.6;
-        color: rgba(7, 31, 53, 0.68);
-      }
-
-      .cp-task-list {
-        margin-top: 18px;
-        display: grid;
-      }
-
-      .cp-task-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 0;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-task-check {
-        all: unset;
-        cursor: pointer;
-        width: 18px;
-        height: 18px;
-        border-radius: 6px;
-        border: 1px solid rgba(7, 31, 53, 0.22);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 11px;
-        color: #fff;
-        background: transparent;
-        box-sizing: border-box;
-      }
-
-      .cp-task-check.is-done {
-        background: #071f35;
-      }
-
-      .cp-task-label {
-        flex: 1;
-        font-size: 15px;
-        line-height: 1.5;
-        color: rgba(7, 31, 53, 0.8);
-      }
-
-      .cp-task-label.is-done {
-        text-decoration: line-through;
-        color: rgba(7, 31, 53, 0.4);
-      }
-
-      .cp-task-meta {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: rgba(7, 31, 53, 0.4);
-      }
-
-      .cp-cta-row {
-        margin-top: 18px;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .cp-cta-primary {
-        display: inline-flex;
-        align-items: center;
-        height: 40px;
-        padding: 0 20px;
-        border-radius: 20px;
-        background: #071f35;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .cp-cta-secondary {
-        display: inline-flex;
-        align-items: center;
-        height: 40px;
-        padding: 0 18px;
-        border-radius: 20px;
-        border: 1px solid rgba(7, 31, 53, 0.12);
-        font-size: 14px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.7);
-      }
-
-      .cp-bars {
-        margin-top: 22px;
-        display: flex;
-        align-items: flex-end;
-        gap: 6px;
-        height: 78px;
-      }
-
-      .cp-bar {
-        flex: 1;
-        border-radius: 4px;
-      }
-
-      .cp-caption {
-        margin: 12px 0 0;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: rgba(7, 31, 53, 0.4);
-      }
-
-      .cp-note-list,
-      .cp-win-list {
-        margin-top: 16px;
-        display: grid;
-      }
-
-      .cp-note-row,
-      .cp-win-row {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 11px 0;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-win-row {
-        align-items: center;
-      }
-
-      .cp-note-label,
-      .cp-win-label {
-        font-size: 15px;
-        line-height: 1.5;
-        color: rgba(7, 31, 53, 0.75);
-        flex: 1;
-      }
-
-      .cp-note-meta,
-      .cp-win-meta {
-        font-size: 12px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.4);
-        flex-shrink: 0;
-      }
-
-      .cp-metrics-row {
-        margin-top: 16px;
-        display: grid;
-        grid-template-columns: 1fr 96px;
-        gap: 16px;
-        align-items: start;
-      }
-
-      .cp-metric-row {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 10px 0;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-metric-label {
-        font-size: 14px;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-metric-value {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 15px;
-      }
-
-      .cp-photo-placeholder {
-        aspect-ratio: 2 / 3;
-        border-radius: 12px;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        display: flex;
-        align-items: flex-end;
-        padding: 8px;
-        background: repeating-linear-gradient(135deg, #f3f3f6 0 7px, #e9e9ee 7px 14px);
-      }
-
-      .cp-photo-placeholder span {
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 9px;
-        line-height: 1.3;
-        color: rgba(7, 31, 53, 0.5);
-      }
-
-      .cp-messages {
-        margin-top: 16px;
-        display: grid;
-        gap: 12px;
-      }
-
-      .cp-message {
-        border-radius: 14px;
-        background: #f5f5f7;
-        padding: 14px 16px;
-      }
-
-      .cp-message-meta {
-        margin: 0;
-        font-size: 12px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.45);
-      }
-
-      .cp-message-body {
-        margin: 6px 0 0;
-        font-size: 15px;
-        line-height: 1.55;
-        color: rgba(7, 31, 53, 0.75);
-      }
-
-      .cp-message-input {
-        border-radius: 14px;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        padding: 14px 16px;
-        font-size: 15px;
-        color: rgba(7, 31, 53, 0.4);
-      }
-
-      .cp-chip-row {
-        margin-top: 18px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .cp-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 8px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(7, 31, 53, 0.1);
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.75);
-      }
-
-      .cp-core-grid {
-        margin-top: 20px;
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 16px;
-      }
-
-      .cp-core-cell-n {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 38px;
-        line-height: 1;
-        color: rgba(7, 31, 53, 0.12);
-      }
-
-      .cp-core-cell-label {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-
-      .cp-core-cell-label span:last-child {
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-      }
-
-      .cp-core-cell-note {
-        margin: 8px 0 0;
-        font-size: 13px;
-        line-height: 1.5;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-core-cell .cp-meter {
-        margin-top: 10px;
-      }
-
-      /* ===== Coach view ===== */
-      .cp-coach-view {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 28px;
-        align-items: start;
-      }
-
-      .cp-roster-card {
-        cursor: default;
-      }
-
-      .cp-roster-card:hover {
-        box-shadow: none;
-      }
-
-      .cp-roster-list {
-        margin-top: 20px;
-        display: grid;
-      }
-
-      .cp-roster-row {
-        display: grid;
-        grid-template-columns: 1.4fr 1fr 1fr 1.2fr 110px;
-        gap: 16px;
-        align-items: center;
-        padding: 16px 0;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-roster-name {
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 16px;
-      }
-
-      .cp-roster-route,
-      .cp-roster-week {
-        font-size: 14px;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-roster-flag {
-        display: block;
-        margin-top: 6px;
-        font-size: 12px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.45);
-      }
-
-      .cp-roster-next {
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-coach-aside {
-        display: grid;
-        gap: 20px;
-      }
-
-      .cp-flag-list {
-        margin-top: 12px;
-        display: grid;
-      }
-
-      .cp-flag-row {
-        padding: 12px 0;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-flag-name {
-        margin: 0;
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 15px;
-      }
-
-      .cp-flag-why {
-        margin: 4px 0 0;
-        font-size: 13px;
-        line-height: 1.5;
-        color: rgba(7, 31, 53, 0.6);
-      }
-
-      .cp-reminder-queue {
-        background: #071f35;
-        border-radius: 18px;
-        padding: 22px;
-      }
-
-      .cp-reminder-queue .cp-card-head {
-        align-items: center;
-      }
-
-      .cp-queue-summary {
-        margin: 10px 0 0;
-        font-size: 15px;
-        line-height: 1.5;
-        color: rgba(255, 255, 255, 0.8);
-      }
-
-      .cp-queue-list {
-        margin-top: 14px;
-        display: grid;
-      }
-
-      .cp-queue-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 11px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
-      }
-
-      .cp-queue-row .cp-dot {
-        margin-top: 6px;
-      }
-
-      .cp-queue-name {
-        margin: 0;
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        color: #fff;
-      }
-
-      .cp-queue-why {
-        margin: 3px 0 0;
-        font-size: 13px;
-        line-height: 1.45;
-        color: rgba(255, 255, 255, 0.6);
-      }
-
-      .cp-cta-primary--light {
-        margin-top: 16px;
-        height: 38px;
-        padding: 0 18px;
-        border-radius: 19px;
-        background: #fff;
-        color: #071f35;
-        font-size: 13px;
-      }
-
-      .cp-big-num {
-        margin: 12px 0 0;
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 32px;
-        line-height: 1;
-      }
-
-      /* ===== Side sheet ===== */
-      .cp-sheet-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 200;
-        background: rgba(7, 31, 53, 0.28);
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      .cp-sheet-overlay[hidden] {
-        display: none;
-      }
-
-      .cp-sheet-backdrop {
-        flex: 1;
-        cursor: pointer;
-      }
-
-      .cp-sheet {
-        width: min(600px, 100%);
-        height: 100%;
-        background: #fff;
-        border-left: 1px solid rgba(7, 31, 53, 0.1);
-        overflow: auto;
-        padding: 32px 36px 56px;
-        box-sizing: border-box;
-      }
-
-      .cp-sheet-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 20px;
-      }
-
-      .cp-sheet-title {
-        font-family: "Raleway", sans-serif;
-        font-weight: 800;
-        font-size: 30px;
-        line-height: 1.12;
-        letter-spacing: -0.01em;
-        margin: 12px 0 0;
-      }
-
-      .cp-sheet-close {
-        all: unset;
-        cursor: pointer;
-        flex-shrink: 0;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        border: 1px solid rgba(7, 31, 53, 0.12);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        color: rgba(7, 31, 53, 0.55);
-        box-sizing: border-box;
-      }
-
-      .cp-sheet-lede {
-        margin: 16px 0 0;
-        font-size: 16px;
-        line-height: 1.65;
-        color: rgba(7, 31, 53, 0.68);
-      }
-
-      .cp-sheet-rows {
-        margin-top: 28px;
-        border-top: 1px solid rgba(7, 31, 53, 0.08);
-      }
-
-      .cp-sheet-row {
-        border-bottom: 1px solid rgba(7, 31, 53, 0.08);
-        padding: 20px 4px;
-        cursor: pointer;
-      }
-
-      .cp-sheet-row-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .cp-sheet-row-label {
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        font-size: 18px;
-      }
-
-      .cp-sheet-row-meta {
-        margin-left: 10px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(7, 31, 53, 0.4);
-      }
-
-      .cp-sheet-row-plus {
-        font-size: 22px;
-        font-weight: 300;
-        color: rgba(7, 31, 53, 0.35);
-        flex-shrink: 0;
-        transition: transform 0.3s ease;
-      }
-
-      .cp-sheet-row.is-open .cp-sheet-row-plus {
-        transform: rotate(45deg);
-      }
-
-      .cp-sheet-row-body {
-        margin: 14px 0 0;
-        font-size: 16px;
-        line-height: 1.75;
-        font-weight: 300;
-        color: rgba(7, 31, 53, 0.72);
-        max-width: 480px;
-        display: none;
-      }
-
-      .cp-sheet-row.is-open .cp-sheet-row-body {
-        display: block;
-      }
-
-      @media (max-width: 900px) {
-        .cp-client-view,
-        .cp-card-grid,
-        .cp-coach-view,
-        .cp-core-grid {
-          grid-template-columns: 1fr !important;
-        }
-
-        .cp-roster-row {
-          grid-template-columns: 1fr;
-          gap: 4px;
-        }
-      }
+      /* ── all your original styles, unchanged ── */
+      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+      [hidden]{display:none !important;}
+      .cp-kicker{font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cp-kicker--light{color:rgba(255,255,255,.5);}
+      .cp-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;margin:16px 0 0;line-height:1.06;}
+      .cp-auth{min-height:calc(100vh - 5.5rem);display:flex;align-items:center;justify-content:center;padding:24px;}
+      .cp-auth-card{width:100%;max-width:400px;}
+      .cp-dots{display:flex;gap:7px;margin-bottom:26px;}
+      .cp-dots span{width:8px;height:8px;border-radius:999px;}
+      .cp-lede{margin:16px 0 0;font-size:17px;line-height:1.6;font-weight:300;color:rgba(7,31,53,.6);}
+      .cp-input{margin-top:34px;width:100%;height:52px;border-radius:14px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 16px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:16px;color:#071f35;outline:none;box-sizing:border-box;}
+      .cp-input:focus{border-color:rgba(7,31,53,.35);}
+      /* password reveal */
+      .cp-pw-reveal{margin-top:10px;display:flex;align-items:center;gap:10px;}
+      .cp-pw-reveal-line{flex:1;height:1px;background:rgba(7,31,53,.1);}
+      .cp-pw-reveal-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.45);white-space:nowrap;transition:color .15s;}
+      .cp-pw-reveal-btn:hover{color:rgba(7,31,53,.75);}
+      .cp-pw-field{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+      .cp-pw-field.is-open{max-height:80px;}
+      .cp-pw-field .cp-input{margin-top:10px;}
+      .cp-actions{margin-top:12px;display:grid;gap:12px;}
+      .cp-btn-primary{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;width:100%;height:52px;border-radius:26px;background:#071f35;color:#fff;font-size:15px;font-weight:700;text-align:center;transition:opacity .15s ease;}
+      .cp-btn-primary:hover{opacity:.9;}
+      .cp-btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+      .cp-btn-secondary{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;width:100%;height:52px;border-radius:26px;border:1px solid rgba(7,31,53,.15);color:rgba(7,31,53,.7);font-size:15px;font-weight:700;text-align:center;transition:border-color .15s;}
+      .cp-btn-secondary:hover{border-color:rgba(7,31,53,.35);}
+      .cp-btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
+      .cp-auth-error{margin-top:12px;padding:10px 14px;border-radius:10px;background:rgba(240,35,72,.08);border:1px solid rgba(240,35,72,.2);font-size:14px;color:#c01a38;display:none;}
+      .cp-auth-error.show{display:block;}
+      .cp-hint{margin:20px 0 0;font-size:14px;line-height:1.6;color:rgba(7,31,53,.5);}
+      .cp-auth-footer{margin-top:36px;padding-top:24px;border-top:1px solid rgba(7,31,53,.08);display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-size:14px;}
+      .cp-auth-footer span{color:rgba(7,31,53,.55);}
+      .cp-auth-footer a{font-weight:700;text-decoration:underline;text-underline-offset:4px;}
+      .cp-back{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.5);}
+      .cp-code-row{margin-top:34px;display:flex;gap:10px;}
+      .cp-code-input{width:100%;height:64px;border-radius:14px;border:1px solid rgba(7,31,53,.15);background:#fff;text-align:center;font-family:"Raleway",sans-serif;font-weight:800;font-size:24px;color:#071f35;outline:none;box-sizing:border-box;}
+      .cp-code-input:focus{border-color:rgba(7,31,53,.35);}
+      .cp-code-meta{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:14px;}
+      .cp-code-meta span{color:rgba(7,31,53,.5);}
+      .cp-code-meta a{font-weight:700;text-decoration:underline;text-underline-offset:4px;}
+      #cpStepCode .cp-btn-primary{margin-top:26px;}
+      .cp-magic-sent{text-align:center;padding:20px 0;}
+      .cp-magic-icon{font-size:40px;margin-bottom:16px;}
+      .cp-magic-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;margin:0 0 12px;}
+      .cp-magic-body{font-size:15px;line-height:1.6;color:rgba(7,31,53,.6);margin:0;}
+      /* dashboard */
+      .cp-dash{width:min(100%,1120px);margin:0 auto;padding:24px 24px 96px;}
+      .cp-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:24px 0 36px;flex-wrap:wrap;}
+      .cp-route-line{margin:14px 0 0;font-size:17px;line-height:1.6;color:rgba(7,31,53,.62);}
+      .cp-view-toggle{display:flex;gap:2px;padding:4px;border-radius:999px;border:1px solid rgba(7,31,53,.1);background:#fff;flex-shrink:0;}
+      .cp-view-btn{all:unset;cursor:pointer;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
+      .cp-view-btn.is-active{color:#071f35;background:rgba(7,31,53,.06);}
+      .cp-signout-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.4);letter-spacing:.04em;}
+      .cp-signout-btn:hover{color:rgba(7,31,53,.7);}
+      .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
+      .cp-core-rail{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:22px;}
+      .cp-core-list{margin-top:16px;display:grid;gap:2px;}
+      .cp-core-row{display:grid;gap:7px;padding:11px 10px;border-radius:12px;}
+      .cp-core-row-top{display:flex;align-items:center;gap:8px;}
+      .cp-dot{width:8px;height:8px;border-radius:999px;flex-shrink:0;}
+      .cp-core-label{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;flex:1;}
+      .cp-core-pct{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-meter{height:4px;border-radius:999px;background:rgba(7,31,53,.07);overflow:hidden;}
+      .cp-meter-fill{height:100%;border-radius:999px;}
+      .cp-route-box{margin-top:20px;padding-top:18px;border-top:1px solid rgba(7,31,53,.1);}
+      .cp-label{margin:0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-route{margin:6px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;}
+      .cp-week{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.55);}
+      .cp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+      .cp-reminder-bar{grid-column:1 / -1;background:#071f35;border-radius:18px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+      .cp-reminder-text{cursor:pointer;}
+      .cp-reminder-line{margin:8px 0 0;font-size:17px;line-height:1.5;color:#fff;}
+      .cp-reminder-controls{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+      .cp-pill-btn{all:unset;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);font-size:13px;font-weight:700;color:rgba(255,255,255,.85);text-transform:capitalize;}
+      .cp-toggle{all:unset;cursor:pointer;width:44px;height:26px;border-radius:999px;padding:3px;display:flex;align-items:center;background:rgba(255,255,255,.25);transition:background .2s;box-sizing:border-box;}
+      .cp-toggle.is-on{background:#77d770;}
+      .cp-toggle-knob{width:20px;height:20px;border-radius:999px;background:#fff;transition:transform .22s;transform:translateX(0);display:block;}
+      .cp-toggle.is-on .cp-toggle-knob{transform:translateX(18px);}
+      .cp-toggle--sm{width:38px;height:22px;background:rgba(255,255,255,.25);}
+      .cp-toggle--sm.is-on{background:#77d770;}
+      .cp-toggle--sm .cp-toggle-knob{width:16px;height:16px;}
+      .cp-toggle--sm.is-on .cp-toggle-knob{transform:translateX(16px);}
+      .cp-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;cursor:pointer;transition:box-shadow .18s;}
+      .cp-card:hover{box-shadow:0 14px 34px rgba(7,31,53,.08);}
+      .cp-card--wide{grid-column:1 / -1;}
+      .cp-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+      .cp-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:20px;margin:8px 0 0;}
+      .cp-meta{font-size:13px;font-weight:700;color:rgba(7,31,53,.45);flex-shrink:0;}
+      .cp-body-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
+      .cp-task-list{margin-top:18px;display:grid;}
+      .cp-task-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-task-check{all:unset;cursor:pointer;width:18px;height:18px;border-radius:6px;border:1px solid rgba(7,31,53,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff;background:transparent;box-sizing:border-box;}
+      .cp-task-check.is-done{background:#071f35;}
+      .cp-task-label{flex:1;font-size:15px;line-height:1.5;color:rgba(7,31,53,.8);}
+      .cp-task-label.is-done{text-decoration:line-through;color:rgba(7,31,53,.4);}
+      .cp-task-meta{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-cta-row{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;}
+      .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;}
+      .cp-cta-secondary{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:20px;border:1px solid rgba(7,31,53,.12);font-size:14px;font-weight:700;color:rgba(7,31,53,.7);}
+      .cp-bars{margin-top:22px;display:flex;align-items:flex-end;gap:6px;height:78px;}
+      .cp-bar{flex:1;border-radius:4px;}
+      .cp-caption{margin:12px 0 0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-note-list,.cp-win-list{margin-top:16px;display:grid;}
+      .cp-note-row,.cp-win-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-win-row{align-items:center;}
+      .cp-note-label,.cp-win-label{font-size:15px;line-height:1.5;color:rgba(7,31,53,.75);flex:1;}
+      .cp-note-meta,.cp-win-meta{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);flex-shrink:0;}
+      .cp-metrics-row{margin-top:16px;display:grid;grid-template-columns:1fr 96px;gap:16px;align-items:start;}
+      .cp-metric-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-metric-label{font-size:14px;color:rgba(7,31,53,.6);}
+      .cp-metric-value{font-family:"Raleway",sans-serif;font-weight:800;font-size:15px;}
+      .cp-photo-placeholder{aspect-ratio:2/3;border-radius:12px;border:1px solid rgba(7,31,53,.1);display:flex;align-items:flex-end;padding:8px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);}
+      .cp-photo-placeholder span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;line-height:1.3;color:rgba(7,31,53,.5);}
+      .cp-messages{margin-top:16px;display:grid;gap:12px;}
+      .cp-message{border-radius:14px;background:#f5f5f7;padding:14px 16px;}
+      .cp-message-meta{margin:0;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-message-body{margin:6px 0 0;font-size:15px;line-height:1.55;color:rgba(7,31,53,.75);}
+      .cp-message-input{border-radius:14px;border:1px solid rgba(7,31,53,.1);padding:14px 16px;font-size:15px;color:rgba(7,31,53,.4);}
+      .cp-chip-row{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;}
+      .cp-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.1);font-size:13px;font-weight:700;color:rgba(7,31,53,.75);}
+      .cp-core-grid{margin-top:20px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;}
+      .cp-core-cell-n{font-family:"Raleway",sans-serif;font-weight:800;font-size:38px;line-height:1;color:rgba(7,31,53,.12);}
+      .cp-core-cell-label{margin-top:10px;display:flex;align-items:center;gap:7px;}
+      .cp-core-cell-label span:last-child{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;}
+      .cp-core-cell-note{margin:8px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.6);}
+      .cp-core-cell .cp-meter{margin-top:10px;}
+      .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
+      .cp-roster-card{cursor:default;}
+      .cp-roster-card:hover{box-shadow:none;}
+      .cp-roster-list{margin-top:20px;display:grid;}
+      .cp-roster-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr 110px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-roster-name{font-family:"Raleway",sans-serif;font-weight:700;font-size:16px;}
+      .cp-roster-route,.cp-roster-week{font-size:14px;color:rgba(7,31,53,.6);}
+      .cp-roster-flag{display:block;margin-top:6px;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-roster-next{font-size:13px;font-weight:700;color:rgba(7,31,53,.6);}
+      .cp-coach-aside{display:grid;gap:20px;}
+      .cp-flag-list{margin-top:12px;display:grid;}
+      .cp-flag-row{padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-flag-name{margin:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;}
+      .cp-flag-why{margin:4px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.6);}
+      .cp-reminder-queue{background:#071f35;border-radius:18px;padding:22px;}
+      .cp-reminder-queue .cp-card-head{align-items:center;}
+      .cp-queue-summary{margin:10px 0 0;font-size:15px;line-height:1.5;color:rgba(255,255,255,.8);}
+      .cp-queue-list{margin-top:14px;display:grid;}
+      .cp-queue-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-top:1px solid rgba(255,255,255,.12);}
+      .cp-queue-row .cp-dot{margin-top:6px;}
+      .cp-queue-name{margin:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:#fff;}
+      .cp-queue-why{margin:3px 0 0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.6);}
+      .cp-cta-primary--light{margin-top:16px;height:38px;padding:0 18px;border-radius:19px;background:#fff;color:#071f35;font-size:13px;}
+      .cp-big-num{margin:12px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:32px;line-height:1;}
+      .cp-sheet-overlay{position:fixed;inset:0;z-index:200;background:rgba(7,31,53,.28);display:flex;justify-content:flex-end;}
+      .cp-sheet-overlay[hidden]{display:none;}
+      .cp-sheet-backdrop{flex:1;cursor:pointer;}
+      .cp-sheet{width:min(600px,100%);height:100%;background:#fff;border-left:1px solid rgba(7,31,53,.1);overflow:auto;padding:32px 36px 56px;box-sizing:border-box;}
+      .cp-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
+      .cp-sheet-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:30px;line-height:1.12;letter-spacing:-.01em;margin:12px 0 0;}
+      .cp-sheet-close{all:unset;cursor:pointer;flex-shrink:0;width:34px;height:34px;border-radius:999px;border:1px solid rgba(7,31,53,.12);display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(7,31,53,.55);box-sizing:border-box;}
+      .cp-sheet-lede{margin:16px 0 0;font-size:16px;line-height:1.65;color:rgba(7,31,53,.68);}
+      .cp-sheet-rows{margin-top:28px;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-sheet-row{border-bottom:1px solid rgba(7,31,53,.08);padding:20px 4px;cursor:pointer;}
+      .cp-sheet-row-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+      .cp-sheet-row-label{font-family:"Raleway",sans-serif;font-weight:700;font-size:18px;}
+      .cp-sheet-row-meta{margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-sheet-row-plus{font-size:22px;font-weight:300;color:rgba(7,31,53,.35);flex-shrink:0;transition:transform .3s;}
+      .cp-sheet-row.is-open .cp-sheet-row-plus{transform:rotate(45deg);}
+      .cp-sheet-row-body{margin:14px 0 0;font-size:16px;line-height:1.75;font-weight:300;color:rgba(7,31,53,.72);max-width:480px;display:none;}
+      .cp-sheet-row.is-open .cp-sheet-row-body{display:block;}
+      @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view,.cp-core-grid{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
   <body class="cc-page">
     <main id="cpRoot">
+
+      <!-- AUTH -->
       <section class="cp-auth" id="cpAuth">
         <div class="cp-auth-card">
+
+          <!-- Step: Email -->
           <div class="cp-auth-step" id="cpStepEmail">
             <div class="cp-dots">
-              <span style="background: #77d770"></span>
-              <span style="background: #ffbd59"></span>
-              <span style="background: #2a9df0"></span>
-              <span style="background: #aa70d7"></span>
-              <span style="background: #f02348"></span>
-              <span style="background: #f58b1c"></span>
+              <span style="background:#77d770"></span><span style="background:#ffbd59"></span>
+              <span style="background:#2a9df0"></span><span style="background:#aa70d7"></span>
+              <span style="background:#f02348"></span><span style="background:#f58b1c"></span>
             </div>
             <p class="cp-kicker">Client Portal</p>
             <h1 class="cp-h1">Sign in.</h1>
-            <p class="cp-lede" style="max-width: 333px">Your route | Your pace&nbsp; — all in one place.</p>
-
+            <p class="cp-lede" style="max-width:333px">Your route | Your pace&nbsp;— all in one place.</p>
             <input type="email" id="cpEmailInput" placeholder="you@email.com" class="cp-input" autocomplete="email" />
+            <div class="cp-pw-reveal">
+              <div class="cp-pw-reveal-line"></div>
+              <button type="button" class="cp-pw-reveal-btn" id="cpPwRevealBtn">I know my password</button>
+              <div class="cp-pw-reveal-line"></div>
+            </div>
+            <div class="cp-pw-field" id="cpPwField">
+              <input type="password" id="cpPasswordInput" placeholder="Password" class="cp-input" autocomplete="current-password" />
+            </div>
+            <div class="cp-auth-error" id="cpEmailError"></div>
             <div class="cp-actions">
               <button type="button" class="cp-btn-primary" id="cpEmailSubmit">Email me a sign-in code</button>
+              <button type="button" class="cp-btn-secondary" id="cpPasswordSubmit" hidden>Sign in with password</button>
             </div>
-            <p class="cp-hint">No password. We send a six-digit code that expires in ten minutes.</p>
-
+            <p class="cp-hint" id="cpEmailHint">No password. We send a six-digit code that expires in ten minutes.</p>
             <div class="cp-auth-footer">
               <span>Not a client yet?</span>
               <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noopener noreferrer">Apply for 1:1 Coaching</a>
             </div>
           </div>
 
+          <!-- Step: OTP code -->
           <div class="cp-auth-step" id="cpStepCode" hidden>
             <button type="button" class="cp-back" id="cpBackToEmail">← Use a different email</button>
-            <p class="cp-kicker" style="margin-top: 34px">Check your inbox</p>
+            <p class="cp-kicker" style="margin-top:34px">Check your inbox</p>
             <h1 class="cp-h1">Enter the code.</h1>
-            <p class="cp-lede">We sent a six-digit code to <span id="cpSentTo">your email</span>.</p>
-
+            <p class="cp-lede">We sent a six-digit code to <strong id="cpSentTo">your email</strong>.</p>
             <div class="cp-code-row" id="cpCodeRow"></div>
-
             <div class="cp-code-meta">
-              <span>Code expires in 9:47</span>
+              <span id="cpCountdown">Code expires in 9:59</span>
               <a href="#" id="cpResend">Resend</a>
             </div>
-
+            <div class="cp-auth-error" id="cpCodeError"></div>
             <button type="button" class="cp-btn-primary" id="cpOpenPortal">Open my portal</button>
           </div>
+
+          <!-- Step: Magic link sent -->
+          <div class="cp-auth-step" id="cpStepMagic" hidden>
+            <div class="cp-magic-sent">
+              <div class="cp-magic-icon">✉️</div>
+              <h2 class="cp-magic-title">Check your email</h2>
+              <p class="cp-magic-body">We sent a sign-in link to <strong id="cpMagicEmail"></strong>.<br><br>Click the link in that email to open the portal.</p>
+            </div>
+            <button type="button" class="cp-back" style="margin-top:32px" id="cpBackFromMagic">← Use a different email</button>
+          </div>
+
         </div>
       </section>
 
+      <!-- DASHBOARD -->
       <section class="cp-dash" id="cpDash" hidden>
         <div class="cp-dash-head">
           <div>
@@ -1132,9 +256,12 @@
             <h1 class="cp-h1" id="cpWelcome"></h1>
             <p class="cp-route-line" id="cpRouteLine"></p>
           </div>
-          <div class="cp-view-toggle">
-            <button type="button" class="cp-view-btn is-active" data-view="client">Client view</button>
-            <button type="button" class="cp-view-btn" data-view="coach">Coach view</button>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="cp-view-toggle" id="cpViewToggle" hidden>
+              <button type="button" class="cp-view-btn is-active" data-view="client">Client view</button>
+              <button type="button" class="cp-view-btn" data-view="coach">Coach view</button>
+            </div>
+            <button type="button" class="cp-signout-btn" id="cpSignOut">Sign out</button>
           </div>
         </div>
 
@@ -1148,7 +275,6 @@
               <p class="cp-week" id="cpWeek"></p>
             </div>
           </aside>
-
           <div class="cp-card-grid">
             <div class="cp-reminder-bar">
               <div class="cp-reminder-text" data-open="reminders">
@@ -1161,41 +287,30 @@
                 <button type="button" class="cp-toggle" id="cpRemToggle"><span class="cp-toggle-knob"></span></button>
               </div>
             </div>
-
             <div class="cp-card cp-card--wide" data-open="plan">
               <div class="cp-card-head">
-                <div>
-                  <p class="cp-kicker">This Week</p>
-                  <h3 class="cp-card-title">Your plan · <span id="cpWeekLine2"></span></h3>
-                </div>
+                <div><p class="cp-kicker">This Week</p><h3 class="cp-card-title">Your plan · <span id="cpWeekLine2"></span></h3></div>
                 <span class="cp-meta" id="cpTaskCount"></span>
               </div>
               <div class="cp-task-list" id="cpTaskList"></div>
             </div>
-
             <div class="cp-card" data-open="session">
               <p class="cp-kicker">Next Session</p>
               <h3 class="cp-card-title">Weekly strategy call</h3>
               <p class="cp-body-text">Thursday · 9:00 AM · 45 min with Tyler</p>
-              <div class="cp-cta-row">
-                <span class="cp-cta-primary">Join call</span>
-                <span class="cp-cta-secondary">Reschedule</span>
-              </div>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Join call</span><span class="cp-cta-secondary">Reschedule</span></div>
             </div>
-
             <div class="cp-card" data-open="streaks">
               <p class="cp-kicker">Consistency</p>
               <h3 class="cp-card-title" id="cpStreakLine"></h3>
               <div class="cp-bars" id="cpBars"></div>
               <p class="cp-caption">Last 14 weeks</p>
             </div>
-
             <div class="cp-card" data-open="notes">
               <p class="cp-kicker">Session Notes</p>
               <h3 class="cp-card-title">Recaps &amp; decisions</h3>
               <div class="cp-note-list" id="cpNoteList"></div>
             </div>
-
             <div class="cp-card" data-open="metrics">
               <p class="cp-kicker">Body Metrics</p>
               <h3 class="cp-card-title">Trend &amp; photos</h3>
@@ -1204,37 +319,27 @@
                 <div class="cp-photo-placeholder"><span>progress photo wk 14</span></div>
               </div>
             </div>
-
             <div class="cp-card" data-open="messages">
               <p class="cp-kicker">Messages</p>
               <h3 class="cp-card-title">Between sessions</h3>
               <div class="cp-messages">
-                <div class="cp-message">
-                  <p class="cp-message-meta">Tyler · yesterday</p>
-                  <p class="cp-message-body">Swap Thursday's lower session to Friday — travel week.</p>
-                </div>
+                <div class="cp-message"><p class="cp-message-meta">Tyler · yesterday</p><p class="cp-message-body">Swap Thursday's lower session to Friday — travel week.</p></div>
                 <div class="cp-message-input">Write a message…</div>
               </div>
             </div>
-
             <div class="cp-card" data-open="library">
               <p class="cp-kicker">Resource Library</p>
               <h3 class="cp-card-title">Assigned to you</h3>
               <div class="cp-chip-row" id="cpResourceChips"></div>
             </div>
-
             <div class="cp-card" data-open="wins">
               <p class="cp-kicker">Milestones</p>
               <h3 class="cp-card-title">Wins on record</h3>
               <div class="cp-win-list" id="cpWinList"></div>
             </div>
-
             <div class="cp-card cp-card--wide" data-open="cores">
               <div class="cp-card-head">
-                <div>
-                  <p class="cp-kicker">Six Core System</p>
-                  <h3 class="cp-card-title">Structure installed to date</h3>
-                </div>
+                <div><p class="cp-kicker">Six Core System</p><h3 class="cp-card-title">Structure installed to date</h3></div>
                 <span class="cp-meta">Open detail</span>
               </div>
               <div class="cp-core-grid" id="cpCoreGrid"></div>
@@ -1249,10 +354,7 @@
             <div class="cp-roster-list" id="cpRosterList"></div>
           </div>
           <aside class="cp-coach-aside">
-            <div class="cp-card cp-roster-card">
-              <p class="cp-kicker">Needs Attention</p>
-              <div class="cp-flag-list" id="cpFlagList"></div>
-            </div>
+            <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
             <div class="cp-reminder-queue">
               <div class="cp-card-head">
                 <p class="cp-kicker cp-kicker--light">Reminder Queue</p>
@@ -1265,7 +367,7 @@
             <div class="cp-card cp-roster-card">
               <p class="cp-kicker">This Week</p>
               <p class="cp-big-num">14 calls</p>
-              <p class="cp-body-text" style="margin-top: 6px">9 recaps written · 5 pending</p>
+              <p class="cp-body-text" style="margin-top:6px">9 recaps written · 5 pending</p>
             </div>
           </aside>
         </div>
@@ -1276,565 +378,15 @@
       <div class="cp-sheet-backdrop" id="cpSheetBackdrop"></div>
       <div class="cp-sheet">
         <div class="cp-sheet-head">
-          <div>
-            <p class="cp-kicker" id="cpSheetKicker"></p>
-            <h2 class="cp-sheet-title" id="cpSheetTitle"></h2>
-          </div>
-          <button type="button" class="cp-sheet-close" id="cpSheetClose" aria-label="Close detail panel">×</button>
+          <div><p class="cp-kicker" id="cpSheetKicker"></p><h2 class="cp-sheet-title" id="cpSheetTitle"></h2></div>
+          <button type="button" class="cp-sheet-close" id="cpSheetClose" aria-label="Close">×</button>
         </div>
         <p class="cp-sheet-lede" id="cpSheetLede"></p>
         <div class="cp-sheet-rows" id="cpSheetRows"></div>
       </div>
     </div>
 
-    <script>
-      (function () {
-        var clientName = "Marcus";
-        var route = "The 10K";
-        var weekLine = "week 14 of 26";
-
-        var cores = [
-          { n: "01", label: "Body", color: "#77d770", pct: 78, note: "Strength split + meal rotation" },
-          { n: "02", label: "Mind", color: "#2a9df0", pct: 64, note: "3-task weekly execution filter" },
-          { n: "03", label: "Art", color: "#ffbd59", pct: 41, note: "Weekly creative block held" },
-          { n: "04", label: "Soul", color: "#aa70d7", pct: 52, note: "Sleep anchor + weekly reflection" },
-          { n: "05", label: "Career", color: "#f02348", pct: 70, note: "5Ps audit complete" },
-          { n: "06", label: "Life", color: "#f58b1c", pct: 35, note: "Calendar architecture in progress" }
-        ];
-
-        var taskData = [
-          { id: "t1", label: "Lower strength session — squat wave 3", color: "#77d770", meta: "Body" },
-          { id: "t2", label: "Hit 2,650 kcal on four weekdays", color: "#77d770", meta: "Body" },
-          { id: "t3", label: "Sunday reset: plan the three tasks", color: "#2a9df0", meta: "Mind" },
-          { id: "t4", label: "90-minute creative block, phone out of room", color: "#ffbd59", meta: "Art" },
-          { id: "t5", label: "Lights out by 10:45 — five nights", color: "#aa70d7", meta: "Soul" },
-          { id: "t6", label: "Draft the 5Ps pay/place notes for Thursday", color: "#f02348", meta: "Career" }
-        ];
-
-        var details = {
-          plan: {
-            kicker: "This Week",
-            title: "Week 14 assignments",
-            lede: "Six assignments across three active cores. Everything here was set on Thursday's call and adjusts if the week breaks.",
-            rows: [
-              { label: "Body — training", meta: "4 sessions", body: "Squat wave 3 on Monday, upper push Tuesday, lower accessory Friday, optional conditioning Saturday. Travel Thursday means the substitution matrix applies: swap lower to Friday, keep the push." },
-              { label: "Body — nutrition", meta: "2,650 kcal", body: "Four weekday hits is the target, not seven. Use the five-meal rotation and keep the weekend loose — the trend line matters, the days don't." },
-              { label: "Mind — weekly reset", meta: "Sunday", body: "Three tasks, written down, before the week starts. If more than three feel urgent, the filter is: which one moves a core forward." },
-              { label: "Art — creative block", meta: "90 min", body: "One block, phone in another room, project roadmap open. Output cadence is weekly — the block counts even when the output is bad." },
-              { label: "Soul — sleep anchor", meta: "5 nights", body: "Lights out by 10:45. This is the anchor the rest of the week hangs on; when it slips, training and focus slip two days later." }
-            ]
-          },
-          cores: {
-            kicker: "Six Core System",
-            title: "Structure installed to date",
-            lede: "Each core is scored on structure in place, not effort spent. Low numbers are not failures — they are the cores we have not opened yet.",
-            rows: [
-              { label: "Body Core", meta: "78%", body: "Personalized weekly split, calorie targets, five-meal rotation, and the travel substitution matrix are all live. Remaining: step-count baseline and cardio integration." },
-              { label: "Mind Core", meta: "64%", body: "Three-task execution framework and the weekly reset are running. Remaining: friction audit and the minimum-viable-week fallback for busy seasons." },
-              { label: "Art Core", meta: "41%", body: "Weekly creative block is on the calendar and holding four weeks running. Remaining: one active project roadmap with milestones." },
-              { label: "Soul Core", meta: "52%", body: "Sleep rhythm anchoring and weekly reflection in place. Remaining: stress reset protocol for high-pressure weeks." },
-              { label: "Career Core", meta: "70%", body: "5Ps alignment audit complete — pay and problem strong, place unresolved. Remaining: promotion-vs-pivot framework." },
-              { label: "Life Core", meta: "35%", body: "Opens in week 18. Calendar architecture is the first block, then household systems and environment design." }
-            ]
-          },
-          session: {
-            kicker: "Upcoming Session",
-            title: "Thursday, 9:00 AM",
-            lede: "45 minutes with Tyler. Agenda is set from last week's open items and this week's adherence.",
-            rows: [
-              { label: "Agenda", meta: "45 min", body: "Travel week adjustments, the 5Ps place question, and whether the Art block cadence holds at weekly or moves to twice weekly." },
-              { label: "Bring with you", meta: "Prep", body: "Your pay/place notes and a read on which two assignments felt heaviest this week." },
-              { label: "Reschedule window", meta: "Open", body: "Any slot Tuesday through Friday before noon. Moving inside 12 hours of the call uses one of your two annual reschedules." }
-            ]
-          },
-          notes: {
-            kicker: "Session Notes",
-            title: "Recaps & decisions",
-            lede: "Every call ends with a written recap: what changed, what was decided, what carries forward.",
-            rows: [
-              { label: "Week 13 recap", meta: "Aug 14", body: "Decided to hold the Art block at weekly rather than forcing daily output. Lower session moved to Friday for travel. Sleep anchor held five of seven." },
-              { label: "Week 12 recap", meta: "Aug 7", body: "Squat wave reset after a stalled top set. Added the five-meal rotation to remove weekday food decisions entirely." },
-              { label: "Week 11 recap", meta: "Jul 31", body: "5Ps audit run. Pay and problem scored high, place scored low — flagged for a longer conversation in week 14." },
-              { label: "Week 10 recap", meta: "Jul 24", body: "First full week with the three-task filter. Consistency jumped from four to six days without adding time." }
-            ]
-          },
-          streaks: {
-            kicker: "Consistency",
-            title: "Fourteen weeks of adherence",
-            lede: "Adherence is measured against the assignments actually set that week — not a fixed ideal.",
-            rows: [
-              { label: "Current streak", meta: "6 weeks", body: "Six consecutive weeks above 70% adherence. The longest stretch since the program started." },
-              { label: "Weakest link", meta: "Sleep", body: "The sleep anchor is the first thing to slip in a heavy week, and training adherence follows it about two days later." },
-              { label: "Minimum viable week", meta: "Fallback", body: "Two training sessions, one creative block, and the Sunday reset. Hitting that in a bad week still counts as a green week." }
-            ]
-          },
-          metrics: {
-            kicker: "Body Metrics",
-            title: "Trend & progress photos",
-            lede: "Weekly bodyweight trend, strength markers, and a photo every fourteen days. Single days are noise.",
-            rows: [
-              { label: "Bodyweight trend", meta: "-8.4 lb", body: "Down 8.4 lb over 14 weeks, trending -0.6 lb per week — inside the target band for holding strength." },
-              { label: "Strength markers", meta: "3 lifts", body: "Squat, bench, and row estimated 1RMs all up. Squat is the outlier: +35 lb since week one." },
-              { label: "Progress photos", meta: "Every 14 days", body: "Same lighting, same time of day, same three angles. Uploads are private to you and your coach." }
-            ]
-          },
-          library: {
-            kicker: "Resource Library",
-            title: "Assigned to you",
-            lede: "Tools pulled from the Chasing Change library, filtered to the cores you have open right now.",
-            rows: [
-              { label: "Split Sculptor", meta: "Body", body: "Your current weekly split lives here, including the travel substitution matrix." },
-              { label: "Macro Calculator", meta: "Body", body: "Set to 2,650 kcal at your current bodyweight. Recalculate at each 5 lb change." },
-              { label: "1RM Calculator", meta: "Body", body: "Used to set the squat wave percentages. Update after each top set." },
-              { label: "5 Ps Career Fit Calculator", meta: "Career", body: "The audit behind week 11's scoring. Re-run it after the place conversation." },
-              { label: "I AM Worksheet", meta: "Mind", body: "Assigned for week 15 alongside the friction audit." }
-            ]
-          },
-          messages: {
-            kicker: "Messages",
-            title: "Between sessions",
-            lede: "Direct coach access for the things that cannot wait for Thursday: missed routines, obstacles, decision points.",
-            rows: [
-              { label: "Tyler", meta: "Yesterday", body: "Swap Thursday's lower session to Friday — travel week. Keep the push where it is." },
-              { label: "You", meta: "2 days ago", body: "Flight moved to Thursday morning. Training is the thing at risk." },
-              { label: "Tyler", meta: "Last week", body: "Six days of adherence with no extra time spent. That is the filter working — do not add anything yet." }
-            ]
-          },
-          reminders: {
-            kicker: "Weekly Reminder",
-            title: "How the nudge works",
-            lede: "One reminder a week, listing only what is still open. No daily notifications — the point is a single checkpoint before the call, not a stream of pings.",
-            rows: [
-              { label: "Send day & time", meta: "Editable", body: "Default is Tuesday at 7:00 AM — two days before Thursday's call, early enough to fix the week. Monday and Sunday evening are the other options." },
-              { label: "What it contains", meta: "Open items only", body: "Just the assignments you have not checked off, grouped by core, with the count and the call date. Completed items are never repeated back to you." },
-              { label: "Channel", meta: "Text · email · push", body: "Text by default. Email includes the full week's plan; push is the shortest version — count and tap through to the portal." },
-              { label: "If the week is broken", meta: "Fallback", body: "When fewer than two items are checked by the send day, the reminder switches to the minimum viable week: two sessions, one creative block, the Sunday reset." },
-              { label: "Escalation to your coach", meta: "Silence after 5 days", body: "No activity for five days after the reminder and your coach sees it in their queue — a nudge from a person, not another notification." }
-            ]
-          },
-          wins: {
-            kicker: "Milestones",
-            title: "Wins on record",
-            lede: "Logged as they happen, so a slow week has context.",
-            rows: [
-              { label: "Squat +35 lb", meta: "Week 12", body: "From the week-one baseline, with bodyweight down 8 lb over the same stretch." },
-              { label: "Six-week streak", meta: "Week 14", body: "Longest run of green weeks since starting. Previous best was three." },
-              { label: "Creative block held 4 weeks", meta: "Week 13", body: "First time creative work has survived a busy stretch instead of being the first thing cut." },
-              { label: "5Ps audit complete", meta: "Week 11", body: "First structured read on whether the current role supports the direction." }
-            ]
-          }
-        };
-
-        var roster = [
-          { name: "Marcus T.", route: "The 10K", week: "Wk 14 / 26", adh: 86, flag: "On track", color: "#77d770", next: "Tue 9:00 AM" },
-          { name: "Devon R.", route: "The Marathon", week: "Wk 22 / 39", adh: 74, flag: "On track", color: "#77d770", next: "Tue 4:30 PM" },
-          { name: "Priya S.", route: "The 5K", week: "Wk 6 / 12", adh: 58, flag: "Needs a nudge", color: "#f58b1c", next: "Wed 8:00 AM" },
-          { name: "Alex M.", route: "The 10K", week: "Wk 3 / 26", adh: 91, flag: "On track", color: "#77d770", next: "Wed 12:00 PM" },
-          { name: "Jamie L.", route: "The 5K", week: "Wk 9 / 12", adh: 34, flag: "At risk", color: "#f02348", next: "Thu 7:30 AM" }
-        ];
-
-        var flags = [
-          { name: "Jamie L.", why: "Two missed calls and no check-in for 11 days. Route ends in three weeks." },
-          { name: "Priya S.", why: "Training adherence fine, sleep anchor slipping four weeks running." },
-          { name: "Devon R.", why: "Life Core opens next week — calendar audit not sent yet." }
-        ];
-
-        var remQueue = [
-          { name: "Jamie L.", why: "5 of 6 open · no check-in for 11 days", color: "#f02348" },
-          { name: "Priya S.", why: "3 of 5 open · sleep anchor slipping", color: "#f58b1c" },
-          { name: "Devon R.", why: "1 of 6 open · on track", color: "#77d770" }
-        ];
-
-        var metrics = [
-          { label: "Bodyweight trend", value: "−8.4 lb" },
-          { label: "Est. squat 1RM", value: "+35 lb" },
-          { label: "Last photo", value: "Week 14" }
-        ];
-
-        var resources = [
-          { label: "Split Sculptor", color: "#77d770" },
-          { label: "Macro Calculator", color: "#77d770" },
-          { label: "1RM Calculator", color: "#77d770" },
-          { label: "5 Ps Career Fit", color: "#f02348" },
-          { label: "I AM Worksheet", color: "#2a9df0" }
-        ];
-
-        var noteList = [
-          { label: "Held Art block at weekly cadence", meta: "Wk 13" },
-          { label: "Squat wave reset after stalled top set", meta: "Wk 12" },
-          { label: "5Ps audit — place scored low", meta: "Wk 11" }
-        ];
-
-        var wins = [
-          { label: "Squat +35 lb from baseline", meta: "Wk 12", color: "#77d770" },
-          { label: "Six consecutive green weeks", meta: "Wk 14", color: "#2a9df0" },
-          { label: "Creative block held four weeks", meta: "Wk 13", color: "#ffbd59" }
-        ];
-
-        var barValues = [42, 55, 38, 61, 70, 48, 66, 74, 58, 80, 86, 72, 91, 84];
-        var remDays = ["Monday", "Tuesday", "Sunday"];
-        var remChannels = ["text", "email", "push"];
-
-        var state = {
-          loginStep: "email",
-          loginEmail: "",
-          view: "client",
-          openCard: null,
-          openRows: {},
-          done: {},
-          remOn: true,
-          remDayIdx: 1,
-          remChIdx: 0
-        };
-
-        var $ = function (id) {
-          return document.getElementById(id);
-        };
-
-        function escapeHtml(s) {
-          return String(s).replace(/[&<>"']/g, function (c) {
-            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-          });
-        }
-
-        // ===== Auth =====
-        function renderAuth() {
-          $("cpStepEmail").hidden = state.loginStep !== "email";
-          $("cpStepCode").hidden = state.loginStep !== "code";
-          $("cpSentTo").textContent = state.loginEmail || "your email";
-        }
-
-        $("cpEmailInput").addEventListener("input", function (e) {
-          state.loginEmail = e.target.value;
-        });
-
-        $("cpEmailSubmit").addEventListener("click", function () {
-          state.loginStep = "code";
-          renderAuth();
-          var first = $("cpCodeRow").querySelector("input");
-          if (first) first.focus();
-        });
-
-        $("cpBackToEmail").addEventListener("click", function () {
-          state.loginStep = "email";
-          renderAuth();
-        });
-
-        $("cpResend").addEventListener("click", function (e) {
-          e.preventDefault();
-        });
-
-        var codeRow = $("cpCodeRow");
-        for (var ci = 0; ci < 6; ci++) {
-          var input = document.createElement("input");
-          input.type = "text";
-          input.maxLength = 1;
-          input.inputMode = "numeric";
-          input.className = "cp-code-input";
-          input.addEventListener("input", function (e) {
-            var el = e.target;
-            el.value = el.value.replace(/[^0-9]/g, "");
-            if (el.value && el.nextElementSibling) el.nextElementSibling.focus();
-          });
-          input.addEventListener("keydown", function (e) {
-            if (e.key === "Backspace" && !e.target.value && e.target.previousElementSibling) {
-              e.target.previousElementSibling.focus();
-            }
-          });
-          codeRow.appendChild(input);
-        }
-
-        $("cpOpenPortal").addEventListener("click", function () {
-          $("cpAuth").hidden = true;
-          $("cpDash").hidden = false;
-          renderDash();
-        });
-
-        // ===== Dashboard =====
-        function taskDoneCount(tasks) {
-          var open = 0;
-          for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) open++;
-          return open;
-        }
-
-        function renderCoreList() {
-          var html = "";
-          for (var i = 0; i < cores.length; i++) {
-            var c = cores[i];
-            html +=
-              '<div class="cp-core-row">' +
-              '<div class="cp-core-row-top">' +
-              '<span class="cp-dot" style="background:' + c.color + '"></span>' +
-              '<span class="cp-core-label">' + c.label + "</span>" +
-              '<span class="cp-core-pct">' + c.pct + "%</span>" +
-              "</div>" +
-              '<div class="cp-meter"><div class="cp-meter-fill" style="width:' + c.pct + "%;background:" + c.color + '"></div></div>' +
-              "</div>";
-          }
-          $("cpCoreList").innerHTML = html;
-        }
-
-        function renderCoreGrid() {
-          var html = "";
-          for (var i = 0; i < cores.length; i++) {
-            var c = cores[i];
-            html +=
-              '<div class="cp-core-cell">' +
-              '<span class="cp-core-cell-n">' + c.n + "</span>" +
-              '<div class="cp-core-cell-label"><span class="cp-dot" style="background:' + c.color + '"></span><span>' + c.label + "</span></div>" +
-              '<p class="cp-core-cell-note">' + c.note + "</p>" +
-              '<div class="cp-meter"><div class="cp-meter-fill" style="width:' + c.pct + "%;background:" + c.color + '"></div></div>' +
-              "</div>";
-          }
-          $("cpCoreGrid").innerHTML = html;
-        }
-
-        function renderTasks() {
-          var html = "";
-          for (var i = 0; i < taskData.length; i++) {
-            var t = taskData[i];
-            var done = !!state.done[t.id];
-            html +=
-              '<div class="cp-task-row">' +
-              '<button type="button" class="cp-task-check' + (done ? " is-done" : "") + '" data-task="' + t.id + '">' + (done ? "✓" : "") + "</button>" +
-              '<span class="cp-dot" style="background:' + t.color + '"></span>' +
-              '<span class="cp-task-label' + (done ? " is-done" : "") + '">' + escapeHtml(t.label) + "</span>" +
-              '<span class="cp-task-meta">' + t.meta + "</span>" +
-              "</div>";
-          }
-          $("cpTaskList").innerHTML = html;
-          $("cpTaskCount").textContent = taskData.length + " assignments";
-        }
-
-        function renderBars() {
-          var max = Math.max.apply(null, barValues);
-          var html = "";
-          for (var i = 0; i < barValues.length; i++) {
-            var v = barValues[i];
-            var h = Math.round((v / max) * 78);
-            var bg = v >= 70 ? "#071f35" : "rgba(7,31,53,0.16)";
-            html += '<div class="cp-bar" style="height:' + h + "px;background:" + bg + '"></div>';
-          }
-          $("cpBars").innerHTML = html;
-        }
-
-        function renderNotes() {
-          var html = "";
-          for (var i = 0; i < noteList.length; i++) {
-            html +=
-              '<div class="cp-note-row"><span class="cp-note-label">' + escapeHtml(noteList[i].label) + "</span><span class=\"cp-note-meta\">" + noteList[i].meta + "</span></div>";
-          }
-          $("cpNoteList").innerHTML = html;
-        }
-
-        function renderWins() {
-          var html = "";
-          for (var i = 0; i < wins.length; i++) {
-            var w = wins[i];
-            html +=
-              '<div class="cp-win-row"><span class="cp-dot" style="background:' + w.color + '"></span><span class="cp-win-label">' + escapeHtml(w.label) + '</span><span class="cp-win-meta">' + w.meta + "</span></div>";
-          }
-          $("cpWinList").innerHTML = html;
-        }
-
-        function renderMetrics() {
-          var html = "";
-          for (var i = 0; i < metrics.length; i++) {
-            html +=
-              '<div class="cp-metric-row"><span class="cp-metric-label">' + metrics[i].label + '</span><span class="cp-metric-value">' + metrics[i].value + "</span></div>";
-          }
-          $("cpMetricList").innerHTML = html;
-        }
-
-        function renderChips() {
-          var html = "";
-          for (var i = 0; i < resources.length; i++) {
-            var r = resources[i];
-            html +=
-              '<span class="cp-chip"><span class="cp-dot" style="background:' + r.color + '"></span>' + escapeHtml(r.label) + "</span>";
-          }
-          $("cpResourceChips").innerHTML = html;
-        }
-
-        function renderRoster() {
-          var html = "";
-          for (var i = 0; i < roster.length; i++) {
-            var c = roster[i];
-            html +=
-              '<div class="cp-roster-row">' +
-              '<span class="cp-roster-name">' + escapeHtml(c.name) + "</span>" +
-              '<span class="cp-roster-route">' + c.route + "</span>" +
-              '<span class="cp-roster-week">' + c.week + "</span>" +
-              "<div>" +
-              '<div class="cp-meter"><div class="cp-meter-fill" style="width:' + c.adh + "%;background:" + c.color + '"></div></div>' +
-              '<span class="cp-roster-flag">' + c.flag + "</span>" +
-              "</div>" +
-              '<span class="cp-roster-next">' + c.next + "</span>" +
-              "</div>";
-          }
-          $("cpRosterList").innerHTML = html;
-        }
-
-        function renderFlags() {
-          var html = "";
-          for (var i = 0; i < flags.length; i++) {
-            html +=
-              '<div class="cp-flag-row"><p class="cp-flag-name">' + escapeHtml(flags[i].name) + '</p><p class="cp-flag-why">' + escapeHtml(flags[i].why) + "</p></div>";
-          }
-          $("cpFlagList").innerHTML = html;
-        }
-
-        function renderQueue() {
-          var html = "";
-          for (var i = 0; i < remQueue.length; i++) {
-            var q = remQueue[i];
-            html +=
-              '<div class="cp-queue-row"><span class="cp-dot" style="background:' + q.color + '"></span><div><p class="cp-queue-name">' + escapeHtml(q.name) + '</p><p class="cp-queue-why">' + escapeHtml(q.why) + "</p></div></div>";
-          }
-          $("cpQueueList").innerHTML = html;
-        }
-
-        function renderReminder() {
-          var day = remDays[state.remDayIdx];
-          var ch = remChannels[state.remChIdx];
-          $("cpRemDay").textContent = day;
-          $("cpRemChannel").textContent = ch;
-          $("cpRemToggle").classList.toggle("is-on", state.remOn);
-          $("cpRemToggleCoach").classList.toggle("is-on", state.remOn);
-
-          var openCount = taskDoneCount(taskData);
-          var line = state.remOn
-            ? openCount + " of " + taskData.length + " still open — reminder goes out " + day + " 7:00 AM by " + ch + "."
-            : "Reminders are off. You will not be nudged before Thursday's call.";
-          $("cpRemLine").textContent = line;
-          $("cpQueueSummary").textContent = "5 queued · sends " + day + " 7:00 AM by " + ch;
-        }
-
-        function renderHeader() {
-          $("cpWelcome").textContent = "Welcome back, " + clientName + ".";
-          $("cpRouteLine").textContent = route + " · " + weekLine + " · both coaches, weekly cadence";
-          $("cpRoute").textContent = route;
-          $("cpWeek").textContent = weekLine;
-          $("cpWeekLine2").textContent = weekLine;
-          $("cpStreakLine").textContent = "6-week streak";
-        }
-
-        function renderViewToggle() {
-          document.querySelectorAll(".cp-view-btn").forEach(function (btn) {
-            btn.classList.toggle("is-active", btn.getAttribute("data-view") === state.view);
-          });
-          $("cpClientView").hidden = state.view !== "client";
-          $("cpCoachView").hidden = state.view !== "coach";
-        }
-
-        function renderDash() {
-          renderHeader();
-          renderViewToggle();
-          renderCoreList();
-          renderCoreGrid();
-          renderTasks();
-          renderBars();
-          renderNotes();
-          renderWins();
-          renderMetrics();
-          renderChips();
-          renderRoster();
-          renderFlags();
-          renderQueue();
-          renderReminder();
-        }
-
-        document.querySelectorAll(".cp-view-btn").forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            state.view = btn.getAttribute("data-view");
-            renderViewToggle();
-          });
-        });
-
-        $("cpRemDay").addEventListener("click", function () {
-          state.remDayIdx = (state.remDayIdx + 1) % remDays.length;
-          renderReminder();
-        });
-
-        $("cpRemChannel").addEventListener("click", function () {
-          state.remChIdx = (state.remChIdx + 1) % remChannels.length;
-          renderReminder();
-        });
-
-        function toggleRem() {
-          state.remOn = !state.remOn;
-          renderReminder();
-        }
-
-        $("cpRemToggle").addEventListener("click", toggleRem);
-        $("cpRemToggleCoach").addEventListener("click", toggleRem);
-
-        $("cpTaskList").addEventListener("click", function (e) {
-          var btn = e.target.closest(".cp-task-check");
-          if (!btn) return;
-          e.stopPropagation();
-          var id = btn.getAttribute("data-task");
-          state.done[id] = !state.done[id];
-          renderTasks();
-          renderReminder();
-        });
-
-        // ===== Side sheet =====
-        function openSheet(key) {
-          var d = details[key];
-          if (!d) return;
-          state.openCard = key;
-          $("cpSheetKicker").textContent = d.kicker;
-          $("cpSheetTitle").textContent = d.title;
-          $("cpSheetLede").textContent = d.lede;
-
-          var html = "";
-          for (var i = 0; i < d.rows.length; i++) {
-            var r = d.rows[i];
-            var rk = key + ":" + i;
-            var isOpen = !!state.openRows[rk];
-            html +=
-              '<div class="cp-sheet-row' + (isOpen ? " is-open" : "") + '" data-row="' + rk + '">' +
-              '<div class="cp-sheet-row-head">' +
-              "<div><span class=\"cp-sheet-row-label\">" + escapeHtml(r.label) + '</span><span class="cp-sheet-row-meta">' + r.meta + "</span></div>" +
-              '<span class="cp-sheet-row-plus">+</span>' +
-              "</div>" +
-              '<p class="cp-sheet-row-body">' + escapeHtml(r.body) + "</p>" +
-              "</div>";
-          }
-          $("cpSheetRows").innerHTML = html;
-          $("cpSheetOverlay").hidden = false;
-        }
-
-        function closeSheet() {
-          state.openCard = null;
-          $("cpSheetOverlay").hidden = true;
-        }
-
-        document.addEventListener("click", function (e) {
-          var trigger = e.target.closest("[data-open]");
-          if (trigger && !e.target.closest(".cp-task-check")) {
-            openSheet(trigger.getAttribute("data-open"));
-          }
-        });
-
-        $("cpSheetClose").addEventListener("click", closeSheet);
-        $("cpSheetBackdrop").addEventListener("click", closeSheet);
-
-        $("cpSheetRows").addEventListener("click", function (e) {
-          var row = e.target.closest(".cp-sheet-row");
-          if (!row) return;
-          var rk = row.getAttribute("data-row");
-          state.openRows[rk] = !state.openRows[rk];
-          row.classList.toggle("is-open", !!state.openRows[rk]);
-        });
-
-        document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape" && !$("cpSheetOverlay").hidden) closeSheet();
-        });
-
-        renderAuth();
-      })();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="portal.js"></script>
   </body>
 </html>
