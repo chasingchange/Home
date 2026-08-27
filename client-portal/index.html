@@ -188,6 +188,12 @@
       .cp-assign-add{all:unset;cursor:pointer;margin-top:4px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
       .cp-assign-add:hover{color:rgba(7,31,53,.85);}
       .cp-edit-actions{margin-top:32px;display:flex;gap:10px;}
+      .cp-edit-section{margin:36px 0 4px;font-family:"Raleway",sans-serif;font-weight:800;font-size:15px;padding-top:20px;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-edit-input{width:100%;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
+      select.cp-edit-input{height:42px;}
+      .cp-assign-row select{height:42px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
+      .cp-core-edit-label{width:70px;flex-shrink:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;}
+      .cp-message-input{cursor:text;outline:none;box-sizing:border-box;width:100%;font-family:"Muli","Mulish",system-ui,sans-serif;}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
@@ -340,20 +346,20 @@
                 <button type="button" class="cp-toggle" id="cpRemToggle"><span class="cp-toggle-knob"></span></button>
               </div>
             </div>
-            <div class="cp-card cp-card--wide" data-open="plan">
+            <div class="cp-card cp-card--wide" id="cpPlanCard">
               <div class="cp-card-head">
                 <div><p class="cp-kicker">This Week</p><h3 class="cp-card-title">Your plan · <span id="cpWeekLine2"></span></h3></div>
                 <span class="cp-meta" id="cpTaskCount"></span>
               </div>
               <div class="cp-task-list" id="cpTaskList"></div>
             </div>
-            <div class="cp-card" data-open="session">
+            <div class="cp-card" id="cpSessionCard">
               <p class="cp-kicker">Next Session</p>
-              <h3 class="cp-card-title">Weekly strategy call</h3>
-              <p class="cp-body-text">Thursday · 9:00 AM · 45 min with Tyler</p>
+              <h3 class="cp-card-title" id="cpSessionLabel"></h3>
+              <p class="cp-body-text" id="cpSessionAgenda"></p>
               <div class="cp-cta-row"><span class="cp-cta-primary">Join call</span><span class="cp-cta-secondary">Reschedule</span></div>
             </div>
-            <div class="cp-card" data-open="streaks">
+            <div class="cp-card" id="cpStreakCard">
               <p class="cp-kicker">Consistency</p>
               <h3 class="cp-card-title" id="cpStreakLine"></h3>
               <div class="cp-bars" id="cpBars"></div>
@@ -364,28 +370,26 @@
               <h3 class="cp-card-title">Recaps &amp; decisions</h3>
               <div class="cp-note-list" id="cpNoteList"></div>
             </div>
-            <div class="cp-card" data-open="metrics">
+            <div class="cp-card" id="cpMetricsCard">
               <p class="cp-kicker">Body Metrics</p>
               <h3 class="cp-card-title">Trend &amp; photos</h3>
               <div class="cp-metrics-row">
                 <div class="cp-metric-list" id="cpMetricList"></div>
-                <div class="cp-photo-placeholder"><span>progress photo wk 14</span></div>
+                <div class="cp-photo-placeholder"><span>Photo uploads coming soon</span></div>
               </div>
             </div>
-            <div class="cp-card" data-open="messages">
+            <div class="cp-card" id="cpMessagesCard">
               <p class="cp-kicker">Messages</p>
               <h3 class="cp-card-title">Between sessions</h3>
-              <div class="cp-messages">
-                <div class="cp-message"><p class="cp-message-meta">Tyler · yesterday</p><p class="cp-message-body">Swap Thursday's lower session to Friday — travel week.</p></div>
-                <div class="cp-message-input">Write a message…</div>
-              </div>
+              <div class="cp-messages" id="cpMessageList"></div>
+              <input type="text" class="cp-message-input" id="cpMessageInput" placeholder="Write a message…" />
             </div>
-            <div class="cp-card" data-open="library">
+            <div class="cp-card" id="cpLibraryCard">
               <p class="cp-kicker">Resource Library</p>
               <h3 class="cp-card-title">Assigned to you</h3>
               <div class="cp-chip-row" id="cpResourceChips"></div>
             </div>
-            <div class="cp-card" data-open="wins">
+            <div class="cp-card" id="cpWinsCard">
               <p class="cp-kicker">Milestones</p>
               <h3 class="cp-card-title">Wins on record</h3>
               <div class="cp-win-list" id="cpWinList"></div>
@@ -404,16 +408,9 @@
             <div class="cp-reminder-queue">
               <div class="cp-card-head">
                 <p class="cp-kicker cp-kicker--light">Reminder Queue</p>
-                <button type="button" class="cp-toggle cp-toggle--sm" id="cpRemToggleCoach"><span class="cp-toggle-knob"></span></button>
               </div>
               <p class="cp-queue-summary" id="cpQueueSummary"></p>
               <div class="cp-queue-list" id="cpQueueList"></div>
-              <span class="cp-cta-primary cp-cta-primary--light">Send now</span>
-            </div>
-            <div class="cp-card cp-roster-card">
-              <p class="cp-kicker">This Week</p>
-              <p class="cp-big-num">14 calls</p>
-              <p class="cp-body-text" style="margin-top:6px">9 recaps written · 5 pending</p>
             </div>
           </aside>
         </div>
@@ -436,11 +433,16 @@
       <div class="cp-sheet-backdrop" id="cpEditBackdrop"></div>
       <div class="cp-sheet">
         <div class="cp-sheet-head">
-          <div><p class="cp-kicker">Coach Edit</p><h2 class="cp-sheet-title" id="cpEditTitle"></h2></div>
+          <div><p class="cp-kicker">Edit Portal</p><h2 class="cp-sheet-title" id="cpEditTitle"></h2></div>
           <button type="button" class="cp-sheet-close" id="cpEditClose" aria-label="Close">×</button>
         </div>
-        <p class="cp-sheet-lede">Update this client's progress and assignments.</p>
+        <p class="cp-sheet-lede">This is everything this client sees. Changes save when you hit Save.</p>
 
+        <h3 class="cp-edit-section">Overview</h3>
+        <div class="cp-edit-field">
+          <label>Route</label>
+          <input type="text" id="cpEditRoute" class="cp-edit-input" placeholder="The 10K" />
+        </div>
         <div class="cp-edit-field">
           <label>Week</label>
           <div class="cp-edit-week-row">
@@ -449,12 +451,64 @@
             <input type="number" min="1" id="cpEditWeekTotal" />
           </div>
         </div>
-
         <div class="cp-edit-field">
-          <label>Assignments</label>
-          <div class="cp-assign-list" id="cpEditAssignList"></div>
-          <button type="button" class="cp-assign-add" id="cpEditAssignAdd">+ Add assignment</button>
+          <label>Streak (weeks) &amp; adherence (%)</label>
+          <div class="cp-edit-week-row">
+            <input type="number" min="0" id="cpEditStreak" />
+            <span>·</span>
+            <input type="number" min="0" max="100" id="cpEditAdherence" />
+          </div>
         </div>
+        <div class="cp-edit-field">
+          <label>Status</label>
+          <select id="cpEditFlagStatus" class="cp-edit-input">
+            <option>On track</option>
+            <option>Needs a nudge</option>
+            <option>At risk</option>
+          </select>
+        </div>
+        <div class="cp-edit-field">
+          <label>Next session</label>
+          <input type="text" id="cpEditSessionLabel" class="cp-edit-input" placeholder="Thursday, 9:00 AM" />
+          <input type="text" id="cpEditSessionAgenda" class="cp-edit-input" placeholder="Agenda" style="margin-top:8px" />
+        </div>
+        <div class="cp-edit-field">
+          <label>Weekly reminder</label>
+          <div class="cp-edit-week-row">
+            <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
+              <option>Monday</option><option>Tuesday</option><option>Sunday</option>
+            </select>
+            <select id="cpEditReminderChannel" class="cp-edit-input" style="width:110px">
+              <option value="text">text</option><option value="email">email</option><option value="push">push</option>
+            </select>
+            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;">
+              <input type="checkbox" id="cpEditReminderOn" /> On
+            </label>
+          </div>
+        </div>
+
+        <h3 class="cp-edit-section">The Six Cores</h3>
+        <div class="cp-assign-list" id="cpEditCoreList"></div>
+
+        <h3 class="cp-edit-section">This Week's Tasks</h3>
+        <div class="cp-assign-list" id="cpEditTaskList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditTaskAdd">+ Add task</button>
+
+        <h3 class="cp-edit-section">Session Notes</h3>
+        <div class="cp-assign-list" id="cpEditNoteList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditNoteAdd">+ Add recap</button>
+
+        <h3 class="cp-edit-section">Body Metrics</h3>
+        <div class="cp-assign-list" id="cpEditMetricList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditMetricAdd">+ Add metric</button>
+
+        <h3 class="cp-edit-section">Resource Library</h3>
+        <div class="cp-assign-list" id="cpEditResourceList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditResourceAdd">+ Add resource</button>
+
+        <h3 class="cp-edit-section">Wins</h3>
+        <div class="cp-assign-list" id="cpEditWinList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditWinAdd">+ Add win</button>
 
         <div class="cp-edit-actions">
           <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 24px;">Save</button>
