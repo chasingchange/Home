@@ -1,5 +1,13 @@
 (function () {
 
+  // Read the auth link type (recovery / invite / magiclink) before Supabase
+  // processes and clears the URL hash.
+  var urlAuthType = (function(){
+    var raw = (window.location.hash || '') + ' ' + (window.location.search || '');
+    var m = raw.match(/type=([a-z]+)/);
+    return m ? m[1] : null;
+  })();
+
   // ─── Config ───────────────────────────────────────────────────────────
   var SUPABASE_URL = 'https://datrgkjqwyfcbmtwwifm.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
@@ -73,6 +81,9 @@
   var state = {view:"client",openCard:null,openRows:{},done:{},remOn:true,remDayIdx:1,remChIdx:0};
   var pwOpen = true;
   var countdownInterval = null;
+  var pendingUser = null;
+  var pendingProfile = null;
+  var needsPassword = (urlAuthType === 'invite');
 
   var $ = function(id){ return document.getElementById(id); };
 
@@ -81,10 +92,19 @@
   // ─── Check existing session on load ───────────────────────────────────
   (async function(){
     var { data:{ session } } = await sb.auth.getSession();
-    if (session) { showDash(session.user); return; }
+    if (session) {
+      if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
+      showDash(session.user);
+      return;
+    }
 
-    // Handle magic link token in URL (Supabase handles the hash automatically)
+    // Handle magic link / invite / recovery tokens in the URL (Supabase
+    // handles the hash automatically and fires the matching event below).
     sb.auth.onAuthStateChange(function(event, session){
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        showSetPasswordStep(session.user);
+        return;
+      }
       if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         showDash(session.user);
       }
@@ -153,6 +173,8 @@
     setLoading($('cpPasswordSubmit'), false, 'Sign in with password');
 
     if (error) { showErr('cpEmailError','Incorrect email or password.'); return; }
+    // Signing in with a password proves one is set — self-heal the flag.
+    await sb.from('profiles').upsert({ id: data.user.id, has_password: true }, { onConflict: 'id' });
     showDash(data.user);
   });
 
@@ -216,8 +238,8 @@
 
   // ─── Helpers ──────────────────────────────────────────────────────────
   function showStep(id){
-    ['cpStepEmail','cpStepCode','cpStepMagic'].forEach(function(s){ $(s).hidden = s!==id; });
-    hideErr('cpEmailError'); hideErr('cpCodeError');
+    ['cpStepEmail','cpStepCode','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent'].forEach(function(s){ $(s).hidden = s!==id; });
+    hideErr('cpEmailError'); hideErr('cpCodeError'); hideErr('cpNameError'); hideErr('cpSetPasswordError');
   }
 
   function showErr(id, msg){ var e=$(id); e.textContent=msg; e.classList.add('show'); }
@@ -231,11 +253,43 @@
   // ─── Show dashboard ───────────────────────────────────────────────────
   async function showDash(user){
     stopCountdown();
-    $('cpAuth').hidden = true;
-    $('cpDash').hidden = false;
 
     // Get profile from Supabase (role + name)
     var { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+
+    if (needsPassword || (profile && profile.has_password === false)) {
+      needsPassword = false;
+      pendingProfile = profile;
+      showSetPasswordStep(user);
+      return;
+    }
+
+    continueAfterAuthSteps(user, profile);
+  }
+
+  function continueAfterAuthSteps(user, profile){
+    if (!profile || !profile.full_name) {
+      pendingUser = user;
+      $('cpAuth').hidden = false;
+      $('cpDash').hidden = true;
+      showStep('cpStepName');
+      return;
+    }
+
+    renderDash(user, profile);
+  }
+
+  function showSetPasswordStep(user){
+    stopCountdown();
+    pendingUser = user;
+    $('cpAuth').hidden = false;
+    $('cpDash').hidden = true;
+    showStep('cpStepSetPassword');
+  }
+
+  function renderDash(user, profile){
+    $('cpAuth').hidden = true;
+    $('cpDash').hidden = false;
 
     var isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
     var firstName = profile && profile.full_name
@@ -245,7 +299,7 @@
     // Coach toggle only visible to coach
     $('cpViewToggle').hidden = !isCoach;
 
-    $('cpWelcome').textContent    = 'Welcome back, ' + firstName + '.';
+    $('cpWelcome').textContent    = 'Welcome to Your Race, ' + firstName + '.';
     $('cpRouteLine').textContent  = route + ' · ' + weekLine + ' · weekly cadence';
     $('cpRoute').textContent      = route;
     $('cpWeek').textContent       = weekLine;
@@ -254,6 +308,75 @@
 
     renderAll();
   }
+
+  // ─── First-time name capture ───────────────────────────────────────────
+  $('cpNameSubmit').addEventListener('click', async function(){
+    var first = $('cpFirstNameInput').value.trim();
+    var last  = $('cpLastNameInput').value.trim();
+    if (!first || !last) { showErr('cpNameError','Enter your first and last name.'); return; }
+
+    setLoading($('cpNameSubmit'), true, 'Saving…');
+    hideErr('cpNameError');
+
+    var fullName = first + ' ' + last;
+    var { data: profile, error } = await sb
+      .from('profiles')
+      .upsert({ id: pendingUser.id, full_name: fullName }, { onConflict: 'id' })
+      .select()
+      .single();
+
+    setLoading($('cpNameSubmit'), false, 'Continue');
+
+    if (error) { showErr('cpNameError','Could not save your name. Try again.'); return; }
+
+    renderDash(pendingUser, profile);
+    pendingUser = null;
+  });
+
+  // ─── Set / reset password (invite + forgot-password flows) ────────────
+  $('cpSetPasswordSubmit').addEventListener('click', async function(){
+    var pw1 = $('cpNewPasswordInput').value;
+    var pw2 = $('cpConfirmPasswordInput').value;
+    if (!pw1 || pw1.length < 8) { showErr('cpSetPasswordError','Password must be at least 8 characters.'); return; }
+    if (pw1 !== pw2) { showErr('cpSetPasswordError','Passwords do not match.'); return; }
+
+    setLoading($('cpSetPasswordSubmit'), true, 'Saving…');
+    hideErr('cpSetPasswordError');
+
+    var { data, error } = await sb.auth.updateUser({ password: pw1 });
+
+    setLoading($('cpSetPasswordSubmit'), false, 'Set password');
+
+    if (error) { showErr('cpSetPasswordError','Could not set password. Try again.'); return; }
+
+    var user = (data && data.user) || pendingUser;
+
+    await sb.from('profiles').upsert({ id: user.id, has_password: true }, { onConflict: 'id' });
+
+    if (!pendingProfile) {
+      var res = await sb.from('profiles').select('*').eq('id', user.id).single();
+      pendingProfile = res.data;
+    } else {
+      pendingProfile.has_password = true;
+    }
+
+    var profile = pendingProfile;
+    pendingProfile = null;
+    continueAfterAuthSteps(user, profile);
+  });
+
+  // ─── Forgot password ────────────────────────────────────────────────────
+  $('cpForgotPassword').addEventListener('click', async function(e){
+    e.preventDefault();
+    var email = $('cpEmailInput').value.trim();
+    if (!email) { showErr('cpEmailError','Enter your email above first, then tap "Forgot password?" again.'); return; }
+
+    await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    $('cpForgotEmail').textContent = email;
+    showStep('cpStepForgotSent');
+  });
+
+  $('cpBackFromForgot').addEventListener('click', function(){ showStep('cpStepEmail'); });
 
   // ─── Sign out ─────────────────────────────────────────────────────────
   $('cpSignOut').addEventListener('click', async function(){
