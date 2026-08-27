@@ -70,11 +70,36 @@ $$;
 
 grant execute on function public.is_coach(uuid) to authenticated;
 
--- Drop any existing self-referencing "coach"/"admin" policy on profiles
--- before re-creating it — adjust the name(s) below to match whatever shows
--- up in Supabase → Authentication → Policies for the profiles table.
-drop policy if exists "Coaches can view all profiles" on public.profiles;
-drop policy if exists "Admins can view all profiles" on public.profiles;
+-- Drop EVERY policy on public.profiles whose check expression queries
+-- public.profiles itself — this is what causes the recursion, no matter
+-- what the policy happens to be named (hand-added policies in the Supabase
+-- dashboard commonly aren't named "Coaches can view all profiles", which is
+-- why hardcoding that one name wasn't enough). The four "own row" policies
+-- from step 2 above only ever compare auth.uid() = id, so they never match
+-- this and are left alone.
+do $$
+declare
+  pol record;
+begin
+  for pol in
+    select policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'profiles'
+      and (
+        coalesce(qual, '') ilike '%from public.profiles%'
+        or coalesce(qual, '') ilike '%from profiles%'
+        or coalesce(with_check, '') ilike '%from public.profiles%'
+        or coalesce(with_check, '') ilike '%from profiles%'
+      )
+  loop
+    execute format('drop policy %I on public.profiles', pol.policyname);
+    raise notice 'Dropped self-referencing policy: %', pol.policyname;
+  end loop;
+end $$;
 
+-- Re-create the "coach can view every client's profile" access using the
+-- non-recursive security-definer check above.
+drop policy if exists "Coaches can view all profiles" on public.profiles;
 create policy "Coaches can view all profiles" on public.profiles
   for select using (public.is_coach(auth.uid()));
