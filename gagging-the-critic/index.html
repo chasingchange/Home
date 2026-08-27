@@ -70,6 +70,8 @@
     <script src="../shared-global-nav.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../shared-coach-export.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
   </head>
 <body class="antialiased cc-page">
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -198,6 +200,7 @@
     <section class="no-print mt-3">
       <div id="criticExportActions"></div>
     </section>
+    <p id="syncStatus" class="no-print mt-2 text-xs text-cc-text/60" aria-live="polite"></p>
 
 </main>
 
@@ -260,6 +263,21 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+      if (toolSync) toolSync.save();
+    }
+
+    function applyState(data) {
+      if (!data) return;
+      fields.negativeThought.value = data.negativeThought || "";
+      fields.evidence.value = data.evidence || "";
+      fields.worstCase.value = data.worstCase || "";
+      fields.likelyCase.value = data.likelyCase || "";
+      fields.wiserResponse.value = data.wiserResponse || "";
+
+      if (data.factFeeling) {
+        const option = document.querySelector(`input[name="factFeeling"][value="${data.factFeeling}"]`);
+        if (option) option.checked = true;
+      }
     }
 
     function loadSavedState() {
@@ -267,21 +285,23 @@
       if (!raw) return;
 
       try {
-        const data = JSON.parse(raw);
-        fields.negativeThought.value = data.negativeThought || "";
-        fields.evidence.value = data.evidence || "";
-        fields.worstCase.value = data.worstCase || "";
-        fields.likelyCase.value = data.likelyCase || "";
-        fields.wiserResponse.value = data.wiserResponse || "";
-
-        if (data.factFeeling) {
-          const option = document.querySelector(`input[name="factFeeling"][value="${data.factFeeling}"]`);
-          if (option) option.checked = true;
-        }
+        applyState(JSON.parse(raw));
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
+
+    const toolSync = window.ToolSync
+      ? window.ToolSync.init("gagging-the-critic", {
+          statusEl: document.getElementById("syncStatus"),
+          getData: () => getState(),
+          setData: (data) => {
+            applyState(data);
+            updateSummary();
+            saveState();
+          }
+        })
+      : null;
 
     function renderValue(el, value) {
       el.textContent = value || "";

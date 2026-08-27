@@ -30,8 +30,10 @@
       .cp-pw-reveal-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.45);white-space:nowrap;transition:color .15s;}
       .cp-pw-reveal-btn:hover{color:rgba(7,31,53,.75);}
       .cp-pw-field{overflow:hidden;max-height:0;transition:max-height .25s ease;}
-      .cp-pw-field.is-open{max-height:80px;}
+      .cp-pw-field.is-open{max-height:110px;}
       .cp-pw-field .cp-input{margin-top:10px;}
+      .cp-forgot-link{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);text-decoration:underline;text-underline-offset:3px;}
+      .cp-forgot-link:hover{color:rgba(7,31,53,.8);}
       .cp-actions{margin-top:12px;display:grid;gap:12px;}
       .cp-btn-primary{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;width:100%;height:52px;border-radius:26px;background:#071f35;color:#fff;font-size:15px;font-weight:700;text-align:center;transition:opacity .15s ease;}
       .cp-btn-primary:hover{opacity:.9;}
@@ -202,6 +204,7 @@
             <input type="email" id="cpEmailInput" placeholder="you@email.com" class="cp-input" autocomplete="email" />
             <div class="cp-pw-field is-open" id="cpPwField">
               <input type="password" id="cpPasswordInput" placeholder="Password" class="cp-input" autocomplete="current-password" />
+              <a href="#" id="cpForgotPassword" class="cp-forgot-link">Forgot password?</a>
             </div>
             <div class="cp-pw-reveal">
               <div class="cp-pw-reveal-line"></div>
@@ -243,6 +246,42 @@
               <p class="cp-magic-body">We sent a sign-in link to <strong id="cpMagicEmail"></strong>.<br><br>Click the link in that email to open the portal.</p>
             </div>
             <button type="button" class="cp-back" style="margin-top:32px" id="cpBackFromMagic">← Use a different email</button>
+          </div>
+
+          <!-- Step: First-time name capture -->
+          <div class="cp-auth-step" id="cpStepName" hidden>
+            <p class="cp-kicker">Client Portal</p>
+            <h1 class="cp-h1">Welcome. What's your name?</h1>
+            <p class="cp-lede">We'll use this to personalize your portal.</p>
+            <input type="text" id="cpFirstNameInput" placeholder="First name" class="cp-input" autocomplete="given-name" />
+            <input type="text" id="cpLastNameInput" placeholder="Last name" class="cp-input" autocomplete="family-name" style="margin-top:10px" />
+            <div class="cp-auth-error" id="cpNameError"></div>
+            <div class="cp-actions">
+              <button type="button" class="cp-btn-primary" id="cpNameSubmit">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step: Set / reset password (invite link or forgot-password link) -->
+          <div class="cp-auth-step" id="cpStepSetPassword" hidden>
+            <p class="cp-kicker">Client Portal</p>
+            <h1 class="cp-h1">Set your password.</h1>
+            <p class="cp-lede">Choose a password so you can sign in directly next time.</p>
+            <input type="password" id="cpNewPasswordInput" placeholder="New password" class="cp-input" autocomplete="new-password" />
+            <input type="password" id="cpConfirmPasswordInput" placeholder="Confirm password" class="cp-input" autocomplete="new-password" style="margin-top:10px" />
+            <div class="cp-auth-error" id="cpSetPasswordError"></div>
+            <div class="cp-actions">
+              <button type="button" class="cp-btn-primary" id="cpSetPasswordSubmit">Set password</button>
+            </div>
+          </div>
+
+          <!-- Step: Forgot-password email sent -->
+          <div class="cp-auth-step" id="cpStepForgotSent" hidden>
+            <div class="cp-magic-sent">
+              <div class="cp-magic-icon">🔑</div>
+              <h2 class="cp-magic-title">Check your email</h2>
+              <p class="cp-magic-body">We sent a password reset link to <strong id="cpForgotEmail"></strong>.<br><br>Click the link to set a new password.</p>
+            </div>
+            <button type="button" class="cp-back" style="margin-top:32px" id="cpBackFromForgot">← Use a different email</button>
           </div>
 
         </div>

@@ -142,6 +142,8 @@
   <script src="../shared-global-nav.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="../shared-tool-sync.js"></script>
 </head>
 <body class="antialiased cc-page">
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -193,6 +195,7 @@
       <button id="downloadPdfBtn" class="focus-ring rounded-xl border border-[var(--cc-border)] bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 transition">Download as PDF</button>
       <button id="resetBtn" class="focus-ring rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 hover:bg-rose-100 transition">Clear Worksheet</button>
     </section>
+    <p id="syncStatus" class="no-print mt-2 text-xs text-cc-text/60" aria-live="polite"></p>
   </main>
 
   <footer class="w-full px-5 pb-5 sm:px-8 no-print">
@@ -277,7 +280,21 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+      if (toolSync) toolSync.save();
     }
+
+    const toolSync = window.ToolSync
+      ? window.ToolSync.init("i-am-worksheet", {
+          statusEl: document.getElementById("syncStatus"),
+          getData: () => getState(),
+          setData: (data) => {
+            if (Array.isArray(data)) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+              buildLines();
+            }
+          }
+        })
+      : null;
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);

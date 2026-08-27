@@ -101,7 +101,7 @@
           <section data-no-print="true" class="mt-8 flex flex-wrap items-center gap-3">
             <p class="text-sm text-cc-text/70 flex-1 min-w-[260px]">
               Weight decides how much a row counts: nice to have counts once, important twice, non-negotiable three
-              times. Your answers save on this device automatically.
+              times. Your answers save automatically.
             </p>
             <button id="copyBtn" type="button" class="rounded-xl px-4 py-2.5 bg-white text-cc-text font-semibold ring-1 ring-black/15 hover:bg-cc-bg">
               Copy my answers
@@ -114,6 +114,7 @@
             </button>
           </section>
           <p id="statusMessage" data-no-print="true" class="mt-2 text-sm text-cc-text/75" aria-live="polite"></p>
+          <p id="syncStatus" data-no-print="true" class="mt-1 text-xs text-cc-text/60" aria-live="polite"></p>
         </main>
 
         <footer class="mt-6 pb-3">
@@ -124,6 +125,8 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
     <script>
       const KEY = "cc-companion-chart-v1";
       const SCALE = 5;
@@ -148,6 +151,7 @@
 
       const chartGrid = document.getElementById("chartGrid");
       const statusMessage = document.getElementById("statusMessage");
+      const syncStatus = document.getElementById("syncStatus");
       const copyBtn = document.getElementById("copyBtn");
       const printBtn = document.getElementById("printBtn");
       const resetBtn = document.getElementById("resetBtn");
@@ -166,7 +170,23 @@
         try {
           localStorage.setItem(KEY, JSON.stringify({ attrs, people, savedAt: Date.now() }));
         } catch (e) {}
+        if (toolSync) toolSync.save();
       }
+
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init("companion-chart", {
+            statusEl: syncStatus,
+            getData: () => ({ attrs, people }),
+            setData: (data) => {
+              if (Array.isArray(data.attrs) && Array.isArray(data.people) && data.people.length) {
+                attrs = data.attrs;
+                people = data.people;
+                persist();
+                render();
+              }
+            },
+          })
+        : null;
 
       function pct(person) {
         let num = 0;
@@ -216,7 +236,7 @@
         removeBtn.type = "button";
         removeBtn.title = "Remove person";
         removeBtn.textContent = "×";
-        removeBtn.className = "flex-none text-lg leading-none text-cc-text/30 hover:text-red-600";
+        removeBtn.className = "flex-none text-lg leading-none text-cc-text/45 hover:text-red-600";
         removeBtn.addEventListener("click", () => {
           if (people.length <= 1) return;
           people = people.filter((p) => p.id !== person.id);
@@ -230,7 +250,7 @@
         statusInput.type = "text";
         statusInput.value = person.status || "";
         statusInput.placeholder = "Past · present · curious";
-        statusInput.className = "w-full border-0 bg-transparent p-0 text-xs font-bold text-cc-text/50 outline-none";
+        statusInput.className = "w-full border-0 bg-transparent p-0 text-xs font-bold text-cc-text/70 outline-none";
         statusInput.addEventListener("input", (e) => {
           person.status = e.target.value;
           persist();
@@ -247,7 +267,7 @@
         const label = document.createElement("div");
         label.className = "w-[220px] flex-none";
         label.innerHTML =
-          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">What matters to me</p>';
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/65">What matters to me</p>';
         row.appendChild(label);
 
         people.forEach((p) => row.appendChild(renderPersonHeaderCell(p)));
@@ -296,7 +316,7 @@
         removeAttrBtn.type = "button";
         removeAttrBtn.title = "Remove attribute";
         removeAttrBtn.textContent = "×";
-        removeAttrBtn.className = "flex-none text-base leading-none text-cc-text/30 hover:text-red-600";
+        removeAttrBtn.className = "flex-none text-base leading-none text-cc-text/45 hover:text-red-600";
         removeAttrBtn.addEventListener("click", () => {
           attrs = attrs.filter((a) => a.id !== attr.id);
           persist();
@@ -312,7 +332,7 @@
             ? "border-orange-400/60 bg-orange-50 text-orange-600"
             : attr.weight === 2
               ? "border-black/10 bg-black/5 text-cc-text"
-              : "border-black/10 bg-black/[0.03] text-cc-text/50");
+              : "border-black/10 bg-black/[0.03] text-cc-text/70");
         weightSelect.innerHTML = `
           <option value="1"${attr.weight === 1 ? " selected" : ""}>Nice to have</option>
           <option value="2"${attr.weight === 2 ? " selected" : ""}>Important</option>
@@ -358,7 +378,7 @@
         const addAttrBtn = document.createElement("button");
         addAttrBtn.type = "button";
         addAttrBtn.textContent = "+ Add an attribute";
-        addAttrBtn.className = "font-heading text-sm font-extrabold text-cc-text/50 hover:text-cc-text";
+        addAttrBtn.className = "font-heading text-sm font-extrabold text-cc-text/70 hover:text-cc-text";
         addAttrBtn.addEventListener("click", () => {
           attrs.push({ id: uid(), label: "", weight: 2 });
           persist();
@@ -376,7 +396,7 @@
         const label = document.createElement("div");
         label.className = "w-[220px] flex-none pl-3";
         label.innerHTML =
-          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/40">Weighted match</p>';
+          '<p class="font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] text-cc-text/65">Weighted match</p>';
         row.appendChild(label);
 
         people.forEach((person) => {
@@ -390,7 +410,7 @@
           numRow.className = "flex items-baseline gap-1";
           numRow.innerHTML = `
             <span style="color:${t.color}" class="text-3xl font-semibold tabular-nums tracking-tight">${value}</span>
-            <span class="text-xs font-bold text-cc-text/40">%</span>
+            <span class="text-xs font-bold text-cc-text/65">%</span>
           `;
 
           const track = document.createElement("div");
@@ -402,7 +422,7 @@
           track.appendChild(fill);
 
           const verdict = document.createElement("p");
-          verdict.className = "mt-2 font-heading text-[9px] font-extrabold uppercase tracking-wide text-cc-text/40";
+          verdict.className = "mt-2 font-heading text-[9px] font-extrabold uppercase tracking-wide text-cc-text/65";
           verdict.textContent = t.verdict;
 
           cell.append(numRow, track, verdict);

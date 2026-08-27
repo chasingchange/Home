@@ -20,6 +20,8 @@
     />
     <link rel="stylesheet" href="../shared.css" />
     <script src="../shared-global-nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-tool-sync.js"></script>
     <script>
       tailwind.config = {
         theme: {
@@ -125,6 +127,7 @@
               Save as Image
             </button>
             <p id="statusMessage" class="w-full text-sm text-cc-text/75 mt-1" aria-live="polite"></p>
+            <p id="syncStatus" class="w-full text-xs text-cc-text/60" aria-live="polite"></p>
           </section>
         </main>
 
@@ -211,7 +214,23 @@
       function persist() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(weekState));
         localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(customPriorityMap));
+        if (toolSync) toolSync.save();
       }
+
+      const toolSync = window.ToolSync
+        ? window.ToolSync.init("founders-calendar", {
+            statusEl: document.getElementById("syncStatus"),
+            getData: () => ({ weekState, customPriorityMap }),
+            setData: (data) => {
+              if (data && data.weekState) {
+                weekState = data.weekState;
+                customPriorityMap = data.customPriorityMap || {};
+                persist();
+                render();
+              }
+            }
+          })
+        : null;
 
       function renderDayCard(day) {
         const selected = weekState[day] || [];

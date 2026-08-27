@@ -542,7 +542,7 @@ a:focus-visible {
 }
 
 ::placeholder {
-  color: rgba(7, 31, 53, 0.48);
+  color: rgba(7, 31, 53, 0.58);
 }
 
 /* ===== Site-wide visual normalization (search homepage authority) ===== */
@@ -919,17 +919,7 @@ main[class*="max-w-"],
   padding: 0.85rem 1rem;
 }
 
-.cc-global-mega-title {
-  margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(36, 39, 43, 0.62);
-  font-weight: 700;
-}
-
 .cc-global-mega-items {
-  margin-top: 0.45rem;
   display: grid;
   gap: 0.9rem;
 }
