@@ -61,9 +61,8 @@
       .cp-dash{width:min(100%,1120px);margin:0 auto;padding:24px 24px 96px;}
       .cp-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:24px 0 36px;flex-wrap:wrap;}
       .cp-route-line{margin:14px 0 0;font-size:17px;line-height:1.6;color:rgba(7,31,53,.62);}
-      .cp-view-toggle{display:flex;gap:2px;padding:4px;border-radius:999px;border:1px solid rgba(7,31,53,.1);background:#fff;flex-shrink:0;}
-      .cp-view-btn{all:unset;cursor:pointer;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
-      .cp-view-btn.is-active{color:#071f35;background:rgba(7,31,53,.06);}
+      .cp-back-roster-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);letter-spacing:.02em;}
+      .cp-back-roster-btn:hover{color:rgba(7,31,53,.85);}
       .cp-signout-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.4);letter-spacing:.04em;}
       .cp-signout-btn:hover{color:rgba(7,31,53,.7);}
       .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
@@ -136,12 +135,14 @@
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
       .cp-roster-list{margin-top:20px;display:grid;}
-      .cp-roster-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr 110px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);cursor:pointer;}
+      .cp-roster-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr 110px 50px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);cursor:pointer;}
       .cp-roster-row:hover{background:rgba(7,31,53,.03);}
       .cp-roster-name{font-family:"Raleway",sans-serif;font-weight:700;font-size:16px;}
       .cp-roster-route,.cp-roster-week{font-size:14px;color:rgba(7,31,53,.6);}
       .cp-roster-flag{display:block;margin-top:6px;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
       .cp-roster-next{font-size:13px;font-weight:700;color:rgba(7,31,53,.6);}
+      .cp-roster-edit{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.4);text-decoration:underline;text-underline-offset:3px;}
+      .cp-roster-edit:hover{color:rgba(7,31,53,.75);}
       .cp-coach-aside{display:grid;gap:20px;}
       .cp-flag-list{margin-top:12px;display:grid;}
       .cp-flag-row{padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
@@ -304,10 +305,7 @@
             <p class="cp-route-line" id="cpRouteLine"></p>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
-            <div class="cp-view-toggle" id="cpViewToggle" hidden>
-              <button type="button" class="cp-view-btn is-active" data-view="client">Client view</button>
-              <button type="button" class="cp-view-btn" data-view="coach">Coach view</button>
-            </div>
+            <button type="button" class="cp-back-roster-btn" id="cpBackToRoster" hidden>← Back to roster</button>
             <button type="button" class="cp-signout-btn" id="cpSignOut">Sign out</button>
           </div>
         </div>

@@ -50,25 +50,15 @@
   };
 
   var roster = [
-    {name:"Marcus T.", route:"The 10K",     weekNow:14, weekTotal:26, adh:86,flag:"On track",     color:"#77d770",next:"Tue 9:00 AM", assignments:["Squat wave 3","2,650 kcal / day","Sunday reset"]},
-    {name:"Devon R.",  route:"The Marathon", weekNow:22, weekTotal:39, adh:74,flag:"On track",     color:"#77d770",next:"Tue 4:30 PM", assignments:["Long run — 18 mi","Life Core calendar audit"]},
-    {name:"Priya S.",  route:"The 5K",       weekNow:6,  weekTotal:12, adh:58,flag:"Needs a nudge",color:"#f58b1c",next:"Wed 8:00 AM", assignments:["Sleep anchor — 5 nights","Tempo run Thursday"]},
-    {name:"Alex M.",   route:"The 10K",      weekNow:3,  weekTotal:26, adh:91,flag:"On track",     color:"#77d770",next:"Wed 12:00 PM", assignments:["Base building — 3 runs","I AM Worksheet"]},
-    {name:"Jamie L.",  route:"The 5K",       weekNow:9,  weekTotal:12, adh:34,flag:"At risk",      color:"#f02348",next:"Thu 7:30 AM", assignments:["Check-in call","Interval session"]}
+    {name:"Tyler Fortenberry", route:"The 10K", weekNow:14, weekTotal:26, adh:86,flag:"On track", color:"#77d770",next:"Tue 9:00 AM", assignments:["Squat wave 3","2,650 kcal / day","Sunday reset"]}
   ];
 
   function rosterWeekLabel(c){ return 'Wk ' + c.weekNow + ' / ' + c.weekTotal; }
 
-  var flags = [
-    {name:"Jamie L.", why:"Two missed calls and no check-in for 11 days. Route ends in three weeks."},
-    {name:"Priya S.", why:"Training adherence fine, sleep anchor slipping four weeks running."},
-    {name:"Devon R.", why:"Life Core opens next week — calendar audit not sent yet."}
-  ];
+  var flags = [];
 
   var remQueue = [
-    {name:"Jamie L.",why:"5 of 6 open · no check-in for 11 days",color:"#f02348"},
-    {name:"Priya S.",why:"3 of 5 open · sleep anchor slipping",   color:"#f58b1c"},
-    {name:"Devon R.",why:"1 of 6 open · on track",                color:"#77d770"}
+    {name:"Tyler Fortenberry", why:"On track this week", color:"#77d770"}
   ];
 
   var metrics   = [{label:"Bodyweight trend",value:"−8.4 lb"},{label:"Est. squat 1RM",value:"+35 lb"},{label:"Last photo",value:"Week 14"}];
@@ -86,6 +76,10 @@
   var needsPassword = (urlAuthType === 'invite');
   var currentUser = null;
   var biometricOfferedThisLoad = false;
+  var isCoachUser = false;
+  var coachUser = null;
+  var coachProfile = null;
+  var viewingRosterIndex = null;
 
   // ─── Biometric (Face ID / Touch ID) unlock ─────────────────────────────
   var BIOMETRIC_CRED_KEY     = 'cpBiometricCredentialId';
@@ -299,20 +293,19 @@
     showStep('cpStepSetPassword');
   }
 
+  function firstNameOf(profile, user){
+    return profile && profile.full_name ? profile.full_name.split(' ')[0] : user.email.split('@')[0];
+  }
+
   function renderDash(user, profile){
     $('cpAuth').hidden = true;
     $('cpDash').hidden = false;
 
-    var isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
-    var firstName = profile && profile.full_name
-      ? profile.full_name.split(' ')[0]
-      : user.email.split('@')[0];
+    isCoachUser  = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+    coachUser    = isCoachUser ? user : null;
+    coachProfile = isCoachUser ? profile : null;
+    viewingRosterIndex = null;
 
-    // Coach toggle only visible to coach
-    $('cpViewToggle').hidden = !isCoach;
-
-    $('cpWelcome').textContent    = 'Welcome to Your Race, ' + firstName + '.';
-    $('cpRouteLine').textContent  = route + ' · ' + weekLine;
     $('cpRoute').textContent      = route;
     $('cpWeek').textContent       = weekLine;
     $('cpWeekLine2').textContent  = weekLine;
@@ -321,8 +314,41 @@
     currentUser = user;
     maybeOfferBiometric(user);
 
+    if (isCoachUser) {
+      state.view = 'coach';
+      $('cpBackToRoster').hidden = true;
+      $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
+      $('cpRouteLine').textContent = 'Coach Dashboard';
+    } else {
+      state.view = 'client';
+      $('cpWelcome').textContent   = 'Welcome to Your Race, ' + firstNameOf(profile, user) + '.';
+      $('cpRouteLine').textContent = route + ' · ' + weekLine;
+    }
+
     renderAll();
   }
+
+  // ─── Coach: open a client's portal to see what they see ───────────────
+  function enterClientPortalView(i){
+    var c = roster[i]; if (!c) return;
+    viewingRosterIndex = i;
+    state.view = 'client';
+    $('cpWelcome').textContent   = 'Welcome to Your Race, ' + c.name.split(' ')[0] + '.';
+    $('cpRouteLine').textContent = route + ' · ' + weekLine;
+    $('cpBackToRoster').hidden = false;
+    renderViewToggle();
+  }
+
+  function exitClientPortalView(){
+    viewingRosterIndex = null;
+    state.view = 'coach';
+    $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(coachProfile, coachUser) + '.';
+    $('cpRouteLine').textContent = 'Coach Dashboard';
+    $('cpBackToRoster').hidden = true;
+    renderViewToggle();
+  }
+
+  $('cpBackToRoster').addEventListener('click', exitClientPortalView);
 
   // ─── First-time name capture ───────────────────────────────────────────
   $('cpNameSubmit').addEventListener('click', async function(){
@@ -481,7 +507,7 @@
   }
 
   function renderRoster(){
-    var h=''; roster.forEach(function(c,i){ h+='<div class="cp-roster-row" data-edit-client="'+i+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+c.route+'</span><span class="cp-roster-week">'+rosterWeekLabel(c)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.adh+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+c.flag+'</span></div><span class="cp-roster-next">'+c.next+'</span></div>'; });
+    var h=''; roster.forEach(function(c,i){ h+='<div class="cp-roster-row" data-view-client="'+i+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+c.route+'</span><span class="cp-roster-week">'+rosterWeekLabel(c)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.adh+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+c.flag+'</span></div><span class="cp-roster-next">'+c.next+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+i+'">Edit</button></div>'; });
     $('cpRosterList').innerHTML=h;
   }
 
@@ -502,19 +528,15 @@
     $('cpRemToggleCoach').classList.toggle('is-on',state.remOn);
     var open=taskData.length-Object.values(state.done).filter(Boolean).length;
     $('cpRemLine').textContent=state.remOn?open+' of '+taskData.length+' still open — reminder goes out '+day+' 7:00 AM by '+ch+'.':'Reminders are off. You will not be nudged before Thursday\'s call.';
-    $('cpQueueSummary').textContent='5 queued · sends '+day+' 7:00 AM by '+ch;
+    $('cpQueueSummary').textContent=remQueue.length+' queued · sends '+day+' 7:00 AM by '+ch;
   }
 
   function renderViewToggle(){
-    document.querySelectorAll('.cp-view-btn').forEach(function(b){ b.classList.toggle('is-active',b.getAttribute('data-view')===state.view); });
     $('cpClientView').hidden=state.view!=='client';
     $('cpCoachView').hidden=state.view!=='coach';
   }
 
   // ─── Interactions ─────────────────────────────────────────────────────
-  document.querySelectorAll('.cp-view-btn').forEach(function(b){
-    b.addEventListener('click',function(){ state.view=b.getAttribute('data-view'); renderViewToggle(); });
-  });
 
   $('cpRemDay').addEventListener('click',function(){ state.remDayIdx=(state.remDayIdx+1)%remDays.length; renderReminder(); });
   $('cpRemChannel').addEventListener('click',function(){ state.remChIdx=(state.remChIdx+1)%remChans.length; renderReminder(); });
@@ -591,8 +613,10 @@
   function closeEditClient(){ editingIndex=null; $('cpEditOverlay').hidden=true; }
 
   $('cpRosterList').addEventListener('click',function(e){
-    var row=e.target.closest('[data-edit-client]'); if(!row) return;
-    openEditClient(parseInt(row.getAttribute('data-edit-client'),10));
+    var editBtn=e.target.closest('[data-edit-client]');
+    if (editBtn) { e.stopPropagation(); openEditClient(parseInt(editBtn.getAttribute('data-edit-client'),10)); return; }
+    var row=e.target.closest('[data-view-client]'); if(!row) return;
+    enterClientPortalView(parseInt(row.getAttribute('data-view-client'),10));
   });
 
   $('cpEditAssignAdd').addEventListener('click',function(){ editAssignments.push(''); renderEditAssignList(); });
