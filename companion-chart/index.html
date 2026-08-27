@@ -101,7 +101,7 @@
           <section data-no-print="true" class="mt-8 flex flex-wrap items-center gap-3">
             <p class="text-sm text-cc-text/70 flex-1 min-w-[260px]">
               Weight decides how much a row counts: nice to have counts once, important twice, non-negotiable three
-              times. Your answers save on this device automatically.
+              times. Your answers save automatically.
             </p>
             <button id="copyBtn" type="button" class="rounded-xl px-4 py-2.5 bg-white text-cc-text font-semibold ring-1 ring-black/15 hover:bg-cc-bg">
               Copy my answers
@@ -114,6 +114,7 @@
             </button>
           </section>
           <p id="statusMessage" data-no-print="true" class="mt-2 text-sm text-cc-text/75" aria-live="polite"></p>
+          <p id="syncStatus" data-no-print="true" class="mt-1 text-xs text-cc-text/60" aria-live="polite"></p>
         </main>
 
         <footer class="mt-6 pb-3">
@@ -124,6 +125,7 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
       const KEY = "cc-companion-chart-v1";
       const SCALE = 5;
@@ -148,6 +150,7 @@
 
       const chartGrid = document.getElementById("chartGrid");
       const statusMessage = document.getElementById("statusMessage");
+      const syncStatus = document.getElementById("syncStatus");
       const copyBtn = document.getElementById("copyBtn");
       const printBtn = document.getElementById("printBtn");
       const resetBtn = document.getElementById("resetBtn");
@@ -166,6 +169,85 @@
         try {
           localStorage.setItem(KEY, JSON.stringify({ attrs, people, savedAt: Date.now() }));
         } catch (e) {}
+        queueCloudSave();
+      }
+
+      // ─── Cross-device sync (Supabase) ──────────────────────────────────
+      const TOOL_KEY = "companion-chart";
+      const SUPABASE_URL = "https://datrgkjqwyfcbmtwwifm.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9";
+      const sb =
+        window.supabase && window.supabase.createClient
+          ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+          : null;
+
+      let currentUser = null;
+      let cloudSaveTimer = null;
+      let pullingFromCloud = false;
+
+      function updateSyncUI() {
+        if (!syncStatus) return;
+        if (currentUser) {
+          syncStatus.textContent = `Signed in as ${currentUser.email} — synced across your devices.`;
+        } else {
+          syncStatus.innerHTML =
+            'Saved on this device only. <a href="../client-portal/index.html" class="underline font-semibold">Sign in</a> to sync across devices.';
+        }
+      }
+
+      async function pullFromCloud() {
+        if (!sb || !currentUser) return;
+        const { data, error } = await sb
+          .from("tool_saves")
+          .select("data")
+          .eq("user_id", currentUser.id)
+          .eq("tool_key", TOOL_KEY)
+          .maybeSingle();
+
+        if (error) return;
+
+        if (data && data.data && Array.isArray(data.data.attrs) && Array.isArray(data.data.people) && data.data.people.length) {
+          pullingFromCloud = true;
+          attrs = data.data.attrs;
+          people = data.data.people;
+          persist();
+          render();
+          pullingFromCloud = false;
+        } else {
+          // No cloud save yet for this account — push whatever's on this device up.
+          queueCloudSave(true);
+        }
+      }
+
+      function queueCloudSave(immediate) {
+        if (!sb || !currentUser || pullingFromCloud) return;
+        clearTimeout(cloudSaveTimer);
+        const run = () => {
+          sb.from("tool_saves").upsert({
+            user_id: currentUser.id,
+            tool_key: TOOL_KEY,
+            data: { attrs, people },
+            updated_at: new Date().toISOString(),
+          });
+        };
+        if (immediate) run();
+        else cloudSaveTimer = setTimeout(run, 600);
+      }
+
+      async function initSync() {
+        if (!sb) return;
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        currentUser = session && session.user ? session.user : null;
+        if (currentUser) await pullFromCloud();
+        updateSyncUI();
+
+        sb.auth.onAuthStateChange(async (_event, session) => {
+          currentUser = session && session.user ? session.user : null;
+          if (currentUser) await pullFromCloud();
+          updateSyncUI();
+        });
       }
 
       function pct(person) {
@@ -458,6 +540,7 @@
 
       load();
       render();
+      initSync();
     </script>
   </body>
 </html>
