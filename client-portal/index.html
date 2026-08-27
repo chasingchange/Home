@@ -43,6 +43,11 @@
       .cp-btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
       .cp-auth-error{margin-top:12px;padding:10px 14px;border-radius:10px;background:rgba(240,35,72,.08);border:1px solid rgba(240,35,72,.2);font-size:14px;color:#c01a38;display:none;}
       .cp-auth-error.show{display:block;}
+      .cp-biometric-banner{margin-top:18px;padding:14px 18px;border-radius:14px;background:rgba(42,157,240,.08);border:1px solid rgba(42,157,240,.25);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:#071f35;}
+      .cp-biometric-banner-actions{display:flex;gap:10px;flex-shrink:0;}
+      .cp-biometric-banner-actions button{all:unset;cursor:pointer;font-weight:700;font-size:14px;padding:6px 14px;border-radius:20px;}
+      .cp-biometric-banner-actions #cpBiometricEnable{background:#2a9df0;color:#fff;}
+      .cp-biometric-banner-actions #cpBiometricDecline{color:rgba(7,31,53,.55);}
       .cp-hint{margin:20px 0 0;font-size:14px;line-height:1.6;color:rgba(7,31,53,.5);}
       .cp-auth-footer{margin-top:36px;padding-top:24px;border-top:1px solid rgba(7,31,53,.08);display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-size:14px;}
       .cp-auth-footer span{color:rgba(7,31,53,.55);}
@@ -251,7 +256,7 @@
           <!-- Step: First-time name capture -->
           <div class="cp-auth-step" id="cpStepName" hidden>
             <p class="cp-kicker">Client Portal</p>
-            <h1 class="cp-h1">Welcome. What's your name?</h1>
+            <h1 class="cp-h1">Welcome.<br>What's your name?</h1>
             <p class="cp-lede">We'll use this to personalize your portal.</p>
             <input type="text" id="cpFirstNameInput" placeholder="First name" class="cp-input" autocomplete="given-name" />
             <input type="text" id="cpLastNameInput" placeholder="Last name" class="cp-input" autocomplete="family-name" style="margin-top:10px" />
@@ -284,6 +289,23 @@
             <button type="button" class="cp-back" style="margin-top:32px" id="cpBackFromForgot">← Use a different email</button>
           </div>
 
+          <!-- Step: Biometric unlock (returning device with Face ID / Touch ID enabled) -->
+          <div class="cp-auth-step" id="cpStepBiometric" hidden>
+            <div class="cp-dots">
+              <span style="background:#77d770"></span><span style="background:#ffbd59"></span>
+              <span style="background:#2a9df0"></span><span style="background:#aa70d7"></span>
+              <span style="background:#f02348"></span><span style="background:#f58b1c"></span>
+            </div>
+            <p class="cp-kicker">Client Portal</p>
+            <h1 class="cp-h1">Welcome back.</h1>
+            <p class="cp-lede">Unlock with Face ID or Touch ID to continue.</p>
+            <div class="cp-auth-error" id="cpBiometricError"></div>
+            <div class="cp-actions">
+              <button type="button" class="cp-btn-primary" id="cpBiometricUnlock">Unlock with Face ID / Touch ID</button>
+              <button type="button" class="cp-btn-secondary" id="cpBiometricUseEmail">Use email instead</button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -301,6 +323,14 @@
               <button type="button" class="cp-view-btn" data-view="coach">Coach view</button>
             </div>
             <button type="button" class="cp-signout-btn" id="cpSignOut">Sign out</button>
+          </div>
+        </div>
+
+        <div class="cp-biometric-banner" id="cpBiometricBanner" hidden>
+          <span>Enable Face ID / Touch ID for quick unlock on this device?</span>
+          <div class="cp-biometric-banner-actions">
+            <button type="button" id="cpBiometricEnable">Enable</button>
+            <button type="button" id="cpBiometricDecline">Not now</button>
           </div>
         </div>
 

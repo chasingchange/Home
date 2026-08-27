@@ -84,6 +84,89 @@
   var pendingUser = null;
   var pendingProfile = null;
   var needsPassword = (urlAuthType === 'invite');
+  var currentUser = null;
+  var biometricOfferedThisLoad = false;
+
+  // ─── Biometric (Face ID / Touch ID) unlock ─────────────────────────────
+  var BIOMETRIC_CRED_KEY     = 'cpBiometricCredentialId';
+  var BIOMETRIC_EMAIL_KEY    = 'cpBiometricEmail';
+  var BIOMETRIC_DECLINED_KEY = 'cpBiometricDeclined';
+
+  function b64urlToBuf(s){
+    s = s.replace(/-/g,'+').replace(/_/g,'/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s), buf = new Uint8Array(bin.length);
+    for (var i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
+    return buf.buffer;
+  }
+
+  function bufToB64url(buf){
+    var bytes = new Uint8Array(buf), bin = '';
+    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  function biometricSupported(){
+    return !!(window.PublicKeyCredential && navigator.credentials);
+  }
+
+  function platformAuthAvailable(){
+    if (!biometricSupported()) return Promise.resolve(false);
+    return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function(){ return false; });
+  }
+
+  function biometricEnabledFor(email){
+    return !!(biometricSupported() && localStorage.getItem(BIOMETRIC_CRED_KEY) && localStorage.getItem(BIOMETRIC_EMAIL_KEY) === email);
+  }
+
+  async function registerBiometric(user){
+    var cred = await navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Client Portal' },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: user.email, displayName: user.email },
+        pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+        authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
+        timeout: 60000
+      }
+    });
+    if (!cred) throw new Error('No credential created.');
+    localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
+    localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
+    localStorage.removeItem(BIOMETRIC_DECLINED_KEY);
+  }
+
+  async function authenticateBiometric(){
+    var credId = localStorage.getItem(BIOMETRIC_CRED_KEY);
+    if (!credId) throw new Error('No biometric credential on this device.');
+    var assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ id: b64urlToBuf(credId), type:'public-key' }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    });
+    if (!assertion) throw new Error('Verification failed.');
+  }
+
+  function showBiometricLock(user){
+    pendingUser = user;
+    $('cpAuth').hidden = false;
+    $('cpDash').hidden = true;
+    showStep('cpStepBiometric');
+  }
+
+  function maybeOfferBiometric(user){
+    if (biometricOfferedThisLoad || !user || !user.email) return;
+    if (localStorage.getItem(BIOMETRIC_DECLINED_KEY) === user.email) return;
+    if (biometricEnabledFor(user.email)) return;
+    platformAuthAvailable().then(function(avail){
+      if (!avail) return;
+      biometricOfferedThisLoad = true;
+      $('cpBiometricBanner').hidden = false;
+    });
+  }
 
   var $ = function(id){ return document.getElementById(id); };
 
@@ -94,6 +177,7 @@
     var { data:{ session } } = await sb.auth.getSession();
     if (session) {
       if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
+      if (biometricEnabledFor(session.user.email)) { showBiometricLock(session.user); return; }
       showDash(session.user);
       return;
     }
@@ -238,8 +322,8 @@
 
   // ─── Helpers ──────────────────────────────────────────────────────────
   function showStep(id){
-    ['cpStepEmail','cpStepCode','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent'].forEach(function(s){ $(s).hidden = s!==id; });
-    hideErr('cpEmailError'); hideErr('cpCodeError'); hideErr('cpNameError'); hideErr('cpSetPasswordError');
+    ['cpStepEmail','cpStepCode','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent','cpStepBiometric'].forEach(function(s){ $(s).hidden = s!==id; });
+    hideErr('cpEmailError'); hideErr('cpCodeError'); hideErr('cpNameError'); hideErr('cpSetPasswordError'); hideErr('cpBiometricError');
   }
 
   function showErr(id, msg){ var e=$(id); e.textContent=msg; e.classList.add('show'); }
@@ -306,6 +390,9 @@
     $('cpWeekLine2').textContent  = weekLine;
     $('cpStreakLine').textContent  = '6-week streak';
 
+    currentUser = user;
+    maybeOfferBiometric(user);
+
     renderAll();
   }
 
@@ -319,18 +406,21 @@
     hideErr('cpNameError');
 
     var fullName = first + ' ' + last;
-    var { data: profile, error } = await sb
+    var { error } = await sb
       .from('profiles')
-      .upsert({ id: pendingUser.id, full_name: fullName }, { onConflict: 'id' })
-      .select()
-      .single();
+      .upsert({ id: pendingUser.id, full_name: fullName }, { onConflict: 'id' });
 
     setLoading($('cpNameSubmit'), false, 'Continue');
 
-    if (error) { showErr('cpNameError','Could not save your name. Try again.'); return; }
+    // Surface the real reason (usually a missing RLS policy on `profiles`,
+    // see scripts/client_portal_profile.sql) instead of a generic message —
+    // and don't depend on a SELECT-returning upsert, since a SELECT policy
+    // gap alone shouldn't block a successful save.
+    if (error) { showErr('cpNameError','Could not save your name: ' + error.message); return; }
 
-    renderDash(pendingUser, profile);
+    var user = pendingUser;
     pendingUser = null;
+    renderDash(user, { full_name: fullName });
   });
 
   // ─── Set / reset password (invite + forgot-password flows) ────────────
@@ -382,6 +472,39 @@
   $('cpSignOut').addEventListener('click', async function(){
     await sb.auth.signOut();
     location.reload();
+  });
+
+  // ─── Biometric unlock step ─────────────────────────────────────────────
+  $('cpBiometricUnlock').addEventListener('click', async function(){
+    setLoading($('cpBiometricUnlock'), true, 'Verifying…');
+    hideErr('cpBiometricError');
+    try {
+      await authenticateBiometric();
+      setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
+      var user = pendingUser;
+      pendingUser = null;
+      showDash(user);
+    } catch (e) {
+      setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
+      showErr('cpBiometricError','Could not verify. Try again or use email.');
+    }
+  });
+
+  $('cpBiometricUseEmail').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  // ─── Biometric opt-in banner (shown once after sign-in on this device) ─
+  $('cpBiometricEnable').addEventListener('click', async function(){
+    $('cpBiometricBanner').hidden = true;
+    if (!currentUser) return;
+    try { await registerBiometric(currentUser); } catch (e) { /* user cancelled or unsupported — nothing to do */ }
+  });
+
+  $('cpBiometricDecline').addEventListener('click', function(){
+    $('cpBiometricBanner').hidden = true;
+    if (currentUser && currentUser.email) localStorage.setItem(BIOMETRIC_DECLINED_KEY, currentUser.email);
   });
 
   // ─── Render functions (identical to original) ─────────────────────────
