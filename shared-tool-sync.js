@@ -1,8 +1,10 @@
 // Cross-device sync for site tools. Requires the Supabase JS CDN script to be
 // loaded first, and a `tool_saves` table (see scripts/tool_saves.sql).
 (function () {
-  const SUPABASE_URL = "https://datrgkjqwyfcbmtwwifm.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9";
+  // Falls back to the known project values if shared-supabase-config.js
+  // wasn't loaded first, so this still works standalone.
+  const SUPABASE_URL = window.CC_SUPABASE_URL || "https://datrgkjqwyfcbmtwwifm.supabase.co";
+  const SUPABASE_ANON_KEY = window.CC_SUPABASE_KEY || "sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9";
 
   function createClient() {
     if (!window.supabase || !window.supabase.createClient) return null;
