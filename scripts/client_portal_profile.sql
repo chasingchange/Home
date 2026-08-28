@@ -22,6 +22,13 @@ from auth.users u
 where u.id = p.id
   and u.encrypted_password is not null;
 
+-- 1b. Preferred name / nickname a client can set for themselves, shown
+--     instead of their first name in "Welcome to Your Race, [name]." Falls
+--     back to the first name of full_name when empty — see firstNameOf() /
+--     preferredNameOf() in client-portal/portal.js.
+alter table public.profiles
+  add column if not exists preferred_name text not null default '';
+
 -- 2. Make sure signed-in users can read and update their OWN profile row
 --    (needed for the name-capture step and the has_password self-heal).
 --    Skip any of these that you already have equivalent policies for.

@@ -62,6 +62,7 @@
   var isCoachUser = false;
   var coachUser = null;
   var coachProfile = null;
+  var ownProfile = null;   // the signed-in client's own profile row (nickname editing)
 
   var roster = [];          // coach view: [{id,name,route,weekNow,weekTotal,adh,flag,color,next,...}]
   var flags = [];
@@ -262,6 +263,10 @@
     return profile && profile.full_name ? profile.full_name.split(' ')[0] : user.email.split('@')[0];
   }
 
+  function preferredNameOf(profile, user){
+    return (profile && profile.preferred_name) ? profile.preferred_name : firstNameOf(profile, user);
+  }
+
   // ─── Show dashboard ───────────────────────────────────────────────────
   async function showDash(user){
     // Get profile from Supabase (role + name)
@@ -311,13 +316,17 @@
 
     if (isCoachUser) {
       state.view = 'coach';
+      ownProfile = null;
+      $('cpNicknameEdit').hidden = true;
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
       loadRoster();
     } else {
       state.view = 'client';
-      loadClientPortal(user.id, firstNameOf(profile, user));
+      ownProfile = profile;
+      $('cpNicknameEdit').hidden = false;
+      loadClientPortal(user.id, preferredNameOf(profile, user));
     }
   }
 
@@ -391,7 +400,7 @@
 
   // ─── Coach: roster (loaded from every client's profile + dashboard row) ─
   async function loadRoster(){
-    var { data: profs } = await sb.from('profiles').select('id, full_name, email, role');
+    var { data: profs } = await sb.from('profiles').select('id, full_name, preferred_name, email, role');
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
@@ -419,7 +428,7 @@
       var d = dashByClient[p.id] || {};
       return {
         id: p.id,
-        name: p.full_name || p.email,
+        name: p.preferred_name || p.full_name || p.email,
         route: d.route || 'No route set',
         weekNow: d.week_now || 0,
         weekTotal: d.week_total || 0,
@@ -491,6 +500,36 @@
     var user = pendingUser;
     pendingUser = null;
     renderDash(user, { full_name: fullName });
+  });
+
+  // ─── Preferred name / nickname (client-set, shown instead of first name) ─
+  $('cpNicknameEdit').addEventListener('click', function(){
+    $('cpNicknameInput').value = (ownProfile && ownProfile.preferred_name) || '';
+    $('cpNicknameForm').hidden = false;
+    $('cpNicknameInput').focus();
+  });
+
+  $('cpNicknameCancel').addEventListener('click', function(){
+    $('cpNicknameForm').hidden = true;
+  });
+
+  $('cpNicknameInput').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') $('cpNicknameSave').click();
+    if (e.key === 'Escape') $('cpNicknameForm').hidden = true;
+  });
+
+  $('cpNicknameSave').addEventListener('click', async function(){
+    if (!currentUser || !ownProfile) return;
+    var nickname = $('cpNicknameInput').value.trim();
+    setLoading($('cpNicknameSave'), true, 'Saving…');
+    var { error } = await sb.from('profiles').update({ preferred_name: nickname }).eq('id', currentUser.id);
+    setLoading($('cpNicknameSave'), false, 'Save');
+    if (error) { window.alert('Could not save your name: ' + error.message); return; }
+    ownProfile.preferred_name = nickname;
+    $('cpNicknameForm').hidden = true;
+    if (viewingClientId === currentUser.id) {
+      $('cpWelcome').textContent = 'Welcome to Your Race, ' + preferredNameOf(ownProfile, currentUser) + '.';
+    }
   });
 
   // ─── Set / reset password (invite + forgot-password flows) ────────────
@@ -639,6 +678,7 @@
   function renderSessionCard(){
     $('cpSessionLabel').textContent = portalData.nextSessionLabel || 'Not scheduled yet';
     $('cpSessionAgenda').textContent = portalData.nextSessionAgenda || 'Your coach hasn\'t set an agenda yet.';
+    renderSessionCTA();
   }
 
   function renderMessages(){
@@ -728,9 +768,25 @@
         title: ev.summary || '(No title)',
         start: new Date(allDay ? ev.start.date : ev.start.dateTime),
         end: new Date(allDay ? ev.end.date : ev.end.dateTime),
-        allDay: allDay
+        allDay: allDay,
+        joinUrl: calGoogleJoinUrl(ev)
       };
     });
+  }
+
+  // A meeting link, in priority order: the Meet link Google surfaces
+  // directly, then any "video" entry point from richer conference data
+  // (Zoom/Meet/etc. added via a conferencing add-on), then a location field
+  // that's itself a plain URL (how many clients paste a Zoom link).
+  function calGoogleJoinUrl(ev){
+    if (ev.hangoutLink) return ev.hangoutLink;
+    var entryPoints = ev.conferenceData && ev.conferenceData.entryPoints;
+    if (entryPoints) {
+      var video = entryPoints.filter(function(e){ return e.entryPointType === 'video'; })[0];
+      if (video && video.uri) return video.uri;
+    }
+    if (ev.location && /^https?:\/\//i.test(ev.location.trim())) return ev.location.trim();
+    return '';
   }
 
   async function calConnectGoogle(){
@@ -794,9 +850,17 @@
         title: ev.subject || '(No title)',
         start: new Date(ev.start.dateTime + (ev.start.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
         end: new Date(ev.end.dateTime + (ev.end.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
-        allDay: allDay
+        allDay: allDay,
+        joinUrl: calOutlookJoinUrl(ev)
       };
     });
+  }
+
+  function calOutlookJoinUrl(ev){
+    if (ev.onlineMeeting && ev.onlineMeeting.joinUrl) return ev.onlineMeeting.joinUrl;
+    if (ev.onlineMeetingUrl) return ev.onlineMeetingUrl;
+    if (ev.location && ev.location.displayName && /^https?:\/\//i.test(ev.location.displayName.trim())) return ev.location.displayName.trim();
+    return '';
   }
 
   async function calConnectOutlook(){
@@ -927,7 +991,9 @@
         + '<span class="cp-cal-event-when">' + esc(calFormatEventWhen(ev)) + '</span>'
         + '<div class="cp-cal-event-body">'
         + '<p class="cp-cal-event-title">' + esc(ev.title) + '</p>'
-        + '<p class="cp-cal-event-meta"><span class="cp-cal-provider-dot" style="background:' + dotColor[ev.provider] + '"></span>' + (ev.provider === 'google' ? 'Google Calendar' : 'Outlook') + '</p>'
+        + '<p class="cp-cal-event-meta"><span class="cp-cal-provider-dot" style="background:' + dotColor[ev.provider] + '"></span>' + (ev.provider === 'google' ? 'Google Calendar' : 'Outlook')
+        + (ev.joinUrl ? '<a class="cp-cal-event-join" href="' + esc(ev.joinUrl) + '" target="_blank" rel="noopener">Join</a>' : '')
+        + '</p>'
         + '</div></div>';
     });
     $('cpCalEventList').innerHTML = h;
@@ -935,9 +1001,53 @@
 
   function calRenderCard(){
     $('cpCalendarCard').hidden = isCoachUser;
+    renderSessionCTA();
     if (isCoachUser) return;
     calRenderButtons();
     calRenderEvents();
+  }
+
+  // ─── Next Session card: "Join call" wired to the connected calendar(s) ──
+  // A meeting is "appropriate" to join if it has a call link and is either
+  // already underway or starting within the next 15 minutes. Otherwise the
+  // client hasn't got anything to join yet, so the CTA suggests booking one.
+  var JOIN_WINDOW_MS = 15 * 60 * 1000;
+
+  function calAllEvents(){
+    return calState.google.events.concat(calState.outlook.events)
+      .sort(function(a,b){ return a.start - b.start; });
+  }
+
+  function calJoinableMeeting(){
+    var now = new Date();
+    var soon = new Date(now.getTime() + JOIN_WINDOW_MS);
+    var upcoming = calAllEvents().filter(function(ev){
+      return !ev.allDay && ev.joinUrl && ev.end > now && ev.start <= soon;
+    });
+    return upcoming[0] || null;
+  }
+
+  function calScheduleCallUrl(){
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+      + '&text=' + encodeURIComponent('Coaching Call')
+      + '&details=' + encodeURIComponent('Scheduled from your client portal.');
+  }
+
+  function renderSessionCTA(){
+    var btn = $('cpJoinCallBtn');
+    if (!btn) return;
+    if (isCoachUser) { $('cpSessionCard').querySelector('.cp-cta-row').hidden = true; return; }
+    $('cpSessionCard').querySelector('.cp-cta-row').hidden = false;
+    var meeting = calJoinableMeeting();
+    if (meeting) {
+      btn.textContent = 'Join call';
+      btn.href = meeting.joinUrl;
+      btn.classList.remove('cp-cta-schedule');
+    } else {
+      btn.textContent = 'Schedule a call';
+      btn.href = calScheduleCallUrl();
+      btn.classList.add('cp-cta-schedule');
+    }
   }
 
   $('cpCalConnectGoogle').addEventListener('click', function(){
