@@ -18,33 +18,6 @@
 
   const columns = [
     {
-      title: "Body",
-      links: [
-        { label: "1RM Calculator", href: `${root}1RM Calculator/Index.html` },
-        { label: "Split Sculptor", href: `${root}split-sculptor/index.html` },
-        { label: "Exercise Matrix", href: `${root}exercise-matrix/index.html` },
-        { label: "Physique Roadmap", href: `${root}physique-roadmap/index.html` },
-        { label: "Gym Locator", href: `${root}gym-locator/index.html` },
-        { label: "Macro Calculator", href: `${root}macro/index.html` },
-      ],
-    },
-    {
-      title: "Mind & Art",
-      links: [
-        { label: "Scriptor System", href: `${root}art/scriptor-system/index.html` },
-        { label: "Gagging the Critic", href: `${root}gagging-the-critic/index.html` },
-        { label: "I AM Worksheet", href: `${root}i-am-worksheet/index.html` },
-      ],
-    },
-    {
-      title: "Career & Life",
-      links: [
-        { label: "5 Ps Career Fit Calculator", href: `${root}career-core/index.html` },
-        { label: "Founder’s Calendar", href: `${root}founders-calendar/index.html` },
-        { label: "The Companion Chart", href: `${root}companion-chart/index.html` },
-      ],
-    },
-    {
       title: "Company",
       links: [
         { label: "About", href: `${root}about/index.html` },
