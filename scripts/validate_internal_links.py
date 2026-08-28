@@ -77,6 +77,9 @@ def main() -> int:
             if resolved in all_files:
                 continue
 
+            if resolved == "." and (ROOT / "index.html").exists():
+                continue
+
             if resolved in all_dirs and (ROOT / resolved / "index.html").exists():
                 continue
 

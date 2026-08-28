@@ -20,7 +20,7 @@
     {
       title: "Get Started",
       links: [
-        { label: "Client Portal", href: `${root}client-portal/index.html` },
+        { label: "Client Portal", href: `${root}client-portal/` },
         { label: "Apply for Coaching", href: "https://tally.so/r/w5JXKE", external: true },
         { label: "Science of Chasing Change", href: "https://chasingchange.beehiiv.com/", external: true },
       ],
@@ -28,10 +28,10 @@
     {
       title: "Company",
       links: [
-        { label: "About", href: `${root}about/index.html` },
+        { label: "About", href: `${root}about/` },
         { label: "Testimonials", href: `${root}testimonials.html` },
-        { label: "Contact", href: `${root}contact/index.html` },
-        { label: "Privacy Policy", href: `${root}privacy-policy/index.html` },
+        { label: "Contact", href: `${root}contact/` },
+        { label: "Privacy Policy", href: `${root}privacy-policy/` },
       ],
     },
   ];
