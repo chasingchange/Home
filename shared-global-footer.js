@@ -18,19 +18,20 @@
 
   const columns = [
     {
-      title: "Company",
-      links: [
-        { label: "About", href: `${root}about/index.html` },
-        { label: "Testimonials", href: `${root}testimonials.html` },
-        { label: "Contact", href: `${root}contact/index.html` },
-      ],
-    },
-    {
       title: "Get Started",
       links: [
         { label: "Client Portal", href: `${root}client-portal/index.html` },
         { label: "Apply for Coaching", href: "https://tally.so/r/w5JXKE", external: true },
         { label: "Science of Chasing Change", href: "https://chasingchange.beehiiv.com/", external: true },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About", href: `${root}about/index.html` },
+        { label: "Testimonials", href: `${root}testimonials.html` },
+        { label: "Contact", href: `${root}contact/index.html` },
+        { label: "Privacy Policy", href: `${root}privacy-policy/index.html` },
       ],
     },
   ];
@@ -60,9 +61,6 @@
       </div>
       <div class="cc-global-footer-bottom">
         <p class="cc-global-footer-copy">© ${year} Chasing Change — 1% better every day.</p>
-        <nav class="cc-global-footer-legal" aria-label="Legal">
-          <a href="${root}privacy-policy/index.html" class="cc-global-footer-legal-link">Privacy Policy</a>
-        </nav>
       </div>
     </div>
   `;
