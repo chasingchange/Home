@@ -13,6 +13,18 @@
   var SUPABASE_KEY = 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
   var COACH_EMAIL  = 'tywadebusiness@gmail.com';
 
+  // Calendar connect (Google Calendar / Outlook). Fill in real OAuth client
+  // IDs before this goes live — setup steps for both providers are in
+  // scripts/client_calendar_connections.sql. Both flows run entirely in the
+  // browser: no client secret, no token ever touches Supabase.
+  var CALENDAR_CONFIG = {
+    googleClientId:    'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    googleScope:       'https://www.googleapis.com/auth/calendar.readonly',
+    microsoftClientId: 'YOUR_MICROSOFT_ENTRA_APPLICATION_CLIENT_ID',
+    microsoftScopes:   ['Calendars.Read']
+  };
+  var CAL_WINDOW_DAYS = 14;
+
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // The six cores are a fixed set — every client has exactly these six,
@@ -55,6 +67,14 @@
 
   var viewingClientId = null;   // client_id currently shown in the client view
   var portalData = null;        // that client's loaded dashboard content
+
+  var calState = {
+    google:  { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false },
+    outlook: { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false }
+  };
+  var googleTokenClient = null;
+  var msalInstance = null;
+  var msalReady = null;   // promise, resolves once msalInstance.initialize() has run
 
   var editState = null;         // client being edited in the "Edit portal" form
 
@@ -364,6 +384,7 @@
 
     renderClientPortal();
     renderViewToggle();
+    calLoadForClient(clientId);
   }
 
   // ─── Coach: roster (loaded from every client's profile + dashboard row) ─
@@ -640,6 +661,290 @@
     var { data } = await sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true });
     portalData.messages = (data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; });
     renderMessages();
+  });
+
+  // ─── Calendar connect (Google / Outlook) ───────────────────────────────
+  // Only the client sees this — a coach browsing a client's portal (see
+  // isCoachUser) gets the card hidden, since connecting is per-client and
+  // the OAuth flows below run as whoever is signed into this browser tab.
+  function calConfigured(provider){
+    if (provider === 'google') return CALENDAR_CONFIG.googleClientId.indexOf('YOUR_') !== 0;
+    return CALENDAR_CONFIG.microsoftClientId.indexOf('YOUR_') !== 0;
+  }
+
+  function calWindow(){
+    var start = new Date(); start.setHours(0,0,0,0);
+    var end = new Date(start.getTime() + CAL_WINDOW_DAYS*24*60*60*1000);
+    return { start:start, end:end };
+  }
+
+  async function calPersistConnection(clientId, provider, connected, email){
+    await sb.from('client_calendar_connections').upsert(
+      { client_id: clientId, provider: provider, connected: connected, account_email: email || '', connected_at: new Date().toISOString() },
+      { onConflict: 'client_id,provider' }
+    );
+  }
+
+  // ─── Google Calendar (Google Identity Services token client) ──────────
+  function calGoogleTokenClient(){
+    if (googleTokenClient || !window.google || !google.accounts || !google.accounts.oauth2) return googleTokenClient;
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CALENDAR_CONFIG.googleClientId,
+      scope: CALENDAR_CONFIG.googleScope,
+      callback: function(){}   // overridden per-request below
+    });
+    return googleTokenClient;
+  }
+
+  function calRequestGoogleToken(silent){
+    return new Promise(function(resolve, reject){
+      var client = calGoogleTokenClient();
+      if (!client) { reject(new Error('Google Identity Services not loaded yet.')); return; }
+      client.callback = function(resp){
+        if (resp && resp.access_token) resolve(resp.access_token);
+        else reject(new Error((resp && resp.error) || 'No access token returned.'));
+      };
+      client.error_callback = function(err){ reject(err || new Error('Google sign-in failed.')); };
+      client.requestAccessToken(silent ? { prompt:'' } : { prompt:'consent' });
+    });
+  }
+
+  async function calFetchGoogleEvents(token){
+    var win = calWindow();
+    var url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+      + '?timeMin=' + encodeURIComponent(win.start.toISOString())
+      + '&timeMax=' + encodeURIComponent(win.end.toISOString())
+      + '&singleEvents=true&orderBy=startTime&maxResults=20';
+    var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) throw new Error('Google Calendar API error (' + res.status + ')');
+    var data = await res.json();
+    return (data.items || []).map(function(ev){
+      var allDay = !!(ev.start && ev.start.date && !ev.start.dateTime);
+      return {
+        id: 'google:' + ev.id,
+        provider: 'google',
+        title: ev.summary || '(No title)',
+        start: new Date(allDay ? ev.start.date : ev.start.dateTime),
+        end: new Date(allDay ? ev.end.date : ev.end.dateTime),
+        allDay: allDay
+      };
+    });
+  }
+
+  async function calConnectGoogle(){
+    if (!calConfigured('google')) { calSetStatus('Google Calendar isn\'t set up yet — ask your coach to finish the connection setup.', true); return; }
+    var clientId = viewingClientId;
+    calState.google.busy = true; calRenderCard();
+    try {
+      var token = await calRequestGoogleToken(false);
+      calState.google.token = token;
+      calState.google.connected = true;
+      calState.google.needsReconnect = false;
+      calState.google.events = await calFetchGoogleEvents(token);
+      var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
+      var info = infoRes.ok ? await infoRes.json() : {};
+      calState.google.email = info.email || '';
+      if (viewingClientId === clientId) await calPersistConnection(clientId, 'google', true, calState.google.email);
+    } catch (e) {
+      calSetStatus('Couldn\'t connect Google Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
+    }
+    calState.google.busy = false;
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  async function calDisconnectGoogle(){
+    var clientId = viewingClientId;
+    if (calState.google.token && window.google && google.accounts && google.accounts.oauth2) {
+      google.accounts.oauth2.revoke(calState.google.token, function(){});
+    }
+    calState.google = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
+    if (clientId) await calPersistConnection(clientId, 'google', false, '');
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  // ─── Outlook (MSAL.js — Microsoft SPA / PKCE, no client secret) ───────
+  function calGetMsal(){
+    if (!window.msal) return null;
+    if (!msalInstance) {
+      msalInstance = new msal.PublicClientApplication({
+        auth: { clientId: CALENDAR_CONFIG.microsoftClientId, authority: 'https://login.microsoftonline.com/common', redirectUri: window.location.origin + window.location.pathname },
+        cache: { cacheLocation: 'localStorage' }
+      });
+      msalReady = msalInstance.initialize();
+    }
+    return msalInstance;
+  }
+
+  async function calFetchOutlookEvents(token){
+    var win = calWindow();
+    var url = 'https://graph.microsoft.com/v1.0/me/calendarview'
+      + '?startDateTime=' + encodeURIComponent(win.start.toISOString())
+      + '&endDateTime=' + encodeURIComponent(win.end.toISOString())
+      + '&$orderby=start/dateTime&$top=20';
+    var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="UTC"' } });
+    if (!res.ok) throw new Error('Outlook Calendar API error (' + res.status + ')');
+    var data = await res.json();
+    return (data.value || []).map(function(ev){
+      var allDay = !!ev.isAllDay;
+      return {
+        id: 'outlook:' + ev.id,
+        provider: 'outlook',
+        title: ev.subject || '(No title)',
+        start: new Date(ev.start.dateTime + (ev.start.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
+        end: new Date(ev.end.dateTime + (ev.end.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
+        allDay: allDay
+      };
+    });
+  }
+
+  async function calConnectOutlook(){
+    if (!calConfigured('outlook')) { calSetStatus('Outlook Calendar isn\'t set up yet — ask your coach to finish the connection setup.', true); return; }
+    var clientId = viewingClientId;
+    var client = calGetMsal();
+    if (!client) { calSetStatus('Microsoft sign-in is still loading — try again in a moment.', true); return; }
+    calState.outlook.busy = true; calRenderCard();
+    try {
+      await msalReady;
+      var loginResp = await client.loginPopup({ scopes: CALENDAR_CONFIG.microsoftScopes });
+      var tokenResp = await client.acquireTokenSilent({ scopes: CALENDAR_CONFIG.microsoftScopes, account: loginResp.account })
+        .catch(function(){ return client.acquireTokenPopup({ scopes: CALENDAR_CONFIG.microsoftScopes, account: loginResp.account }); });
+      calState.outlook.account = loginResp.account;
+      calState.outlook.email = loginResp.account.username || '';
+      calState.outlook.connected = true;
+      calState.outlook.needsReconnect = false;
+      calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
+      if (viewingClientId === clientId) await calPersistConnection(clientId, 'outlook', true, calState.outlook.email);
+    } catch (e) {
+      calSetStatus('Couldn\'t connect Outlook Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
+    }
+    calState.outlook.busy = false;
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  async function calDisconnectOutlook(){
+    var clientId = viewingClientId;
+    var client = calGetMsal();
+    if (client && calState.outlook.account) {
+      try { await msalReady; await client.getTokenCache().removeAccount(calState.outlook.account); } catch (e) { /* best effort */ }
+    }
+    calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
+    if (clientId) await calPersistConnection(clientId, 'outlook', false, '');
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  // ─── Load + render ──────────────────────────────────────────────────────
+  async function calLoadForClient(clientId){
+    calState.google  = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
+    calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
+    if (isCoachUser) { calRenderCard(); return; }   // clients only — see comment above
+
+    var { data } = await sb.from('client_calendar_connections').select('*').eq('client_id', clientId);
+    if (viewingClientId !== clientId) return;
+    (data || []).forEach(function(row){
+      if (!row.connected) return;
+      calState[row.provider].connected = true;
+      calState[row.provider].needsReconnect = true;   // flips false once a silent/real token comes back
+      calState[row.provider].email = row.account_email || '';
+    });
+    calRenderCard();
+
+    // Best-effort silent reconnect so returning clients don't have to click
+    // "Connect" again every visit. Falls back to "Reconnect" if it can't.
+    if (calState.google.connected) {
+      calRequestGoogleToken(true).then(async function(token){
+        if (viewingClientId !== clientId) return;
+        calState.google.token = token;
+        calState.google.needsReconnect = false;
+        calState.google.events = await calFetchGoogleEvents(token);
+        if (viewingClientId === clientId) calRenderCard();
+      }).catch(function(){ /* leave needsReconnect true */ });
+    }
+    if (calState.outlook.connected) {
+      var client = calGetMsal();
+      if (client) {
+        msalReady.then(function(){ return client.getAllAccounts(); }).then(function(accounts){
+          if (viewingClientId !== clientId || !accounts.length) return;
+          var account = accounts[0];
+          return client.acquireTokenSilent({ scopes: CALENDAR_CONFIG.microsoftScopes, account: account }).then(async function(tokenResp){
+            if (viewingClientId !== clientId) return;
+            calState.outlook.account = account;
+            calState.outlook.needsReconnect = false;
+            calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
+            if (viewingClientId === clientId) calRenderCard();
+          });
+        }).catch(function(){ /* leave needsReconnect true */ });
+      }
+    }
+  }
+
+  function calSetStatus(msg, isError){
+    var el = $('cpCalStatus');
+    el.textContent = msg || '';
+    el.classList.toggle('is-error', !!isError);
+  }
+
+  function calProviderBtnLabel(provider, name){
+    var s = calState[provider];
+    if (s.busy) return 'Connecting…';
+    if (s.connected && s.needsReconnect) return 'Reconnect ' + name;
+    if (s.connected) return name + ' · ' + (s.email || 'Connected');
+    return 'Connect ' + name;
+  }
+
+  function calRenderButtons(){
+    var g = $('cpCalConnectGoogle'), o = $('cpCalConnectOutlook');
+    g.textContent = calProviderBtnLabel('google', 'Google');
+    g.classList.toggle('is-connected', calState.google.connected && !calState.google.needsReconnect);
+    g.classList.toggle('is-loading', calState.google.busy);
+    o.textContent = calProviderBtnLabel('outlook', 'Outlook');
+    o.classList.toggle('is-connected', calState.outlook.connected && !calState.outlook.needsReconnect);
+    o.classList.toggle('is-loading', calState.outlook.busy);
+  }
+
+  function calFormatEventWhen(ev){
+    if (ev.allDay) return ev.start.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }) + ' · All day';
+    return ev.start.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }) + ' · '
+      + ev.start.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+  }
+
+  function calRenderEvents(){
+    var events = calState.google.events.concat(calState.outlook.events)
+      .sort(function(a,b){ return a.start - b.start; });
+    if (!calState.google.connected && !calState.outlook.connected) {
+      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Connect a calendar above to see your upcoming sessions and appointments here.</p>';
+      return;
+    }
+    if (!events.length) {
+      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Nothing on your calendar in the next ' + CAL_WINDOW_DAYS + ' days.</p>';
+      return;
+    }
+    var dotColor = { google:'#f02348', outlook:'#2a9df0' };
+    var h = '';
+    events.forEach(function(ev){
+      h += '<div class="cp-cal-event-row">'
+        + '<span class="cp-cal-event-when">' + esc(calFormatEventWhen(ev)) + '</span>'
+        + '<div class="cp-cal-event-body">'
+        + '<p class="cp-cal-event-title">' + esc(ev.title) + '</p>'
+        + '<p class="cp-cal-event-meta"><span class="cp-cal-provider-dot" style="background:' + dotColor[ev.provider] + '"></span>' + (ev.provider === 'google' ? 'Google Calendar' : 'Outlook') + '</p>'
+        + '</div></div>';
+    });
+    $('cpCalEventList').innerHTML = h;
+  }
+
+  function calRenderCard(){
+    $('cpCalendarCard').hidden = isCoachUser;
+    if (isCoachUser) return;
+    calRenderButtons();
+    calRenderEvents();
+  }
+
+  $('cpCalConnectGoogle').addEventListener('click', function(){
+    if (calState.google.connected && !calState.google.needsReconnect) calDisconnectGoogle();
+    else calConnectGoogle();
+  });
+  $('cpCalConnectOutlook').addEventListener('click', function(){
+    if (calState.outlook.connected && !calState.outlook.needsReconnect) calDisconnectOutlook();
+    else calConnectOutlook();
   });
 
   function renderReminder(){

@@ -131,6 +131,22 @@
       .cp-message-input{border-radius:14px;border:1px solid rgba(7,31,53,.1);padding:14px 16px;font-size:15px;color:rgba(7,31,53,.4);}
       .cp-chip-row{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;}
       .cp-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.1);font-size:13px;font-weight:700;color:rgba(7,31,53,.75);}
+      /* calendar card */
+      .cp-cal-connect-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
+      .cp-cal-provider-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;letter-spacing:.02em;color:rgba(7,31,53,.7);white-space:nowrap;transition:border-color .15s,color .15s,background .15s;}
+      .cp-cal-provider-btn:hover{border-color:rgba(7,31,53,.35);}
+      .cp-cal-provider-btn.is-connected{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-cal-provider-btn.is-disabled{cursor:not-allowed;opacity:.45;}
+      .cp-cal-provider-btn.is-loading{opacity:.6;cursor:wait;}
+      .cp-cal-status{margin:14px 0 0;font-size:13px;color:rgba(7,31,53,.5);}
+      .cp-cal-status.is-error{color:#c01a38;}
+      .cp-cal-event-list{margin-top:10px;display:grid;gap:0;}
+      .cp-cal-event-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-cal-event-when{flex:0 0 118px;font-size:12px;font-weight:800;letter-spacing:.03em;color:rgba(7,31,53,.5);padding-top:1px;}
+      .cp-cal-event-body{flex:1;min-width:0;}
+      .cp-cal-event-title{margin:0;font-size:14px;font-weight:700;color:#071f35;overflow-wrap:anywhere;}
+      .cp-cal-event-meta{margin:3px 0 0;font-size:12px;color:rgba(7,31,53,.45);}
+      .cp-cal-provider-dot{display:inline-block;width:7px;height:7px;border-radius:999px;margin-right:6px;position:relative;top:-1px;}
       .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
@@ -384,6 +400,18 @@
               <div class="cp-messages" id="cpMessageList"></div>
               <input type="text" class="cp-message-input" id="cpMessageInput" placeholder="Write a message…" />
             </div>
+            <div class="cp-card cp-card--wide" id="cpCalendarCard" hidden>
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Calendar</p><h3 class="cp-card-title">Upcoming</h3></div>
+                <div class="cp-cal-connect-row" id="cpCalConnectRow">
+                  <button type="button" class="cp-cal-provider-btn" id="cpCalConnectGoogle" data-provider="google">Connect Google</button>
+                  <button type="button" class="cp-cal-provider-btn" id="cpCalConnectOutlook" data-provider="outlook">Connect Outlook</button>
+                  <button type="button" class="cp-cal-provider-btn is-disabled" id="cpCalConnectApple" disabled title="Apple Calendar doesn't support this kind of connection yet — coming soon.">Apple · Coming soon</button>
+                </div>
+              </div>
+              <p class="cp-cal-status" id="cpCalStatus"></p>
+              <div class="cp-cal-event-list" id="cpCalEventList"></div>
+            </div>
             <div class="cp-card" id="cpLibraryCard">
               <p class="cp-kicker">Resource Library</p>
               <h3 class="cp-card-title">Assigned to you</h3>
@@ -518,6 +546,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Calendar connect: Google Identity Services (token client) + MSAL.js
+         (Microsoft SPA/PKCE). Both run entirely client-side — see
+         CALENDAR_CONFIG in portal.js and scripts/client_calendar_connections.sql. -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="portal.js"></script>
   </body>
 </html>
