@@ -49,8 +49,13 @@
       links: [
         { label: "About", href: `${root}about/index.html` },
         { label: "Testimonials", href: `${root}testimonials.html` },
-        { label: "Client Portal", href: `${root}client-portal/index.html` },
         { label: "Contact", href: `${root}contact/index.html` },
+      ],
+    },
+    {
+      title: "Get Started",
+      links: [
+        { label: "Client Portal", href: `${root}client-portal/index.html` },
         { label: "Apply for Coaching", href: "https://tally.so/r/w5JXKE", external: true },
         { label: "Science of Chasing Change", href: "https://chasingchange.beehiiv.com/", external: true },
       ],
