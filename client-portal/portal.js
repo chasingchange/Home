@@ -265,7 +265,7 @@
     // Get profile from Supabase (role + name)
     var { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
 
-    if (needsPassword || (profile && profile.has_password === false)) {
+    if (needsPassword || !profile || profile.has_password !== true) {
       needsPassword = false;
       pendingProfile = profile;
       showSetPasswordStep(user);
