@@ -5,6 +5,13 @@
 -- connect and see their own calendar (not the coach) — see client-portal/
 -- portal.js for the Google Calendar / Outlook OAuth flows.
 --
+-- The Next Session card's "Join call" button reads whichever connected
+-- calendar(s) surface a video link (Google hangoutLink/conferenceData, or
+-- Outlook onlineMeeting.joinUrl) on an event starting within the next 15
+-- minutes or already underway. When nothing matches, the button falls back
+-- to "Schedule a call" and opens Google Calendar's quick-add compose view
+-- instead — see calJoinableMeeting() / renderSessionCTA() in portal.js.
+--
 -- IMPORTANT: this table never stores OAuth access or refresh tokens. Both
 -- providers are wired up as browser-only OAuth (Google Identity Services'
 -- token client, and MSAL.js for Microsoft) — the access token lives only in

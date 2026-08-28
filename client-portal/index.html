@@ -109,8 +109,17 @@
       .cp-task-label.is-done{text-decoration:line-through;color:rgba(7,31,53,.4);}
       .cp-task-meta{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
       .cp-cta-row{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;}
-      .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;}
+      .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;}
+      .cp-cta-primary.cp-cta-schedule{background:rgba(7,31,53,.08);color:#071f35;}
       .cp-cta-secondary{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:20px;border:1px solid rgba(7,31,53,.12);font-size:14px;font-weight:700;color:rgba(7,31,53,.7);}
+      .cp-welcome-row{display:flex;align-items:baseline;gap:10px;}
+      .cp-nickname-edit{all:unset;cursor:pointer;font-size:15px;color:rgba(7,31,53,.35);}
+      .cp-nickname-edit:hover{color:rgba(7,31,53,.7);}
+      .cp-nickname-form{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+      .cp-nickname-form .cp-edit-input{width:220px;}
+      .cp-nickname-save{all:unset;cursor:pointer;padding:8px 16px;border-radius:16px;background:#071f35;color:#fff;font-size:13px;font-weight:700;}
+      .cp-nickname-cancel{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-nickname-cancel:hover{color:rgba(7,31,53,.75);}
       .cp-bars{margin-top:22px;display:flex;align-items:flex-end;gap:6px;height:78px;}
       .cp-bar{flex:1;border-radius:4px;}
       .cp-caption{margin:12px 0 0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
@@ -147,6 +156,7 @@
       .cp-cal-event-body{flex:1;min-width:0;}
       .cp-cal-event-title{margin:0;font-size:14px;font-weight:700;color:#071f35;overflow-wrap:anywhere;}
       .cp-cal-event-meta{margin:3px 0 0;font-size:12px;color:rgba(7,31,53,.45);}
+      .cp-cal-event-join{margin-left:8px;font-size:12px;font-weight:800;color:#071f35;text-decoration:underline;text-underline-offset:2px;}
       .cp-cal-provider-dot{display:inline-block;width:7px;height:7px;border-radius:999px;margin-right:6px;position:relative;top:-1px;}
       .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
       .cp-roster-card{cursor:default;}
@@ -324,7 +334,15 @@
         <div class="cp-dash-head">
           <div>
             <p class="cp-kicker">Client Portal</p>
-            <h1 class="cp-h1" id="cpWelcome"></h1>
+            <div class="cp-welcome-row">
+              <h1 class="cp-h1" id="cpWelcome"></h1>
+              <button type="button" class="cp-nickname-edit" id="cpNicknameEdit" hidden title="Go by a different name?">✎</button>
+            </div>
+            <div class="cp-nickname-form" id="cpNicknameForm" hidden>
+              <input type="text" id="cpNicknameInput" class="cp-edit-input" placeholder="What should we call you?" maxlength="40" />
+              <button type="button" class="cp-nickname-save" id="cpNicknameSave">Save</button>
+              <button type="button" class="cp-nickname-cancel" id="cpNicknameCancel">Cancel</button>
+            </div>
             <p class="cp-route-line" id="cpRouteLine"></p>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
@@ -374,7 +392,7 @@
               <p class="cp-kicker">Next Session</p>
               <h3 class="cp-card-title" id="cpSessionLabel"></h3>
               <p class="cp-body-text" id="cpSessionAgenda"></p>
-              <div class="cp-cta-row"><span class="cp-cta-primary">Join call</span><span class="cp-cta-secondary">Reschedule</span></div>
+              <div class="cp-cta-row"><a class="cp-cta-primary" id="cpJoinCallBtn" href="#" target="_blank" rel="noopener">Join call</a><span class="cp-cta-secondary">Reschedule</span></div>
             </div>
             <div class="cp-card" id="cpStreakCard">
               <p class="cp-kicker">Consistency</p>
