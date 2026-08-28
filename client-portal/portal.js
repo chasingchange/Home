@@ -9,8 +9,10 @@
   })();
 
   // ─── Config ───────────────────────────────────────────────────────────
-  var SUPABASE_URL = 'https://datrgkjqwyfcbmtwwifm.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
+  // Falls back to the known project values if shared-supabase-config.js
+  // wasn't loaded first, so this still works standalone.
+  var SUPABASE_URL = window.CC_SUPABASE_URL || 'https://datrgkjqwyfcbmtwwifm.supabase.co';
+  var SUPABASE_KEY = window.CC_SUPABASE_KEY || 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
   var COACH_EMAIL  = 'tywadebusiness@gmail.com';
 
   // Calendar connect (Google Calendar / Outlook). Fill in real OAuth client

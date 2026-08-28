@@ -11,10 +11,6 @@
     return `${pathname.slice(0, lastSlash + 1)}`;
   }
 
-  if (typeof window.removeLegacyTitleCards === "function") {
-    window.removeLegacyTitleCards();
-  }
-
   const existingGlobalNav = document.getElementById("ccGlobalNav");
   if (existingGlobalNav) return;
 

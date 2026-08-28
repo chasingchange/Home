@@ -16,6 +16,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="../shared-coach-export.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../shared-supabase-config.js"></script>
 <script src="../shared-tool-sync.js"></script>
 <style>
 :root {
@@ -907,27 +908,6 @@ function normalizeAndValidateExerciseMatrix(matrix = []) {
 
 const EXERCISES = normalizeAndValidateExerciseMatrix(window.EXERCISE_MATRIX || []);
 
-function rotateSplitToFirstFocus(split, desiredFocus) {
-  if (!desiredFocus) return split;
-  const index = split.findIndex((line) => extractFocusName(line) === desiredFocus);
-  if (index <= 0) return split;
-  const rotated = [...split.slice(index), ...split.slice(0, index)];
-  rotated[0] = `${desiredFocus} (Priority First)`;
-  return rotated.map((line, lineIndex) => {
-    if (lineIndex !== 0) return line.replace(' (Priority First)', '');
-    return line;
-  });
-}
-
-function getPriorityFocus() {
-  const priority = (state.priority || '').toLowerCase();
-  if (['legs', 'glutes', 'quads', 'hamstrings', 'calves'].includes(priority)) return ['Legs', 'Lower'];
-  if (priority === 'chest') return ['Push', 'Upper'];
-  if (priority === 'back') return ['Pull', 'Upper'];
-  if (priority === 'shoulders' || priority === 'biceps' || priority === 'triceps' || priority === 'arms') return ['Pull', 'Upper', 'Push'];
-  return ['Push', 'Upper', 'Legs', 'Lower', 'Pull', 'Full Body'];
-}
-
 function getSplitForFreq() {
   const dayTypes = getMicrocycleDayTypes();
   return dayTypes.map((type, index) => `${type}${index === 0 ? ' (Priority First)' : ''}`);
@@ -1053,13 +1033,6 @@ function oneChip(groupId, key, isNum = false) {
 
 function getPriorityMuscles() {
   return ['Back', 'Biceps', 'Calves', 'Chest', 'Glutes', 'Hamstrings', 'Quads', 'Shoulders', 'Triceps', 'Abs'];
-}
-
-function muscleBucket(muscle) {
-  if (['Chest', 'Shoulders', 'Triceps'].includes(muscle)) return 'Push';
-  if (['Back', 'Biceps'].includes(muscle)) return 'Pull';
-  if (muscle === 'Abs') return 'Core';
-  return 'Legs';
 }
 
 function applyPriorityProfileForFrequency() {
@@ -1606,11 +1579,6 @@ function renderWeeklyVolumeSummary() {
       <p class="weekly-volume-insight">${getVolumeInsight(rows)}</p>
     </div>
   `;
-}
-
-function getPresetOrSuggestion(value, slotType, key) {
-  if (value) return value;
-  return getSlotPrescription(slotType)[key] || '';
 }
 
 function hasCompleteBuilderPrescription() {
