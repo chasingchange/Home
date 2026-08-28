@@ -16,7 +16,7 @@
   function getSignInUrl() {
     const path = window.location.pathname;
     const depth = path.replace(/\/[^/]*$/, "").split("/").filter(Boolean).length;
-    return `${"../".repeat(Math.max(depth, 1))}client-portal/index.html`;
+    return `${"../".repeat(Math.max(depth, 1))}client-portal/`;
   }
 
   // toolKey: string identifying this save row.

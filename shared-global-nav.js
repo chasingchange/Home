@@ -38,13 +38,13 @@
     </div>
     <div class="cc-global-nav-mobile-panel" id="ccGlobalNavPanel">
       <nav id="ccGlobalNav" aria-label="Primary navigation" class="cc-global-nav">
-        <a href="${root}index.html" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
-        <a href="${root}client-portal/index.html" class="cc-global-nav-link">Portal</a>
+        <a href="${root}" class="cc-global-nav-link cc-global-nav-link--home">Home</a>
+        <a href="${root}client-portal/" class="cc-global-nav-link">Portal</a>
         <a href="${root}testimonials.html" class="cc-global-nav-link">Testimonials</a>
-        <a href="${root}about/index.html" class="cc-global-nav-link">About</a>
+        <a href="${root}about/" class="cc-global-nav-link">About</a>
         <a href="https://chasingchange.beehiiv.com/" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Science of Chasing Change</a>
         <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
-        <a href="${root}contact/index.html" class="cc-global-nav-link">Contact</a>
+        <a href="${root}contact/" class="cc-global-nav-link">Contact</a>
         <span class="cc-global-nav-separator" aria-hidden="true">|</span>
         <button type="button" data-core="Body" class="cc-global-nav-core">Body</button>
         <button type="button" data-core="Art" class="cc-global-nav-core">Art</button>
@@ -63,17 +63,17 @@
 
   const resources = [
     { title: "1RM Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
-    { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/index.html` },
-    { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/index.html` },
-    { title: "Physique Roadmap", core: "Body", section: "Fitness", url: `${root}physique-roadmap/index.html` },
-    { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/index.html` },
-    { title: "Macro Calculator", core: "Body", section: "Nutrition", url: `${root}macro/index.html` },
-    { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/index.html` },
-    { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/index.html` },
-    { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/index.html` },
-    { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/index.html` },
-    { title: "Founder’s Calendar", core: "Life", section: "Environment", url: `${root}founders-calendar/index.html` },
-    { title: "The Companion Chart", core: "Life", section: "Relationships", url: `${root}companion-chart/index.html` },
+    { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/` },
+    { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/` },
+    { title: "Physique Roadmap", core: "Body", section: "Fitness", url: `${root}physique-roadmap/` },
+    { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/` },
+    { title: "Macro Calculator", core: "Body", section: "Nutrition", url: `${root}macro/` },
+    { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/` },
+    { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/` },
+    { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/` },
+    { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/` },
+    { title: "Founder’s Calendar", core: "Life", section: "Environment", url: `${root}founders-calendar/` },
+    { title: "The Companion Chart", core: "Life", section: "Relationships", url: `${root}companion-chart/` },
   ];
 
   const coreTopBar = nav.querySelector("#ccGlobalNav");
