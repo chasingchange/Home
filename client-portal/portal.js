@@ -18,7 +18,7 @@
   // scripts/client_calendar_connections.sql. Both flows run entirely in the
   // browser: no client secret, no token ever touches Supabase.
   var CALENDAR_CONFIG = {
-    googleClientId:    'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    googleClientId:    '976458437286-ufpguk5m0aoa3ob8ghjhf1bvqih747h0.apps.googleusercontent.com',
     googleScope:       'https://www.googleapis.com/auth/calendar.readonly',
     microsoftClientId: 'YOUR_MICROSOFT_ENTRA_APPLICATION_CLIENT_ID',
     microsoftScopes:   ['Calendars.Read']
