@@ -46,10 +46,68 @@
     return d ? d.color : '#77d770';
   }
 
+  // Preferred cardio: as broad a menu as makes sense for a general
+  // coaching roster, each with a unit-appropriate goal hint (time for
+  // steady-state/interval work, distance units that match the modality —
+  // yards for swimming, meters for erg work, miles for biking/hiking).
+  var CARDIO_OPTIONS = [
+    { value:"running",         label:"Running",                          hint:"e.g. 5 miles @ 9:00/mi" },
+    { value:"jogging",         label:"Jogging",                          hint:"e.g. 2 miles, easy pace" },
+    { value:"walking",         label:"Walking",                          hint:"e.g. 45 min brisk pace" },
+    { value:"incline_walking", label:"Incline Walking / Rucking",        hint:"e.g. 30 min @ 12% incline" },
+    { value:"hiking",          label:"Hiking",                           hint:"e.g. 4 miles" },
+    { value:"cycling_outdoor", label:"Cycling / Biking (Outdoor)",       hint:"e.g. 12 miles" },
+    { value:"indoor_cycling",  label:"Indoor Cycling / Spin",            hint:"e.g. 40 min class" },
+    { value:"swimming",        label:"Swimming",                        hint:"e.g. 1,000 yards" },
+    { value:"rowing",          label:"Rowing (Erg)",                    hint:"e.g. 2,000 meters" },
+    { value:"ski_erg",         label:"Ski Erg",                         hint:"e.g. 1,000 meters" },
+    { value:"elliptical",      label:"Elliptical",                      hint:"e.g. 30 min" },
+    { value:"stairmaster",     label:"Stairmaster / StepMill",          hint:"e.g. 20 min / 60 floors" },
+    { value:"stair_climbing",  label:"Stair Climbing (Real Stairs)",    hint:"e.g. 10 flights x 5" },
+    { value:"assault_bike",    label:"Assault Bike / Air Bike",         hint:"e.g. 20 cal/min x 10" },
+    { value:"jump_rope",       label:"Jump Rope",                       hint:"e.g. 15 min, 3x5min rounds" },
+    { value:"hiit",            label:"HIIT / Sprint Intervals",         hint:"e.g. 8x30s sprint / 90s rest" },
+    { value:"boxing",          label:"Boxing / Kickboxing Cardio",      hint:"e.g. 30 min bag work" },
+    { value:"dance",           label:"Dance Cardio",                    hint:"e.g. 45 min class" },
+    { value:"sled",            label:"Sled Push / Pull",                hint:"e.g. 10x20yd pushes" },
+    { value:"other",           label:"Other",                           hint:"Describe the goal" }
+  ];
+
+  function cardioLabel(value){
+    var d = CARDIO_OPTIONS.filter(function(c){ return c.value === value; })[0];
+    return d ? d.label : value;
+  }
+
   var FLAG_COLORS = { 'On track':'#77d770', 'Needs a nudge':'#f58b1c', 'At risk':'#f02348' };
 
   var remDays  = ["Monday","Tuesday","Sunday"];
   var remChans = ["text","email","push"];
+
+  // Offboarding: the end-of-program reflection form, mirrored from the
+  // coach's Notion "Chasing Change Offboarding" form. Text fields are
+  // free-form, rating fields are 1-5 selects, keys match the
+  // client_offboarding table columns exactly so the form can read/write
+  // the row directly with no key-mapping layer.
+  var OFFBOARD_FIELDS = [
+    { key:"hoped_for",             label:"When you started, what were you hoping would change most?", type:"textarea" },
+    { key:"what_changed",          label:"What actually changed?", type:"textarea" },
+    { key:"surprised",             label:"What surprised you about your progress?", type:"textarea" },
+    { key:"habits_stuck",          label:"Which habits stuck the strongest?", type:"textarea" },
+    { key:"most_proud",            label:"What are you most proud of from this program?", type:"textarea" },
+    { key:"old_you",               label:"What are you doing now that “old you” wouldn’t have done?", type:"textarea" },
+    { key:"do_differently",        label:"What would you do differently if you restarted the program?", type:"textarea" },
+    { key:"still_unclear",         label:"What still feels unclear?", type:"textarea" },
+    { key:"most_helpful",          label:"What part of coaching helped you the most?", type:"textarea" },
+    { key:"improve_structurally",  label:"What could I improve structurally?", type:"textarea" },
+    { key:"tools_confusing",       label:"What tools felt confusing or unnecessary?", type:"textarea" },
+    { key:"clarity_of_plan",       label:"Clarity of plan (1-5)", type:"rating" },
+    { key:"accountability_support",label:"Accountability support (1-5)", type:"rating" },
+    { key:"check_ins",             label:"Check-ins (1-5)", type:"rating" },
+    { key:"communication_speed",   label:"Communication speed (1-5)", type:"rating" },
+    { key:"next_goal",             label:"What’s the next goal from here?", type:"textarea" },
+    { key:"continued_structure",   label:"Would continued structure help with the next phase?", type:"textarea" }
+  ];
+  var CONTINUATION_SIGNALS = ["Testimonial","Referral","Check-in call later","Next phase coaching"];
 
   // ─── Runtime state ──────────────────────────────────────────────────────
   var state = { view:"client", openCard:null, openRows:{} };
@@ -340,7 +398,9 @@
       sb.from('client_metrics').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_resources').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_wins').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true })
+      sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
+      sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
+      sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle()
     ]);
 
     var d = results[0].data || {};
@@ -367,13 +427,17 @@
       reminderChannel: d.reminder_channel || 'text',
       reminderOn: d.reminder_on !== false,
       adherenceHistory: d.adherence_history || [],
+      preferredCardio: d.preferred_cardio || '',
+      cardioGoal: d.cardio_goal || '',
       cores: cores,
       tasks: (results[2].data || []).map(function(t){ return { id:t.id, label:t.label, coreKey:t.core_key, color:t.color, done:t.done }; }),
       notes: (results[3].data || []).map(function(n){ return { id:n.id, label:n.label, meta:n.meta, body:n.body }; }),
       metrics: (results[4].data || []).map(function(m){ return { id:m.id, label:m.label, value:m.value }; }),
       resources: (results[5].data || []).map(function(r){ return { id:r.id, label:r.label, color:r.color }; }),
       wins: (results[6].data || []).map(function(w){ return { id:w.id, label:w.label, meta:w.meta, color:w.color }; }),
-      messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; })
+      messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; }),
+      onboardingItems: (results[8].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
+      offboarding: results[9].data || {}
     };
   }
 
@@ -629,7 +693,88 @@
     renderSessionCard();
     renderMessages();
     renderReminder();
+    renderCardioBox();
+    renderOnboarding();
+    renderOffboardingForm();
   }
+
+  // ─── Preferred cardio + goal (set by the coach, seen by the client) ───
+  function renderCardioBox(){
+    var box = $('cpCardioBox');
+    if (!portalData.preferredCardio && !portalData.cardioGoal) { box.hidden = true; return; }
+    box.hidden = false;
+    $('cpCardioType').textContent = portalData.preferredCardio ? cardioLabel(portalData.preferredCardio) : 'Not set yet';
+    $('cpCardioGoal').textContent = portalData.cardioGoal || 'No goal set yet';
+  }
+
+  // ─── Onboarding checklist (coach-managed, either side can check items) ─
+  function renderOnboarding(){
+    var items = portalData.onboardingItems || [];
+    $('cpOnboardingCard').hidden = items.length === 0;
+    var h = '';
+    items.forEach(function(t,i){
+      h += '<div class="cp-task-row"><button type="button" class="cp-task-check'+(t.done?' is-done':'')+'" data-idx="'+i+'">'+(t.done?'✓':'')+'</button><span class="cp-task-label'+(t.done?' is-done':'')+'">'+esc(t.label)+'</span></div>';
+    });
+    $('cpOnboardingList').innerHTML = h;
+    var done = items.filter(function(t){ return t.done; }).length;
+    $('cpOnboardingCount').textContent = done + ' of ' + items.length + ' done';
+  }
+
+  $('cpOnboardingList').addEventListener('click', function(e){
+    var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
+    var idx = parseInt(btn.getAttribute('data-idx'),10);
+    var item = portalData.onboardingItems[idx]; if (!item) return;
+    item.done = !item.done;
+    renderOnboarding();
+    sb.from('client_onboarding_items').update({ done: item.done }).eq('id', item.id);
+  });
+
+  // ─── Offboarding reflection form (client fills in, coach reads) ───────
+  function renderOffboardingForm(){
+    $('cpOffboardingCard').hidden = false;
+    var o = portalData.offboarding || {};
+    var h = '';
+    OFFBOARD_FIELDS.forEach(function(f){
+      var val = o[f.key];
+      if (f.type === 'rating') {
+        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><select class="cp-edit-input" data-off-field="'+f.key+'" style="width:120px"><option value="">—</option>';
+        for (var i=1;i<=5;i++) h += '<option value="'+i+'"'+(val===i?' selected':'')+'>'+i+'</option>';
+        h += '</select></div>';
+      } else {
+        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><input type="text" class="cp-edit-input" data-off-field="'+f.key+'" value="'+esc(val||'')+'" /></div>';
+      }
+    });
+    h += '<div class="cp-edit-field"><label>Continuation signal</label><div class="cp-chip-row">';
+    CONTINUATION_SIGNALS.forEach(function(s){
+      var checked = (o.continuation_signal || []).indexOf(s) !== -1;
+      h += '<label class="cp-chip" style="cursor:pointer;"><input type="checkbox" data-off-signal="'+esc(s)+'"'+(checked?' checked':'')+' style="margin-right:6px;" />'+esc(s)+'</label>';
+    });
+    h += '</div></div>';
+    $('cpOffboardingForm').innerHTML = h;
+    $('cpOffboardingStatus').textContent = o.submitted ? 'Submitted' : 'Draft';
+  }
+
+  $('cpOffboardingSave').addEventListener('click', async function(){
+    if (!viewingClientId) return;
+    var clientId = viewingClientId;
+    var row = { client_id: clientId, submitted: true };
+    OFFBOARD_FIELDS.forEach(function(f){
+      var el = $('cpOffboardingForm').querySelector('[data-off-field="'+f.key+'"]');
+      var v = el ? el.value : '';
+      row[f.key] = f.type === 'rating' ? (v ? parseInt(v,10) : null) : (v || '');
+    });
+    var signals = [];
+    $('cpOffboardingForm').querySelectorAll('[data-off-signal]').forEach(function(cb){ if (cb.checked) signals.push(cb.getAttribute('data-off-signal')); });
+    row.continuation_signal = signals;
+
+    setLoading($('cpOffboardingSave'), true, 'Saving…');
+    var { error } = await sb.from('client_offboarding').upsert(row, { onConflict:'client_id' });
+    setLoading($('cpOffboardingSave'), false, 'Save reflection');
+    if (error) { window.alert('Could not save: ' + error.message); return; }
+    if (viewingClientId !== clientId) return;
+    portalData.offboarding = row;
+    renderOffboardingForm();
+  });
 
   function renderCoreList(){
     var h=''; portalData.cores.forEach(function(c){ h+='<div class="cp-core-row"><div class="cp-core-row-top"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-pct">'+c.pct+'%</span></div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>'; });
@@ -1211,7 +1356,21 @@
   });
 
   // ─── Coach: Edit portal ─────────────────────────────────────────────────
+  (function(){
+    var h = '<option value="">— none —</option>';
+    CARDIO_OPTIONS.forEach(function(c){ h += '<option value="'+c.value+'">'+esc(c.label)+'</option>'; });
+    $('cpEditCardioType').innerHTML = h;
+  })();
+
+  $('cpEditCardioType').addEventListener('change', function(){
+    var opt = CARDIO_OPTIONS.filter(function(c){ return c.value === $('cpEditCardioType').value; })[0];
+    $('cpEditCardioGoal').placeholder = opt ? opt.hint : 'e.g. 30 min @ zone 2';
+  });
+
   var editSections = {
+    cpEditOnboardingList: { items: [], fields: [
+      { key:'label', placeholder:'Checklist item', type:'text' }
+    ] },
     cpEditTaskList:     { items: [], fields: [
       { key:'label', placeholder:'Task', type:'text' },
       { key:'coreKey', type:'select', options: CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; }) }
@@ -1273,6 +1432,7 @@
     });
   });
 
+  $('cpEditOnboardingAdd').addEventListener('click', function(){ editSections.cpEditOnboardingList.items.push({label:'',done:false}); renderListEditor('cpEditOnboardingList'); });
   $('cpEditTaskAdd').addEventListener('click', function(){ editSections.cpEditTaskList.items.push({label:'',coreKey:CORE_DEFS[0].key,done:false}); renderListEditor('cpEditTaskList'); });
   $('cpEditNoteAdd').addEventListener('click', function(){ editSections.cpEditNoteList.items.push({label:'',meta:'',body:''}); renderListEditor('cpEditNoteList'); });
   $('cpEditMetricAdd').addEventListener('click', function(){ editSections.cpEditMetricList.items.push({label:'',value:''}); renderListEditor('cpEditMetricList'); });
@@ -1314,9 +1474,13 @@
     $('cpEditReminderDay').value = editState.reminderDay;
     $('cpEditReminderChannel').value = editState.reminderChannel;
     $('cpEditReminderOn').checked = editState.reminderOn;
+    $('cpEditCardioType').value = editState.preferredCardio;
+    $('cpEditCardioType').dispatchEvent(new Event('change'));
+    $('cpEditCardioGoal').value = editState.cardioGoal;
 
     renderCoreEditor();
 
+    editSections.cpEditOnboardingList.items = editState.onboardingItems;
     editSections.cpEditTaskList.items = editState.tasks;
     editSections.cpEditNoteList.items = editState.notes;
     editSections.cpEditMetricList.items = editState.metrics;
@@ -1356,8 +1520,14 @@
       next_session_agenda: $('cpEditSessionAgenda').value.trim(),
       reminder_day: $('cpEditReminderDay').value,
       reminder_channel: $('cpEditReminderChannel').value,
-      reminder_on: $('cpEditReminderOn').checked
+      reminder_on: $('cpEditReminderOn').checked,
+      preferred_cardio: $('cpEditCardioType').value,
+      cardio_goal: $('cpEditCardioGoal').value.trim()
     };
+
+    var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
+      return { client_id: clientId, label: t.label.trim(), done: !!t.done, position:i };
+    });
 
     var coreRows = editState.cores.map(function(c,i){
       return { client_id: clientId, core_key: c.key, label: c.label, color: c.color, pct: parseInt(c.pct,10)||0, note: c.note||'', position:i };
@@ -1381,6 +1551,7 @@
     await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
       syncListTable('client_cores', clientId, coreRows, 'core_key'),
+      syncListTable('client_onboarding_items', clientId, onboardingRows),
       syncListTable('client_tasks', clientId, taskRows),
       syncListTable('client_notes', clientId, noteRows),
       syncListTable('client_metrics', clientId, metricRows),

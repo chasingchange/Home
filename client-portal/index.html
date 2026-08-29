@@ -368,6 +368,11 @@
               <p class="cp-route" id="cpRoute"></p>
               <p class="cp-week" id="cpWeek"></p>
             </div>
+            <div class="cp-route-box" id="cpCardioBox" hidden>
+              <p class="cp-label">Preferred Cardio</p>
+              <p class="cp-route" id="cpCardioType"></p>
+              <p class="cp-week" id="cpCardioGoal"></p>
+            </div>
           </aside>
           <div class="cp-card-grid">
             <div class="cp-reminder-bar">
@@ -440,6 +445,22 @@
               <p class="cp-kicker">Milestones</p>
               <h3 class="cp-card-title">Wins on record</h3>
               <div class="cp-win-list" id="cpWinList"></div>
+            </div>
+            <div class="cp-card cp-card--wide" id="cpOnboardingCard" hidden>
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Getting Started</p><h3 class="cp-card-title">Onboarding checklist</h3></div>
+                <span class="cp-meta" id="cpOnboardingCount"></span>
+              </div>
+              <div class="cp-task-list" id="cpOnboardingList"></div>
+            </div>
+            <div class="cp-card cp-card--wide" id="cpOffboardingCard" hidden>
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Wrapping Up</p><h3 class="cp-card-title">Offboarding reflection</h3></div>
+                <span class="cp-meta" id="cpOffboardingStatus"></span>
+              </div>
+              <p class="cp-body-text">A few questions to close out the program — answer whenever you're ready, your coach sees your responses.</p>
+              <div id="cpOffboardingForm"></div>
+              <div class="cp-cta-row"><button type="button" class="cp-cta-primary" id="cpOffboardingSave" style="border:none;">Save reflection</button></div>
             </div>
           </div>
         </div>
@@ -520,6 +541,13 @@
           <input type="text" id="cpEditSessionAgenda" class="cp-edit-input" placeholder="Agenda" style="margin-top:8px" />
         </div>
         <div class="cp-edit-field">
+          <label>Preferred cardio &amp; goal</label>
+          <div class="cp-edit-week-row">
+            <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
+            <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
+          </div>
+        </div>
+        <div class="cp-edit-field">
           <label>Weekly reminder</label>
           <div class="cp-edit-week-row">
             <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
@@ -536,6 +564,10 @@
 
         <h3 class="cp-edit-section">The Six Cores</h3>
         <div class="cp-assign-list" id="cpEditCoreList"></div>
+
+        <h3 class="cp-edit-section">Onboarding Checklist</h3>
+        <div class="cp-assign-list" id="cpEditOnboardingList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditOnboardingAdd">+ Add checklist item</button>
 
         <h3 class="cp-edit-section">This Week's Tasks</h3>
         <div class="cp-assign-list" id="cpEditTaskList"></div>
