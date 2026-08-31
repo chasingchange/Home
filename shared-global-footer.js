@@ -34,6 +34,13 @@
         { label: "Privacy Policy", href: `${root}privacy-policy/` },
       ],
     },
+    {
+      title: "Follow",
+      links: [
+        { label: "Instagram", href: "https://www.instagram.com/oktylerwade/", external: true },
+        { label: "TikTok", href: "https://www.tiktok.com/@oktylerwade", external: true },
+      ],
+    },
   ];
 
   function renderColumn(column) {
