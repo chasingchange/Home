@@ -458,7 +458,7 @@ body { font-family: 'Muli', sans-serif; background: var(--bg); color: var(--text
     <div class="info-card">
       <h3>How Much Training Volume Do You Actually Need to Build Muscle?</h3>
       <p class="lead">Most people either do too little or way too much. Muscle growth isn’t about guessing. It’s about hitting the right number of high-quality sets per muscle each week based on your training experience.</p>
-      <p class="evidence">Research consistently shows muscle growth improves as weekly training volume increases, with the strongest hypertrophy results occurring around 10–20 hard sets per muscle group per week (Schoenfeld et al., 2017; Baz-Valle et al., 2022).</p>
+      <p class="evidence">Research consistently shows muscle growth improves as weekly training volume increases, with the strongest hypertrophy results occurring around 10–20 hard sets per muscle group per week (Schoenfeld et al., 2017; Baz-Valle et al., 2022). Those numbers assume each muscle is trained about twice a week — on a 3-day split, where every muscle only gets one session, we scale the weekly targets down so they actually fit in that one workout.</p>
       <p class="step-sub" style="margin-bottom:.45rem;">Here’s the framework we use inside Chasing Change:</p>
       <div class="volume-framework">
         <div class="volume-tier beginner">
@@ -1525,8 +1525,25 @@ function calculateWeeklyVolumeTotals() {
   return totals;
 }
 
+// splitByFreq trains every muscle group twice a week at freq 2, 4, 5, and 6.
+// At freq 3 (Push/Pull/Legs run once), each muscle is only trained once a
+// week, so the same weekly set totals used for 2x/week splits don't fit in
+// a single session. Scale targets down to what one session can realistically
+// hold instead of leaving clients trying to cram 10-20 sets of a muscle into
+// one workout.
+const LOW_FREQUENCY_VOLUME_SCALE = 0.65;
+
 function getVolumeGoalRanges() {
-  return WEEKLY_VOLUME_RANGES_BY_GOAL[state.meso] || WEEKLY_VOLUME_RANGES_BY_GOAL.Hypertrophy;
+  const base = WEEKLY_VOLUME_RANGES_BY_GOAL[state.meso] || WEEKLY_VOLUME_RANGES_BY_GOAL.Hypertrophy;
+  if (state.freq !== 3) return base;
+  const scaled = {};
+  Object.entries(base).forEach(([muscle, range]) => {
+    const [low, high] = range;
+    const scaledLow = Math.max(4, Math.round(low * LOW_FREQUENCY_VOLUME_SCALE));
+    const scaledHigh = Math.max(scaledLow + 2, Math.round(high * LOW_FREQUENCY_VOLUME_SCALE));
+    scaled[muscle] = [scaledLow, scaledHigh];
+  });
+  return scaled;
 }
 
 function getVolumeStatus(total, range) {
@@ -1566,6 +1583,7 @@ function renderWeeklyVolumeSummary() {
         <h3>Weekly Volume Summary</h3>
         <div class="weekly-volume-goal"><strong>Goal:</strong> ${state.meso}</div>
       </div>
+      ${state.freq === 3 ? '<p class="step-sub" style="margin-bottom:.5rem;">At 3 days/week each muscle group is trained once, so targets below are scaled to what fits in a single session rather than the 2x/week set totals.</p>' : ''}
       <div class="weekly-volume-layout">
         <div class="weekly-volume-pane">
           <h4>Recommended weekly sets</h4>
