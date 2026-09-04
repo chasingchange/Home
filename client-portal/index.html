@@ -175,6 +175,8 @@
       .cp-flag-row{padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
       .cp-flag-name{margin:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;}
       .cp-flag-why{margin:4px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.6);}
+      .cp-nn-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+      .cp-nn-actions{display:flex;gap:14px;flex-shrink:0;}
       .cp-reminder-queue{background:#071f35;border-radius:18px;padding:22px;}
       .cp-reminder-queue .cp-card-head{align-items:center;}
       .cp-queue-summary{margin:10px 0 0;font-size:15px;line-height:1.5;color:rgba(255,255,255,.8);}
@@ -453,6 +455,19 @@
               </div>
               <div class="cp-task-list" id="cpOnboardingList"></div>
             </div>
+            <div class="cp-card cp-card--wide" id="cpNonNegCard" hidden>
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Non-Negotiables</p><h3 class="cp-card-title">Commit &amp; claim</h3></div>
+                <span class="cp-meta" id="cpNonNegCount"></span>
+              </div>
+              <p class="cp-body-text">Check one off when you've done it. Your coach does a final review before it's archived.</p>
+              <div class="cp-task-list" id="cpNonNegList"></div>
+            </div>
+            <div class="cp-card" id="cpArchiveCard">
+              <p class="cp-kicker">Archive</p>
+              <h3 class="cp-card-title">Confirmed non-negotiables</h3>
+              <div class="cp-note-list" id="cpArchiveList"></div>
+            </div>
             <div class="cp-card cp-card--wide" id="cpOffboardingCard" hidden>
               <div class="cp-card-head">
                 <div><p class="cp-kicker">Wrapping Up</p><h3 class="cp-card-title">Offboarding reflection</h3></div>
@@ -473,6 +488,12 @@
           </div>
           <aside class="cp-coach-aside">
             <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
+            <div class="cp-card cp-roster-card">
+              <p class="cp-kicker">Non-Negotiables</p>
+              <h3 class="cp-card-title">Awaiting review</h3>
+              <p class="cp-body-text" id="cpNonNegQueueSummary"></p>
+              <div class="cp-flag-list" id="cpNonNegQueueList"></div>
+            </div>
             <div class="cp-reminder-queue">
               <div class="cp-card-head">
                 <p class="cp-kicker cp-kicker--light">Reminder Queue</p>
@@ -568,6 +589,11 @@
         <h3 class="cp-edit-section">Onboarding Checklist</h3>
         <div class="cp-assign-list" id="cpEditOnboardingList"></div>
         <button type="button" class="cp-assign-add" id="cpEditOnboardingAdd">+ Add checklist item</button>
+
+        <h3 class="cp-edit-section">Non-Negotiables</h3>
+        <p class="cp-sheet-lede" style="margin-top:0;">Items awaiting client claim or your review stay here. Approved items move to the archive and drop off this list.</p>
+        <div class="cp-assign-list" id="cpEditNonNegList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditNonNegAdd">+ Add non-negotiable</button>
 
         <h3 class="cp-edit-section">This Week's Tasks</h3>
         <div class="cp-assign-list" id="cpEditTaskList"></div>

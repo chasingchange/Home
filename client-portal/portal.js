@@ -125,6 +125,7 @@
   var roster = [];          // coach view: [{id,name,route,weekNow,weekTotal,adh,flag,color,next,...}]
   var flags = [];
   var remQueue = [];
+  var reviewQueue = [];     // coach view: non-negotiables claimed by clients, awaiting the coach's final review
 
   var viewingClientId = null;   // client_id currently shown in the client view
   var portalData = null;        // that client's loaded dashboard content
@@ -400,7 +401,8 @@
       sb.from('client_wins').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle()
+      sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
+      sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position')
     ]);
 
     var d = results[0].data || {};
@@ -437,7 +439,8 @@
       wins: (results[6].data || []).map(function(w){ return { id:w.id, label:w.label, meta:w.meta, color:w.color }; }),
       messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; }),
       onboardingItems: (results[8].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
-      offboarding: results[9].data || {}
+      offboarding: results[9].data || {},
+      nonNegotiables: (results[10].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; })
     };
   }
 
@@ -468,14 +471,16 @@
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
-    var dashRows = [], taskRows = [];
+    var dashRows = [], taskRows = [], nnRows = [];
     if (ids.length) {
       var results = await Promise.all([
         sb.from('client_dashboard').select('*').in('client_id', ids),
-        sb.from('client_tasks').select('client_id, done').in('client_id', ids)
+        sb.from('client_tasks').select('client_id, done').in('client_id', ids),
+        sb.from('client_nonnegotiables').select('*').in('client_id', ids).eq('status','claimed').order('claimed_at')
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
+      nnRows = results[2].data || [];
     }
 
     var dashByClient = {};
@@ -516,7 +521,13 @@
       return { name: c.name, why: tc.open + ' of ' + tc.total + ' open · sends ' + c.reminderDay + ' by ' + c.reminderChannel, color: c.color };
     });
 
-    renderRoster(); renderFlags(); renderQueue();
+    var nameById = {};
+    clients.forEach(function(p){ nameById[p.id] = p.preferred_name || p.full_name || p.email; });
+    reviewQueue = nnRows.map(function(r){
+      return { id: r.id, clientId: r.client_id, clientName: nameById[r.client_id] || 'Client', label: r.label };
+    });
+
+    renderRoster(); renderFlags(); renderQueue(); renderNonNegQueue();
   }
 
   // ─── Coach: open a client's portal to see what they see ───────────────
@@ -695,6 +706,8 @@
     renderReminder();
     renderCardioBox();
     renderOnboarding();
+    renderNonNegotiables();
+    renderArchive();
     renderOffboardingForm();
   }
 
@@ -728,6 +741,50 @@
     renderOnboarding();
     sb.from('client_onboarding_items').update({ done: item.done }).eq('id', item.id);
   });
+
+  // ─── Non-negotiables (coach sets, client claims, coach does final review) ─
+  // Status lifecycle: active -> claimed (client says it's done, pending
+  // review) -> archived (coach confirmed). A rejected claim goes back to
+  // active so the client can re-claim it.
+  function activeNonNegotiables(){
+    return (portalData.nonNegotiables || []).filter(function(t){ return t.status !== 'archived'; });
+  }
+
+  function renderNonNegotiables(){
+    var items = activeNonNegotiables();
+    $('cpNonNegCard').hidden = items.length === 0;
+    var h = '';
+    items.forEach(function(t,i){
+      var claimed = t.status === 'claimed';
+      h += '<div class="cp-task-row"><button type="button" class="cp-task-check'+(claimed?' is-done':'')+'" data-idx="'+i+'">'+(claimed?'✓':'')+'</button><span class="cp-task-label'+(claimed?' is-done':'')+'">'+esc(t.label)+'</span><span class="cp-task-meta">'+(claimed?'Pending review':'')+'</span></div>';
+    });
+    $('cpNonNegList').innerHTML = h;
+    var claimedCount = items.filter(function(t){ return t.status === 'claimed'; }).length;
+    $('cpNonNegCount').textContent = claimedCount ? (claimedCount + ' awaiting review') : (items.length + (items.length===1?' non-negotiable':' non-negotiables'));
+  }
+
+  $('cpNonNegList').addEventListener('click', async function(e){
+    var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
+    var items = activeNonNegotiables();
+    var idx = parseInt(btn.getAttribute('data-idx'),10);
+    var item = items[idx]; if (!item) return;
+    var newStatus = item.status === 'claimed' ? 'active' : 'claimed';
+    item.status = newStatus;
+    item.claimedAt = newStatus === 'claimed' ? new Date().toISOString() : null;
+    renderNonNegotiables();
+    await sb.from('client_nonnegotiables').update({ status: newStatus, claimed_at: item.claimedAt }).eq('id', item.id);
+  });
+
+  // ─── Archive: non-negotiables the coach has confirmed ──────────────────
+  function renderArchive(){
+    var items = (portalData.nonNegotiables || []).filter(function(t){ return t.status === 'archived'; });
+    var h = '';
+    items.forEach(function(t){
+      var when = t.archivedAt ? new Date(t.archivedAt).toLocaleDateString() : '';
+      h += '<div class="cp-note-row"><span class="cp-note-label">'+esc(t.label)+'</span><span class="cp-note-meta">'+esc(when)+'</span></div>';
+    });
+    $('cpArchiveList').innerHTML = h || '<p class="cp-caption" style="margin:0;">Nothing archived yet.</p>';
+  }
 
   // ─── Offboarding reflection form (client fills in, coach reads) ───────
   function renderOffboardingForm(){
@@ -1273,6 +1330,40 @@
     $('cpQueueSummary').textContent = remQueue.length + ' queued';
   }
 
+  // ─── Coach: review queue — clients' claimed non-negotiables ────────────
+  function renderNonNegQueue(){
+    $('cpNonNegQueueSummary').textContent = reviewQueue.length ? (reviewQueue.length + ' waiting on your review.') : 'Nothing to review right now.';
+    var h='';
+    reviewQueue.forEach(function(r,i){
+      h += '<div class="cp-flag-row"><div class="cp-nn-row"><div><p class="cp-flag-name">'+esc(r.clientName)+'</p><p class="cp-flag-why">'+esc(r.label)+'</p></div>'
+         + '<div class="cp-nn-actions"><button type="button" class="cp-roster-edit" data-approve-idx="'+i+'">Approve</button><button type="button" class="cp-roster-edit" data-reject-idx="'+i+'">Send back</button></div></div></div>';
+    });
+    $('cpNonNegQueueList').innerHTML = h;
+  }
+
+  $('cpNonNegQueueList').addEventListener('click', async function(e){
+    var approveBtn = e.target.closest('[data-approve-idx]');
+    var rejectBtn = e.target.closest('[data-reject-idx]');
+    if (!approveBtn && !rejectBtn) return;
+    var idx = parseInt((approveBtn||rejectBtn).getAttribute(approveBtn?'data-approve-idx':'data-reject-idx'),10);
+    var item = reviewQueue[idx]; if (!item) return;
+
+    if (approveBtn) {
+      await sb.from('client_nonnegotiables').update({ status:'archived', archived_at:new Date().toISOString() }).eq('id', item.id);
+    } else {
+      await sb.from('client_nonnegotiables').update({ status:'active', claimed_at:null }).eq('id', item.id);
+    }
+
+    await loadRoster();
+    if (viewingClientId === item.clientId && portalData) {
+      var data = await fetchPortalData(item.clientId);
+      if (viewingClientId !== item.clientId) return;
+      portalData.nonNegotiables = data.nonNegotiables;
+      renderNonNegotiables();
+      renderArchive();
+    }
+  });
+
   function renderViewToggle(){
     $('cpClientView').hidden = state.view !== 'client';
     $('cpCoachView').hidden = state.view !== 'coach';
@@ -1371,6 +1462,9 @@
     cpEditOnboardingList: { items: [], fields: [
       { key:'label', placeholder:'Checklist item', type:'text' }
     ] },
+    cpEditNonNegList: { items: [], fields: [
+      { key:'label', placeholder:'Non-negotiable', type:'text' }
+    ] },
     cpEditTaskList:     { items: [], fields: [
       { key:'label', placeholder:'Task', type:'text' },
       { key:'coreKey', type:'select', options: CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; }) }
@@ -1433,6 +1527,7 @@
   });
 
   $('cpEditOnboardingAdd').addEventListener('click', function(){ editSections.cpEditOnboardingList.items.push({label:'',done:false}); renderListEditor('cpEditOnboardingList'); });
+  $('cpEditNonNegAdd').addEventListener('click', function(){ editSections.cpEditNonNegList.items.push({label:'',status:'active'}); renderListEditor('cpEditNonNegList'); });
   $('cpEditTaskAdd').addEventListener('click', function(){ editSections.cpEditTaskList.items.push({label:'',coreKey:CORE_DEFS[0].key,done:false}); renderListEditor('cpEditTaskList'); });
   $('cpEditNoteAdd').addEventListener('click', function(){ editSections.cpEditNoteList.items.push({label:'',meta:'',body:''}); renderListEditor('cpEditNoteList'); });
   $('cpEditMetricAdd').addEventListener('click', function(){ editSections.cpEditMetricList.items.push({label:'',value:''}); renderListEditor('cpEditMetricList'); });
@@ -1481,6 +1576,7 @@
     renderCoreEditor();
 
     editSections.cpEditOnboardingList.items = editState.onboardingItems;
+    editSections.cpEditNonNegList.items = editState.nonNegotiables.filter(function(t){ return t.status !== 'archived'; });
     editSections.cpEditTaskList.items = editState.tasks;
     editSections.cpEditNoteList.items = editState.notes;
     editSections.cpEditMetricList.items = editState.metrics;
@@ -1499,6 +1595,13 @@
     }
     await sb.from(table).delete().eq('client_id', clientId);
     if (rows.length) return sb.from(table).insert(rows);
+  }
+
+  // Non-negotiables get their own sync: it only replaces active/claimed rows,
+  // leaving archived rows (the client's confirmed history) untouched.
+  async function syncNonNegotiables(clientId, rows){
+    await sb.from('client_nonnegotiables').delete().eq('client_id', clientId).neq('status','archived');
+    if (rows.length) return sb.from('client_nonnegotiables').insert(rows);
   }
 
   $('cpEditSave').addEventListener('click', async function(){
@@ -1547,6 +1650,9 @@
     var winRows = editState.wins.filter(function(w){ return (w.label||'').trim(); }).map(function(w,i){
       return { client_id: clientId, label: w.label.trim(), meta: w.meta||'', color: w.color||'#77d770', position:i };
     });
+    var nonNegRows = editSections.cpEditNonNegList.items.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
+      return { client_id: clientId, label: t.label.trim(), status: t.status || 'active', claimed_at: t.claimedAt || null, position:i };
+    });
 
     await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
@@ -1556,7 +1662,8 @@
       syncListTable('client_notes', clientId, noteRows),
       syncListTable('client_metrics', clientId, metricRows),
       syncListTable('client_resources', clientId, resourceRows),
-      syncListTable('client_wins', clientId, winRows)
+      syncListTable('client_wins', clientId, winRows),
+      syncNonNegotiables(clientId, nonNegRows)
     ]);
 
     setLoading($('cpEditSave'), false, 'Save');
