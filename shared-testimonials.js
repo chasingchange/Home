@@ -109,6 +109,16 @@
       ],
     },
     {
+      name: "Michael",
+      year: "2026",
+      paragraphs: [
+        "Satisfied, or so I thought. Stuck in the same way of living for years because it was comfortable. Besides going on daily walks, I hadn’t seen the inside of a gym in 10+ years. Between owning a business, being a husband and raising two young kids, taking care of my health got away from me. Tyler helped me change all of that.",
+        "Flash forward three months later, 20 pounds, a healthy way of life, and a boatload of confidence, working with Tyler was an incredible body and mind transformation.",
+        "Not only is Tyler knowledgeable, he genuinely cares about the success of his clients. I looked forward to our weekly check-ins and was sad when they were over because it was time to say goodbye to my coach, cheerleader, and new friend.",
+        "If you are thinking about working with Tyler, what are you waiting for? It is 100% worth the investment in yourself and will only benefit you for the rest of your life. “Your lifestyle today is your body tomorrow.”",
+      ],
+    },
+    {
       name: "Tommy Allegreto",
       year: "2026",
       note: "Scholarship Recipient",
