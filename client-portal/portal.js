@@ -432,6 +432,7 @@
       adherenceHistory: d.adherence_history || [],
       preferredCardio: d.preferred_cardio || '',
       cardioGoal: d.cardio_goal || '',
+      visionBoardUrl: d.vision_board_url || '',
       cores: cores,
       tasks: (results[2].data || []).map(function(t){ return { id:t.id, label:t.label, coreKey:t.core_key, color:t.color, done:t.done }; }),
       notes: (results[3].data || []).map(function(n){ return { id:n.id, label:n.label, meta:n.meta, body:n.body }; }),
@@ -478,6 +479,7 @@
 
     renderClientPortal();
     renderViewToggle();
+    renderVisionBand();
     calLoadForClient(clientId);
   }
 
@@ -1308,7 +1310,7 @@
       : 'Reminders are off. You will not be nudged before your next call.';
   }
 
-  function persistReminderPatch(patch){
+  function persistDashPatch(patch){
     if (!viewingClientId) return;
     var row = Object.assign({ client_id: viewingClientId }, patch);
     sb.from('client_dashboard').upsert(row, { onConflict: 'client_id' });
@@ -1319,7 +1321,7 @@
     var idx = remDays.indexOf(portalData.reminderDay);
     portalData.reminderDay = remDays[(idx+1+remDays.length) % remDays.length];
     renderReminder();
-    persistReminderPatch({ reminder_day: portalData.reminderDay });
+    persistDashPatch({ reminder_day: portalData.reminderDay });
   });
 
   $('cpRemChannel').addEventListener('click', function(){
@@ -1327,14 +1329,14 @@
     var idx = remChans.indexOf(portalData.reminderChannel);
     portalData.reminderChannel = remChans[(idx+1+remChans.length) % remChans.length];
     renderReminder();
-    persistReminderPatch({ reminder_channel: portalData.reminderChannel });
+    persistDashPatch({ reminder_channel: portalData.reminderChannel });
   });
 
   $('cpRemToggle').addEventListener('click', function(){
     if (!portalData) return;
     portalData.reminderOn = !portalData.reminderOn;
     renderReminder();
-    persistReminderPatch({ reminder_on: portalData.reminderOn });
+    persistDashPatch({ reminder_on: portalData.reminderOn });
   });
 
   $('cpTaskList').addEventListener('click', function(e){
@@ -1345,6 +1347,66 @@
     task.done = !task.done;
     renderTasks(); renderReminder();
     sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
+  });
+
+  // ─── Vision board header (client-uploaded image, faded into the page) ──
+  function renderVisionBand(){
+    var band = $('cpVisionBand');
+    if (state.view !== 'client' || !portalData) { band.hidden = true; return; }
+
+    var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
+    var url = portalData.visionBoardUrl;
+    if (!url && !isOwner) { band.hidden = true; return; }
+
+    band.hidden = false;
+    band.classList.remove('is-busy');
+
+    var img = $('cpVisionImg');
+    if (url) { img.src = url; img.hidden = false; }
+    else { img.hidden = true; img.removeAttribute('src'); }
+
+    $('cpVisionEmptyBtn').hidden = !(isOwner && !url);
+    $('cpVisionControls').hidden = !(isOwner && url);
+  }
+
+  function setVisionBusy(busy){
+    $('cpVisionBand').classList.toggle('is-busy', busy);
+  }
+
+  $('cpVisionEmptyBtn').addEventListener('click', function(){ $('cpVisionFileInput').click(); });
+  $('cpVisionChangeBtn').addEventListener('click', function(){ $('cpVisionFileInput').click(); });
+
+  $('cpVisionRemoveBtn').addEventListener('click', async function(){
+    if (!viewingClientId || !portalData) return;
+    if (!window.confirm('Remove your vision board image?')) return;
+    setVisionBusy(true);
+    await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
+    portalData.visionBoardUrl = '';
+    persistDashPatch({ vision_board_url: '' });
+    renderVisionBand();
+  });
+
+  $('cpVisionFileInput').addEventListener('change', async function(){
+    var file = this.files && this.files[0];
+    this.value = '';
+    if (!file || !viewingClientId) return;
+    if (!/^image\//.test(file.type)) { alert('Please choose an image file.'); return; }
+    if (file.size > 8 * 1024 * 1024) { alert('That image is too large — please choose one under 8MB.'); return; }
+
+    setVisionBusy(true);
+    var path = viewingClientId + '/vision-board';
+    var { error } = await sb.storage.from('vision-boards').upload(path, file, { upsert: true, contentType: file.type });
+    if (error) {
+      setVisionBusy(false);
+      alert('Upload failed: ' + error.message);
+      return;
+    }
+
+    var { data: pub } = sb.storage.from('vision-boards').getPublicUrl(path);
+    var url = pub.publicUrl + '?t=' + Date.now();
+    portalData.visionBoardUrl = url;
+    persistDashPatch({ vision_board_url: url });
+    renderVisionBand();
   });
 
   // ─── Render: coach roster / flags / reminder queue ─────────────────────
@@ -1404,6 +1466,7 @@
   function renderViewToggle(){
     $('cpClientView').hidden = state.view !== 'client';
     $('cpCoachView').hidden = state.view !== 'coach';
+    $('cpVisionBand').hidden = state.view !== 'client';
   }
 
   function findRosterClient(id){
