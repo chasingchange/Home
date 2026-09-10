@@ -389,8 +389,9 @@
 
         <div class="cp-client-view" id="cpClientView">
           <aside class="cp-core-rail">
-            <p class="cp-kicker">The Six Cores</p>
+            <p class="cp-kicker" id="cpCoreKicker">The Six Cores</p>
             <div class="cp-core-list" id="cpCoreList"></div>
+            <div class="cp-task-list" id="cpHabitList" hidden></div>
             <div class="cp-route-box">
               <p class="cp-label">Route</p>
               <p class="cp-route" id="cpRoute"></p>
@@ -631,6 +632,11 @@
         <h3 class="cp-edit-section">This Week's Tasks</h3>
         <div class="cp-assign-list" id="cpEditTaskList"></div>
         <button type="button" class="cp-assign-add" id="cpEditTaskAdd">+ Add task</button>
+
+        <h3 class="cp-edit-section">Habits</h3>
+        <p class="cp-sheet-lede" style="margin-top:0;">When a client has habits, they replace the Six Cores rail on their dashboard. Leave empty to keep showing the Six Cores.</p>
+        <div class="cp-assign-list" id="cpEditHabitList"></div>
+        <button type="button" class="cp-assign-add" id="cpEditHabitAdd">+ Add habit</button>
 
         <h3 class="cp-edit-section">Session Notes</h3>
         <div class="cp-assign-list" id="cpEditNoteList"></div>

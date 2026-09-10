@@ -117,7 +117,6 @@
   var needsPassword = (urlAuthType === 'invite');
   var currentUser = null;
   var biometricOfferedThisLoad = false;
-  var googleSilentAttemptedFor = null;
   var isCoachUser = false;
   var coachUser = null;
   var coachProfile = null;
@@ -404,7 +403,8 @@
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
       sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_pre_call_submissions').select('*').eq('client_id', clientId).order('submitted_at', { ascending:false }).limit(10)
+      sb.from('client_pre_call_submissions').select('*').eq('client_id', clientId).order('submitted_at', { ascending:false }).limit(10),
+      sb.from('client_habits').select('*').eq('client_id', clientId).order('position')
     ]);
 
     var d = results[0].data || {};
@@ -458,7 +458,8 @@
           reviewItems: s.review_items || [],
           workoutDays: s.workout_days || []
         };
-      })
+      }),
+      habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; })
     };
   }
 
@@ -854,9 +855,32 @@
   });
 
   function renderCoreList(){
+    var hasHabits = portalData.habits.length > 0;
+    $('cpCoreKicker').textContent = hasHabits ? 'Habits' : 'The Six Cores';
+    $('cpCoreList').hidden = hasHabits;
+    $('cpHabitList').hidden = !hasHabits;
+    if (hasHabits) { renderHabits(); return; }
     var h=''; portalData.cores.forEach(function(c){ h+='<div class="cp-core-row"><div class="cp-core-row-top"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-pct">'+c.pct+'%</span></div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>'; });
     $('cpCoreList').innerHTML=h;
   }
+
+  function renderHabits(){
+    var h='';
+    portalData.habits.forEach(function(hb,i){
+      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(hb.done?' is-done':'')+'" data-idx="'+i+'">'+(hb.done?'✓':'')+'</button><span class="cp-task-label'+(hb.done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
+    });
+    $('cpHabitList').innerHTML = h;
+  }
+
+  $('cpHabitList').addEventListener('click', function(e){
+    var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
+    e.stopPropagation();
+    var idx = parseInt(btn.getAttribute('data-idx'),10);
+    var habit = portalData.habits[idx]; if (!habit) return;
+    habit.done = !habit.done;
+    renderHabits();
+    sb.from('client_habits').update({ done: habit.done }).eq('id', habit.id);
+  });
 
   function renderTasks(){
     var h='';
@@ -1156,22 +1180,15 @@
     });
     calRenderCard();
 
-    // Best-effort silent reconnect so returning clients don't have to click
-    // "Connect" again every visit. Falls back to "Reconnect" if it can't.
-    // Only attempted once per client per page load — GIS's silent prompt can
-    // fall back to a visible popup, and re-running this on every dashboard
-    // re-render (e.g. a Supabase token refresh) made that popup reappear
-    // repeatedly during a single session.
-    if (calState.google.connected && googleSilentAttemptedFor !== clientId) {
-      googleSilentAttemptedFor = clientId;
-      calRequestGoogleToken(true).then(async function(token){
-        if (viewingClientId !== clientId) return;
-        calState.google.token = token;
-        calState.google.needsReconnect = false;
-        calState.google.events = await calFetchGoogleEvents(token);
-        if (viewingClientId === clientId) calRenderCard();
-      }).catch(function(){ /* leave needsReconnect true */ });
-    }
+    // We used to auto-attempt a "silent" Google token request here so
+    // returning clients wouldn't have to click "Connect" every visit. GIS's
+    // silent prompt is documented as best-effort only — when there's no
+    // usable session (third-party cookies blocked, token expired, etc.) it
+    // can fall back to opening a real, visible sign-in popup on its own,
+    // with no click from the client. That reads as "Google keeps opening by
+    // itself." There's no safe way to guarantee it stays silent, so we no
+    // longer call it automatically — the client sees "Reconnect Google" and
+    // any popup only happens from their own click on calConnectGoogle().
     if (calState.outlook.connected) {
       var client = calGetMsal();
       if (client) {
@@ -1317,9 +1334,12 @@
   }
 
   function persistDashPatch(patch){
-    if (!viewingClientId) return;
+    if (!viewingClientId) return Promise.resolve();
     var row = Object.assign({ client_id: viewingClientId }, patch);
-    sb.from('client_dashboard').upsert(row, { onConflict: 'client_id' });
+    return sb.from('client_dashboard').upsert(row, { onConflict: 'client_id' }).then(function(res){
+      if (res.error) console.error('Failed to save dashboard change:', res.error);
+      return res;
+    });
   }
 
   $('cpRemDay').addEventListener('click', function(){
@@ -1387,8 +1407,14 @@
     if (!window.confirm('Remove your vision board image?')) return;
     setVisionBusy(true);
     await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
+    var prevUrl = portalData.visionBoardUrl;
     portalData.visionBoardUrl = '';
-    persistDashPatch({ vision_board_url: '' });
+    var res = await persistDashPatch({ vision_board_url: '' });
+    if (res && res.error) {
+      portalData.visionBoardUrl = prevUrl;
+      alert('Removing the vision board failed to save: ' + res.error.message);
+    }
+    setVisionBusy(false);
     renderVisionBand();
   });
 
@@ -1410,8 +1436,14 @@
 
     var { data: pub } = sb.storage.from('vision-boards').getPublicUrl(path);
     var url = pub.publicUrl + '?t=' + Date.now();
+    var prevUrl = portalData.visionBoardUrl;
     portalData.visionBoardUrl = url;
-    persistDashPatch({ vision_board_url: url });
+    var res = await persistDashPatch({ vision_board_url: url });
+    setVisionBusy(false);
+    if (res && res.error) {
+      portalData.visionBoardUrl = prevUrl;
+      alert('The image uploaded, but saving it to your dashboard failed: ' + res.error.message);
+    }
     renderVisionBand();
   });
 
@@ -1590,6 +1622,9 @@
     cpEditWinList:      { items: [], fields: [
       { key:'label', placeholder:'Win', type:'text' },
       { key:'meta', placeholder:'When', type:'text' }
+    ] },
+    cpEditHabitList:    { items: [], fields: [
+      { key:'label', placeholder:'Habit', type:'text' }
     ] }
   };
 
@@ -1639,6 +1674,7 @@
   $('cpEditMetricAdd').addEventListener('click', function(){ editSections.cpEditMetricList.items.push({label:'',value:''}); renderListEditor('cpEditMetricList'); });
   $('cpEditResourceAdd').addEventListener('click', function(){ editSections.cpEditResourceList.items.push({label:'',color:'#2a9df0'}); renderListEditor('cpEditResourceList'); });
   $('cpEditWinAdd').addEventListener('click', function(){ editSections.cpEditWinList.items.push({label:'',meta:'',color:'#77d770'}); renderListEditor('cpEditWinList'); });
+  $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',done:false}); renderListEditor('cpEditHabitList'); });
 
   function renderCoreEditor(){
     var h='';
@@ -1688,6 +1724,7 @@
     editSections.cpEditMetricList.items = editState.metrics;
     editSections.cpEditResourceList.items = editState.resources;
     editSections.cpEditWinList.items = editState.wins;
+    editSections.cpEditHabitList.items = editState.habits;
     Object.keys(editSections).forEach(renderListEditor);
 
     $('cpEditSave').disabled = false;
@@ -1759,6 +1796,9 @@
     var nonNegRows = editSections.cpEditNonNegList.items.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
       return { client_id: clientId, label: t.label.trim(), status: t.status || 'active', claimed_at: t.claimedAt || null, position:i };
     });
+    var habitRows = editState.habits.filter(function(h){ return (h.label||'').trim(); }).map(function(h,i){
+      return { client_id: clientId, label: h.label.trim(), done: !!h.done, position:i };
+    });
 
     await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
@@ -1769,7 +1809,8 @@
       syncListTable('client_metrics', clientId, metricRows),
       syncListTable('client_resources', clientId, resourceRows),
       syncListTable('client_wins', clientId, winRows),
-      syncNonNegotiables(clientId, nonNegRows)
+      syncNonNegotiables(clientId, nonNegRows),
+      syncListTable('client_habits', clientId, habitRows)
     ]);
 
     setLoading($('cpEditSave'), false, 'Save');
