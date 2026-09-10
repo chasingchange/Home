@@ -117,6 +117,7 @@
   var needsPassword = (urlAuthType === 'invite');
   var currentUser = null;
   var biometricOfferedThisLoad = false;
+  var googleSilentAttemptedFor = null;
   var isCoachUser = false;
   var coachUser = null;
   var coachProfile = null;
@@ -242,7 +243,7 @@
         showSetPasswordStep(session.user);
         return;
       }
-      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+      if (session && event === 'SIGNED_IN' && (!currentUser || currentUser.id !== session.user.id)) {
         showDash(session.user);
       }
     });
@@ -1157,7 +1158,12 @@
 
     // Best-effort silent reconnect so returning clients don't have to click
     // "Connect" again every visit. Falls back to "Reconnect" if it can't.
-    if (calState.google.connected) {
+    // Only attempted once per client per page load — GIS's silent prompt can
+    // fall back to a visible popup, and re-running this on every dashboard
+    // re-render (e.g. a Supabase token refresh) made that popup reappear
+    // repeatedly during a single session.
+    if (calState.google.connected && googleSilentAttemptedFor !== clientId) {
+      googleSilentAttemptedFor = clientId;
       calRequestGoogleToken(true).then(async function(token){
         if (viewingClientId !== clientId) return;
         calState.google.token = token;
