@@ -223,6 +223,19 @@
       .cp-assign-row select{height:42px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
       .cp-core-edit-label{width:70px;flex-shrink:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;}
       .cp-message-input{cursor:text;outline:none;box-sizing:border-box;width:100%;font-family:"Muli","Mulish",system-ui,sans-serif;}
+      /* vision board header */
+      .cp-vision-band{position:relative;margin:0 0 8px;}
+      .cp-vision-band-inner{position:relative;height:280px;border-radius:22px;overflow:hidden;background:#eaeaee;}
+      .cp-vision-band-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 96%);mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 96%);}
+      .cp-vision-empty{all:unset;box-sizing:border-box;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed rgba(7,31,53,.22);border-radius:22px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);transition:border-color .15s,background-color .15s;}
+      .cp-vision-empty:hover{border-color:rgba(7,31,53,.4);}
+      .cp-vision-empty-text{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.45);}
+      .cp-vision-controls{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:8px;}
+      .cp-vision-band.is-busy .cp-vision-controls{opacity:.5;pointer-events:none;}
+      .cp-vision-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);font-size:12px;font-weight:800;letter-spacing:.02em;color:#071f35;box-shadow:0 2px 10px rgba(7,31,53,.14);}
+      .cp-vision-btn:hover{background:#fff;}
+      .cp-vision-btn--danger{color:#c01a38;}
+      @media(max-width:600px){.cp-vision-band-inner{height:190px;}}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
@@ -333,6 +346,19 @@
 
       <!-- DASHBOARD -->
       <section class="cp-dash" id="cpDash" hidden>
+        <div class="cp-vision-band" id="cpVisionBand" hidden>
+          <div class="cp-vision-band-inner">
+            <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" hidden />
+            <button type="button" class="cp-vision-empty" id="cpVisionEmptyBtn" hidden>
+              <span class="cp-vision-empty-text">+ Upload your vision board</span>
+            </button>
+            <div class="cp-vision-controls" id="cpVisionControls" hidden>
+              <button type="button" class="cp-vision-btn" id="cpVisionChangeBtn">Change</button>
+              <button type="button" class="cp-vision-btn cp-vision-btn--danger" id="cpVisionRemoveBtn">Remove</button>
+            </div>
+          </div>
+          <input type="file" id="cpVisionFileInput" accept="image/*" hidden />
+        </div>
         <div class="cp-dash-head">
           <div>
             <p class="cp-kicker">Client Portal</p>
