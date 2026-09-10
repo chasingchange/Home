@@ -402,7 +402,8 @@
       sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
-      sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position')
+      sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
+      sb.from('client_pre_call_submissions').select('*').eq('client_id', clientId).order('submitted_at', { ascending:false }).limit(10)
     ]);
 
     var d = results[0].data || {};
@@ -440,7 +441,22 @@
       messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; }),
       onboardingItems: (results[8].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
       offboarding: results[9].data || {},
-      nonNegotiables: (results[10].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; })
+      nonNegotiables: (results[10].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
+      preCallSubmissions: (results[11].data || []).map(function(s){
+        return {
+          id: s.id,
+          submittedAt: s.submitted_at,
+          status: s.status,
+          objective: s.coaching_call_objective,
+          currentWeight: s.current_weight,
+          obstacle: s.obstacle,
+          missedWorkouts: s.missed_workouts,
+          trackedFood: s.tracked_food,
+          hasMoreHomework: s.has_more_homework,
+          reviewItems: s.review_items || [],
+          workoutDays: s.workout_days || []
+        };
+      })
     };
   }
 
@@ -709,6 +725,7 @@
     renderNonNegotiables();
     renderArchive();
     renderOffboardingForm();
+    renderPreCallSubmissions();
   }
 
   // ─── Preferred cardio + goal (set by the coach, seen by the client) ───
@@ -860,6 +877,26 @@
     var recent = portalData.notes.slice(0,4);
     var h=''; recent.forEach(function(n){ h+='<div class="cp-note-row"><span class="cp-note-label">'+esc(n.label)+'</span><span class="cp-note-meta">'+esc(n.meta)+'</span></div>'; });
     $('cpNoteList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No session notes yet.</p>';
+  }
+
+  // ─── Pre-call check-ins (synced from the coach's Notion pre-call form) ─
+  function renderPreCallSubmissions(){
+    var card = $('cpPreCallCard');
+    var rows = portalData.preCallSubmissions || [];
+    card.hidden = rows.length === 0;
+    if (!rows.length) return;
+
+    var h = '';
+    rows.forEach(function(s){
+      var when = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }) : '';
+      h += '<div class="cp-note-row" style="flex-direction:column;align-items:flex-start;gap:4px;">';
+      h += '<div style="display:flex;justify-content:space-between;width:100%;"><span class="cp-note-label">'+esc(when)+'</span><span class="cp-note-meta">'+esc(s.status||'')+'</span></div>';
+      if (s.objective) h += '<p class="cp-body-text" style="margin:0;"><strong>Call objective:</strong> '+esc(s.objective)+'</p>';
+      if (s.currentWeight) h += '<p class="cp-body-text" style="margin:0;"><strong>Weight:</strong> '+esc(s.currentWeight)+'</p>';
+      if (s.obstacle) h += '<p class="cp-body-text" style="margin:0;"><strong>Obstacle:</strong> '+esc(s.obstacle)+'</p>';
+      h += '</div>';
+    });
+    $('cpPreCallList').innerHTML = h;
   }
 
   function renderWins(){
