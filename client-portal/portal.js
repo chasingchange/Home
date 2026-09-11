@@ -1727,8 +1727,48 @@
     editSections.cpEditHabitList.items = editState.habits;
     Object.keys(editSections).forEach(renderListEditor);
 
+    $('cpEditorPreviewKicker').textContent = 'What ' + (name.split(' ')[0] || 'they') + ' sees';
+    scrollToEditorSection('overview');
+    $('cpEditorScroll').scrollTop = 0;
+    renderEditorPreview();
+
     $('cpEditSave').disabled = false;
   }
+
+  function renderEditorPreview(){
+    if (!editState) return;
+
+    var h = '';
+    editState.cores.forEach(function(c){
+      h += '<div class="cp-editor-preview-core-row"><div class="cp-editor-preview-core-top">'
+         + '<span class="cp-dot" style="background:'+c.color+'"></span>'
+         + '<span class="cp-core-label">'+esc(c.label)+'</span>'
+         + '<span class="cp-core-pct">'+(parseInt(c.pct,10)||0)+'%</span></div>'
+         + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+(parseInt(c.pct,10)||0)+'%;background:'+c.color+'"></div></div></div>';
+    });
+    $('cpEditorPreviewCores').innerHTML = h;
+
+    var weekNow = $('cpEditWeekNow').value || 0, weekTotal = $('cpEditWeekTotal').value || 0;
+    $('cpEditorPreviewRoute').textContent = $('cpEditRoute').value || 'No route set';
+    $('cpEditorPreviewWeek').textContent = 'Week ' + weekNow + ' of ' + weekTotal;
+
+    var openTasks = editSections.cpEditTaskList.items.filter(function(t){ return (t.label||'').trim() && !t.done; });
+    $('cpEditorPreviewReminder').textContent = ($('cpEditReminderDay').value || 'Monday') + ' by ' + ($('cpEditReminderChannel').value || 'text')
+      + ' — ' + openTasks.length + ' open item' + (openTasks.length === 1 ? '' : 's') + '.';
+
+    var th = '';
+    editSections.cpEditTaskList.items.forEach(function(t){
+      if (!(t.label||'').trim()) return;
+      th += '<div class="cp-editor-preview-task"><span class="cp-check"></span><span class="cp-label">'+esc(t.label)+'</span></div>';
+    });
+    $('cpEditorPreviewTasks').innerHTML = th || '<p class="cp-caption" style="margin:9px 0 0;">No tasks assigned.</p>';
+
+    $('cpEditorPreviewSession').textContent = $('cpEditSessionLabel').value || 'Not scheduled';
+    $('cpEditorPreviewAgenda').textContent = $('cpEditSessionAgenda').value || '';
+  }
+
+  $('cpEditOverlay').addEventListener('input', renderEditorPreview);
+  $('cpEditOverlay').addEventListener('change', renderEditorPreview);
 
   function closeEditPortal(){ editState = null; $('cpEditOverlay').hidden = true; }
 
@@ -1824,6 +1864,37 @@
 
   $('cpEditCancel').addEventListener('click',closeEditPortal);
   $('cpEditClose').addEventListener('click',closeEditPortal);
-  $('cpEditBackdrop').addEventListener('click',closeEditPortal);
+  $('cpEditBack').addEventListener('click',closeEditPortal);
+
+  // ─── Editor: section jump nav + scrollspy ──────────────────────────────
+  var EDITOR_SECTIONS = ['overview','cores','plan','progress','library'];
+
+  function scrollToEditorSection(id){
+    var root = $('cpEditorScroll');
+    var target = root.querySelector('[data-editor-sec="'+id+'"]');
+    if (target) root.scrollTop = target.offsetTop - 16;
+    setActiveEditorNav(id);
+  }
+
+  function setActiveEditorNav(id){
+    $('cpEditorNav').querySelectorAll('[data-editor-jump]').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.getAttribute('data-editor-jump') === id);
+    });
+  }
+
+  $('cpEditorNav').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-editor-jump]'); if (!btn) return;
+    scrollToEditorSection(btn.getAttribute('data-editor-jump'));
+  });
+
+  $('cpEditorScroll').addEventListener('scroll', function(){
+    var root = $('cpEditorScroll');
+    var current = EDITOR_SECTIONS[0];
+    EDITOR_SECTIONS.forEach(function(id){
+      var el = root.querySelector('[data-editor-sec="'+id+'"]');
+      if (el && el.offsetTop - 60 <= root.scrollTop) current = id;
+    });
+    setActiveEditorNav(current);
+  });
 
 })();
