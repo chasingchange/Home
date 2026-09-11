@@ -80,6 +80,20 @@
       .cp-label{margin:0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-route{margin:6px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;}
       .cp-week{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.55);}
+      .cp-timer-box{margin-top:20px;padding-top:18px;border-top:1px solid rgba(7,31,53,.1);}
+      .cp-timer-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cp-timer-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;margin:5px 0 0;}
+      .cp-timer-display{margin:14px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:34px;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-align:center;}
+      .cp-timer-box.is-done .cp-timer-display{color:#2a9df0;}
+      .cp-timer-bar{margin-top:12px;height:4px;border-radius:999px;background:rgba(7,31,53,.07);overflow:hidden;}
+      .cp-timer-bar-fill{height:100%;border-radius:999px;background:#2a9df0;transition:width .3s linear;}
+      .cp-timer-controls{margin-top:14px;display:flex;gap:8px;}
+      .cp-timer-btn{all:unset;box-sizing:border-box;cursor:pointer;flex:1;height:38px;border-radius:19px;font-family:"Raleway",sans-serif;font-weight:700;font-size:12.5px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s ease,background .15s ease;}
+      .cp-timer-btn--primary{background:#071f35;color:#fff;}
+      .cp-timer-btn--primary:hover{opacity:.9;}
+      .cp-timer-btn--primary.is-running{background:#2a9df0;}
+      .cp-timer-btn--ghost{background:rgba(7,31,53,.06);color:rgba(7,31,53,.65);}
+      .cp-timer-btn--ghost:hover{background:rgba(7,31,53,.1);}
       .cp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
       .cp-reminder-bar{grid-column:1 / -1;background:#071f35;border-radius:18px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
       .cp-reminder-text{cursor:pointer;}
@@ -216,12 +230,57 @@
       .cp-assign-remove:hover{background:rgba(7,31,53,.06);}
       .cp-assign-add{all:unset;cursor:pointer;margin-top:4px;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
       .cp-assign-add:hover{color:rgba(7,31,53,.85);}
-      .cp-edit-actions{margin-top:32px;display:flex;gap:10px;}
       .cp-edit-section{margin:36px 0 4px;font-family:"Raleway",sans-serif;font-weight:800;font-size:15px;padding-top:20px;border-top:1px solid rgba(7,31,53,.08);}
       .cp-edit-input{width:100%;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
       select.cp-edit-input{height:42px;}
       .cp-assign-row select{height:42px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
       .cp-core-edit-label{width:70px;flex-shrink:0;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;}
+      .cp-editor-overlay{position:fixed;inset:0;z-index:300;background:#eaeaee;flex-direction:column;}
+      .cp-editor-overlay[hidden]{display:none;}
+      .cp-editor-overlay:not([hidden]){display:flex;}
+      .cp-editor-head{background:#fff;border-bottom:1px solid rgba(7,31,53,.1);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-shrink:0;}
+      .cp-editor-head-left{display:flex;align-items:center;gap:16px;min-width:0;}
+      .cp-editor-back{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);white-space:nowrap;}
+      .cp-editor-back:hover{color:#071f35;}
+      .cp-editor-divider{width:1px;height:26px;background:rgba(7,31,53,.1);flex-shrink:0;}
+      .cp-editor-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;margin:2px 0 0;}
+      .cp-editor-body{flex:1;min-height:0;display:grid;grid-template-columns:200px minmax(0,1fr) 340px;}
+      .cp-editor-nav{border-right:1px solid rgba(7,31,53,.1);padding:22px 14px;display:flex;flex-direction:column;gap:3px;overflow:auto;}
+      .cp-editor-nav-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.4);margin:0 0 10px 10px;}
+      .cp-editor-nav-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:10px 10px;border-radius:11px;font-family:"Raleway",sans-serif;font-weight:700;font-size:13.5px;color:rgba(7,31,53,.65);}
+      .cp-editor-nav-btn:hover{background:rgba(7,31,53,.06);}
+      .cp-editor-nav-btn.is-active{background:#071f35;color:#fff;}
+      .cp-editor-scroll{overflow:auto;padding:26px 34px 40px;}
+      .cp-editor-section{scroll-margin-top:16px;}
+      .cp-editor-section + .cp-editor-section{margin-top:34px;}
+      .cp-editor-section h3{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;margin:0;}
+      .cp-editor-section-lede{margin:6px 0 0;font-size:14px;color:rgba(7,31,53,.55);}
+      .cp-editor-card{margin-top:16px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:16px;padding:20px 22px;}
+      .cp-editor-card h4{font-family:"Raleway",sans-serif;font-weight:800;font-size:15.5px;margin:0;}
+      .cp-editor-row{display:flex;gap:16px;align-items:flex-start;}
+      .cp-editor-row > *{flex:1;min-width:0;}
+      .cp-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;}
+      .cp-editor-grid .cp-edit-field{margin-top:0;}
+      .cp-editor-grid .cp-edit-field--full{grid-column:1 / -1;}
+      .cp-editor-aside{border-left:1px solid rgba(7,31,53,.1);background:#f5f5f7;padding:20px;overflow:auto;}
+      .cp-editor-aside-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+      .cp-editor-live-dot{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-editor-live-dot span{width:6px;height:6px;border-radius:999px;background:#77d770;}
+      .cp-editor-preview-card{margin-top:14px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:16px;padding:18px;}
+      .cp-editor-preview-kicker{font-family:"Raleway",sans-serif;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cp-editor-preview-core-row{display:grid;gap:6px;margin-top:9px;}
+      .cp-editor-preview-core-top{display:flex;align-items:center;gap:8px;}
+      .cp-editor-preview-core-top span.cp-dot{width:8px;height:8px;flex-shrink:0;}
+      .cp-editor-preview-core-top span.cp-core-label{font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;flex:1;}
+      .cp-editor-preview-core-top span.cp-core-pct{font-size:11.5px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-editor-preview-tasks{margin-top:10px;display:grid;}
+      .cp-editor-preview-task{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-editor-preview-task span.cp-check{width:15px;height:15px;border-radius:5px;border:1px solid rgba(7,31,53,.22);flex-shrink:0;}
+      .cp-editor-preview-task span.cp-label{font-size:13.5px;line-height:1.4;color:rgba(7,31,53,.8);}
+      .cp-editor-foot{background:#fff;border-top:1px solid rgba(7,31,53,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-shrink:0;}
+      .cp-editor-foot-hint{font-size:13px;color:rgba(7,31,53,.55);}
+      @media (max-width:1080px){ .cp-editor-body{grid-template-columns:200px minmax(0,1fr);} .cp-editor-aside{display:none;} }
+      @media (max-width:720px){ .cp-editor-body{grid-template-columns:minmax(0,1fr);} .cp-editor-nav{display:none;} .cp-editor-grid{grid-template-columns:1fr;} .cp-editor-grid .cp-edit-field--full{grid-column:1;} }
       .cp-message-input{cursor:text;outline:none;box-sizing:border-box;width:100%;font-family:"Muli","Mulish",system-ui,sans-serif;}
       /* vision board header */
       .cp-vision-band{position:relative;margin:0 0 8px;}
@@ -402,6 +461,17 @@
               <p class="cp-route" id="cpCardioType"></p>
               <p class="cp-week" id="cpCardioGoal"></p>
             </div>
+
+            <div class="cp-timer-box" id="cpTimerBox">
+              <p class="cp-timer-kicker">Chasing Change</p>
+              <p class="cp-timer-title">10-Minute Timer</p>
+              <p class="cp-timer-display" id="cpTimerDisplay">10:00</p>
+              <div class="cp-timer-bar"><div class="cp-timer-bar-fill" id="cpTimerBarFill" style="width:100%"></div></div>
+              <div class="cp-timer-controls">
+                <button type="button" class="cp-timer-btn cp-timer-btn--primary" id="cpTimerToggle">Start</button>
+                <button type="button" class="cp-timer-btn cp-timer-btn--ghost" id="cpTimerReset">Reset</button>
+              </div>
+            </div>
           </aside>
           <div class="cp-card-grid">
             <div class="cp-reminder-bar">
@@ -552,113 +622,208 @@
       </div>
     </div>
 
-    <div class="cp-sheet-overlay" id="cpEditOverlay" hidden>
-      <div class="cp-sheet-backdrop" id="cpEditBackdrop"></div>
-      <div class="cp-sheet">
-        <div class="cp-sheet-head">
-          <div><p class="cp-kicker">Edit Portal</p><h2 class="cp-sheet-title" id="cpEditTitle"></h2></div>
-          <button type="button" class="cp-sheet-close" id="cpEditClose" aria-label="Close">×</button>
-        </div>
-        <p class="cp-sheet-lede">This is everything this client sees. Changes save when you hit Save.</p>
-
-        <h3 class="cp-edit-section">Overview</h3>
-        <div class="cp-edit-field">
-          <label>Route</label>
-          <input type="text" id="cpEditRoute" class="cp-edit-input" placeholder="The 10K" />
-        </div>
-        <div class="cp-edit-field">
-          <label>Week</label>
-          <div class="cp-edit-week-row">
-            <input type="number" min="0" id="cpEditWeekNow" />
-            <span>of</span>
-            <input type="number" min="1" id="cpEditWeekTotal" />
+    <div class="cp-editor-overlay" id="cpEditOverlay" hidden>
+      <header class="cp-editor-head">
+        <div class="cp-editor-head-left">
+          <button type="button" class="cp-editor-back" id="cpEditBack">← Roster</button>
+          <div class="cp-editor-divider"></div>
+          <div>
+            <p class="cp-kicker">Editing client portal</p>
+            <h2 class="cp-editor-title" id="cpEditTitle"></h2>
           </div>
         </div>
-        <div class="cp-edit-field">
-          <label>Streak (weeks) &amp; adherence (%)</label>
-          <div class="cp-edit-week-row">
-            <input type="number" min="0" id="cpEditStreak" />
-            <span>·</span>
-            <input type="number" min="0" max="100" id="cpEditAdherence" />
+        <button type="button" class="cp-sheet-close" id="cpEditClose" aria-label="Close">×</button>
+      </header>
+
+      <div class="cp-editor-body">
+        <nav class="cp-editor-nav" id="cpEditorNav">
+          <p class="cp-editor-nav-kicker">Sections</p>
+          <button type="button" class="cp-editor-nav-btn is-active" data-editor-jump="overview">Overview</button>
+          <button type="button" class="cp-editor-nav-btn" data-editor-jump="cores">Six Cores</button>
+          <button type="button" class="cp-editor-nav-btn" data-editor-jump="plan">The plan</button>
+          <button type="button" class="cp-editor-nav-btn" data-editor-jump="progress">Progress</button>
+          <button type="button" class="cp-editor-nav-btn" data-editor-jump="library">Resources</button>
+        </nav>
+
+        <div class="cp-editor-scroll" id="cpEditorScroll">
+
+          <div class="cp-editor-section" data-editor-sec="overview">
+            <h3>Overview</h3>
+            <p class="cp-editor-section-lede">Route, pacing and the next call.</p>
+            <div class="cp-editor-card cp-editor-grid">
+              <div class="cp-edit-field cp-edit-field--full">
+                <label>Route</label>
+                <input type="text" id="cpEditRoute" class="cp-edit-input" placeholder="The 10K" />
+              </div>
+              <div class="cp-edit-field">
+                <label>Week</label>
+                <div class="cp-edit-week-row">
+                  <input type="number" min="0" id="cpEditWeekNow" />
+                  <span>of</span>
+                  <input type="number" min="1" id="cpEditWeekTotal" />
+                </div>
+              </div>
+              <div class="cp-edit-field">
+                <label>Streak (weeks) &amp; adherence (%)</label>
+                <div class="cp-edit-week-row">
+                  <input type="number" min="0" id="cpEditStreak" />
+                  <span>·</span>
+                  <input type="number" min="0" max="100" id="cpEditAdherence" />
+                </div>
+              </div>
+              <div class="cp-edit-field">
+                <label>Status</label>
+                <select id="cpEditFlagStatus" class="cp-edit-input">
+                  <option>On track</option>
+                  <option>Needs a nudge</option>
+                  <option>At risk</option>
+                </select>
+              </div>
+              <div class="cp-edit-field">
+                <label>Weekly reminder</label>
+                <div class="cp-edit-week-row">
+                  <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
+                    <option>Monday</option><option>Tuesday</option><option>Sunday</option>
+                  </select>
+                  <select id="cpEditReminderChannel" class="cp-edit-input" style="width:110px">
+                    <option value="text">text</option><option value="email">email</option><option value="push">push</option>
+                  </select>
+                  <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;">
+                    <input type="checkbox" id="cpEditReminderOn" /> On
+                  </label>
+                </div>
+              </div>
+              <div class="cp-edit-field cp-edit-field--full">
+                <label>Next session</label>
+                <input type="text" id="cpEditSessionLabel" class="cp-edit-input" placeholder="Thursday, 9:00 AM" />
+                <input type="text" id="cpEditSessionAgenda" class="cp-edit-input" placeholder="Agenda" style="margin-top:8px" />
+              </div>
+              <div class="cp-edit-field cp-edit-field--full">
+                <label>Preferred cardio &amp; goal</label>
+                <div class="cp-edit-week-row">
+                  <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
+                  <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="cp-edit-field">
-          <label>Status</label>
-          <select id="cpEditFlagStatus" class="cp-edit-input">
-            <option>On track</option>
-            <option>Needs a nudge</option>
-            <option>At risk</option>
-          </select>
-        </div>
-        <div class="cp-edit-field">
-          <label>Next session</label>
-          <input type="text" id="cpEditSessionLabel" class="cp-edit-input" placeholder="Thursday, 9:00 AM" />
-          <input type="text" id="cpEditSessionAgenda" class="cp-edit-input" placeholder="Agenda" style="margin-top:8px" />
-        </div>
-        <div class="cp-edit-field">
-          <label>Preferred cardio &amp; goal</label>
-          <div class="cp-edit-week-row">
-            <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
-            <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
+
+          <div class="cp-editor-section" data-editor-sec="cores">
+            <h3>The Six Cores</h3>
+            <p class="cp-editor-section-lede">Score and a note per core — drives the rail on their dashboard.</p>
+            <div class="cp-editor-card">
+              <div class="cp-assign-list" id="cpEditCoreList"></div>
+            </div>
           </div>
-        </div>
-        <div class="cp-edit-field">
-          <label>Weekly reminder</label>
-          <div class="cp-edit-week-row">
-            <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
-              <option>Monday</option><option>Tuesday</option><option>Sunday</option>
-            </select>
-            <select id="cpEditReminderChannel" class="cp-edit-input" style="width:110px">
-              <option value="text">text</option><option value="email">email</option><option value="push">push</option>
-            </select>
-            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;">
-              <input type="checkbox" id="cpEditReminderOn" /> On
-            </label>
+
+          <div class="cp-editor-section" data-editor-sec="plan">
+            <h3>The plan</h3>
+            <p class="cp-editor-section-lede">Tasks, non-negotiables, habits and onboarding — the lists they act on.</p>
+
+            <div class="cp-editor-card">
+              <h4>This week's tasks</h4>
+              <div class="cp-assign-list" id="cpEditTaskList" style="margin-top:14px;"></div>
+              <button type="button" class="cp-assign-add" id="cpEditTaskAdd">+ Add task</button>
+            </div>
+
+            <div class="cp-editor-row" style="margin-top:14px;">
+              <div class="cp-editor-card" style="margin-top:0;">
+                <h4>Non-negotiables</h4>
+                <p class="cp-editor-section-lede">Items awaiting client claim or your review stay here.</p>
+                <div class="cp-assign-list" id="cpEditNonNegList" style="margin-top:14px;"></div>
+                <button type="button" class="cp-assign-add" id="cpEditNonNegAdd">+ Add non-negotiable</button>
+              </div>
+              <div class="cp-editor-card" style="margin-top:0;">
+                <h4>Habits</h4>
+                <p class="cp-editor-section-lede">Leave empty to keep showing the Six Cores rail.</p>
+                <div class="cp-assign-list" id="cpEditHabitList" style="margin-top:14px;"></div>
+                <button type="button" class="cp-assign-add" id="cpEditHabitAdd">+ Add habit</button>
+              </div>
+            </div>
+
+            <div class="cp-editor-card">
+              <h4>Onboarding checklist</h4>
+              <div class="cp-assign-list" id="cpEditOnboardingList" style="margin-top:14px;"></div>
+              <button type="button" class="cp-assign-add" id="cpEditOnboardingAdd">+ Add checklist item</button>
+            </div>
           </div>
+
+          <div class="cp-editor-section" data-editor-sec="progress">
+            <h3>Progress</h3>
+            <p class="cp-editor-section-lede">Session recaps, body metrics and wins on record.</p>
+
+            <div class="cp-editor-card">
+              <h4>Session notes</h4>
+              <div class="cp-assign-list" id="cpEditNoteList" style="margin-top:14px;"></div>
+              <button type="button" class="cp-assign-add" id="cpEditNoteAdd">+ Add recap</button>
+            </div>
+
+            <div class="cp-editor-row" style="margin-top:14px;">
+              <div class="cp-editor-card" style="margin-top:0;">
+                <h4>Body metrics</h4>
+                <div class="cp-assign-list" id="cpEditMetricList" style="margin-top:14px;"></div>
+                <button type="button" class="cp-assign-add" id="cpEditMetricAdd">+ Add metric</button>
+              </div>
+              <div class="cp-editor-card" style="margin-top:0;">
+                <h4>Wins</h4>
+                <div class="cp-assign-list" id="cpEditWinList" style="margin-top:14px;"></div>
+                <button type="button" class="cp-assign-add" id="cpEditWinAdd">+ Add win</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="cp-editor-section" data-editor-sec="library">
+            <h3>Resource library</h3>
+            <p class="cp-editor-section-lede">What's assigned to them right now.</p>
+            <div class="cp-editor-card">
+              <div class="cp-assign-list" id="cpEditResourceList"></div>
+              <button type="button" class="cp-assign-add" id="cpEditResourceAdd">+ Add resource</button>
+            </div>
+          </div>
+
         </div>
 
-        <h3 class="cp-edit-section">The Six Cores</h3>
-        <div class="cp-assign-list" id="cpEditCoreList"></div>
+        <aside class="cp-editor-aside">
+          <div class="cp-editor-aside-head">
+            <p class="cp-kicker" id="cpEditorPreviewKicker">What they see</p>
+            <span class="cp-editor-live-dot"><span></span>live</span>
+          </div>
 
-        <h3 class="cp-edit-section">Onboarding Checklist</h3>
-        <div class="cp-assign-list" id="cpEditOnboardingList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditOnboardingAdd">+ Add checklist item</button>
+          <div class="cp-editor-preview-card">
+            <p class="cp-editor-preview-kicker">The Six Cores</p>
+            <div id="cpEditorPreviewCores"></div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(7,31,53,.1);">
+              <p style="margin:0;font-size:12px;font-weight:700;color:rgba(7,31,53,.5);">Route</p>
+              <p style="margin:5px 0 0;font-family:'Raleway',sans-serif;font-weight:800;font-size:16px;" id="cpEditorPreviewRoute"></p>
+              <p style="margin:3px 0 0;font-size:12.5px;color:rgba(7,31,53,.55);" id="cpEditorPreviewWeek"></p>
+            </div>
+          </div>
 
-        <h3 class="cp-edit-section">Non-Negotiables</h3>
-        <p class="cp-sheet-lede" style="margin-top:0;">Items awaiting client claim or your review stay here. Approved items move to the archive and drop off this list.</p>
-        <div class="cp-assign-list" id="cpEditNonNegList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditNonNegAdd">+ Add non-negotiable</button>
+          <div class="cp-editor-preview-card" style="background:#071f35;">
+            <p class="cp-editor-preview-kicker" style="color:rgba(255,255,255,.5);">Weekly Reminder</p>
+            <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#fff;" id="cpEditorPreviewReminder"></p>
+          </div>
 
-        <h3 class="cp-edit-section">This Week's Tasks</h3>
-        <div class="cp-assign-list" id="cpEditTaskList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditTaskAdd">+ Add task</button>
+          <div class="cp-editor-preview-card">
+            <p class="cp-editor-preview-kicker">This Week</p>
+            <div class="cp-editor-preview-tasks" id="cpEditorPreviewTasks"></div>
+          </div>
 
-        <h3 class="cp-edit-section">Habits</h3>
-        <p class="cp-sheet-lede" style="margin-top:0;">When a client has habits, they replace the Six Cores rail on their dashboard. Leave empty to keep showing the Six Cores.</p>
-        <div class="cp-assign-list" id="cpEditHabitList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditHabitAdd">+ Add habit</button>
-
-        <h3 class="cp-edit-section">Session Notes</h3>
-        <div class="cp-assign-list" id="cpEditNoteList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditNoteAdd">+ Add recap</button>
-
-        <h3 class="cp-edit-section">Body Metrics</h3>
-        <div class="cp-assign-list" id="cpEditMetricList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditMetricAdd">+ Add metric</button>
-
-        <h3 class="cp-edit-section">Resource Library</h3>
-        <div class="cp-assign-list" id="cpEditResourceList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditResourceAdd">+ Add resource</button>
-
-        <h3 class="cp-edit-section">Wins</h3>
-        <div class="cp-assign-list" id="cpEditWinList"></div>
-        <button type="button" class="cp-assign-add" id="cpEditWinAdd">+ Add win</button>
-
-        <div class="cp-edit-actions">
-          <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 24px;">Save</button>
-          <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;">Cancel</button>
-        </div>
+          <div class="cp-editor-preview-card">
+            <p class="cp-editor-preview-kicker">Next Session</p>
+            <p style="margin:9px 0 0;font-family:'Raleway',sans-serif;font-weight:800;font-size:15px;" id="cpEditorPreviewSession"></p>
+            <p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.68);" id="cpEditorPreviewAgenda"></p>
+          </div>
+        </aside>
       </div>
+
+      <footer class="cp-editor-foot">
+        <span class="cp-editor-foot-hint">This is everything this client sees. Changes save when you hit Save.</span>
+        <div style="display:flex;gap:10px;">
+          <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;height:44px;">Cancel</button>
+          <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 28px;height:44px;">Save</button>
+        </div>
+      </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
