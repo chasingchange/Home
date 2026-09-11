@@ -80,6 +80,20 @@
       .cp-label{margin:0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-route{margin:6px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;}
       .cp-week{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.55);}
+      .cp-timer-box{margin-top:20px;padding-top:18px;border-top:1px solid rgba(7,31,53,.1);}
+      .cp-timer-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cp-timer-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;margin:5px 0 0;}
+      .cp-timer-display{margin:14px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:34px;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-align:center;}
+      .cp-timer-box.is-done .cp-timer-display{color:#2a9df0;}
+      .cp-timer-bar{margin-top:12px;height:4px;border-radius:999px;background:rgba(7,31,53,.07);overflow:hidden;}
+      .cp-timer-bar-fill{height:100%;border-radius:999px;background:#2a9df0;transition:width .3s linear;}
+      .cp-timer-controls{margin-top:14px;display:flex;gap:8px;}
+      .cp-timer-btn{all:unset;box-sizing:border-box;cursor:pointer;flex:1;height:38px;border-radius:19px;font-family:"Raleway",sans-serif;font-weight:700;font-size:12.5px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s ease,background .15s ease;}
+      .cp-timer-btn--primary{background:#071f35;color:#fff;}
+      .cp-timer-btn--primary:hover{opacity:.9;}
+      .cp-timer-btn--primary.is-running{background:#2a9df0;}
+      .cp-timer-btn--ghost{background:rgba(7,31,53,.06);color:rgba(7,31,53,.65);}
+      .cp-timer-btn--ghost:hover{background:rgba(7,31,53,.1);}
       .cp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
       .cp-reminder-bar{grid-column:1 / -1;background:#071f35;border-radius:18px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
       .cp-reminder-text{cursor:pointer;}
@@ -446,6 +460,17 @@
               <p class="cp-label">Preferred Cardio</p>
               <p class="cp-route" id="cpCardioType"></p>
               <p class="cp-week" id="cpCardioGoal"></p>
+            </div>
+
+            <div class="cp-timer-box" id="cpTimerBox">
+              <p class="cp-timer-kicker">Chasing Change</p>
+              <p class="cp-timer-title">10-Minute Timer</p>
+              <p class="cp-timer-display" id="cpTimerDisplay">10:00</p>
+              <div class="cp-timer-bar"><div class="cp-timer-bar-fill" id="cpTimerBarFill" style="width:100%"></div></div>
+              <div class="cp-timer-controls">
+                <button type="button" class="cp-timer-btn cp-timer-btn--primary" id="cpTimerToggle">Start</button>
+                <button type="button" class="cp-timer-btn cp-timer-btn--ghost" id="cpTimerReset">Reset</button>
+              </div>
             </div>
           </aside>
           <div class="cp-card-grid">

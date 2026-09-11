@@ -225,6 +225,49 @@
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 
+  // ─── Sidecar utility: 10-minute timer on the client dashboard rail ─────
+  var TIMER_SECONDS = 10 * 60;
+  var timerRemaining = TIMER_SECONDS;
+  var timerHandle = null;
+
+  function renderTimer(){
+    var m = Math.floor(timerRemaining / 60);
+    var s = timerRemaining % 60;
+    $('cpTimerDisplay').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    $('cpTimerBarFill').style.width = (timerRemaining / TIMER_SECONDS * 100) + '%';
+    $('cpTimerBox').classList.toggle('is-done', timerRemaining === 0);
+  }
+
+  function stopTimer(){
+    clearInterval(timerHandle);
+    timerHandle = null;
+    $('cpTimerToggle').textContent = 'Start';
+    $('cpTimerToggle').classList.remove('is-running');
+  }
+
+  function startTimer(){
+    if (timerRemaining === 0) timerRemaining = TIMER_SECONDS;
+    timerHandle = setInterval(function(){
+      timerRemaining--;
+      renderTimer();
+      if (timerRemaining <= 0) stopTimer();
+    }, 1000);
+    $('cpTimerToggle').textContent = 'Pause';
+    $('cpTimerToggle').classList.add('is-running');
+  }
+
+  $('cpTimerToggle').addEventListener('click', function(){
+    if (timerHandle) stopTimer(); else startTimer();
+  });
+
+  $('cpTimerReset').addEventListener('click', function(){
+    stopTimer();
+    timerRemaining = TIMER_SECONDS;
+    renderTimer();
+  });
+
+  renderTimer();
+
   // ─── Check existing session on load ───────────────────────────────────
   (async function(){
     var { data:{ session } } = await sb.auth.getSession();
