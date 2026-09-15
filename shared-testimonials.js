@@ -119,6 +119,15 @@
       ],
     },
     {
+      name: "Anthony Kearns",
+      year: "2026",
+      paragraphs: [
+        "I had the privilege of working with Tyler for 3 months. During that time, I learned various techniques and tactics to help tackle things in life from everyday goals to long term aspirations in a methodical way that made everything less daunting. He has a way of taking something that may seem terrifying or overwhelming, and breaking it down in a way that allows for a slow progression of working towards a goal that actually seems achievable.",
+        "During these three months, I have to say that the weekly calls and building rapport with him allowed me to have a space where I could confide in somebody about any doubts, anxieties, and stressors that may be happening in life.",
+        "I am incredibly grateful and happy that I chose to work with Tyler- he truly helped me and allowed me to focus on tasks and goals in a way that previously seemed impossible or unachievable. I thank him deeply for all he has done for me- these new thought processes and perspectives are here to stay, and something that I have him to be grateful for. Thank you again!",
+      ],
+    },
+    {
       name: "Tommy Allegreto",
       year: "2026",
       note: "Scholarship Recipient",
