@@ -68,6 +68,14 @@
       .cp-back-roster-btn:hover{color:rgba(7,31,53,.85);}
       .cp-signout-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.4);letter-spacing:.04em;}
       .cp-signout-btn:hover{color:rgba(7,31,53,.7);}
+      .cp-portal-tabs{display:flex;gap:6px;margin-bottom:20px;}
+      .cp-portal-tab{all:unset;cursor:pointer;padding:10px 20px;border-radius:12px;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.5);}
+      .cp-portal-tab:hover{color:rgba(7,31,53,.8);}
+      .cp-portal-tab.is-active{background:#071f35;color:#fff;}
+      .cp-trainerize-view{display:grid;gap:14px;}
+      .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
+      .cp-trainerize-frame{width:100%;height:calc(100vh - 320px);min-height:520px;border:1px solid rgba(7,31,53,.1);border-radius:18px;background:#fff;}
+      .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
       .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
       .cp-core-rail{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:22px;}
       .cp-core-list{margin-top:16px;display:grid;gap:2px;}
@@ -448,6 +456,11 @@
           </div>
         </div>
 
+        <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
+          <button type="button" class="cp-portal-tab is-active" id="cpTabPortalBtn" data-portal-tab="portal">Portal</button>
+          <button type="button" class="cp-portal-tab" id="cpTabTrainerizeBtn" data-portal-tab="trainerize">Trainerize</button>
+        </div>
+
         <div class="cp-client-view" id="cpClientView">
           <aside class="cp-core-rail">
             <p class="cp-kicker" id="cpCoreKicker">The Six Cores</p>
@@ -586,6 +599,17 @@
           </div>
         </div>
 
+        <div class="cp-trainerize-view" id="cpTrainerizeView" hidden>
+          <div class="cp-trainerize-bar">
+            <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats, side by side with your portal.</p></div>
+            <a class="cp-cta-primary" id="cpTrainerizeOpenBtn" href="#" target="_blank" rel="noopener">Open in Trainerize ↗</a>
+          </div>
+          <iframe class="cp-trainerize-frame" id="cpTrainerizeFrame" title="Trainerize" hidden></iframe>
+          <div class="cp-trainerize-empty" id="cpTrainerizeEmpty" hidden>
+            <p>Your coach hasn't linked your Trainerize account yet — check back soon.</p>
+          </div>
+        </div>
+
         <div class="cp-coach-view" id="cpCoachView" hidden>
           <div class="cp-card cp-roster-card">
             <p class="cp-kicker">Roster</p>
@@ -706,6 +730,10 @@
                   <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
                   <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
                 </div>
+              </div>
+              <div class="cp-edit-field cp-edit-field--full">
+                <label>Trainerize link</label>
+                <input type="url" id="cpEditTrainerizeUrl" class="cp-edit-input" placeholder="https://www.trainerize.com/…" />
               </div>
             </div>
           </div>

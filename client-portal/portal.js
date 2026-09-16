@@ -477,6 +477,7 @@
       preferredCardio: d.preferred_cardio || '',
       cardioGoal: d.cardio_goal || '',
       visionBoardUrl: d.vision_board_url || '',
+      trainerizeUrl: d.trainerize_url || '',
       cores: cores,
       tasks: (results[2].data || []).map(function(t){ return { id:t.id, label:t.label, coreKey:t.core_key, color:t.color, done:t.done }; }),
       notes: (results[3].data || []).map(function(n){ return { id:n.id, label:n.label, meta:n.meta, body:n.body }; }),
@@ -773,7 +774,44 @@
     renderArchive();
     renderOffboardingForm();
     renderPreCallSubmissions();
+    renderTrainerize();
   }
+
+  // ─── Trainerize tab: per-client link, embedded when possible ──────────
+  function renderTrainerize(){
+    var url = portalData.trainerizeUrl || '';
+    var openBtn = $('cpTrainerizeOpenBtn');
+    var frame = $('cpTrainerizeFrame');
+    var empty = $('cpTrainerizeEmpty');
+
+    if (!url) {
+      openBtn.hidden = true;
+      frame.hidden = true;
+      frame.removeAttribute('src');
+      empty.hidden = false;
+      return;
+    }
+
+    openBtn.hidden = false;
+    openBtn.href = url;
+    empty.hidden = true;
+    frame.hidden = false;
+    if (frame.getAttribute('src') !== url) frame.src = url;
+  }
+
+  function setPortalTab(tab){
+    state.portalTab = tab;
+    $('cpTabPortalBtn').classList.toggle('is-active', tab === 'portal');
+    $('cpTabTrainerizeBtn').classList.toggle('is-active', tab === 'trainerize');
+    $('cpClientView').hidden = tab !== 'portal';
+    $('cpVisionBand').hidden = tab !== 'portal';
+    $('cpTrainerizeView').hidden = tab !== 'trainerize';
+  }
+
+  $('cpPortalTabs').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-portal-tab]'); if (!btn) return;
+    setPortalTab(btn.getAttribute('data-portal-tab'));
+  });
 
   // ─── Preferred cardio + goal (set by the coach, seen by the client) ───
   function renderCardioBox(){
@@ -1545,9 +1583,15 @@
   });
 
   function renderViewToggle(){
-    $('cpClientView').hidden = state.view !== 'client';
     $('cpCoachView').hidden = state.view !== 'coach';
-    $('cpVisionBand').hidden = state.view !== 'client';
+    $('cpPortalTabs').hidden = state.view !== 'client';
+    if (state.view === 'client') {
+      setPortalTab('portal');
+    } else {
+      $('cpClientView').hidden = true;
+      $('cpVisionBand').hidden = true;
+      $('cpTrainerizeView').hidden = true;
+    }
   }
 
   function findRosterClient(id){
@@ -1757,6 +1801,7 @@
     $('cpEditCardioType').value = editState.preferredCardio;
     $('cpEditCardioType').dispatchEvent(new Event('change'));
     $('cpEditCardioGoal').value = editState.cardioGoal;
+    $('cpEditTrainerizeUrl').value = editState.trainerizeUrl;
 
     renderCoreEditor();
 
@@ -1851,7 +1896,8 @@
       reminder_channel: $('cpEditReminderChannel').value,
       reminder_on: $('cpEditReminderOn').checked,
       preferred_cardio: $('cpEditCardioType').value,
-      cardio_goal: $('cpEditCardioGoal').value.trim()
+      cardio_goal: $('cpEditCardioGoal').value.trim(),
+      trainerize_url: $('cpEditTrainerizeUrl').value.trim()
     };
 
     var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
