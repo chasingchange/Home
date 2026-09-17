@@ -1929,7 +1929,7 @@
       return { client_id: clientId, label: h.label.trim(), done: !!h.done, position:i };
     });
 
-    await Promise.all([
+    var results = await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
       syncListTable('client_cores', clientId, coreRows, 'core_key'),
       syncListTable('client_onboarding_items', clientId, onboardingRows),
@@ -1942,7 +1942,13 @@
       syncListTable('client_habits', clientId, habitRows)
     ]);
 
+    var saveError = results.map(function(r){ return r && r.error; }).filter(Boolean)[0];
     setLoading($('cpEditSave'), false, 'Save');
+    if (saveError) {
+      console.error('Failed to save portal edits:', saveError);
+      alert('Saving failed: ' + saveError.message);
+      return;
+    }
     closeEditPortal();
     await loadRoster();
     if (viewingClientId === clientId) {
