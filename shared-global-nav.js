@@ -65,7 +65,6 @@
     { title: "1RM Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
     { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/` },
     { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/` },
-    { title: "Physique Roadmap", core: "Body", section: "Fitness", url: `${root}physique-roadmap/` },
     { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/` },
     { title: "Macro Calculator", core: "Body", section: "Nutrition", url: `${root}macro/` },
     { title: "Scriptor System", core: "Art", url: `${root}art/scriptor-system/` },
