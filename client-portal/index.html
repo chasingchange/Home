@@ -72,6 +72,47 @@
       .cp-portal-tab{all:unset;cursor:pointer;padding:10px 20px;border-radius:12px;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.5);}
       .cp-portal-tab:hover{color:rgba(7,31,53,.8);}
       .cp-portal-tab.is-active{background:#071f35;color:#fff;}
+
+      /* ── Goals tab ───────────────────────────────────────────── */
+      .cp-goals-view{width:min(100%,900px);margin:0 auto;}
+      .cp-goals-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+      .cp-goals-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;margin:0;}
+      .cp-goals-add-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:24px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;transition:opacity .15s;}
+      .cp-goals-add-btn:hover{opacity:.85;}
+      .cp-goals-section-label{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.4);margin:0 0 12px;}
+      .cp-goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:36px;}
+      .cp-goal-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;}
+      .cp-goal-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;}
+      .cp-goal-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+      .cp-goal-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;margin:0;line-height:1.3;}
+      .cp-goal-card-desc{font-size:14px;line-height:1.6;color:rgba(7,31,53,.65);margin:0;}
+      .cp-goal-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;}
+      .cp-goal-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:700;color:rgba(7,31,53,.6);}
+      .cp-goal-date-chip{padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:700;color:rgba(7,31,53,.55);}
+      .cp-goal-achieve-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 12px;border-radius:99px;border:1px solid rgba(7,31,53,.15);transition:all .15s;}
+      .cp-goal-achieve-btn:hover{background:#071f35;color:#fff;border-color:#071f35;}
+      .cp-goal-card.is-achieved{opacity:.65;}
+      .cp-goal-card.is-achieved .cp-goal-achieve-btn{color:#77d770;border-color:#77d770;}
+      .cp-goal-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:36px 24px;text-align:center;color:rgba(7,31,53,.45);font-size:15px;margin-bottom:36px;}
+
+      /* Goal add form (inline sheet) */
+      .cp-goal-form-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+      .cp-goal-form-backdrop{position:absolute;inset:0;background:rgba(7,31,53,.35);}
+      .cp-goal-form-sheet{position:relative;width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;z-index:1;}
+      .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;margin:0 0 20px;}
+      .cp-goal-form-field{margin-bottom:14px;}
+      .cp-goal-form-field label{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+      .cp-goal-form-input{width:100%;box-sizing:border-box;height:46px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:0 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;color:#071f35;outline:none;}
+      .cp-goal-form-input:focus{border-color:rgba(7,31,53,.4);}
+      .cp-goal-form-input--ta{height:88px;padding:12px 14px;resize:none;}
+      .cp-goal-core-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+      .cp-goal-core-opt{display:none;}
+      .cp-goal-core-opt + label{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(7,31,53,.15);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+      .cp-goal-core-opt:checked + label{border-color:currentColor;background:rgba(7,31,53,.05);}
+      .cp-goal-form-actions{display:flex;gap:10px;margin-top:20px;}
+      .cp-goal-form-cancel{all:unset;cursor:pointer;flex:1;height:46px;border-radius:23px;border:1px solid rgba(7,31,53,.15);font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;}
+      .cp-goal-form-save{all:unset;cursor:pointer;flex:2;height:46px;border-radius:23px;background:#071f35;color:#fff;font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s;}
+      .cp-goal-form-save:hover{opacity:.88;}
       .cp-trainerize-view{display:grid;gap:14px;}
       .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
       .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
@@ -457,6 +498,7 @@
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
           <button type="button" class="cp-portal-tab is-active" id="cpTabPortalBtn" data-portal-tab="portal">Portal</button>
+          <button type="button" class="cp-portal-tab" id="cpTabGoalsBtn" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" id="cpTabTrainerizeBtn" data-portal-tab="trainerize">Trainerize</button>
         </div>
 
@@ -598,6 +640,48 @@
           </div>
         </div>
 
+        <!-- GOALS TAB -->
+        <div class="cp-goals-view" id="cpGoalsView" hidden>
+          <div class="cp-goals-header">
+            <h2 class="cp-goals-title">Your Goals</h2>
+            <button type="button" class="cp-goals-add-btn" id="cpGoalAddBtn">+ Add goal</button>
+          </div>
+          <p class="cp-goals-section-label" id="cpGoalsActiveLabel">Active</p>
+          <div class="cp-goals-grid" id="cpGoalsActiveGrid"></div>
+          <p class="cp-goals-section-label" id="cpGoalsAchievedLabel" hidden>Achieved</p>
+          <div class="cp-goals-grid" id="cpGoalsAchievedGrid"></div>
+        </div>
+
+        <!-- GOAL ADD FORM -->
+        <div id="cpGoalFormOverlay" hidden>
+          <div class="cp-goal-form-overlay">
+            <div class="cp-goal-form-backdrop" id="cpGoalFormBackdrop"></div>
+            <div class="cp-goal-form-sheet">
+              <p class="cp-goal-form-title">New Goal</p>
+              <div class="cp-goal-form-field">
+                <label>Goal title</label>
+                <input type="text" id="cpGoalTitle" class="cp-goal-form-input" placeholder="e.g. Run a 5K in under 30 min" maxlength="120" />
+              </div>
+              <div class="cp-goal-form-field">
+                <label>Description (optional)</label>
+                <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="What does success look like?" maxlength="400"></textarea>
+              </div>
+              <div class="cp-goal-form-field">
+                <label>Core</label>
+                <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
+              </div>
+              <div class="cp-goal-form-field">
+                <label>Target date (optional)</label>
+                <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
+              </div>
+              <div class="cp-goal-form-actions">
+                <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>
+                <button type="button" class="cp-goal-form-save" id="cpGoalFormSave">Save goal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="cp-trainerize-view" id="cpTrainerizeView" hidden>
           <div class="cp-trainerize-bar">
             <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats live on Trainerize — Trainerize doesn't allow its pages to be embedded, so open it in its own tab.</p></div>
@@ -666,6 +750,7 @@
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="cores">Six Cores</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="plan">The plan</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="progress">Progress</button>
+          <button type="button" class="cp-editor-nav-btn" data-editor-jump="goals">Goals</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="library">Resources</button>
         </nav>
 
@@ -797,6 +882,15 @@
                 <div class="cp-assign-list" id="cpEditWinList" style="margin-top:14px;"></div>
                 <button type="button" class="cp-assign-add" id="cpEditWinAdd">+ Add win</button>
               </div>
+            </div>
+          </div>
+
+          <div class="cp-editor-section" data-editor-sec="goals">
+            <h3>Goals</h3>
+            <p class="cp-editor-section-lede">Set goals for this client — they see them in the Goals tab.</p>
+            <div class="cp-editor-card">
+              <div class="cp-assign-list" id="cpEditGoalList" style="margin-top:4px;"></div>
+              <button type="button" class="cp-assign-add" id="cpEditGoalAdd">+ Add goal</button>
             </div>
           </div>
 

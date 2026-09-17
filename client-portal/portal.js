@@ -447,7 +447,8 @@
       sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
       sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_pre_call_submissions').select('*').eq('client_id', clientId).order('submitted_at', { ascending:false }).limit(10),
-      sb.from('client_habits').select('*').eq('client_id', clientId).order('position')
+      sb.from('client_habits').select('*').eq('client_id', clientId).order('position'),
+      sb.from('client_goals').select('*').eq('client_id', clientId).order('created_at', { ascending:true })
     ]);
 
     var d = results[0].data || {};
@@ -503,7 +504,10 @@
           workoutDays: s.workout_days || []
         };
       }),
-      habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; })
+      habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
+      goals: (results[13].data || []).map(function(g){
+        return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:g.status||'active', createdBy:g.created_by||'client' };
+      })
     };
   }
 
@@ -775,6 +779,7 @@
     renderOffboardingForm();
     renderPreCallSubmissions();
     renderTrainerize();
+    renderGoalsTab();
   }
 
   // ─── Trainerize tab: per-client link, opened in a new tab ─────────────
@@ -799,9 +804,11 @@
   function setPortalTab(tab){
     state.portalTab = tab;
     $('cpTabPortalBtn').classList.toggle('is-active', tab === 'portal');
+    $('cpTabGoalsBtn').classList.toggle('is-active', tab === 'goals');
     $('cpTabTrainerizeBtn').classList.toggle('is-active', tab === 'trainerize');
     $('cpClientView').hidden = tab !== 'portal';
     $('cpVisionBand').hidden = tab !== 'portal';
+    $('cpGoalsView').hidden = tab !== 'goals';
     $('cpTrainerizeView').hidden = tab !== 'trainerize';
   }
 
@@ -809,6 +816,111 @@
     var btn = e.target.closest('[data-portal-tab]'); if (!btn) return;
     setPortalTab(btn.getAttribute('data-portal-tab'));
   });
+
+  // ─── Goals tab ─────────────────────────────────────────────────────────
+  function goalDateLabel(iso){
+    if (!iso) return '';
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  function buildGoalCard(g, idx){
+    var color = coreColor(g.coreKey);
+    var isAchieved = g.status === 'achieved';
+    var dateHtml = g.targetDate ? '<span class="cp-goal-date-chip">📅 ' + esc(goalDateLabel(g.targetDate)) + '</span>' : '';
+    var coreHtml = g.coreKey ? '<span class="cp-goal-chip"><span class="cp-dot" style="background:'+color+'"></span>'+esc(g.coreKey.charAt(0).toUpperCase()+g.coreKey.slice(1))+'</span>' : '';
+    var achieveLabel = isAchieved ? '✓ Achieved' : 'Mark achieved';
+    return '<div class="cp-goal-card'+(isAchieved?' is-achieved':'')+'" style="--goal-color:'+color+'"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+color+';border-radius:18px 18px 0 0;"></div><div class="cp-goal-card-head"><p class="cp-goal-card-title">'+esc(g.title)+'</p></div>'+(g.description?'<p class="cp-goal-card-desc">'+esc(g.description)+'</p>':'')+'<div class="cp-goal-card-foot"><div style="display:flex;gap:6px;flex-wrap:wrap;">'+coreHtml+dateHtml+'</div><button type="button" class="cp-goal-achieve-btn" data-goal-idx="'+idx+'">'+achieveLabel+'</button></div></div>';
+  }
+
+  function renderGoalsTab(){
+    if (!portalData) return;
+    var goals = portalData.goals || [];
+    var active = goals.filter(function(g){ return g.status !== 'achieved'; });
+    var achieved = goals.filter(function(g){ return g.status === 'achieved'; });
+
+    // Build indexed lookup using original array indices so click handlers work
+    var activeHtml = '';
+    goals.forEach(function(g, i){
+      if (g.status !== 'achieved') activeHtml += buildGoalCard(g, i);
+    });
+    var achievedHtml = '';
+    goals.forEach(function(g, i){
+      if (g.status === 'achieved') achievedHtml += buildGoalCard(g, i);
+    });
+
+    $('cpGoalsActiveGrid').innerHTML = activeHtml || '<div class="cp-goal-empty">No active goals yet — add one to get started.</div>';
+    $('cpGoalsAchievedLabel').hidden = achieved.length === 0;
+    $('cpGoalsAchievedGrid').innerHTML = achievedHtml;
+  }
+
+  // Build core picker for goal form
+  function buildGoalCoreGrid(){
+    var h = '';
+    CORE_DEFS.forEach(function(c){
+      h += '<input type="radio" name="cpGoalCore" id="cpGoalCore_'+c.key+'" value="'+c.key+'" class="cp-goal-core-opt">';
+      h += '<label for="cpGoalCore_'+c.key+'" style="color:'+c.color+'"><span class="cp-dot" style="background:'+c.color+'"></span>'+c.label+'</label>';
+    });
+    $('cpGoalCoreGrid').innerHTML = h;
+  }
+
+  function openGoalForm(){
+    buildGoalCoreGrid();
+    $('cpGoalTitle').value = '';
+    $('cpGoalDesc').value = '';
+    $('cpGoalDate').value = '';
+    var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
+    radios.forEach(function(r){ r.checked = false; });
+    $('cpGoalFormOverlay').hidden = false;
+    $('cpGoalTitle').focus();
+  }
+
+  function closeGoalForm(){
+    $('cpGoalFormOverlay').hidden = true;
+  }
+
+  $('cpGoalAddBtn').addEventListener('click', openGoalForm);
+  $('cpGoalFormCancel').addEventListener('click', closeGoalForm);
+  $('cpGoalFormBackdrop').addEventListener('click', closeGoalForm);
+
+  $('cpGoalFormSave').addEventListener('click', async function(){
+    var title = $('cpGoalTitle').value.trim();
+    if (!title) { $('cpGoalTitle').focus(); return; }
+    if (!viewingClientId) return;
+    var clientId = viewingClientId;
+
+    var coreEl = $('cpGoalCoreGrid').querySelector('input[type=radio]:checked');
+    var coreKey = coreEl ? coreEl.value : '';
+    var desc = $('cpGoalDesc').value.trim();
+    var targetDate = $('cpGoalDate').value || null;
+    var createdBy = isCoachUser ? 'coach' : 'client';
+
+    var row = { client_id: clientId, title: title, description: desc, core_key: coreKey, target_date: targetDate, status: 'active', created_by: createdBy };
+
+    setLoading($('cpGoalFormSave'), true, 'Saving…');
+    var { data, error } = await sb.from('client_goals').insert(row).select().single();
+    setLoading($('cpGoalFormSave'), false, 'Save goal');
+    if (error) { alert('Could not save goal: ' + error.message); return; }
+    if (viewingClientId !== clientId) return;
+
+    portalData.goals.push({ id:data.id, title:data.title, description:data.description||'', coreKey:data.core_key||'', targetDate:data.target_date||'', status:'active', createdBy:data.created_by||'client' });
+    renderGoalsTab();
+    closeGoalForm();
+  });
+
+  // Achieve / un-achieve toggle
+  function goalsGridClickHandler(e){
+    var btn = e.target.closest('.cp-goal-achieve-btn'); if (!btn || !portalData) return;
+    var idx = parseInt(btn.getAttribute('data-goal-idx'), 10);
+    var goal = portalData.goals[idx]; if (!goal) return;
+    var newStatus = goal.status === 'achieved' ? 'active' : 'achieved';
+    goal.status = newStatus;
+    renderGoalsTab();
+    sb.from('client_goals').update({ status: newStatus }).eq('id', goal.id);
+  }
+
+  $('cpGoalsActiveGrid').addEventListener('click', goalsGridClickHandler);
+  $('cpGoalsAchievedGrid').addEventListener('click', goalsGridClickHandler);
 
   // ─── Preferred cardio + goal (set by the coach, seen by the client) ───
   function renderCardioBox(){
@@ -1709,6 +1821,11 @@
     ] },
     cpEditHabitList:    { items: [], fields: [
       { key:'label', placeholder:'Habit', type:'text' }
+    ] },
+    cpEditGoalList:     { items: [], fields: [
+      { key:'title', placeholder:'Goal title', type:'text' },
+      { key:'coreKey', type:'select', options: [{value:'',label:'— Core —'}].concat(CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; })) },
+      { key:'targetDate', placeholder:'Target date (YYYY-MM-DD)', type:'text' }
     ] }
   };
 
@@ -1759,6 +1876,7 @@
   $('cpEditResourceAdd').addEventListener('click', function(){ editSections.cpEditResourceList.items.push({label:'',color:'#2a9df0'}); renderListEditor('cpEditResourceList'); });
   $('cpEditWinAdd').addEventListener('click', function(){ editSections.cpEditWinList.items.push({label:'',meta:'',color:'#77d770'}); renderListEditor('cpEditWinList'); });
   $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',done:false}); renderListEditor('cpEditHabitList'); });
+  $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',coreKey:'',targetDate:'',status:'active',createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
 
   function renderCoreEditor(){
     var h='';
@@ -1810,6 +1928,7 @@
     editSections.cpEditResourceList.items = editState.resources;
     editSections.cpEditWinList.items = editState.wins;
     editSections.cpEditHabitList.items = editState.habits;
+    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, createdBy:g.createdBy }; });
     Object.keys(editSections).forEach(renderListEditor);
 
     $('cpEditorPreviewKicker').textContent = 'What ' + (name.split(' ')[0] || 'they') + ' sees';
@@ -1926,6 +2045,10 @@
       return { client_id: clientId, label: h.label.trim(), done: !!h.done, position:i };
     });
 
+    var goalRows = editSections.cpEditGoalList.items.filter(function(g){ return (g.title||'').trim(); }).map(function(g){
+      return { client_id: clientId, title: g.title.trim(), core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'active', created_by: g.createdBy||'coach' };
+    });
+
     var results = await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
       syncListTable('client_cores', clientId, coreRows, 'core_key'),
@@ -1936,7 +2059,8 @@
       syncListTable('client_resources', clientId, resourceRows),
       syncListTable('client_wins', clientId, winRows),
       syncNonNegotiables(clientId, nonNegRows),
-      syncListTable('client_habits', clientId, habitRows)
+      syncListTable('client_habits', clientId, habitRows),
+      syncListTable('client_goals', clientId, goalRows)
     ]);
 
     var saveError = results.map(function(r){ return r && r.error; }).filter(Boolean)[0];
@@ -1959,7 +2083,7 @@
   $('cpEditBack').addEventListener('click',closeEditPortal);
 
   // ─── Editor: section jump nav + scrollspy ──────────────────────────────
-  var EDITOR_SECTIONS = ['overview','cores','plan','progress','library'];
+  var EDITOR_SECTIONS = ['overview','cores','plan','progress','goals','library'];
 
   function scrollToEditorSection(id){
     var root = $('cpEditorScroll');
