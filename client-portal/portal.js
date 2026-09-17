@@ -777,17 +777,16 @@
     renderTrainerize();
   }
 
-  // ─── Trainerize tab: per-client link, embedded when possible ──────────
+  // ─── Trainerize tab: per-client link, opened in a new tab ─────────────
+  // Trainerize sends X-Frame-Options/CSP headers that block iframing, so
+  // this links out instead of embedding.
   function renderTrainerize(){
     var url = portalData.trainerizeUrl || '';
     var openBtn = $('cpTrainerizeOpenBtn');
-    var frame = $('cpTrainerizeFrame');
     var empty = $('cpTrainerizeEmpty');
 
     if (!url) {
       openBtn.hidden = true;
-      frame.hidden = true;
-      frame.removeAttribute('src');
       empty.hidden = false;
       return;
     }
@@ -795,8 +794,6 @@
     openBtn.hidden = false;
     openBtn.href = url;
     empty.hidden = true;
-    frame.hidden = false;
-    if (frame.getAttribute('src') !== url) frame.src = url;
   }
 
   function setPortalTab(tab){

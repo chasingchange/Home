@@ -74,7 +74,6 @@
       .cp-portal-tab.is-active{background:#071f35;color:#fff;}
       .cp-trainerize-view{display:grid;gap:14px;}
       .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
-      .cp-trainerize-frame{width:100%;height:calc(100vh - 320px);min-height:520px;border:1px solid rgba(7,31,53,.1);border-radius:18px;background:#fff;}
       .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
       .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
       .cp-core-rail{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:22px;}
@@ -601,10 +600,9 @@
 
         <div class="cp-trainerize-view" id="cpTrainerizeView" hidden>
           <div class="cp-trainerize-bar">
-            <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats, side by side with your portal.</p></div>
+            <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats live on Trainerize — Trainerize doesn't allow its pages to be embedded, so open it in its own tab.</p></div>
             <a class="cp-cta-primary" id="cpTrainerizeOpenBtn" href="#" target="_blank" rel="noopener">Open in Trainerize ↗</a>
           </div>
-          <iframe class="cp-trainerize-frame" id="cpTrainerizeFrame" title="Trainerize" hidden></iframe>
           <div class="cp-trainerize-empty" id="cpTrainerizeEmpty" hidden>
             <p>Your coach hasn't linked your Trainerize account yet — check back soon.</p>
           </div>
