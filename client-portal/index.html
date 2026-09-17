@@ -95,16 +95,23 @@
       .cp-goal-card.is-achieved .cp-goal-achieve-btn{color:#77d770;border-color:#77d770;}
       .cp-goal-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:36px 24px;text-align:center;color:rgba(7,31,53,.45);font-size:15px;margin-bottom:36px;}
 
-      /* Goal add form (inline sheet) */
-      .cp-goal-form-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-      .cp-goal-form-backdrop{position:absolute;inset:0;background:rgba(7,31,53,.35);}
-      .cp-goal-form-sheet{position:relative;width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;z-index:1;}
-      .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;margin:0 0 20px;}
+      /* Goal add form — fixed overlay on #cpGoalFormOverlay itself */
+      #cpGoalFormOverlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+      #cpGoalFormOverlay[hidden]{display:none !important;}
+      .cp-goal-form-backdrop{position:absolute;inset:0;background:rgba(7,31,53,.45);backdrop-filter:blur(2px);}
+      .cp-goal-form-sheet{position:relative;width:100%;max-width:520px;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 44px;z-index:1;max-height:90vh;overflow-y:auto;}
+      .cp-goal-form-handle{width:36px;height:4px;border-radius:99px;background:rgba(7,31,53,.15);margin:0 auto 20px;}
+      .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;margin:0 0 4px;}
+      .cp-goal-form-subtitle{font-size:13px;color:rgba(7,31,53,.5);margin:0 0 20px;line-height:1.5;}
+      .cp-goal-smart-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:18px;}
+      .cp-goal-smart-pill{padding:5px 0;border-radius:8px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
+      .cp-goal-smart-pill span{display:block;font-size:9px;font-weight:600;letter-spacing:.03em;opacity:.75;text-transform:none;margin-top:1px;}
       .cp-goal-form-field{margin-bottom:14px;}
-      .cp-goal-form-field label{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+      .cp-goal-form-field label{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+      .cp-goal-form-hint{font-size:12px;color:rgba(7,31,53,.45);margin:3px 0 6px;line-height:1.4;}
       .cp-goal-form-input{width:100%;box-sizing:border-box;height:46px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:0 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;color:#071f35;outline:none;}
       .cp-goal-form-input:focus{border-color:rgba(7,31,53,.4);}
-      .cp-goal-form-input--ta{height:88px;padding:12px 14px;resize:none;}
+      .cp-goal-form-input--ta{height:80px;padding:12px 14px;resize:none;}
       .cp-goal-core-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
       .cp-goal-core-opt{display:none;}
       .cp-goal-core-opt + label{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(7,31,53,.15);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
@@ -113,6 +120,10 @@
       .cp-goal-form-cancel{all:unset;cursor:pointer;flex:1;height:46px;border-radius:23px;border:1px solid rgba(7,31,53,.15);font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;}
       .cp-goal-form-save{all:unset;cursor:pointer;flex:2;height:46px;border-radius:23px;background:#071f35;color:#fff;font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s;}
       .cp-goal-form-save:hover{opacity:.88;}
+      /* goal card actions */
+      .cp-goal-card-actions{display:flex;align-items:center;gap:8px;}
+      .cp-goal-delete-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.3);padding:5px 10px;border-radius:99px;border:1px solid transparent;transition:all .15s;}
+      .cp-goal-delete-btn:hover{color:#f02348;border-color:rgba(240,35,72,.3);}
       .cp-trainerize-view{display:grid;gap:14px;}
       .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
       .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
@@ -654,30 +665,40 @@
 
         <!-- GOAL ADD FORM -->
         <div id="cpGoalFormOverlay" hidden>
-          <div class="cp-goal-form-overlay">
-            <div class="cp-goal-form-backdrop" id="cpGoalFormBackdrop"></div>
-            <div class="cp-goal-form-sheet">
-              <p class="cp-goal-form-title">New Goal</p>
-              <div class="cp-goal-form-field">
-                <label>Goal title</label>
-                <input type="text" id="cpGoalTitle" class="cp-goal-form-input" placeholder="e.g. Run a 5K in under 30 min" maxlength="120" />
-              </div>
-              <div class="cp-goal-form-field">
-                <label>Description (optional)</label>
-                <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="What does success look like?" maxlength="400"></textarea>
-              </div>
-              <div class="cp-goal-form-field">
-                <label>Core</label>
-                <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
-              </div>
-              <div class="cp-goal-form-field">
-                <label>Target date (optional)</label>
-                <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
-              </div>
-              <div class="cp-goal-form-actions">
-                <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>
-                <button type="button" class="cp-goal-form-save" id="cpGoalFormSave">Save goal</button>
-              </div>
+          <div class="cp-goal-form-backdrop" id="cpGoalFormBackdrop"></div>
+          <div class="cp-goal-form-sheet">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title">Set a SMART Goal</p>
+            <p class="cp-goal-form-subtitle">Great goals are Specific, Measurable, Achievable, Relevant, and Time-bound.</p>
+            <div class="cp-goal-smart-row">
+              <div class="cp-goal-smart-pill" style="background:rgba(119,215,112,.15);color:#3d8c39;">S<span>Specific</span></div>
+              <div class="cp-goal-smart-pill" style="background:rgba(42,157,240,.15);color:#1a6fa8;">M<span>Measurable</span></div>
+              <div class="cp-goal-smart-pill" style="background:rgba(255,189,89,.15);color:#a07820;">A<span>Achievable</span></div>
+              <div class="cp-goal-smart-pill" style="background:rgba(170,112,215,.15);color:#6a3fa0;">R<span>Relevant</span></div>
+              <div class="cp-goal-smart-pill" style="background:rgba(240,35,72,.12);color:#a01428;">T<span>Time-bound</span></div>
+            </div>
+            <div class="cp-goal-form-field">
+              <label>What exactly do you want to achieve? (Specific)</label>
+              <p class="cp-goal-form-hint">Name a clear, concrete outcome — not "get fit" but "run a 5K in under 30 min."</p>
+              <input type="text" id="cpGoalTitle" class="cp-goal-form-input" placeholder="e.g. Run a 5K in under 30 minutes" maxlength="120" />
+            </div>
+            <div class="cp-goal-form-field">
+              <label>How will you measure success? (Measurable + Achievable)</label>
+              <p class="cp-goal-form-hint">What number, milestone, or action proves you hit it? Is it actually within reach?</p>
+              <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="e.g. Track weekly mileage. Start at 3 miles, add 0.5/week. I'm currently running 2 miles comfortably." maxlength="400"></textarea>
+            </div>
+            <div class="cp-goal-form-field">
+              <label>Which core does this live in? (Relevant)</label>
+              <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
+            </div>
+            <div class="cp-goal-form-field">
+              <label>Target date (Time-bound)</label>
+              <p class="cp-goal-form-hint">Give yourself a deadline. No deadline = no urgency.</p>
+              <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
+            </div>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>
+              <button type="button" class="cp-goal-form-save" id="cpGoalFormSave">Save goal</button>
             </div>
           </div>
         </div>

@@ -829,8 +829,19 @@
     var isAchieved = g.status === 'achieved';
     var dateHtml = g.targetDate ? '<span class="cp-goal-date-chip">📅 ' + esc(goalDateLabel(g.targetDate)) + '</span>' : '';
     var coreHtml = g.coreKey ? '<span class="cp-goal-chip"><span class="cp-dot" style="background:'+color+'"></span>'+esc(g.coreKey.charAt(0).toUpperCase()+g.coreKey.slice(1))+'</span>' : '';
-    var achieveLabel = isAchieved ? '✓ Achieved' : 'Mark achieved';
-    return '<div class="cp-goal-card'+(isAchieved?' is-achieved':'')+'" style="--goal-color:'+color+'"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+color+';border-radius:18px 18px 0 0;"></div><div class="cp-goal-card-head"><p class="cp-goal-card-title">'+esc(g.title)+'</p></div>'+(g.description?'<p class="cp-goal-card-desc">'+esc(g.description)+'</p>':'')+'<div class="cp-goal-card-foot"><div style="display:flex;gap:6px;flex-wrap:wrap;">'+coreHtml+dateHtml+'</div><button type="button" class="cp-goal-achieve-btn" data-goal-idx="'+idx+'">'+achieveLabel+'</button></div></div>';
+    var achieveLabel = isAchieved ? '↩ Mark active' : '✓ Mark achieved';
+    return '<div class="cp-goal-card'+(isAchieved?' is-achieved':'')+'" style="--goal-color:'+color+'">'
+      +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+color+';border-radius:18px 18px 0 0;"></div>'
+      +'<div class="cp-goal-card-head"><p class="cp-goal-card-title">'+esc(g.title)+'</p></div>'
+      +(g.description?'<p class="cp-goal-card-desc">'+esc(g.description)+'</p>':'')
+      +'<div class="cp-goal-card-foot">'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'+coreHtml+dateHtml+'</div>'
+        +'<div class="cp-goal-card-actions">'
+          +'<button type="button" class="cp-goal-achieve-btn" data-goal-idx="'+idx+'">'+achieveLabel+'</button>'
+          +'<button type="button" class="cp-goal-delete-btn" data-goal-del="'+idx+'" title="Delete goal">✕</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
   }
 
   function renderGoalsTab(){
@@ -872,11 +883,13 @@
     var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
     radios.forEach(function(r){ r.checked = false; });
     $('cpGoalFormOverlay').hidden = false;
+    document.body.style.overflow = 'hidden';
     $('cpGoalTitle').focus();
   }
 
   function closeGoalForm(){
     $('cpGoalFormOverlay').hidden = true;
+    document.body.style.overflow = '';
   }
 
   $('cpGoalAddBtn').addEventListener('click', openGoalForm);
@@ -910,7 +923,20 @@
 
   // Achieve / un-achieve toggle
   function goalsGridClickHandler(e){
-    var btn = e.target.closest('.cp-goal-achieve-btn'); if (!btn || !portalData) return;
+    if (!portalData) return;
+    // Delete
+    var delBtn = e.target.closest('.cp-goal-delete-btn');
+    if (delBtn) {
+      var delIdx = parseInt(delBtn.getAttribute('data-goal-del'), 10);
+      var delGoal = portalData.goals[delIdx]; if (!delGoal) return;
+      if (!confirm('Delete "' + delGoal.title + '"? This cannot be undone.')) return;
+      sb.from('client_goals').delete().eq('id', delGoal.id);
+      portalData.goals.splice(delIdx, 1);
+      renderGoalsTab();
+      return;
+    }
+    // Status toggle
+    var btn = e.target.closest('.cp-goal-achieve-btn'); if (!btn) return;
     var idx = parseInt(btn.getAttribute('data-goal-idx'), 10);
     var goal = portalData.goals[idx]; if (!goal) return;
     var newStatus = goal.status === 'achieved' ? 'active' : 'achieved';
