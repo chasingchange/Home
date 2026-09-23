@@ -4,6 +4,7 @@
     {
       name: "William",
       year: "2025",
+      quote: "I lost over 10 pounds and, more importantly, built sustainable habits.",
       paragraphs: [
         "I worked with Tyler for 12 weeks, and the experience changed my approach to how I manage my health and fitness. During our time together, I lost over 10 pounds and, more importantly, built sustainable habits that I know will stay with me for a long time.",
         "What stood out most was Tyler’s ability to meet me where I was. He created a supportive, judgment-free environment while still holding me accountable to my goals. I highly recommend Tyler to anyone looking for real, lasting change.",
@@ -12,6 +13,7 @@
     {
       name: "Jack",
       year: "2026",
+      quote: "Tyler gives you all the tools you need to succeed and a judgement-free space to do it in.",
       paragraphs: [
         "When I started working with Tyler I knew pretty much nothing about the gym or splits or nutrition. He does a fantastic job of making sure you can be comfortable and not overwhelmed, while also giving you the tools you need to keep moving towards your goals down the line.",
         "In the past I’d tried lots of things that didn’t end up working, either because I didn’t have the right mindset going in or I just didn’t know enough and got in over my head. Tyler gives you all the tools you need to succeed and a judgement-free space to do it in. There’s no way I could’ve reached my goals without him and I’m excited to start working towards new goals with the confidence and knowledge I’ve gained from my time in his program.",
@@ -20,6 +22,7 @@
     {
       name: "Sal",
       year: "2026",
+      quote: "He gave me the encouragement I needed to leave a job where I felt stuck.",
       paragraphs: [
         "I really enjoyed my time working with Tyler. He gave me the encouragement I needed to leave a job where I felt stuck and pursue one I truly wanted. Throughout our time working together, he was consistently supportive and motivating. He also helped me recognize the importance of planning ahead and dedicating more time and focus to my art. I'm grateful for his guidance and the confidence he helped me build.",
       ],
@@ -27,6 +30,7 @@
     {
       name: "Ahmad",
       year: "2026",
+      quote: "As someone who was completely new to training, I really appreciated how patient and knowledgeable he was.",
       paragraphs: [
         "Choosing Tyler as my coach was an amazing experience. He takes the time to listen carefully and tailor his approach to your individual fitness goals and needs.",
         "As someone who was completely new to training, I really appreciated how patient and knowledgeable he was. He explained every movement clearly, ensuring I understood the proper technique, and he also provided helpful guidance on nutrition and meal planning.",
@@ -36,6 +40,7 @@
     {
       name: "German",
       year: "2026",
+      quote: "He wasn’t just a trainer, he was also a second set of eyes.",
       paragraphs: [
         "My experience with Chasing Change was incredible. As someone who was new to fitness, Tyler was patient and made everything simple and easy to understand so I could be successful.",
         "He wasn’t just a trainer, he was also a second set of eyes and a great person to bounce ideas off of when it came to applying for jobs and grad school.",
@@ -45,6 +50,7 @@
     {
       name: "Tanner",
       year: "2025",
+      quote: "The mirror is no longer my enemy. I’ve lost 23 pounds and rebuilt trust in myself.",
       paragraphs: [
         "In October of 2025, I found myself doing a lot of deep personal reflection. I was completing the final year of my 20s and trying to understand who I wanted to be as I moved into my 30s. People always say those are the ‘best years of your life,’ but at the time, I couldn’t see how that would be true for me. What I did know—deep down—was that if I didn’t change something within myself, nothing around me was going to change either.",
         "I’m 6’2” and weighed 231 pounds. I avoided mirrors. Clothes that were once a comfortable size no longer fit. I felt disconnected from the version of myself I wanted to be, and I knew a change needed to happen—and it needed to happen quickly.",
@@ -59,6 +65,7 @@
     {
       name: "Aaron",
       year: "2025",
+      quote: "Today, I’m down to 217 lbs and can run three miles straight.",
       paragraphs: [
         "When I first started working with Tyler, I weighed 236 lbs and struggled to jog even half a mile without stopping.",
         "Today, I’m down to 217 lbs and can run three miles straight. Tyler and Chasing Change helped me pivot toward a healthier direction exactly when I needed it.",
@@ -67,6 +74,7 @@
     {
       name: "Alfredo",
       year: "2025",
+      quote: "I went from 21% to 18% body fat, ran my first 5k, and learned to meal prep.",
       paragraphs: [
         "Before I joined Chasing Change with Tyler, I had just left my previous gym and trainer, had no direction on workout splits, and gained more weight than I wanted.",
         "Tyler set me up for success, taught me the ‘why’ behind the plan, and encouraged independence. I went from 21% to 18% body fat, ran my first 5k, and learned to meal prep for my week. I owe it to Tyler helping me chase change!",
@@ -75,6 +83,7 @@
     {
       name: "Daniel",
       year: "2025",
+      quote: "I’m not just in better shape. I’m in control again.",
       paragraphs: [
         "About a year into a new role at work, I realized I had completely lost balance. The job demands were high, my routines were inconsistent, and I was the heaviest I’d ever been. I didn’t like what I saw in the mirror, and I knew something had to change.",
         "I’ve always been skeptical of online fitness and life coaches. Most of it feels generic. But I decided to give Tyler and Chasing Change a shot for three months. That decision paid off.",
@@ -87,6 +96,7 @@
     {
       name: "Kaleo",
       year: "2025",
+      quote: "Chasing Change helped me tackle consistency; something I struggled with across the board.",
       paragraphs: [
         "Before I took a leap of faith and chased change I had unexpectedly made a return to New York. Just almost a year later after I moved out of the city exclaiming, ‘my time in New York has come to an end.’",
         "I found myself in a time of starting over of sorts, trying to decide if I was to return to Hawai’i or stay and figure out what would make this time around different, and why the universe brought me back. And that’s where Tyler Wade comes in; one comment led to a Dm and then a video call, ultimately leading me to taking a chance with Tyler to insure this time around would be different.",
@@ -102,6 +112,7 @@
     {
       name: "Owen",
       year: "2026",
+      quote: "Now I’m running up to 9 miles at a time, where at the beginning I could barely run 2.",
       paragraphs: [
         "Working with Tyler at the beginning of the year was one of the highlights to jumpstart my 2026. He was able to understand me and meet me where I was at, figuring out what would work best for me and my life. He was able to challenge me in ways that I didn’t think was possible and allowed me to reflect on what exactly I wanted to get out of his program. He constantly pushed me to get better everyday even if it was by 1%. This was what kept me and keeps me going every day when I enter the gym, getting a little bit better each day.",
         "When I first started I just wanted to lose weight but didn’t know where to start. He was able to uncover a confidence in me that I did not know was there. Now I’ve been getting more active, and have been running up to 9 miles at a time, where at the beginning could barely run 2.",
@@ -111,6 +122,7 @@
     {
       name: "Michael",
       year: "2026",
+      quote: "Three months later: 20 pounds, a healthy way of life, and a boatload of confidence.",
       paragraphs: [
         "Satisfied, or so I thought. Stuck in the same way of living for years because it was comfortable. Besides going on daily walks, I hadn’t seen the inside of a gym in 10+ years. Between owning a business, being a husband and raising two young kids, taking care of my health got away from me. Tyler helped me change all of that.",
         "Flash forward three months later, 20 pounds, a healthy way of life, and a boatload of confidence, working with Tyler was an incredible body and mind transformation.",
@@ -121,6 +133,7 @@
     {
       name: "Tommy",
       year: "2026",
+      quote: "Tyler creates an environment that feels comfortable, understanding, and free of judgment.",
       note: "Scholarship Recipient",
       paragraphs: [
         "I was fortunate enough to receive a scholarship to participate in Tyler’s program through Chasing Change. I originally reached out because I wanted help with weight loss and staying consistent, but the experience became about much more than simply changing my body or watching the number on the scale.",
@@ -132,6 +145,7 @@
     {
       name: "Anthony",
       year: "2026",
+      quote: "He has a way of taking something that may seem overwhelming and breaking it down.",
       paragraphs: [
         "I had the privilege of working with Tyler for 3 months. During that time, I learned various techniques and tactics to help tackle things in life from everyday goals to long term aspirations in a methodical way that made everything less daunting. He has a way of taking something that may seem terrifying or overwhelming, and breaking it down in a way that allows for a slow progression of working towards a goal that actually seems achievable.",
         "During these three months, I have to say that the weekly calls and building rapport with him allowed me to have a space where I could confide in somebody about any doubts, anxieties, and stressors that may be happening in life.",
@@ -141,6 +155,7 @@
     {
       name: "Morgan",
       year: "2026",
+      quote: "I knew I had the motivation and work ethic within me; I just needed someone to help bring it out.",
       paragraphs: [
         "The past twelve weeks working with Tyler have been exponentially transformative. I often got overwhelmed looking at the big picture or far into the future. Even just three months seemed daunting. Despite my initial fear and hesitancy, I found the desire to grow as an individual. I am always hungry for a new challenge, and I realized that taking care of myself had been one of the biggest obstacles I battled daily. Coming off a major depressive episode and multiple life transitions made me lose touch with myself. I did not recognize my external appearance, and more importantly, was conflicted by my internal values. I was extremely unhappy, but I decided to Chase Change.",
         "I had developed discipline as a former elite gymnast, but I struggled to apply that same responsibility to my self-care habits. My relationship with food and eating was unhealthy as I fluctuated between periods of starvation and stress eating. I always got bored of weightlifting as I frequented the gym without any specific goals or outline, leading me down a dead end road. Having my life plans delayed by a year made me panic as I confined myself to an unrealistic timeline of overachievement. The onslaught of life strain I had adopted over the past five months exacerbated the feeling of unsatisfactory performance, and I realized I had enough.",
@@ -183,6 +198,11 @@
           seenKeys.add(key);
 
           if (!fallback) return item;
+
+          if (fallback.quote && !item.quote) {
+            changed = true;
+            item = { ...item, quote: fallback.quote };
+          }
 
           const isLikelyTruncated = paragraphLength(item) < paragraphLength(fallback) * 0.75;
           if (isLikelyTruncated) {
