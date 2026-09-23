@@ -163,8 +163,21 @@
     const seenKeys = new Set();
     let changed = false;
 
-    const merged = Array.isArray(items)
-      ? items.map((item) => {
+    // Older saves stored full names ("Tommy Allegreto"); drop them so they don't
+    // show up next to the first-name default ("Tommy").
+    const isLegacyFullName = (item) =>
+      !defaultsByKey.has(normalizeKey(item)) &&
+      defaults.some(
+        (def) =>
+          String(def.year) === String(item?.year) &&
+          String(item?.name || "").toLowerCase().startsWith(`${def.name.toLowerCase()} `),
+      );
+
+    const current = Array.isArray(items) ? items.filter((item) => !isLegacyFullName(item)) : [];
+    if (Array.isArray(items) && current.length !== items.length) changed = true;
+
+    const merged = current.length
+      ? current.map((item) => {
           const key = normalizeKey(item);
           const fallback = defaultsByKey.get(key);
           seenKeys.add(key);
