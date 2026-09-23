@@ -72,18 +72,102 @@
       }
 
       .tst-cohort {
+        margin: 0 0 8px;
+      }
+
+      .tst-cohort-toggle {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        width: 100%;
+        margin: 0;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+        cursor: pointer;
+        text-align: left;
         font-family: "Raleway", sans-serif;
         font-weight: 700;
         font-size: 13px;
         letter-spacing: 0.14em;
         text-transform: uppercase;
         color: rgba(7, 31, 53, 0.35);
-        margin: 0 0 8px;
-        padding: 0 8px;
       }
 
+      .tst-cohort-toggle:hover,
+      .tst-cohort-toggle:active,
+      .tst-cohort-toggle:focus-visible {
+        color: rgba(7, 31, 53, 0.6);
+        box-shadow: none;
+        transform: none;
+        filter: none;
+        outline: none;
+      }
+
+      .tst-cohort-count {
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: rgba(7, 31, 53, 0.3);
+      }
+
+      .tst-cohort-chevron {
+        margin-left: auto;
+        font-size: 22px;
+        font-weight: 300;
+        line-height: 1;
+        letter-spacing: 0;
+        transition: transform 0.3s ease;
+      }
+
+      .tst-cohort-toggle[aria-expanded="true"] .tst-cohort-chevron {
+        transform: rotate(45deg);
+      }
+
+      .tst-cohort-toggle[aria-expanded="false"] {
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(7, 31, 53, 0.08);
+      }
+
+      /* Two independent columns (first half / second half) so opening a story
+         only pushes down its own column, and mobile stacks in original order. */
       .tst-list {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .tst-list[hidden] {
+        display: none;
+      }
+
+      .tst-col {
         border-top: 1px solid rgba(7, 31, 53, 0.08);
+        min-width: 0;
+      }
+
+      .tst-col:empty {
+        display: none;
+      }
+
+      .tst-list .tst-col + .tst-col {
+        border-top: 0;
+      }
+
+      @media (min-width: 760px) {
+        .tst-section {
+          max-width: 1040px;
+        }
+
+        .tst-list {
+          grid-template-columns: 1fr 1fr;
+          column-gap: 40px;
+          align-items: start;
+        }
+
+        .tst-list .tst-col + .tst-col {
+          border-top: 1px solid rgba(7, 31, 53, 0.08);
+        }
       }
 
       .tst-row {
@@ -120,6 +204,16 @@
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(7, 31, 53, 0.4);
+      }
+
+      .tst-quote {
+        margin: 6px 0 0;
+        padding-right: 32px;
+        font-size: 15px;
+        line-height: 1.55;
+        font-style: italic;
+        font-weight: 300;
+        color: rgba(7, 31, 53, 0.55);
       }
 
       .tst-plus {
@@ -241,6 +335,7 @@
           <form id="testimonialAdminForm" style="display:grid; gap:10px;">
             <input id="adminName" type="text" placeholder="Name" required />
             <input id="adminYear" type="text" placeholder="Year (e.g. 2026)" required />
+            <input id="adminQuote" type="text" placeholder="One-line quote shown under the name (optional)" />
             <textarea id="adminBody" rows="5" placeholder="Paragraphs separated by blank lines" required></textarea>
             <button type="submit">Add testimonial</button>
           </form>
@@ -287,6 +382,14 @@
 
         head.appendChild(nameWrap);
         head.appendChild(plus);
+        row.appendChild(head);
+
+        if (testimonial.quote) {
+          const quote = document.createElement("p");
+          quote.className = "tst-quote";
+          quote.textContent = `“${testimonial.quote}”`;
+          row.appendChild(quote);
+        }
 
         const content = document.createElement("div");
         content.className = "tst-content";
@@ -301,7 +404,6 @@
         });
         content.appendChild(inner);
 
-        row.appendChild(head);
         row.appendChild(content);
         return row;
       };
@@ -334,19 +436,52 @@
 
       const sortedYears = Array.from(testimonialsByYear.keys()).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 
-      sortedYears.forEach((year) => {
+      sortedYears.forEach((year, index) => {
+        const items = testimonialsByYear.get(year);
+        const isExpanded = index === 0; // newest cohort open, older ones collapsed
+        const listId = `tst-list-${year}`;
+
         const section = document.createElement("section");
         section.className = "tst-section";
 
         const heading = document.createElement("h2");
         heading.className = "tst-cohort";
-        heading.textContent = `${year} Cohort`;
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "tst-cohort-toggle";
+        toggle.setAttribute("aria-expanded", String(isExpanded));
+        toggle.setAttribute("aria-controls", listId);
+
+        const label = document.createElement("span");
+        label.textContent = `${year} Cohort`;
+        const count = document.createElement("span");
+        count.className = "tst-cohort-count";
+        count.textContent = `${items.length} ${items.length === 1 ? "story" : "stories"}`;
+        const chevron = document.createElement("span");
+        chevron.className = "tst-cohort-chevron";
+        chevron.setAttribute("aria-hidden", "true");
+        chevron.textContent = "+";
+        toggle.append(label, count, chevron);
+        heading.appendChild(toggle);
 
         const list = document.createElement("div");
         list.className = "tst-list";
+        list.id = listId;
+        list.hidden = !isExpanded;
 
-        testimonialsByYear.get(year).forEach((item) => {
-          list.appendChild(createTestimonialRow(item));
+        const splitAt = Math.ceil(items.length / 2);
+        [items.slice(0, splitAt), items.slice(splitAt)].forEach((columnItems) => {
+          const col = document.createElement("div");
+          col.className = "tst-col";
+          columnItems.forEach((item) => col.appendChild(createTestimonialRow(item)));
+          list.appendChild(col);
+        });
+
+        toggle.addEventListener("click", () => {
+          const willExpand = list.hidden;
+          list.hidden = !willExpand;
+          toggle.setAttribute("aria-expanded", String(willExpand));
         });
 
         section.appendChild(heading);
@@ -432,6 +567,7 @@
         event.preventDefault();
         const name = document.getElementById("adminName").value.trim();
         const year = document.getElementById("adminYear").value.trim();
+        const quote = document.getElementById("adminQuote").value.trim().replace(/^["“]|["”]$/g, "");
         const paragraphs = document.getElementById("adminBody").value
           .split(/\n\s*\n/g)
           .map((item) => item.trim())
@@ -439,7 +575,7 @@
         if (!name || !year || !paragraphs.length) return;
 
         const next = window.CCTestimonialsStore?.load() || [];
-        next.push({ name, year, paragraphs });
+        next.push(quote ? { name, year, quote, paragraphs } : { name, year, paragraphs });
         window.CCTestimonialsStore?.save(next);
         location.reload();
       });
