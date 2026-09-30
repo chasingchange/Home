@@ -5,10 +5,10 @@
     <link rel="apple-touch-icon" href="/Logo.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chasing Change — 1 Rep Max Calculator</title>
+    <title>Chasing Change — Strength Calculator</title>
     <meta
       name="description"
-      content="Stop guessing and start training with intent. Estimate your one-rep max targets, compare your current numbers, and get actionable working weights instantly."
+      content="Stop guessing and start training with intent. Estimate your one-rep max, compare against strength standards, or switch to powerlifting mode for RPE-based maxes, IPF GL / DOTS / Wilks scores, and meet attempts."
     />
 
     <!-- Tailwind via CDN (embed-friendly) -->
@@ -83,12 +83,16 @@
       </div>
 
       <header class="no-print max-w-3xl mx-auto px-6 pt-12 pb-6">
-        <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-cc-text">1 Rep Max Calculator</h1>
+        <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-cc-text">Strength Calculator</h1>
         <p class="mt-6 text-lg sm:text-xl text-cc-text/75">Turn your current reps into clear strength targets you can train against.</p>
-        <p class="mt-4 max-w-3xl text-base text-cc-text/80">Instead of guessing what to load, estimate your one-rep max from lifts you already perform. Then use the tier comparisons and working-weight guidance to train with more intent and consistency.</p>
+        <p class="mt-4 max-w-3xl text-base text-cc-text/80">Instead of guessing what to load, estimate your one-rep max from lifts you already perform. Then use the tier comparisons and working-weight guidance to train with more intent and consistency. Competing (or thinking about it)? Switch to Powerlifting mode for research-backed RPE estimates, bodyweight-adjusted scores, and attempt planning.</p>
       </header>
 
       <main class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden p-4 sm:p-6">
+        <div class="no-print mb-4 flex flex-wrap items-center gap-2" role="tablist" aria-label="Calculator mode">
+          <button type="button" role="tab" data-mode="general" class="mode-btn rounded-2xl px-4 py-2 font-extrabold text-sm ring-1 ring-black/10 transition">General Strength</button>
+          <button type="button" role="tab" data-mode="powerlifting" class="mode-btn rounded-2xl px-4 py-2 font-extrabold text-sm ring-1 ring-black/10 transition">Powerlifting</button>
+        </div>
         <section class="grid lg:grid-cols-12 gap-4">
         <!-- Inputs -->
         <div class="lg:col-span-5 rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
@@ -193,7 +197,7 @@
         </div>
 
         <!-- Exercise + Results -->
-        <div class="lg:col-span-7 rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+        <div id="generalPanel" class="lg:col-span-7 rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
           <div class="p-5 border-b border-black/5">
             <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
@@ -342,6 +346,151 @@
                 </table>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Powerlifting mode -->
+        <div id="plPanel" class="hidden lg:col-span-7 rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+          <div class="p-5 border-b border-black/5">
+            <div class="font-heading font-extrabold text-xl">Powerlifting</div>
+            <p class="text-sm opacity-70 mt-1">
+              Enter a recent top set for each lift. Add the RPE (how hard it felt) and we'll estimate your max from reps-to-failure, then score your total against bodyweight.
+            </p>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="grid sm:grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-sm font-extrabold">Division</span>
+                <select
+                  id="plDivision"
+                  class="mt-1 w-full rounded-2xl bg-cc-bg/60 border border-black/10 px-3 py-3 font-semibold outline-none focus:ring-2 focus:ring-cc-outline/60"
+                >
+                  <option value="classic" selected>Classic (raw)</option>
+                  <option value="equipped">Equipped</option>
+                </select>
+              </label>
+              <div class="text-xs opacity-70 self-end pb-1">
+                Sex, bodyweight and units come from <strong>Your stats</strong>. Meet attempts are rounded to 2.5 kg, as used in IPF competition.
+              </div>
+            </div>
+
+            <!-- Lift inputs -->
+            <div class="rounded-3xl bg-cc-bg/50 border border-black/10 p-4 overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-left">
+                  <tr class="border-b border-black/10">
+                    <th class="py-2 pr-3 font-extrabold">Lift</th>
+                    <th class="py-2 pr-3 font-extrabold">Set weight</th>
+                    <th class="py-2 pr-3 font-extrabold">Reps</th>
+                    <th class="py-2 pr-3 font-extrabold">RPE</th>
+                    <th class="py-2 pr-3 font-extrabold">Est. 1RM</th>
+                  </tr>
+                </thead>
+                <tbody id="plLiftsBody"></tbody>
+              </table>
+              <p class="mt-3 text-xs opacity-70">
+                RPE 10 = no reps left, 9 = 1 left, 8 = 2 left (Zourdos et al., 2016). Already know your max? Enter it with 1 rep @ RPE 10.
+              </p>
+              <p id="plWarning" class="mt-2 text-xs font-semibold text-amber-700 hidden"></p>
+            </div>
+
+            <!-- Scores -->
+            <div class="rounded-3xl bg-cc-card shadow-outline ring-1 ring-black/5 overflow-hidden">
+              <div class="p-4 border-b border-black/5">
+                <div class="font-heading font-extrabold">Total &amp; Bodyweight-Adjusted Scores</div>
+                <div class="text-sm opacity-70">Compare lifters across weight classes and sex. Higher is better.</div>
+              </div>
+              <div class="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3" id="plScores"></div>
+              <p class="px-4 pb-4 text-xs opacity-70">
+                IPF GL points are the IPF's official formula since 2020. DOTS is widely used by other federations. Wilks is shown for reference only: research found it tends to favour lifters at the lightest and heaviest bodyweights (Vanderburgh &amp; Batterham, 1999).
+              </p>
+            </div>
+
+            <!-- Attempts -->
+            <div class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+              <div class="p-4 border-b border-black/5">
+                <div class="font-heading font-extrabold">Meet Attempt Planner</div>
+                <div class="text-sm opacity-70">Built from your estimated max. Your opener should be a weight you could hit on your worst day.</div>
+              </div>
+              <div class="p-4 overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="text-left">
+                    <tr class="border-b border-black/10">
+                      <th class="py-2 pr-4 font-extrabold">Lift</th>
+                      <th class="py-2 pr-4 font-extrabold">Opener (~91%)</th>
+                      <th class="py-2 pr-4 font-extrabold">Second (~96%)</th>
+                      <th class="py-2 pr-4 font-extrabold">Third (~100–102%)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="plAttemptsBody"></tbody>
+                </table>
+                <p class="mt-3 text-xs opacity-70">
+                  These percentages are a common coaching convention, not a research-derived rule. Adjust them by how warm-ups and the opener actually move on the day.
+                </p>
+              </div>
+            </div>
+
+            <!-- RPE load chart -->
+            <div class="rounded-3xl bg-cc-card shadow-soft ring-1 ring-black/5 overflow-hidden">
+              <div class="p-4 border-b border-black/5 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-heading font-extrabold">RPE Load Chart</div>
+                  <div class="text-sm opacity-70">Loads for reps at a target RPE, from the same reps-to-failure model.</div>
+                </div>
+                <label class="flex items-center gap-2">
+                  <span class="text-sm font-extrabold">Lift</span>
+                  <select
+                    id="plChartLift"
+                    class="rounded-2xl bg-cc-bg/60 border border-black/10 px-3 py-2 font-semibold outline-none focus:ring-2 focus:ring-cc-outline/60"
+                  >
+                    <option value="squat" selected>Squat</option>
+                    <option value="bench">Bench press</option>
+                    <option value="deadlift">Deadlift</option>
+                  </select>
+                </label>
+              </div>
+              <div class="p-4 overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="text-left">
+                    <tr class="border-b border-black/10" id="plChartHead"></tr>
+                  </thead>
+                  <tbody id="plChartBody"></tbody>
+                </table>
+                <p class="mt-3 text-xs opacity-70">
+                  Training by RPE lets load follow day-to-day readiness. In a 2018 study, trained lifters using RPE-based loading gained at least as much strength as those using fixed percentages (Helms et al., 2018).
+                </p>
+              </div>
+            </div>
+
+            <!-- Method + sources -->
+            <details class="rounded-3xl bg-cc-bg/50 border border-black/10 p-4">
+              <summary class="font-extrabold cursor-pointer">How this works &amp; research sources</summary>
+              <div class="mt-3 space-y-3 text-sm text-cc-text/85">
+                <p>
+                  <strong>Estimated max.</strong> Reps-to-failure = reps + (10 − RPE), using the repetitions-in-reserve RPE scale (Zourdos et al., 2016; Helms et al., 2016). We average four published prediction equations (Epley, Brzycki, Mayhew, Wathen). A true single at RPE 10 is used as-is.
+                </p>
+                <p>
+                  <strong>Accuracy.</strong> Predictions are most accurate from lower-rep sets, so a heavy 1–5 rep set is best (Reynolds et al., 2006). Estimates past ~10 reps-to-failure are unreliable. Most equations predict squat and bench well but <em>underestimate</em> deadlift maxes, so your real deadlift may be higher (LeSuer et al., 1997).
+                </p>
+                <p>
+                  <strong>Scores.</strong> IPF GL = total × 100 ÷ (A − B·e<sup>−C·BW</sup>), with IPF-published coefficients by sex and division (IPF, 2020). DOTS and Wilks use their published 4th/5th-order polynomial coefficients. Bodyweight is in kg.
+                </p>
+                <ul class="list-disc pl-5 space-y-1 text-xs">
+                  <li>Zourdos MC, et al. (2016). Novel resistance training–specific rating of perceived exertion scale measuring repetitions in reserve. <em>J Strength Cond Res</em>, 30(1), 267–275.</li>
+                  <li>Helms ER, Cronin J, Storey A, Zourdos MC. (2016). Application of the repetitions in reserve-based rating of perceived exertion scale for resistance training. <em>Strength Cond J</em>, 38(4), 42–49.</li>
+                  <li>Helms ER, et al. (2018). RPE vs. percentage 1RM loading in periodized programs matched for sets and repetitions. <em>Front Physiol</em>, 9, 247.</li>
+                  <li>LeSuer DA, McCormick JH, Mayhew JL, Wasserstein RL, Arnold MD. (1997). The accuracy of prediction equations for estimating 1-RM performance in the bench press, squat, and deadlift. <em>J Strength Cond Res</em>, 11(4), 211–213.</li>
+                  <li>Reynolds JM, Gordon TJ, Robergs RA. (2006). Prediction of one repetition maximum strength from multiple repetition maximum testing and anthropometry. <em>J Strength Cond Res</em>, 20(3), 584–592.</li>
+                  <li>Brzycki M. (1993). Strength testing—predicting a one-rep max from reps-to-fatigue. <em>JOPERD</em>, 64(1), 88–90.</li>
+                  <li>Mayhew JL, Ball TE, Arnold MD, Bowen JC. (1992). Relative muscular endurance performance as a predictor of bench press strength in college men and women. <em>J Appl Sport Sci Res</em>, 6(4), 200–206.</li>
+                  <li>Vanderburgh PM, Batterham AM. (1999). Validation of the Wilks powerlifting formula. <em>Med Sci Sports Exerc</em>, 31(12), 1869–1875.</li>
+                  <li>International Powerlifting Federation. (2020). IPF GL (Goodlift) coefficients.</li>
+                </ul>
+              </div>
+            </details>
+
+            <div id="plExportActions"></div>
           </div>
         </div>
       </section>
@@ -701,6 +850,226 @@
         // If bodyweight move with added load: "1RM" here is "added load 1RM"
         // Working Weights still apply to that added load.
         renderWorkingWeights(baseOneRmLb, units, roundChoice);
+
+        if (currentMode === "powerlifting") renderPowerlifting();
+      }
+
+      /***********************
+       * Powerlifting mode
+       ***********************/
+      const PL_LIFTS = [
+        { key: "squat", label: "Squat" },
+        { key: "bench", label: "Bench press" },
+        { key: "deadlift", label: "Deadlift" },
+      ];
+
+      // Reps-to-failure = reps + reps in reserve (Zourdos et al., 2016).
+      function plRepsToFailure(reps, rpe) {
+        const r = Number(reps);
+        const e = Number(rpe);
+        if (!isFinite(r) || r < 1) return null;
+        const rir = isFinite(e) ? clamp(10 - e, 0, 4) : 0;
+        return r + rir;
+      }
+
+      // Mean of Epley, Brzycki, Mayhew and Wathen; a true single is returned as-is.
+      function plPredictMax(weight, repsToFailure) {
+        const w = Number(weight);
+        const r = Number(repsToFailure);
+        if (!isFinite(w) || w <= 0 || !isFinite(r) || r < 1) return null;
+        if (r <= 1) return w;
+        // The equations overshoot just above one rep, so blend from a true single up to 2 reps.
+        if (r < 2) return w + (plPredictMax(w, 2) - w) * (r - 1);
+        const n = Math.min(r, 15);
+        const epley = w * (1 + n / 30);
+        const brzycki = (w * 36) / (37 - n);
+        const mayhew = (100 * w) / (52.2 + 41.9 * Math.exp(-0.055 * n));
+        const wathen = (100 * w) / (48.8 + 53.8 * Math.exp(-0.075 * n));
+        return (epley + brzycki + mayhew + wathen) / 4;
+      }
+
+      // Fraction of 1RM that can be lifted for a given reps-to-failure (inverse of plPredictMax).
+      function plPercentOfMax(repsToFailure) {
+        return 1 / plPredictMax(1, repsToFailure);
+      }
+
+      // IPF GL (Goodlift) coefficients, IPF 2020. Bodyweight in kg.
+      const IPF_GL = {
+        male: { classic: [1199.72839, 1025.18162, 0.00921], equipped: [1236.25115, 1449.21864, 0.01644] },
+        female: { classic: [610.32796, 1045.59282, 0.03048], equipped: [758.63878, 949.31382, 0.02435] },
+      };
+      const IPF_GL_BENCH = {
+        male: { classic: [320.98041, 281.40258, 0.01008], equipped: [381.22073, 733.79378, 0.02398] },
+        female: { classic: [142.40398, 442.52671, 0.04724], equipped: [221.82209, 357.00377, 0.02937] },
+      };
+
+      function ipfGl(totalKg, bwKg, sex, division, coeffs = IPF_GL) {
+        if (!(totalKg > 0) || !(bwKg >= 35)) return null;
+        const [a, b, c] = coeffs[sex][division];
+        return (totalKg * 100) / (a - b * Math.exp(-c * bwKg));
+      }
+
+      function polyScore(totalKg, bwKg, coeffs, scale) {
+        const denom = coeffs.reduce((sum, k, i) => sum + k * Math.pow(bwKg, i), 0);
+        return denom > 0 ? (totalKg * scale) / denom : null;
+      }
+
+      function dots(totalKg, bwKg, sex) {
+        if (!(totalKg > 0) || !(bwKg > 0)) return null;
+        const bw = sex === "female" ? clamp(bwKg, 40, 150) : clamp(bwKg, 40, 210);
+        const c =
+          sex === "female"
+            ? [-57.96288, 13.6175032, -0.1126655495, 0.0005158568, -0.0000010706]
+            : [-307.75076, 24.0900756, -0.1918759221, 0.0007391293, -0.000001093];
+        return polyScore(totalKg, bw, c, 500);
+      }
+
+      function wilks(totalKg, bwKg, sex) {
+        if (!(totalKg > 0) || !(bwKg > 0)) return null;
+        const bw = sex === "female" ? clamp(bwKg, 26.51, 154.53) : clamp(bwKg, 40, 201.9);
+        const c =
+          sex === "female"
+            ? [594.31747775582, -27.23842536447, 0.82112226871, -0.00930733913, 4.731582e-5, -9.054e-8]
+            : [-216.0475144, 16.2606339, -0.002388645, -0.00113732, 7.01863e-6, -1.291e-8];
+        return polyScore(totalKg, bw, c, 500);
+      }
+
+      const inputClass =
+        "w-full min-w-[4.5rem] rounded-2xl bg-cc-card border border-black/10 px-3 py-2 font-semibold outline-none focus:ring-2 focus:ring-cc-outline/60";
+
+      function buildPlInputs() {
+        const tbody = $("plLiftsBody");
+        const rpeOptions = ["10", "9.5", "9", "8.5", "8", "7.5", "7", "6.5", "6"]
+          .map((v) => `<option value="${v}">${v}</option>`)
+          .join("");
+        tbody.innerHTML = PL_LIFTS.map(
+          (l) => `
+            <tr class="border-b border-black/5">
+              <td class="py-2 pr-3 font-extrabold whitespace-nowrap">${l.label}</td>
+              <td class="py-2 pr-3"><input id="pl_${l.key}_w" type="number" min="0" step="0.5" class="${inputClass}" /></td>
+              <td class="py-2 pr-3"><input id="pl_${l.key}_r" type="number" min="1" max="12" step="1" placeholder="1" class="${inputClass}" /></td>
+              <td class="py-2 pr-3"><select id="pl_${l.key}_rpe" class="${inputClass}">${rpeOptions}</select></td>
+              <td class="py-2 pr-3 font-extrabold whitespace-nowrap" id="pl_${l.key}_e1rm">—</td>
+            </tr>`
+        ).join("");
+      }
+
+      // Returns estimated maxes in the display unit.
+      function getPlMaxes() {
+        const maxes = {};
+        const warnings = [];
+        PL_LIFTS.forEach((l) => {
+          const w = Number($(`pl_${l.key}_w`).value);
+          const reps = Number($(`pl_${l.key}_r`).value) || 1;
+          const rtf = plRepsToFailure(reps, $(`pl_${l.key}_rpe`).value);
+          const est = w > 0 && rtf ? plPredictMax(w, rtf) : null;
+          maxes[l.key] = est;
+          if (est && rtf > 10) warnings.push(`${l.label}: ${rtf} reps-to-failure is past the range where estimates hold up — use a heavier set if you can.`);
+        });
+        return { maxes, warnings };
+      }
+
+      function plRound(value, units) {
+        const inc = units === "kg" ? 2.5 : 5;
+        return roundToIncrement(value, inc);
+      }
+
+      function renderPowerlifting() {
+        const sex = $("sex").value;
+        const units = $("units").value;
+        const division = $("plDivision").value;
+        const bwInput = Number($("weight").value) || 0;
+        const bwKg = units === "kg" ? bwInput : toKg(bwInput);
+        const { maxes, warnings } = getPlMaxes();
+
+        PL_LIFTS.forEach((l) => {
+          $(`pl_${l.key}_e1rm`).textContent = maxes[l.key] ? formatNumber(maxes[l.key], units) : "—";
+        });
+
+        const warn = $("plWarning");
+        warn.textContent = warnings.join(" ");
+        warn.classList.toggle("hidden", !warnings.length);
+
+        const hasAll = PL_LIFTS.every((l) => maxes[l.key]);
+        const total = hasAll ? PL_LIFTS.reduce((s, l) => s + maxes[l.key], 0) : null;
+        const totalKg = total ? (units === "kg" ? total : toKg(total)) : null;
+        const benchKg = maxes.bench ? (units === "kg" ? maxes.bench : toKg(maxes.bench)) : null;
+
+        const fmtScore = (v) => (v && isFinite(v) ? (Math.round(v * 100) / 100).toFixed(2) : "—");
+        const tiles = [
+          { label: "Est. total", value: total ? formatNumber(total, units) : "—", hint: hasAll ? "" : "Needs all 3 lifts" },
+          { label: "IPF GL points", value: fmtScore(ipfGl(totalKg, bwKg, sex, division)), hint: "IPF official" },
+          { label: "DOTS", value: fmtScore(dots(totalKg, bwKg, sex)), hint: "" },
+          { label: "Wilks", value: fmtScore(wilks(totalKg, bwKg, sex)), hint: "Reference only" },
+          { label: "Bench-only GL", value: fmtScore(ipfGl(benchKg, bwKg, sex, division, IPF_GL_BENCH)), hint: "Single-lift bench" },
+        ];
+        $("plScores").innerHTML = tiles
+          .map(
+            (t) => `
+            <div class="rounded-2xl bg-cc-bg/60 border border-black/10 p-3">
+              <div class="text-xs font-extrabold opacity-70">${t.label}</div>
+              <div class="mt-1 font-heading text-xl font-extrabold">${t.value}</div>
+              ${t.hint ? `<div class="text-xs opacity-60 mt-0.5">${t.hint}</div>` : ""}
+            </div>`
+          )
+          .join("");
+
+        // Meet attempts, rounded to 2.5 kg (5 lb) plates.
+        $("plAttemptsBody").innerHTML = PL_LIFTS.map((l) => {
+          const m = maxes[l.key];
+          const cell = (pct) => (m ? formatNumber(plRound(m * pct, units), units) : "—");
+          const third = m ? `${formatNumber(plRound(m * 1.0, units), units)} – ${formatNumber(plRound(m * 1.02, units), units)}` : "—";
+          return `
+            <tr class="border-b border-black/5">
+              <td class="py-2 pr-4 font-extrabold">${l.label}</td>
+              <td class="py-2 pr-4">${cell(0.91)}</td>
+              <td class="py-2 pr-4">${cell(0.96)}</td>
+              <td class="py-2 pr-4 font-extrabold">${third}</td>
+            </tr>`;
+        }).join("");
+
+        // RPE chart
+        const rpes = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6];
+        const repsList = [1, 2, 3, 4, 5, 6, 8];
+        const chartMax = maxes[$("plChartLift").value];
+        const roundChoice = Number($("roundTo").value);
+        const inc = units === "kg" ? (roundChoice === 1 ? 0.5 : roundChoice === 5 ? 2.5 : 1.0) : roundChoice;
+        $("plChartHead").innerHTML =
+          `<th class="py-2 pr-3 font-extrabold">Reps</th>` + rpes.map((r) => `<th class="py-2 pr-3 font-extrabold whitespace-nowrap">@${r}</th>`).join("");
+        $("plChartBody").innerHTML = repsList
+          .map((reps) => {
+            const cells = rpes
+              .map((rpe) => {
+                const pct = plPercentOfMax(plRepsToFailure(reps, rpe));
+                const load = chartMax ? roundToIncrement(chartMax * pct, inc) : null;
+                return `<td class="py-2 pr-3 whitespace-nowrap">${load ? `<span class="font-extrabold">${Math.round(load * 10) / 10}</span>` : "—"} <span class="text-xs opacity-60">${Math.round(pct * 100)}%</span></td>`;
+              })
+              .join("");
+            return `<tr class="border-b border-black/5"><td class="py-2 pr-3 font-extrabold">${reps}</td>${cells}</tr>`;
+          })
+          .join("");
+      }
+
+      let currentMode = "general";
+
+      function setMode(mode) {
+        currentMode = mode === "powerlifting" ? "powerlifting" : "general";
+        const isPl = currentMode === "powerlifting";
+        $("generalPanel").classList.toggle("hidden", isPl);
+        $("plPanel").classList.toggle("hidden", !isPl);
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          const active = btn.dataset.mode === currentMode;
+          btn.setAttribute("aria-selected", String(active));
+          btn.classList.toggle("bg-cc-outline", active);
+          btn.classList.toggle("bg-white", !active);
+        });
+        // Keep the single export control in the visible panel.
+        const exportEl = $("oneRmExportActions");
+        (isPl ? $("plExportActions") : $("current1rmBadge").parentElement.parentElement).appendChild(exportEl);
+        try {
+          localStorage.setItem("cc-strength-mode", currentMode);
+        } catch (e) {}
+        if (isPl) renderPowerlifting();
       }
 
       /***********************
@@ -716,6 +1085,14 @@
             });
           }
         );
+
+        const plIds = ["plDivision", "plChartLift"];
+        PL_LIFTS.forEach((l) => plIds.push(`pl_${l.key}_w`, `pl_${l.key}_r`, `pl_${l.key}_rpe`));
+        plIds.forEach((id) => $(id).addEventListener("input", renderPowerlifting));
+
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.addEventListener("click", () => setMode(btn.dataset.mode));
+        });
 
         $("calcSetBtn").addEventListener("click", () => {
           const units = $("units").value;
@@ -771,17 +1148,53 @@
       async function init() {
         populateCategorySelect();
         populateUseTierSelect();
+        buildPlInputs();
         $("category").value = "All Categories";
         populateExerciseSelect(filterExercises("All Categories", ""), "back_squat");
         attachEvents();
         renderAll();
+        let savedMode = "general";
+        try {
+          savedMode = new URLSearchParams(location.search).get("mode") || localStorage.getItem("cc-strength-mode") || "general";
+        } catch (e) {}
+        setMode(savedMode);
         window.CCCoachExport?.registerTool({
-          toolName: "1 Rep Max Calculator",
+          toolName: "Strength Calculator",
           toolSlug: "1rm-calculator",
           buttonTarget: "#oneRmExportActions",
           emailButtonClass: "rounded-2xl bg-cc-outline px-4 py-2 font-extrabold text-sm hover:opacity-90 transition",
           downloadButtonClass: "rounded-2xl bg-white px-4 py-2 text-sm font-bold ring-1 ring-black/10",
           extract: () => {
+            if (currentMode === "powerlifting") {
+              const units = $("units").value;
+              const { maxes } = getPlMaxes();
+              const rowsText = (id) => Array.from(document.querySelectorAll(`#${id} tr`)).map((row) => row.innerText.replace(/\s+/g, " ").trim());
+              return {
+                sections: [
+                  {
+                    title: "Inputs",
+                    fields: [
+                      { label: "Mode", value: "Powerlifting" },
+                      { label: "Sex", value: $("sex").value },
+                      { label: "Bodyweight", value: $("weight").value + " " + units },
+                      { label: "Division", value: $("plDivision").selectedOptions[0]?.textContent || "—" },
+                    ],
+                  },
+                  {
+                    title: "Estimated Maxes",
+                    fields: PL_LIFTS.map((l) => ({ label: l.label, value: maxes[l.key] ? formatNumber(maxes[l.key], units) : "—" })),
+                  },
+                  {
+                    title: "Scores",
+                    fields: Array.from(document.querySelectorAll("#plScores > div")).map((tile) => ({
+                      label: tile.children[0]?.textContent?.trim() || "",
+                      value: tile.children[1]?.textContent?.trim() || "—",
+                    })),
+                  },
+                  { title: "Meet Attempts", paragraphs: rowsText("plAttemptsBody") },
+                ],
+              };
+            }
             const tiers = Array.from(document.querySelectorAll("#tiersBody tr")).map((row) => ({
               label: row.children[0]?.textContent?.trim() || "Tier",
               value: row.innerText.replace(/\s+/g, " ").trim(),

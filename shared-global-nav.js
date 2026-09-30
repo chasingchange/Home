@@ -62,7 +62,7 @@
   document.body.prepend(nav);
 
   const resources = [
-    { title: "1RM Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
+    { title: "Strength Calculator", core: "Body", section: "Fitness", url: `${root}1RM Calculator/Index.html` },
     { title: "Split Sculptor", core: "Body", section: "Fitness", url: `${root}split-sculptor/` },
     { title: "Exercise Matrix", core: "Body", section: "Fitness", url: `${root}exercise-matrix/` },
     { title: "Gym Locator", core: "Body", section: "Fitness", url: `${root}gym-locator/` },
