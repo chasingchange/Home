@@ -124,6 +124,106 @@
       .cp-goal-card-actions{display:flex;align-items:center;gap:8px;}
       .cp-goal-delete-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.3);padding:5px 10px;border-radius:99px;border:1px solid transparent;transition:all .15s;}
       .cp-goal-delete-btn:hover{color:#f02348;border-color:rgba(240,35,72,.3);}
+      /* ── Shared modal overlay (assignment / education forms) ───── */
+      .cp-modal-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:flex-end;justify-content:center;}
+      .cp-modal-overlay[hidden]{display:none !important;}
+      @media(min-width:721px){ .cp-modal-overlay,#cpGoalFormOverlay{align-items:center;} .cp-modal-overlay .cp-goal-form-sheet,#cpGoalFormOverlay .cp-goal-form-sheet{border-radius:24px;padding-bottom:28px;} }
+      select.cp-goal-form-input{padding:0 10px;}
+      .cp-check-line{display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);margin:4px 0 0;cursor:pointer;}
+      .cp-portal-tabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+      .cp-portal-tabs::-webkit-scrollbar{display:none;}
+      .cp-portal-tab{white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+      .cp-tab-badge{min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:#f02348;color:#fff;font-family:"Muli","Mulish",sans-serif;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;}
+      .cp-tab-sub{margin:6px 0 0;font-size:14px;color:rgba(7,31,53,.55);}
+      .cp-goals-header{gap:16px;flex-wrap:wrap;}
+      .cp-panel{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:24px;}
+      .cp-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--pill);background:color-mix(in srgb,var(--pill) 12%,transparent);white-space:nowrap;}
+      .cp-status-pill::before{content:"";width:6px;height:6px;border-radius:999px;background:var(--pill);}
+      .cp-btn-sm{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 16px;border-radius:19px;font-size:13px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:rgba(7,31,53,.75);background:#fff;transition:border-color .15s,opacity .15s;}
+      .cp-btn-sm:hover{border-color:rgba(7,31,53,.4);}
+      .cp-btn-sm--primary{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-btn-sm--primary:hover{opacity:.88;}
+      .cp-btn-sm--danger{color:#c01a38;border-color:rgba(240,35,72,.25);}
+      .cp-btn-sm:disabled{opacity:.5;cursor:not-allowed;}
+      .cp-btn-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;}
+      .cp-textarea{width:100%;box-sizing:border-box;min-height:110px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:12px 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;line-height:1.55;color:#071f35;outline:none;resize:vertical;}
+      .cp-textarea:focus{border-color:rgba(7,31,53,.4);}
+      .cp-textarea[readonly]{background:#f5f5f7;}
+      .cp-save-note{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-save-note.is-error{color:#c01a38;}
+      /* homework */
+      .cp-hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:32px;}
+      .cp-hw-card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 20px;transition:box-shadow .18s,border-color .18s;}
+      .cp-hw-card:hover,.cp-hw-card:focus-visible{box-shadow:0 14px 34px rgba(7,31,53,.08);border-color:rgba(7,31,53,.2);}
+      .cp-hw-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+      .cp-hw-card-title{margin:0;font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;line-height:1.3;}
+      .cp-hw-card-snippet{margin:0;font-size:14px;line-height:1.55;color:rgba(7,31,53,.6);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+      .cp-hw-card-foot{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+      .cp-due-chip{padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:700;color:rgba(7,31,53,.55);white-space:nowrap;}
+      .cp-due-chip.is-overdue{background:rgba(240,35,72,.1);color:#c01a38;}
+      .cp-hw-section{margin-top:26px;}
+      .cp-hw-section h4{margin:0 0 10px;font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.45);}
+      .cp-hw-instructions{font-size:16px;line-height:1.7;color:rgba(7,31,53,.8);white-space:pre-wrap;overflow-wrap:anywhere;}
+      .cp-hw-instructions a,.cp-ci-value a{color:#1a6fa8;text-decoration:underline;text-underline-offset:2px;}
+      .cp-hw-feedback{border-radius:14px;background:rgba(119,215,112,.1);border:1px solid rgba(119,215,112,.35);padding:14px 16px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.8);white-space:pre-wrap;}
+      .cp-hw-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;}
+      .cp-file-list{display:grid;gap:6px;margin-top:10px;}
+      .cp-file-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:#f5f5f7;font-size:14px;}
+      .cp-file-open{all:unset;cursor:pointer;flex:1;min-width:0;font-weight:700;color:#071f35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .cp-file-open:hover{text-decoration:underline;}
+      .cp-file-size{font-size:12px;color:rgba(7,31,53,.45);flex-shrink:0;}
+      .cp-file-remove{all:unset;cursor:pointer;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.4);flex-shrink:0;}
+      .cp-file-remove:hover{background:rgba(240,35,72,.1);color:#c01a38;}
+      .cp-select{height:38px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:0 10px;font-family:"Muli","Mulish",sans-serif;font-size:14px;color:#071f35;}
+      /* check-ins */
+      .cp-ci-field{margin-top:22px;}
+      .cp-ci-field:first-child{margin-top:0;}
+      .cp-ci-label{display:block;font-size:15px;font-weight:700;color:#071f35;margin:0 0 4px;}
+      .cp-ci-hint{font-size:13px;color:rgba(7,31,53,.5);margin:0 0 8px;}
+      .cp-ci-input{width:100%;max-width:320px;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.18);padding:0 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;color:#071f35;}
+      .cp-opt-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+      .cp-opt{position:relative;}
+      .cp-opt input{position:absolute;opacity:0;pointer-events:none;}
+      .cp-opt span{display:inline-flex;align-items:center;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:14px;font-weight:700;color:rgba(7,31,53,.7);cursor:pointer;transition:all .15s;}
+      .cp-opt input:checked + span{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-opt input:focus-visible + span{outline:2px solid #2a9df0;outline-offset:2px;}
+      .cp-ci-done{display:flex;align-items:flex-start;gap:14px;}
+      .cp-ci-done-icon{width:38px;height:38px;border-radius:999px;background:rgba(119,215,112,.18);color:#3d8c39;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+      .cp-ci-history{display:grid;gap:10px;}
+      .cp-ci-item{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:16px;}
+      .cp-ci-item > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px 20px;flex-wrap:wrap;}
+      .cp-ci-item > summary::-webkit-details-marker{display:none;}
+      .cp-ci-item > summary::after{content:"+";margin-left:auto;font-size:20px;font-weight:300;color:rgba(7,31,53,.35);transition:transform .2s;}
+      .cp-ci-item[open] > summary::after{transform:rotate(45deg);}
+      .cp-ci-date{font-family:"Raleway",sans-serif;font-weight:800;font-size:15px;}
+      .cp-ci-snippet{flex-basis:100%;margin:0;font-size:14px;color:rgba(7,31,53,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .cp-ci-body{padding:0 20px 18px;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-ci-row{display:grid;grid-template-columns:minmax(140px,240px) 1fr;gap:16px;padding:11px 0;border-bottom:1px solid rgba(7,31,53,.06);}
+      .cp-ci-key{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-ci-value{font-size:15px;line-height:1.55;color:rgba(7,31,53,.85);white-space:pre-wrap;overflow-wrap:anywhere;}
+      .cp-ci-value .cp-file-list{margin-top:0;}
+      @media(max-width:600px){ .cp-ci-row{grid-template-columns:1fr;gap:4px;} }
+      /* education */
+      .cp-edu-group{margin-bottom:30px;}
+      .cp-edu-list{display:grid;gap:12px;}
+      .cp-edu-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:20px 22px;}
+      .cp-edu-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+      .cp-edu-q{margin:0;font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;line-height:1.4;white-space:pre-wrap;}
+      .cp-edu-card .cp-textarea{margin-top:14px;}
+      .cp-edu-answer-ro{margin-top:14px;border-radius:12px;background:#f5f5f7;padding:12px 14px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.8);white-space:pre-wrap;}
+      .cp-edu-answer-ro.is-empty{color:rgba(7,31,53,.4);font-style:italic;}
+      .cp-link-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);text-decoration:underline;text-underline-offset:3px;}
+      .cp-link-btn:hover{color:rgba(7,31,53,.8);}
+      .cp-link-btn--danger:hover{color:#c01a38;}
+      /* goals: status + progress */
+      .cp-goal-progress{display:grid;gap:6px;}
+      .cp-goal-progress-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-goal-status-select{height:32px;border-radius:99px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",sans-serif;font-size:12px;font-weight:700;color:#071f35;}
+      .cp-goal-card-foot{flex-wrap:wrap;}
+      .cp-goal-edit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 10px;border-radius:99px;border:1px solid rgba(7,31,53,.12);}
+      .cp-goal-edit-btn:hover{border-color:rgba(7,31,53,.4);color:#071f35;}
+      .cp-queue-click{cursor:pointer;border-radius:10px;}
+      .cp-queue-click:hover{background:rgba(7,31,53,.03);}
       .cp-trainerize-view{display:grid;gap:14px;}
       .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
       .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
@@ -498,9 +598,12 @@
         </div>
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
-          <button type="button" class="cp-portal-tab is-active" id="cpTabPortalBtn" data-portal-tab="portal">Portal</button>
-          <button type="button" class="cp-portal-tab" id="cpTabGoalsBtn" data-portal-tab="goals">Goals</button>
-          <button type="button" class="cp-portal-tab" id="cpTabTrainerizeBtn" data-portal-tab="trainerize">Trainerize</button>
+          <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="homework">Homework<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="education">Education<span class="cp-tab-badge" id="cpTabBadgeEducation" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="trainerize">Trainerize</button>
         </div>
 
         <div class="cp-client-view" id="cpClientView">
@@ -537,6 +640,27 @@
                 <span class="cp-meta" id="cpTaskCount"></span>
               </div>
               <div class="cp-task-list" id="cpTaskList"></div>
+            </div>
+            <div class="cp-card" id="cpHomeworkCard" data-goto-tab="homework">
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Homework</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
+                <span class="cp-meta" id="cpHwCardMeta"></span>
+              </div>
+              <div class="cp-note-list" id="cpHwCardList"></div>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open homework</span></div>
+            </div>
+            <div class="cp-card" id="cpPreCallCard" data-goto-tab="checkins">
+              <p class="cp-kicker">Weekly Check-in</p>
+              <h3 class="cp-card-title" id="cpCiCardTitle"></h3>
+              <p class="cp-body-text" id="cpCiCardBody"></p>
+              <div class="cp-cta-row"><span class="cp-cta-primary" id="cpCiCardCta">Open check-ins</span></div>
+            </div>
+            <div class="cp-card cp-card--wide" id="cpEduCard" data-goto-tab="education" hidden>
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Education</p><h3 class="cp-card-title" id="cpEduCardTitle"></h3></div>
+                <span class="cp-meta" id="cpEduCardMeta"></span>
+              </div>
+              <p class="cp-body-text" id="cpEduCardBody"></p>
             </div>
             <div class="cp-card" id="cpSessionCard">
               <p class="cp-kicker">Next Session</p>
@@ -611,13 +735,6 @@
               <h3 class="cp-card-title">Confirmed non-negotiables</h3>
               <div class="cp-note-list" id="cpArchiveList"></div>
             </div>
-            <div class="cp-card cp-card--wide" id="cpPreCallCard" hidden>
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Before Your Call</p><h3 class="cp-card-title">Pre-call check-ins</h3></div>
-              </div>
-              <p class="cp-body-text">Your most recent pre-call form submissions.</p>
-              <div class="cp-note-list" id="cpPreCallList"></div>
-            </div>
             <div class="cp-card cp-card--wide" id="cpOffboardingCard" hidden>
               <div class="cp-card-head">
                 <div><p class="cp-kicker">Wrapping Up</p><h3 class="cp-card-title">Offboarding reflection</h3></div>
@@ -642,12 +759,91 @@
           <div class="cp-goals-grid" id="cpGoalsAchievedGrid"></div>
         </div>
 
+        <!-- HOMEWORK TAB -->
+        <div class="cp-goals-view" id="cpHomeworkView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Homework</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
+            <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
+          </div>
+          <div id="cpHwGroups"></div>
+        </div>
+
+        <!-- CHECK-INS TAB -->
+        <div class="cp-goals-view" id="cpCheckinsView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
+          </div>
+          <div class="cp-panel" id="cpCiFormCard"></div>
+          <p class="cp-goals-section-label" style="margin-top:32px;">Past check-ins</p>
+          <div class="cp-ci-history" id="cpCiHistory"></div>
+        </div>
+
+        <!-- EDUCATION TAB -->
+        <div class="cp-goals-view" id="cpEducationView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Education</h2><p class="cp-tab-sub" id="cpEduSummary"></p></div>
+            <button type="button" class="cp-goals-add-btn" id="cpEduAddBtn" hidden>+ Ask a question</button>
+          </div>
+          <div id="cpEduList"></div>
+        </div>
+
+        <!-- ASSIGNMENT CREATE / EDIT FORM (coach) -->
+        <div class="cp-modal-overlay" id="cpHwFormOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-close-modal="cpHwFormOverlay"></div>
+          <div class="cp-goal-form-sheet">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title" id="cpHwFormHeading">New assignment</p>
+            <p class="cp-goal-form-subtitle">Write the instructions the way you'd explain it on a call — links are clickable for the client.</p>
+            <div class="cp-goal-form-field">
+              <label for="cpHwTitle">Title</label>
+              <input type="text" id="cpHwTitle" class="cp-goal-form-input" placeholder="e.g. Write your I AM statements" maxlength="140" />
+            </div>
+            <div class="cp-goal-form-field">
+              <label for="cpHwInstructions">Instructions</label>
+              <textarea id="cpHwInstructions" class="cp-goal-form-input cp-goal-form-input--ta" style="height:180px;" placeholder="What to do, how to do it, and what to turn in."></textarea>
+            </div>
+            <div class="cp-goal-form-field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><label for="cpHwCore">Core</label><select id="cpHwCore" class="cp-goal-form-input"></select></div>
+              <div><label for="cpHwDue">Due date</label><input type="date" id="cpHwDue" class="cp-goal-form-input" /></div>
+            </div>
+            <label class="cp-check-line" id="cpHwAllWrap"><input type="checkbox" id="cpHwAllClients" /> Assign to every client on the roster</label>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpHwFormOverlay">Cancel</button>
+              <button type="button" class="cp-goal-form-save" id="cpHwFormSave">Save assignment</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDUCATION QUESTION FORM (coach) -->
+        <div class="cp-modal-overlay" id="cpEduFormOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-close-modal="cpEduFormOverlay"></div>
+          <div class="cp-goal-form-sheet">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title" id="cpEduFormHeading">Ask a question</p>
+            <p class="cp-goal-form-subtitle">Group questions under a competency so the client sees what each set is building.</p>
+            <div class="cp-goal-form-field">
+              <label for="cpEduCompetency">Competency</label>
+              <input type="text" id="cpEduCompetency" class="cp-goal-form-input" list="cpEduCompetencyList" placeholder="e.g. Nutrition fundamentals" maxlength="80" />
+              <datalist id="cpEduCompetencyList"></datalist>
+            </div>
+            <div class="cp-goal-form-field">
+              <label for="cpEduQuestion">Question</label>
+              <textarea id="cpEduQuestion" class="cp-goal-form-input cp-goal-form-input--ta" style="height:120px;" placeholder="e.g. In your own words, why does protein matter when you're in a deficit?"></textarea>
+            </div>
+            <label class="cp-check-line" id="cpEduAllWrap"><input type="checkbox" id="cpEduAllClients" /> Ask every client on the roster</label>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpEduFormOverlay">Cancel</button>
+              <button type="button" class="cp-goal-form-save" id="cpEduFormSave">Save question</button>
+            </div>
+          </div>
+        </div>
+
         <!-- GOAL ADD FORM -->
         <div id="cpGoalFormOverlay" hidden>
           <div class="cp-goal-form-backdrop" id="cpGoalFormBackdrop"></div>
           <div class="cp-goal-form-sheet">
             <div class="cp-goal-form-handle"></div>
-            <p class="cp-goal-form-title">Set a SMART Goal</p>
+            <p class="cp-goal-form-title" id="cpGoalFormHeading">Set a SMART Goal</p>
             <p class="cp-goal-form-subtitle">Great goals are Specific, Measurable, Achievable, Relevant, and Time-bound.</p>
             <div class="cp-goal-smart-row">
               <div class="cp-goal-smart-pill" style="background:rgba(119,215,112,.15);color:#3d8c39;">S<span>Specific</span></div>
@@ -675,6 +871,10 @@
               <p class="cp-goal-form-hint">Give yourself a deadline. No deadline = no urgency.</p>
               <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
             </div>
+            <div class="cp-goal-form-field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select></div>
+              <div><label for="cpGoalProgress">Progress · <span id="cpGoalProgressVal">0%</span></label><input type="range" id="cpGoalProgress" min="0" max="100" step="5" value="0" style="width:100%;height:46px;" /></div>
+            </div>
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>
               <button type="button" class="cp-goal-form-save" id="cpGoalFormSave">Save goal</button>
@@ -700,6 +900,18 @@
           </div>
           <aside class="cp-coach-aside">
             <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
+            <div class="cp-card cp-roster-card">
+              <p class="cp-kicker">Homework</p>
+              <h3 class="cp-card-title">To review</h3>
+              <p class="cp-body-text" id="cpHwQueueSummary"></p>
+              <div class="cp-flag-list" id="cpHwQueueList"></div>
+            </div>
+            <div class="cp-card cp-roster-card">
+              <p class="cp-kicker">Pre-call forms</p>
+              <h3 class="cp-card-title">Check-ins this week</h3>
+              <p class="cp-body-text" id="cpCiQueueSummary"></p>
+              <div class="cp-flag-list" id="cpCiQueueList"></div>
+            </div>
             <div class="cp-card cp-roster-card">
               <p class="cp-kicker">Non-Negotiables</p>
               <h3 class="cp-card-title">Awaiting review</h3>
@@ -728,6 +940,12 @@
         <p class="cp-sheet-lede" id="cpSheetLede"></p>
         <div class="cp-sheet-rows" id="cpSheetRows"></div>
       </div>
+    </div>
+
+    <div class="cp-sheet-overlay" id="cpHwSheetOverlay" hidden>
+      <div class="cp-sheet-backdrop" data-close-hw-sheet></div>
+      <div class="cp-sheet" id="cpHwSheet" role="dialog" aria-modal="true" aria-labelledby="cpHwSheetTitle"></div>
+      <input type="file" id="cpHwFileInput" multiple hidden />
     </div>
 
     <div class="cp-editor-overlay" id="cpEditOverlay" hidden>
