@@ -83,32 +83,6 @@
   var remDays  = ["Monday","Tuesday","Sunday"];
   var remChans = ["text","email","push"];
 
-  // Offboarding: the end-of-program reflection form, mirrored from the
-  // coach's Notion "Chasing Change Offboarding" form. Text fields are
-  // free-form, rating fields are 1-5 selects, keys match the
-  // client_offboarding table columns exactly so the form can read/write
-  // the row directly with no key-mapping layer.
-  var OFFBOARD_FIELDS = [
-    { key:"hoped_for",             label:"When you started, what were you hoping would change most?", type:"textarea" },
-    { key:"what_changed",          label:"What actually changed?", type:"textarea" },
-    { key:"surprised",             label:"What surprised you about your progress?", type:"textarea" },
-    { key:"habits_stuck",          label:"Which habits stuck the strongest?", type:"textarea" },
-    { key:"most_proud",            label:"What are you most proud of from this program?", type:"textarea" },
-    { key:"old_you",               label:"What are you doing now that “old you” wouldn’t have done?", type:"textarea" },
-    { key:"do_differently",        label:"What would you do differently if you restarted the program?", type:"textarea" },
-    { key:"still_unclear",         label:"What still feels unclear?", type:"textarea" },
-    { key:"most_helpful",          label:"What part of coaching helped you the most?", type:"textarea" },
-    { key:"improve_structurally",  label:"What could I improve structurally?", type:"textarea" },
-    { key:"tools_confusing",       label:"What tools felt confusing or unnecessary?", type:"textarea" },
-    { key:"clarity_of_plan",       label:"Clarity of plan (1-5)", type:"rating" },
-    { key:"accountability_support",label:"Accountability support (1-5)", type:"rating" },
-    { key:"check_ins",             label:"Check-ins (1-5)", type:"rating" },
-    { key:"communication_speed",   label:"Communication speed (1-5)", type:"rating" },
-    { key:"next_goal",             label:"What’s the next goal from here?", type:"textarea" },
-    { key:"continued_structure",   label:"Would continued structure help with the next phase?", type:"textarea" }
-  ];
-  var CONTINUATION_SIGNALS = ["Testimonial","Referral","Check-in call later","Next phase coaching"];
-
   // ─── Runtime state ──────────────────────────────────────────────────────
   var state = { view:"client", openCard:null, openRows:{} };
   var pwOpen = true;
@@ -482,7 +456,6 @@
     $('cpRoute').textContent = data.route || '—';
     $('cpWeek').textContent  = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
     $('cpWeekLine2').textContent = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpStreakLine').textContent = data.streakWeeks > 0 ? (data.streakWeeks + '-week streak') : 'No active streak';
 
     renderClientPortal();
     renderViewToggle();
@@ -721,9 +694,7 @@
     if (!portalData) return;
     renderCoreList();
     renderTasks();
-    renderBars();
     renderNotesCard();
-    renderMetrics();
     renderChips();
     renderWins();
     renderSessionCard();
@@ -733,7 +704,6 @@
     renderOnboarding();
     renderNonNegotiables();
     renderArchive();
-    renderOffboardingForm();
     renderPreCallSubmissions();
     renderTrainerize();
     renderGoalsTab();
@@ -980,53 +950,6 @@
     $('cpArchiveList').innerHTML = h || '<p class="cp-caption" style="margin:0;">Nothing archived yet.</p>';
   }
 
-  // ─── Offboarding reflection form (client fills in, coach reads) ───────
-  function renderOffboardingForm(){
-    $('cpOffboardingCard').hidden = false;
-    var o = portalData.offboarding || {};
-    var h = '';
-    OFFBOARD_FIELDS.forEach(function(f){
-      var val = o[f.key];
-      if (f.type === 'rating') {
-        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><select class="cp-edit-input" data-off-field="'+f.key+'" style="width:120px"><option value="">—</option>';
-        for (var i=1;i<=5;i++) h += '<option value="'+i+'"'+(val===i?' selected':'')+'>'+i+'</option>';
-        h += '</select></div>';
-      } else {
-        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><input type="text" class="cp-edit-input" data-off-field="'+f.key+'" value="'+esc(val||'')+'" /></div>';
-      }
-    });
-    h += '<div class="cp-edit-field"><label>Continuation signal</label><div class="cp-chip-row">';
-    CONTINUATION_SIGNALS.forEach(function(s){
-      var checked = (o.continuation_signal || []).indexOf(s) !== -1;
-      h += '<label class="cp-chip" style="cursor:pointer;"><input type="checkbox" data-off-signal="'+esc(s)+'"'+(checked?' checked':'')+' style="margin-right:6px;" />'+esc(s)+'</label>';
-    });
-    h += '</div></div>';
-    $('cpOffboardingForm').innerHTML = h;
-    $('cpOffboardingStatus').textContent = o.submitted ? 'Submitted' : 'Draft';
-  }
-
-  $('cpOffboardingSave').addEventListener('click', async function(){
-    if (!viewingClientId) return;
-    var clientId = viewingClientId;
-    var row = { client_id: clientId, submitted: true };
-    OFFBOARD_FIELDS.forEach(function(f){
-      var el = $('cpOffboardingForm').querySelector('[data-off-field="'+f.key+'"]');
-      var v = el ? el.value : '';
-      row[f.key] = f.type === 'rating' ? (v ? parseInt(v,10) : null) : (v || '');
-    });
-    var signals = [];
-    $('cpOffboardingForm').querySelectorAll('[data-off-signal]').forEach(function(cb){ if (cb.checked) signals.push(cb.getAttribute('data-off-signal')); });
-    row.continuation_signal = signals;
-
-    setLoading($('cpOffboardingSave'), true, 'Saving…');
-    var { error } = await sb.from('client_offboarding').upsert(row, { onConflict:'client_id' });
-    setLoading($('cpOffboardingSave'), false, 'Save reflection');
-    if (error) { window.alert('Could not save: ' + error.message); return; }
-    if (viewingClientId !== clientId) return;
-    portalData.offboarding = row;
-    renderOffboardingForm();
-  });
-
   // Each core links to that client's page for the core, e.g. /client-portal/body/?client=<id>.
   function coreHref(key, clientId){
     return './' + key + '/?client=' + encodeURIComponent(clientId);
@@ -1070,14 +993,6 @@
     $('cpTaskCount').textContent = portalData.tasks.length + (portalData.tasks.length===1?' assignment':' assignments');
   }
 
-  function renderBars(){
-    var vals = portalData.adherenceHistory || [];
-    if (!vals.length) { $('cpBars').innerHTML = '<p class="cp-caption" style="margin:0;">No history yet.</p>'; return; }
-    var max=Math.max.apply(null,vals), h='';
-    vals.forEach(function(v){ var ht=Math.round((v/max)*78),bg=v>=70?'#071f35':'rgba(7,31,53,0.16)'; h+='<div class="cp-bar" style="height:'+ht+'px;background:'+bg+'"></div>'; });
-    $('cpBars').innerHTML=h;
-  }
-
   function renderNotesCard(){
     var recent = portalData.notes.slice(0,4);
     var h=''; recent.forEach(function(n){ h+='<div class="cp-note-row"><span class="cp-note-label">'+esc(n.label)+'</span><span class="cp-note-meta">'+esc(n.meta)+'</span></div>'; });
@@ -1107,11 +1022,6 @@
   function renderWins(){
     var h=''; portalData.wins.forEach(function(w){ h+='<div class="cp-win-row"><span class="cp-dot" style="background:'+(w.color||'#77d770')+'"></span><span class="cp-win-label">'+esc(w.label)+'</span><span class="cp-win-meta">'+esc(w.meta)+'</span></div>'; });
     $('cpWinList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No wins logged yet.</p>';
-  }
-
-  function renderMetrics(){
-    var h=''; portalData.metrics.forEach(function(m){ h+='<div class="cp-metric-row"><span class="cp-metric-label">'+esc(m.label)+'</span><span class="cp-metric-value">'+esc(m.value)+'</span></div>'; });
-    $('cpMetricList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No metrics yet.</p>';
   }
 
   function renderChips(){
