@@ -31,7 +31,7 @@
 
   // The six cores are a fixed set — every client has exactly these six,
   // scored week to week. Everything else (tasks, notes, metrics, resources,
-  // wins, messages) is a free-form list per client, loaded from Supabase.
+  // wins) is a free-form list per client, loaded from Supabase.
   var CORE_DEFS = [
     { key:"body",   label:"Body",   color:"#77d770" },
     { key:"mind",   label:"Mind",   color:"#2a9df0" },
@@ -373,7 +373,6 @@
       sb.from('client_metrics').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_resources').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_wins').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
       sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
@@ -416,11 +415,10 @@
       metrics: (results[4].data || []).map(function(m){ return { id:m.id, label:m.label, value:m.value }; }),
       resources: (results[5].data || []).map(function(r){ return { id:r.id, label:r.label, color:r.color }; }),
       wins: (results[6].data || []).map(function(w){ return { id:w.id, label:w.label, meta:w.meta, color:w.color }; }),
-      messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; }),
-      onboardingItems: (results[8].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
-      offboarding: results[9].data || {},
-      nonNegotiables: (results[10].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
-      preCallSubmissions: (results[11].data || []).map(function(s){
+      onboardingItems: (results[7].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
+      offboarding: results[8].data || {},
+      nonNegotiables: (results[9].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
+      preCallSubmissions: (results[10].data || []).map(function(s){
         return {
           id: s.id,
           submittedAt: s.submitted_at,
@@ -435,8 +433,8 @@
           workoutDays: s.workout_days || []
         };
       }),
-      habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
-      goals: (results[13].data || []).map(function(g){
+      habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
+      goals: (results[12].data || []).map(function(g){
         return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:g.status||'active', createdBy:g.created_by||'client' };
       })
     };
@@ -453,8 +451,6 @@
 
     portalData = data;
     $('cpRouteLine').textContent = (data.route || 'No route set yet') + ' · Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpRoute').textContent = data.route || '—';
-    $('cpWeek').textContent  = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
     $('cpWeekLine2').textContent = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
 
     renderClientPortal();
@@ -698,7 +694,6 @@
     renderChips();
     renderWins();
     renderSessionCard();
-    renderMessages();
     renderReminder();
     renderCardioBox();
     renderOnboarding();
@@ -1034,30 +1029,6 @@
     $('cpSessionAgenda').textContent = portalData.nextSessionAgenda || 'Your coach hasn\'t set an agenda yet.';
     renderSessionCTA();
   }
-
-  function renderMessages(){
-    var recent = portalData.messages.slice(-6);
-    var h=''; recent.forEach(function(m){
-      var who = m.sender === 'coach' ? 'Coach' : 'Client';
-      var when = m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '';
-      h+='<div class="cp-message"><p class="cp-message-meta">'+esc(who)+(when?' · '+esc(when):'')+'</p><p class="cp-message-body">'+esc(m.body)+'</p></div>';
-    });
-    $('cpMessageList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No messages yet.</p>';
-  }
-
-  $('cpMessageInput').addEventListener('keydown', async function(e){
-    if (e.key !== 'Enter') return;
-    var body = this.value.trim();
-    if (!body || !viewingClientId) return;
-    var clientId = viewingClientId;
-    this.value = '';
-    var sender = isCoachUser ? 'coach' : 'client';
-    await sb.from('client_messages').insert({ client_id: clientId, sender: sender, body: body });
-    if (viewingClientId !== clientId) return;
-    var { data } = await sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true });
-    portalData.messages = (data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; });
-    renderMessages();
-  });
 
   // ─── Calendar connect (Google / Outlook) ───────────────────────────────
   // Only the client sees this — a coach browsing a client's portal (see
@@ -1849,10 +1820,6 @@
          + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+(parseInt(c.pct,10)||0)+'%;background:'+c.color+'"></div></div></div>';
     });
     $('cpEditorPreviewCores').innerHTML = h;
-
-    var weekNow = $('cpEditWeekNow').value || 0, weekTotal = $('cpEditWeekTotal').value || 0;
-    $('cpEditorPreviewRoute').textContent = $('cpEditRoute').value || 'No route set';
-    $('cpEditorPreviewWeek').textContent = 'Week ' + weekNow + ' of ' + weekTotal;
 
     var openTasks = editSections.cpEditTaskList.items.filter(function(t){ return (t.label||'').trim() && !t.done; });
     $('cpEditorPreviewReminder').textContent = ($('cpEditReminderDay').value || 'Monday') + ' by ' + ($('cpEditReminderChannel').value || 'text')
