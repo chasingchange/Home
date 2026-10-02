@@ -142,16 +142,25 @@
       .cp-qe-status.is-error::before{background:#f02348;}
       .cp-qe-close{all:unset;cursor:pointer;width:34px;height:34px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(7,31,53,.5);}
       .cp-qe-close:hover{background:rgba(7,31,53,.06);}
-      .cp-qe-tabs{display:flex;gap:6px;margin:14px 0 16px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-qe-tabs{display:flex;gap:6px;margin:14px 0 16px;border-bottom:1px solid rgba(7,31,53,.08);overflow-x:auto;}
+      .cp-qe-tab{flex:none;}
       .cp-qe-tab{all:unset;cursor:pointer;padding:9px 12px;font-family:"Raleway",sans-serif;font-weight:800;font-size:13.5px;color:rgba(7,31,53,.5);border-bottom:2px solid transparent;margin-bottom:-1px;}
       .cp-qe-tab.is-active{color:#071f35;border-bottom-color:#071f35;}
       .cp-qe-core{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px 12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.07);}
+      .cp-qe-core .cp-meter{width:100%;}
+      .cp-qe-core-meta{grid-column:1 / -1;font-size:12px;color:rgba(7,31,53,.5);margin-top:-2px;}
+      .cp-qe-goal{padding:10px 0;border-top:1px solid rgba(7,31,53,.07);}
+      .cp-qe-goal:first-child{border-top:none;}
+      .cp-qe-goal-row{display:flex;align-items:center;gap:8px;}
+      .cp-qe-goal-row + .cp-qe-goal-row{margin-top:8px;}
+      .cp-qe-goal-row .cp-qe-input{flex:1;min-width:0;}
+      .cp-qe-goal-row select.cp-qe-input{flex:none;width:118px;}
+      .cp-qe-goal-row .cp-qe-pct input{width:60px;height:40px;}
       .cp-qe-core:first-child{border-top:none;}
       .cp-qe-core-name{display:flex;align-items:center;gap:8px;font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;min-width:70px;}
       .cp-qe-core input[type=range]{width:100%;}
       .cp-qe-pct{display:flex;align-items:center;gap:2px;font-size:13px;font-weight:700;color:rgba(7,31,53,.6);}
       .cp-qe-pct input{width:52px;height:34px;border-radius:9px;border:1px solid rgba(7,31,53,.15);text-align:right;padding:0 6px;font:inherit;color:#071f35;box-sizing:border-box;}
-      .cp-qe-core-note{grid-column:1 / -1;}
       .cp-qe-input{width:100%;height:40px;border-radius:11px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
       select.cp-qe-input{padding:0 8px;}
       .cp-qe-task{display:flex;align-items:center;gap:8px;padding:7px 0;}
@@ -172,7 +181,7 @@
       .cp-qe-grid .is-full{grid-column:1 / -1;}
       .cp-qe-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;font-size:12.5px;color:rgba(7,31,53,.5);}
       .cp-qe-foot button{all:unset;cursor:pointer;font-weight:700;color:#071f35;text-decoration:underline;}
-      @media (max-width:560px){ .cp-qe-grid{grid-template-columns:1fr;} .cp-qe-task select.cp-qe-input,.cp-qe-add select.cp-qe-input{width:84px;} .cp-qe-fab{right:16px;bottom:16px;} }
+      @media (max-width:560px){ .cp-qe-grid{grid-template-columns:1fr;} .cp-qe-task select.cp-qe-input,.cp-qe-add select.cp-qe-input,.cp-qe-goal-row select.cp-qe-input{width:84px;} .cp-qe-fab{right:16px;bottom:16px;} }
       .cp-check-line{display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);margin:4px 0 0;cursor:pointer;}
       .cp-portal-tabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
       .cp-portal-tabs::-webkit-scrollbar{display:none;}
@@ -326,6 +335,8 @@
       .cp-body-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
       .cp-task-list{margin-top:18px;display:grid;}
       .cp-task-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
+      #cpTaskArchiveList{margin-top:0;}
+      #cpTaskArchiveList .cp-task-row:first-child{border-top:none;}
       .cp-task-check{all:unset;cursor:pointer;width:18px;height:18px;border-radius:6px;border:1px solid rgba(7,31,53,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff;background:transparent;box-sizing:border-box;}
       .cp-task-check.is-done{background:#071f35;}
       .cp-task-label{flex:1;font-size:15px;line-height:1.5;color:rgba(7,31,53,.8);}
@@ -643,7 +654,7 @@
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
           <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="homework">Homework<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="homework">Assignments<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
@@ -674,18 +685,18 @@
             </div>
             <div class="cp-card cp-card--wide" id="cpPlanCard">
               <div class="cp-card-head">
-                <div><p class="cp-kicker">This Week</p><h3 class="cp-card-title">Your plan · <span id="cpWeekLine2"></span></h3></div>
+                <div><p class="cp-kicker">This Week</p></div>
                 <span class="cp-meta" id="cpTaskCount"></span>
               </div>
               <div class="cp-task-list" id="cpTaskList"></div>
             </div>
             <div class="cp-card" id="cpHomeworkCard" data-goto-tab="homework">
               <div class="cp-card-head">
-                <div><p class="cp-kicker">Homework</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
+                <div><p class="cp-kicker">Assignments</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
                 <span class="cp-meta" id="cpHwCardMeta"></span>
               </div>
               <div class="cp-note-list" id="cpHwCardList"></div>
-              <div class="cp-cta-row"><span class="cp-cta-primary">Open homework</span></div>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open assignments</span></div>
             </div>
             <div class="cp-card" id="cpPreCallCard" data-goto-tab="checkins">
               <p class="cp-kicker">Weekly Check-in</p>
@@ -784,13 +795,15 @@
           <div class="cp-goals-grid" id="cpGoalsAchievedGrid"></div>
         </div>
 
-        <!-- HOMEWORK TAB -->
+        <!-- ASSIGNMENTS TAB -->
         <div class="cp-goals-view" id="cpHomeworkView" hidden>
           <div class="cp-goals-header">
-            <div><h2 class="cp-goals-title">Homework</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
+            <div><h2 class="cp-goals-title">Assignments</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
             <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
           </div>
           <div id="cpHwGroups"></div>
+          <p class="cp-goals-section-label" id="cpTaskArchiveLabel" hidden>Archived · checked-off tasks</p>
+          <div class="cp-card" id="cpTaskArchiveCard" hidden><div class="cp-task-list" id="cpTaskArchiveList"></div></div>
         </div>
 
         <!-- CHECK-INS TAB -->
@@ -895,7 +908,7 @@
           <aside class="cp-coach-aside">
             <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
             <div class="cp-card cp-roster-card">
-              <p class="cp-kicker">Homework</p>
+              <p class="cp-kicker">Assignments</p>
               <h3 class="cp-card-title">To review</h3>
               <p class="cp-body-text" id="cpHwQueueSummary"></p>
               <div class="cp-flag-list" id="cpHwQueueList"></div>
@@ -1054,7 +1067,7 @@
 
           <div class="cp-editor-section" data-editor-sec="cores">
             <h3>The Six Cores</h3>
-            <p class="cp-editor-section-lede">Score and a note per core — drives the rail on their dashboard.</p>
+            <p class="cp-editor-section-lede">Completion per core — the share of each core's tasks they've checked off.</p>
             <div class="cp-editor-card">
               <div class="cp-assign-list" id="cpEditCoreList"></div>
             </div>
@@ -1188,6 +1201,8 @@
         <div class="cp-qe-tabs" id="cpQeTabs">
           <button type="button" class="cp-qe-tab is-active" data-qe-tab="cores">Six Cores</button>
           <button type="button" class="cp-qe-tab" data-qe-tab="tasks">Tasks</button>
+          <button type="button" class="cp-qe-tab" data-qe-tab="habits">Habits</button>
+          <button type="button" class="cp-qe-tab" data-qe-tab="goals">Goals</button>
           <button type="button" class="cp-qe-tab" data-qe-tab="overview">Overview</button>
         </div>
         <div data-qe-pane="cores"><div id="cpQeCores"></div></div>
@@ -1197,6 +1212,21 @@
             <input type="text" class="cp-qe-input" id="cpQeNewTask" placeholder="Add a task…" maxlength="200" />
             <select class="cp-qe-input" id="cpQeNewTaskCore" aria-label="Core"></select>
             <button type="button" id="cpQeAddTask">Add</button>
+          </div>
+        </div>
+        <div data-qe-pane="habits" hidden>
+          <div id="cpQeHabits"></div>
+          <div class="cp-qe-add">
+            <input type="text" class="cp-qe-input" id="cpQeNewHabit" placeholder="Add a habit…" maxlength="200" />
+            <button type="button" id="cpQeAddHabit">Add</button>
+          </div>
+        </div>
+        <div data-qe-pane="goals" hidden>
+          <div id="cpQeGoals"></div>
+          <div class="cp-qe-add">
+            <input type="text" class="cp-qe-input" id="cpQeNewGoal" placeholder="Add a goal…" maxlength="200" />
+            <select class="cp-qe-input" id="cpQeNewGoalCore" aria-label="Core"></select>
+            <button type="button" id="cpQeAddGoal">Add</button>
           </div>
         </div>
         <div data-qe-pane="overview" hidden>

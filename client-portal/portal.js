@@ -46,6 +46,14 @@
     return d ? d.color : '#77d770';
   }
 
+  // A core's completion is the share of its tasks that are checked off
+  // (archived tasks count — they're done).
+  function coreCompletion(tasks, key){
+    var mine = (tasks || []).filter(function(t){ return t.coreKey === key && (t.label||'').trim(); });
+    var done = mine.filter(function(t){ return t.done; }).length;
+    return { done: done, total: mine.length, pct: mine.length ? Math.round(done / mine.length * 100) : 0 };
+  }
+
   // Preferred cardio: as broad a menu as makes sense for a general
   // coaching roster, each with a unit-appropriate goal hint (time for
   // steady-state/interval work, distance units that match the modality —
@@ -121,8 +129,8 @@
     { key:"obstacle",                label:"What was the obstacle?", hint:"If anything got in the way this week, what was it?", type:"textarea" },
     { key:"tracked_food",            label:"Did you track your food?", type:"choice", options:["Yes","No","Most Days","I've been instructed not to track"] },
     { key:"review_items",            label:"What do you want to review on the call?", type:"multi", options:["Homework","Next Week's Calendar"] },
-    { key:"has_more_homework",       label:"Do you have more homework to turn in?", type:"choice", options:["Yes","No"] },
-    { key:"text_url_upload",         label:"Homework — paste text or links", type:"textarea" },
+    { key:"has_more_homework",       label:"Do you have more assignments to turn in?", type:"choice", options:["Yes","No"] },
+    { key:"text_url_upload",         label:"Assignments — paste text or links", type:"textarea" },
     { key:"files",                   label:"Files & media", hint:"Photos, documents, anything you want your coach to see.", type:"files" },
     { key:"calendar_upload",         label:"Next week's calendar", hint:"A screenshot or export of your calendar for the week ahead.", type:"files" }
   ];
@@ -269,6 +277,12 @@
   }
 
   var $ = function(id){ return document.getElementById(id); };
+
+  // Supabase queries only run once awaited/then'd, so fire-and-forget
+  // writes go through here.
+  function fireWrite(query){
+    query.then(function(res){ if (res && res.error) console.error('Save failed:', res.error); });
+  }
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 
@@ -544,7 +558,6 @@
 
     portalData = data;
     $('cpRouteLine').textContent = (data.route || 'No route set yet') + ' · Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpWeekLine2').textContent = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
 
     renderClientPortal();
     renderViewToggle();
@@ -1086,7 +1099,7 @@
     var item = portalData.onboardingItems[idx]; if (!item) return;
     item.done = !item.done;
     renderOnboarding();
-    sb.from('client_onboarding_items').update({ done: item.done }).eq('id', item.id);
+    fireWrite(sb.from('client_onboarding_items').update({ done: item.done }).eq('id', item.id));
   });
 
   // ─── Non-negotiables (coach sets, client claims, coach does final review) ─
@@ -1144,7 +1157,7 @@
     $('cpCoreList').hidden = hasHabits;
     $('cpHabitList').hidden = !hasHabits;
     if (hasHabits) { renderHabits(); return; }
-    var h=''; portalData.cores.forEach(function(c){ h+='<a class="cp-core-row cp-core-link" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
+    var h=''; portalData.cores.forEach(function(c){ var comp = coreCompletion(portalData.tasks, c.key); h+='<a class="cp-core-row cp-core-link" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-pct" title="'+comp.done+' of '+comp.total+' tasks done">'+comp.pct+'%</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
     $('cpCoreList').innerHTML=h;
   }
 
@@ -1163,17 +1176,26 @@
     var habit = portalData.habits[idx]; if (!habit) return;
     habit.done = !habit.done;
     renderHabits();
-    sb.from('client_habits').update({ done: habit.done }).eq('id', habit.id);
+    fireWrite(sb.from('client_habits').update({ done: habit.done }).eq('id', habit.id));
   });
 
+  // Checked-off tasks leave the dashboard and land in the archive on the
+  // Assignments tab; rows carry their index into portalData.tasks.
+  function taskRowHtml(t, i){
+    var color = t.color || coreColor(t.coreKey);
+    return '<div class="cp-task-row"><button type="button" class="cp-task-check'+(t.done?' is-done':'')+'" data-idx="'+i+'" aria-label="'+(t.done?'Move back to this week':'Check off')+'">'+(t.done?'✓':'')+'</button><span class="cp-dot" style="background:'+color+'"></span><span class="cp-task-label'+(t.done?' is-done':'')+'">'+esc(t.label)+'</span><span class="cp-task-meta">'+esc(t.coreKey||'')+'</span></div>';
+  }
+
   function renderTasks(){
-    var h='';
+    var open = '', archived = '', openCount = 0, doneCount = 0;
     portalData.tasks.forEach(function(t,i){
-      var color = t.color || coreColor(t.coreKey);
-      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(t.done?' is-done':'')+'" data-idx="'+i+'">'+(t.done?'✓':'')+'</button><span class="cp-dot" style="background:'+color+'"></span><span class="cp-task-label'+(t.done?' is-done':'')+'">'+esc(t.label)+'</span><span class="cp-task-meta">'+esc(t.coreKey||'')+'</span></div>';
+      if (t.done) { archived += taskRowHtml(t, i); doneCount++; }
+      else { open += taskRowHtml(t, i); openCount++; }
     });
-    $('cpTaskList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No assignments yet.</p>';
-    $('cpTaskCount').textContent = portalData.tasks.length + (portalData.tasks.length===1?' assignment':' assignments');
+    $('cpTaskList').innerHTML = open || '<p class="cp-caption" style="margin:0;">'+(doneCount ? 'All caught up — checked-off tasks are archived under Assignments.' : 'No tasks yet.')+'</p>';
+    $('cpTaskCount').textContent = openCount + (openCount===1?' task':' tasks') + ' open';
+    $('cpTaskArchiveList').innerHTML = archived;
+    $('cpTaskArchiveLabel').hidden = $('cpTaskArchiveCard').hidden = !doneCount;
   }
 
   function renderNotesCard(){
@@ -1298,7 +1320,7 @@
     return ids;
   }
 
-  // ─── Homework tab ──────────────────────────────────────────────────────
+  // ─── Assignments tab ───────────────────────────────────────────────────
   var hwOpenId = null;       // assignment shown in the detail sheet
   var hwEditingId = null;    // assignment being edited in the coach form
 
@@ -1356,7 +1378,7 @@
     ];
     var h = '';
     if (!list.length) {
-      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No assignments yet — create one with “New assignment”.' : 'No homework yet. Your coach will add assignments here.') + '</div>';
+      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No assignments yet — create one with “New assignment”.' : 'No assignments yet. Your coach will add them here.') + '</div>';
     }
     groups.forEach(function(g){
       if (!g.items.length) return;
@@ -1420,7 +1442,7 @@
     var prevNote = $('cpHwNote') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwNote').value : null;
     var prevFeedback = $('cpHwFeedback') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwFeedback').value : null;
 
-    var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">Homework</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
+    var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">Assignment</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
       + '<button type="button" class="cp-sheet-close" data-close-hw-sheet aria-label="Close">×</button></div>';
     h += '<div class="cp-hw-meta">'+statusPill(def.label, def.color)+dueChip(a)+coreChip(a.coreKey)
       + (a.submittedAt ? '<span class="cp-due-chip">Submitted '+esc(shortDate(new Date(a.submittedAt)))+'</span>' : '')
@@ -2532,15 +2554,17 @@
     persistDashPatch({ reminder_on: portalData.reminderOn });
   });
 
-  $('cpTaskList').addEventListener('click', function(e){
+  function onTaskCheck(e){
     var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
     e.stopPropagation();
     var idx = parseInt(btn.getAttribute('data-idx'),10);
     var task = portalData.tasks[idx]; if (!task) return;
     task.done = !task.done;
-    renderTasks(); renderReminder();
-    sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
-  });
+    renderTasks(); renderReminder(); renderCoreList();
+    fireWrite(sb.from('client_tasks').update({ done: task.done }).eq('id', task.id));
+  }
+  $('cpTaskList').addEventListener('click', onTaskCheck);
+  $('cpTaskArchiveList').addEventListener('click', onTaskCheck);
 
   // ─── Vision board header (client-uploaded image, faded into the page) ──
   function renderVisionBand(){
@@ -2846,6 +2870,7 @@
       var sec = editSections[containerId];
       sec.items.splice(parseInt(btn.getAttribute('data-remove-idx'),10),1);
       renderListEditor(containerId);
+      renderEditorPreview();
     });
   });
 
@@ -2860,19 +2885,15 @@
   $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',progress:0,createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
 
   function renderCoreEditor(){
-    var h='';
-    editState.cores.forEach(function(c,i){
-      h+='<div class="cp-assign-row"><span class="cp-core-edit-label">'+esc(c.label)+'</span><input type="number" min="0" max="100" value="'+c.pct+'" data-core-idx="'+i+'" data-core-field="pct" style="width:70px;flex:none;" /><input type="text" value="'+esc(c.note)+'" placeholder="Note" data-core-idx="'+i+'" data-core-field="note" /></div>';
+    var tasks = editSections.cpEditTaskList.items, h='';
+    editState.cores.forEach(function(c){
+      var comp = coreCompletion(tasks, c.key);
+      h+='<div class="cp-assign-row"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-edit-label">'+esc(c.label)+'</span>'
+        +'<div class="cp-meter" style="flex:1;"><div class="cp-meter-fill" style="width:'+comp.pct+'%;background:'+c.color+'"></div></div>'
+        +'<span class="cp-core-pct" style="flex:none;min-width:96px;text-align:right;">'+comp.pct+'% · '+comp.done+'/'+comp.total+' tasks</span></div>';
     });
     $('cpEditCoreList').innerHTML = h;
   }
-
-  $('cpEditCoreList').addEventListener('input', function(e){
-    var t = e.target.closest('[data-core-field]'); if (!t || !editState) return;
-    var idx = parseInt(t.getAttribute('data-core-idx'),10);
-    var field = t.getAttribute('data-core-field');
-    editState.cores[idx][field] = field === 'pct' ? (parseInt(t.value,10) || 0) : t.value;
-  });
 
   async function openEditPortal(clientId, name){
     editState = null;
@@ -2929,14 +2950,16 @@
 
   function renderEditorPreview(){
     if (!editState) return;
+    renderCoreEditor();
 
     var h = '';
     editState.cores.forEach(function(c){
+      var pct = coreCompletion(editSections.cpEditTaskList.items, c.key).pct;
       h += '<div class="cp-editor-preview-core-row"><div class="cp-editor-preview-core-top">'
          + '<span class="cp-dot" style="background:'+c.color+'"></span>'
          + '<span class="cp-core-label">'+esc(c.label)+'</span>'
-         + '<span class="cp-core-pct">'+(parseInt(c.pct,10)||0)+'%</span></div>'
-         + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+(parseInt(c.pct,10)||0)+'%;background:'+c.color+'"></div></div></div>';
+         + '<span class="cp-core-pct">'+pct+'%</span></div>'
+         + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div></div>';
     });
     $('cpEditorPreviewCores').innerHTML = h;
 
@@ -2946,7 +2969,7 @@
 
     var th = '';
     editSections.cpEditTaskList.items.forEach(function(t){
-      if (!(t.label||'').trim()) return;
+      if (!(t.label||'').trim() || t.done) return;
       th += '<div class="cp-editor-preview-task"><span class="cp-check"></span><span class="cp-label">'+esc(t.label)+'</span></div>';
     });
     $('cpEditorPreviewTasks').innerHTML = th || '<p class="cp-caption" style="margin:9px 0 0;">No tasks assigned.</p>';
@@ -3004,7 +3027,7 @@
     });
 
     var coreRows = editState.cores.map(function(c,i){
-      return { client_id: clientId, core_key: c.key, label: c.label, color: c.color, pct: parseInt(c.pct,10)||0, note: c.note||'', position:i };
+      return { client_id: clientId, core_key: c.key, label: c.label, color: c.color, pct: coreCompletion(editState.tasks, c.key).pct, note: c.note||'', position:i };
     });
     var taskRows = editState.tasks.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
       return { client_id: clientId, label: t.label.trim(), core_key: t.coreKey||'', color: coreColor(t.coreKey), done: !!t.done, position:i };
@@ -3126,16 +3149,53 @@
     }).join('');
   }
 
+  // Read-only: completion comes from the client's checked-off tasks.
   function renderQeCores(){
-    $('cpQeCores').innerHTML = portalData.cores.map(function(c, i){
-      var pct = parseInt(c.pct,10) || 0;
+    $('cpQeCores').innerHTML = portalData.cores.map(function(c){
+      var comp = coreCompletion(portalData.tasks, c.key);
       return '<div class="cp-qe-core">'
         + '<span class="cp-qe-core-name"><span class="cp-dot" style="background:'+c.color+'"></span>'+esc(c.label)+'</span>'
-        + '<input type="range" min="0" max="100" step="5" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" style="accent-color:'+c.color+'" aria-label="'+esc(c.label)+' score" />'
-        + '<span class="cp-qe-pct"><input type="number" min="0" max="100" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" aria-label="'+esc(c.label)+' percent" />%</span>'
-        + '<input type="text" class="cp-qe-input cp-qe-core-note" value="'+esc(c.note||'')+'" placeholder="Note for '+esc(c.label)+'" data-core-idx="'+i+'" data-core-field="note" />'
+        + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+comp.pct+'%;background:'+c.color+'"></div></div>'
+        + '<span class="cp-qe-pct">'+comp.pct+'%</span>'
+        + '<span class="cp-qe-core-meta">'+(comp.total ? comp.done+' of '+comp.total+' tasks done' : 'No tasks in this core yet')+'</span>'
         + '</div>';
     }).join('');
+  }
+
+  function renderQeHabits(){
+    var habits = portalData.habits;
+    $('cpQeHabits').innerHTML = habits.length ? habits.map(function(h, i){
+      return '<div class="cp-qe-task'+(h.done?' is-done':'')+'" data-habit-idx="'+i+'">'
+        + '<button type="button" class="cp-qe-check'+(h.done?' is-done':'')+'" data-habit-act="done" aria-label="Mark done">'+(h.done?'✓':'')+'</button>'
+        + '<input type="text" class="cp-qe-input" value="'+esc(h.label||'')+'" data-task-field="label" data-habit-field="label" aria-label="Habit" />'
+        + '<button type="button" class="cp-qe-icon" data-habit-act="del" aria-label="Delete habit">✕</button>'
+        + '</div>';
+    }).join('') : '<p class="cp-caption" style="margin:0;">No habits yet — add the first one below. Habits replace the Six Cores rail on their dashboard.</p>';
+  }
+
+  function goalStatusOptionsHtml(selected){
+    return GOAL_STATUSES.map(function(st){
+      return '<option value="'+st.key+'"'+(st.key===selected?' selected':'')+'>'+esc(st.label)+'</option>';
+    }).join('');
+  }
+
+  function renderQeGoals(){
+    var goals = portalData.goals;
+    $('cpQeGoals').innerHTML = goals.length ? goals.map(function(g, i){
+      var pct = Math.max(0, Math.min(100, parseInt(g.progress,10) || 0));
+      return '<div class="cp-qe-goal" data-goal-idx="'+i+'">'
+        + '<div class="cp-qe-goal-row">'
+          + '<span class="cp-dot" style="background:'+coreColor(g.coreKey)+'"></span>'
+          + '<input type="text" class="cp-qe-input" value="'+esc(g.title||'')+'" data-goal-field="title" aria-label="Goal" />'
+          + '<button type="button" class="cp-qe-icon" data-goal-act="del" aria-label="Delete goal">✕</button>'
+        + '</div>'
+        + '<div class="cp-qe-goal-row">'
+          + '<select class="cp-qe-input" data-goal-field="coreKey" aria-label="Core"><option value="">No core</option>'+coreOptionsHtml(g.coreKey)+'</select>'
+          + '<select class="cp-qe-input" data-goal-field="status" aria-label="Status">'+goalStatusOptionsHtml(g.status)+'</select>'
+          + '<span class="cp-qe-pct"><input type="number" min="0" max="100" value="'+pct+'" data-goal-field="progress" aria-label="Progress" />%</span>'
+        + '</div>'
+        + '</div>';
+    }).join('') : '<p class="cp-caption" style="margin:0;">No goals yet — add the first one below.</p>';
   }
 
   function renderQeTasks(){
@@ -3178,7 +3238,8 @@
     $('cpQeTitle').textContent = 'Edit ' + ((c && c.name) || 'portal');
     qeSetStatus('ok', 'Changes save live');
     $('cpQeNewTaskCore').innerHTML = coreOptionsHtml(CORE_DEFS[0].key);
-    renderQeCores(); renderQeTasks(); fillQeOverview();
+    $('cpQeNewGoalCore').innerHTML = '<option value="">No core</option>' + coreOptionsHtml('');
+    renderQeCores(); renderQeTasks(); renderQeHabits(); renderQeGoals(); fillQeOverview();
     setQeTab(qeTab);
     $('cpQeOverlay').hidden = false;
     document.body.style.overflow = 'hidden';
@@ -3201,35 +3262,8 @@
     openEditPortal(id, c ? c.name : '');
   });
 
-  // Cores: slider and number stay in sync; the row upserts on (client_id, core_key).
-  function saveCore(idx){
-    var c = portalData.cores[idx], clientId = viewingClientId;
-    qeDebounce('core:'+c.key, function(){
-      qeWrite(sb.from('client_cores').upsert({
-        client_id: clientId, core_key: c.key, label: c.label, color: c.color,
-        pct: parseInt(c.pct,10)||0, note: c.note||'', position: idx
-      }, { onConflict: 'client_id,core_key' }));
-    });
-  }
-
-  $('cpQeCores').addEventListener('input', function(e){
-    var t = e.target.closest('[data-core-field]'); if (!t || !portalData) return;
-    var idx = parseInt(t.getAttribute('data-core-idx'),10);
-    var field = t.getAttribute('data-core-field');
-    var core = portalData.cores[idx];
-    if (field === 'pct') {
-      var v = Math.max(0, Math.min(100, parseInt(t.value,10) || 0));
-      core.pct = v;
-      $('cpQeCores').querySelectorAll('[data-core-idx="'+idx+'"][data-core-field="pct"]').forEach(function(el){ if (el !== t) el.value = v; });
-    } else {
-      core.note = t.value;
-    }
-    renderCoreList();
-    saveCore(idx);
-  });
-
   // Tasks: each row writes on its own — no full-table replace.
-  function rerenderTasksBehind(){ renderTasks(); renderReminder(); }
+  function rerenderTasksBehind(){ renderTasks(); renderReminder(); renderCoreList(); renderQeCores(); }
 
   function saveTaskPositions(){
     var clientId = viewingClientId;
@@ -3302,6 +3336,115 @@
   $('cpQeAddTask').addEventListener('click', qeAddTask);
   $('cpQeNewTask').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); qeAddTask(); } });
 
+  // Habits: same live-save pattern as tasks.
+  $('cpQeHabits').addEventListener('input', function(e){
+    var f = e.target.closest('[data-habit-field]'); if (!f || !portalData) return;
+    var habit = portalData.habits[parseInt(f.closest('[data-habit-idx]').getAttribute('data-habit-idx'),10)]; if (!habit) return;
+    habit.label = f.value;
+    renderCoreList();
+    if (!habit.label.trim()) return;
+    qeDebounce('habit:'+habit.id, function(){
+      qeWrite(sb.from('client_habits').update({ label: habit.label.trim() }).eq('id', habit.id));
+    });
+  });
+
+  $('cpQeHabits').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-habit-act]'); if (!btn || !portalData) return;
+    var idx = parseInt(btn.closest('[data-habit-idx]').getAttribute('data-habit-idx'),10);
+    var habit = portalData.habits[idx]; if (!habit) return;
+    if (btn.getAttribute('data-habit-act') === 'done') {
+      habit.done = !habit.done;
+      qeWrite(sb.from('client_habits').update({ done: habit.done }).eq('id', habit.id));
+    } else {
+      portalData.habits.splice(idx, 1);
+      qeWrite(sb.from('client_habits').delete().eq('id', habit.id));
+    }
+    renderQeHabits();
+    renderCoreList();
+  });
+
+  async function qeAddHabit(){
+    var input = $('cpQeNewHabit');
+    var label = input.value.trim(); if (!label || !portalData) return;
+    var clientId = viewingClientId;
+    input.value = '';
+    var res = await qeWrite(sb.from('client_habits').insert({
+      client_id: clientId, label: label, done: false, position: portalData.habits.length
+    }).select().single());
+    if (!res || res.error || viewingClientId !== clientId) { if (res && res.error) input.value = label; return; }
+    portalData.habits.push({ id:res.data.id, label:res.data.label, done:res.data.done });
+    renderQeHabits();
+    renderCoreList();
+    input.focus();
+  }
+
+  $('cpQeAddHabit').addEventListener('click', qeAddHabit);
+  $('cpQeNewHabit').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); qeAddHabit(); } });
+
+  // Goals: title debounces; core, status and progress save on change.
+  function onQeGoalEdit(e){
+    var f = e.target.closest('[data-goal-field]'); if (!f || !portalData) return;
+    var row = f.closest('[data-goal-idx]');
+    var goal = portalData.goals[parseInt(row.getAttribute('data-goal-idx'),10)]; if (!goal) return;
+    var field = f.getAttribute('data-goal-field');
+    if (field === 'title') {
+      if (e.type !== 'input') return;
+      goal.title = f.value;
+      renderGoalsTab();
+      if (!goal.title.trim()) return;
+      qeDebounce('goal:'+goal.id, function(){
+        qeWrite(sb.from('client_goals').update({ title: goal.title.trim() }).eq('id', goal.id));
+      });
+      return;
+    }
+    if (e.type !== 'change') return;
+    var patch = {};
+    if (field === 'coreKey') {
+      goal.coreKey = patch.core_key = f.value;
+      row.querySelector('.cp-dot').style.background = coreColor(f.value);
+    } else if (field === 'status') {
+      goal.status = patch.status = f.value;
+      if (f.value === 'achieved') { goal.progress = patch.progress = 100; renderQeGoals(); }
+    } else {
+      goal.progress = patch.progress = Math.max(0, Math.min(100, parseInt(f.value,10) || 0));
+      f.value = goal.progress;
+    }
+    renderGoalsTab();
+    qeWrite(sb.from('client_goals').update(patch).eq('id', goal.id));
+  }
+  $('cpQeGoals').addEventListener('input', onQeGoalEdit);
+  $('cpQeGoals').addEventListener('change', onQeGoalEdit);
+
+  $('cpQeGoals').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-goal-act="del"]'); if (!btn || !portalData) return;
+    var idx = parseInt(btn.closest('[data-goal-idx]').getAttribute('data-goal-idx'),10);
+    var goal = portalData.goals[idx]; if (!goal) return;
+    if (!confirm('Delete "' + goal.title + '"? This cannot be undone.')) return;
+    portalData.goals.splice(idx, 1);
+    qeWrite(sb.from('client_goals').delete().eq('id', goal.id));
+    renderQeGoals();
+    renderGoalsTab();
+  });
+
+  async function qeAddGoal(){
+    var input = $('cpQeNewGoal');
+    var title = input.value.trim(); if (!title || !portalData) return;
+    var clientId = viewingClientId;
+    input.value = '';
+    var res = await qeWrite(sb.from('client_goals').insert({
+      client_id: clientId, title: title, core_key: $('cpQeNewGoalCore').value,
+      status: 'not_started', progress: 0, created_by: 'coach'
+    }).select().single());
+    if (!res || res.error || viewingClientId !== clientId) { if (res && res.error) input.value = title; return; }
+    portalData.goals.push(mapGoal(res.data));
+    renderQeGoals();
+    renderGoalsTab();
+    input.focus();
+  }
+
+  $('cpQeAddGoal').addEventListener('click', qeAddGoal);
+  $('cpQeNewGoal').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); qeAddGoal(); } });
+
   // Overview fields map 1:1 onto client_dashboard columns.
   var QE_DASH_MAP = {
     route: 'route', week_now: 'weekNow', week_total: 'weekTotal', flag_status: 'flagStatus',
@@ -3324,7 +3467,6 @@
 
   function renderDashBehind(){
     $('cpRouteLine').textContent = (portalData.route || 'No route set yet') + ' · Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
-    $('cpWeekLine2').textContent = 'Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
     renderSessionCard();
   }
 
@@ -3346,7 +3488,7 @@
       rtTimer = setTimeout(function(){ refreshFromRealtime(clientId); }, 400);
     };
     rtChannel = sb.channel('portal-' + clientId);
-    ['client_tasks','client_cores','client_dashboard'].forEach(function(table){
+    ['client_tasks','client_cores','client_dashboard','client_habits','client_goals'].forEach(function(table){
       rtChannel.on('postgres_changes', { event:'*', schema:'public', table:table, filter:filter }, onChange);
     });
     // Filtered subscriptions don't receive deletes, so watch task deletes
@@ -3363,11 +3505,11 @@
     if (viewingClientId !== clientId || !portalData || qeVisible()) return;
     var data = await fetchPortalData(clientId);
     if (viewingClientId !== clientId || !portalData || qeVisible()) return;
-    ['cores','tasks','route','weekNow','weekTotal','flagStatus','flagColor','nextSessionLabel','nextSessionAgenda','reminderDay','reminderChannel','reminderOn'].forEach(function(k){
+    ['cores','tasks','habits','goals','route','weekNow','weekTotal','flagStatus','flagColor','nextSessionLabel','nextSessionAgenda','reminderDay','reminderChannel','reminderOn'].forEach(function(k){
       portalData[k] = data[k];
     });
-    renderCoreList();
     rerenderTasksBehind();
+    renderGoalsTab();
     renderDashBehind();
   }
 
