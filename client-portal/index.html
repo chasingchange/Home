@@ -240,9 +240,6 @@
       .cp-cur-row-actions button:hover{background:rgba(7,31,53,.07);color:#071f35;}
       .cp-cur-row-actions button[data-cur-del]:hover{background:rgba(240,35,72,.1);color:#c01a38;}
       .cp-queue-click:hover{background:rgba(7,31,53,.03);}
-      .cp-trainerize-view{display:grid;gap:14px;}
-      .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
-      .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
       .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
       .cp-core-rail{position:sticky;top:24px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:22px;}
       .cp-core-list{margin-top:16px;display:grid;gap:2px;}
@@ -278,6 +275,7 @@
       .cp-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;cursor:pointer;transition:box-shadow .18s;}
       .cp-card:hover{box-shadow:0 14px 34px rgba(7,31,53,.08);}
       .cp-card--wide{grid-column:1 / -1;}
+      .cp-trainerize-card{display:block;color:inherit;text-decoration:none;}
       .cp-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
       .cp-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:20px;margin:8px 0 0;}
       .cp-meta{font-size:13px;font-weight:700;color:rgba(7,31,53,.45);flex-shrink:0;}
@@ -605,7 +603,6 @@
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="trainerize">Trainerize</button>
         </div>
 
         <div class="cp-client-view" id="cpClientView">
@@ -652,6 +649,13 @@
               <p class="cp-body-text" id="cpCiCardBody"></p>
               <div class="cp-cta-row"><span class="cp-cta-primary" id="cpCiCardCta">Open check-ins</span></div>
             </div>
+            <a class="cp-card cp-card--wide cp-trainerize-card" id="cpTrainerizeCard" href="https://chasingchange.trainerize.com/app/overview" target="_blank" rel="noopener">
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Trainerize</p><h3 class="cp-card-title">Workouts &amp; training stats</h3></div>
+              </div>
+              <p class="cp-body-text">Log in to Trainerize to see your workouts, programs and progress.</p>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open Trainerize ↗</span></div>
+            </a>
             <div class="cp-card cp-card--wide" id="cpEduCard" data-goto-tab="education" hidden>
               <div class="cp-card-head">
                 <div><p class="cp-kicker">Education</p><h3 class="cp-card-title" id="cpEduCardTitle"></h3></div>
@@ -836,16 +840,6 @@
           </div>
         </div>
 
-        <div class="cp-trainerize-view" id="cpTrainerizeView" hidden>
-          <div class="cp-trainerize-bar">
-            <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats live on Trainerize — Trainerize doesn't allow its pages to be embedded, so open it in its own tab.</p></div>
-            <a class="cp-cta-primary" id="cpTrainerizeOpenBtn" href="#" target="_blank" rel="noopener">Open in Trainerize ↗</a>
-          </div>
-          <div class="cp-trainerize-empty" id="cpTrainerizeEmpty" hidden>
-            <p>Your coach hasn't linked your Trainerize account yet — check back soon.</p>
-          </div>
-        </div>
-
         <div class="cp-coach-view" id="cpCoachView" hidden>
           <div class="cp-card cp-roster-card">
             <div class="cp-card-head" style="align-items:center;">
@@ -1010,10 +1004,6 @@
                   <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
                   <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
                 </div>
-              </div>
-              <div class="cp-edit-field cp-edit-field--full">
-                <label>Trainerize link</label>
-                <input type="url" id="cpEditTrainerizeUrl" class="cp-edit-input" placeholder="https://www.trainerize.com/…" />
               </div>
             </div>
           </div>

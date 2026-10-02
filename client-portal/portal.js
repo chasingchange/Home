@@ -484,7 +484,6 @@
       preferredCardio: d.preferred_cardio || '',
       cardioGoal: d.cardio_goal || '',
       visionBoardUrl: d.vision_board_url || '',
-      trainerizeUrl: d.trainerize_url || '',
       cores: cores,
       tasks: (results[2].data || []).map(function(t){ return { id:t.id, label:t.label, coreKey:t.core_key, color:t.color, done:t.done }; }),
       notes: (results[3].data || []).map(function(n){ return { id:n.id, label:n.label, meta:n.meta, body:n.body }; }),
@@ -845,35 +844,15 @@
     renderNonNegotiables();
     renderArchive();
     renderOffboardingForm();
-    renderTrainerize();
     renderGoalsTab();
     renderHomeworkTab();
     renderCheckinsTab();
     renderEducationTab();
   }
 
-  // ─── Trainerize tab: per-client link, opened in a new tab ─────────────
-  // Trainerize sends X-Frame-Options/CSP headers that block iframing, so
-  // this links out instead of embedding.
-  function renderTrainerize(){
-    var url = portalData.trainerizeUrl || '';
-    var openBtn = $('cpTrainerizeOpenBtn');
-    var empty = $('cpTrainerizeEmpty');
-
-    if (!url) {
-      openBtn.hidden = true;
-      empty.hidden = false;
-      return;
-    }
-
-    openBtn.hidden = false;
-    openBtn.href = url;
-    empty.hidden = true;
-  }
-
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView',
-    checkins:'cpCheckinsView', education:'cpEducationView', trainerize:'cpTrainerizeView'
+    checkins:'cpCheckinsView', education:'cpEducationView'
   };
 
   function setPortalTab(tab){
@@ -2914,7 +2893,6 @@
     $('cpEditCardioType').value = editState.preferredCardio;
     $('cpEditCardioType').dispatchEvent(new Event('change'));
     $('cpEditCardioGoal').value = editState.cardioGoal;
-    $('cpEditTrainerizeUrl').value = editState.trainerizeUrl;
 
     renderCoreEditor();
 
@@ -3006,8 +2984,7 @@
       reminder_channel: $('cpEditReminderChannel').value,
       reminder_on: $('cpEditReminderOn').checked,
       preferred_cardio: $('cpEditCardioType').value,
-      cardio_goal: $('cpEditCardioGoal').value.trim(),
-      trainerize_url: $('cpEditTrainerizeUrl').value.trim()
+      cardio_goal: $('cpEditCardioGoal').value.trim()
     };
 
     var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
