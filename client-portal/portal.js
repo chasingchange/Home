@@ -31,7 +31,7 @@
 
   // The six cores are a fixed set — every client has exactly these six,
   // scored week to week. Everything else (tasks, notes, metrics, resources,
-  // wins, messages) is a free-form list per client, loaded from Supabase.
+  // wins) is a free-form list per client, loaded from Supabase.
   var CORE_DEFS = [
     { key:"body",   label:"Body",   color:"#77d770" },
     { key:"mind",   label:"Mind",   color:"#2a9df0" },
@@ -447,7 +447,6 @@
       sb.from('client_metrics').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_resources').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_wins').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
       sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
@@ -547,10 +546,7 @@
 
     portalData = data;
     $('cpRouteLine').textContent = (data.route || 'No route set yet') + ' · Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpRoute').textContent = data.route || '—';
-    $('cpWeek').textContent  = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
     $('cpWeekLine2').textContent = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpStreakLine').textContent = data.streakWeeks > 0 ? (data.streakWeeks + '-week streak') : 'No active streak';
 
     renderClientPortal();
     renderViewToggle();
@@ -839,13 +835,10 @@
     if (!portalData) return;
     renderCoreList();
     renderTasks();
-    renderBars();
     renderNotesCard();
-    renderMetrics();
     renderChips();
     renderWins();
     renderSessionCard();
-    renderMessages();
     renderReminder();
     renderCardioBox();
     renderOnboarding();
@@ -1159,53 +1152,6 @@
     $('cpArchiveList').innerHTML = h || '<p class="cp-caption" style="margin:0;">Nothing archived yet.</p>';
   }
 
-  // ─── Offboarding reflection form (client fills in, coach reads) ───────
-  function renderOffboardingForm(){
-    $('cpOffboardingCard').hidden = false;
-    var o = portalData.offboarding || {};
-    var h = '';
-    OFFBOARD_FIELDS.forEach(function(f){
-      var val = o[f.key];
-      if (f.type === 'rating') {
-        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><select class="cp-edit-input" data-off-field="'+f.key+'" style="width:120px"><option value="">—</option>';
-        for (var i=1;i<=5;i++) h += '<option value="'+i+'"'+(val===i?' selected':'')+'>'+i+'</option>';
-        h += '</select></div>';
-      } else {
-        h += '<div class="cp-edit-field"><label>'+esc(f.label)+'</label><input type="text" class="cp-edit-input" data-off-field="'+f.key+'" value="'+esc(val||'')+'" /></div>';
-      }
-    });
-    h += '<div class="cp-edit-field"><label>Continuation signal</label><div class="cp-chip-row">';
-    CONTINUATION_SIGNALS.forEach(function(s){
-      var checked = (o.continuation_signal || []).indexOf(s) !== -1;
-      h += '<label class="cp-chip" style="cursor:pointer;"><input type="checkbox" data-off-signal="'+esc(s)+'"'+(checked?' checked':'')+' style="margin-right:6px;" />'+esc(s)+'</label>';
-    });
-    h += '</div></div>';
-    $('cpOffboardingForm').innerHTML = h;
-    $('cpOffboardingStatus').textContent = o.submitted ? 'Submitted' : 'Draft';
-  }
-
-  $('cpOffboardingSave').addEventListener('click', async function(){
-    if (!viewingClientId) return;
-    var clientId = viewingClientId;
-    var row = { client_id: clientId, submitted: true };
-    OFFBOARD_FIELDS.forEach(function(f){
-      var el = $('cpOffboardingForm').querySelector('[data-off-field="'+f.key+'"]');
-      var v = el ? el.value : '';
-      row[f.key] = f.type === 'rating' ? (v ? parseInt(v,10) : null) : (v || '');
-    });
-    var signals = [];
-    $('cpOffboardingForm').querySelectorAll('[data-off-signal]').forEach(function(cb){ if (cb.checked) signals.push(cb.getAttribute('data-off-signal')); });
-    row.continuation_signal = signals;
-
-    setLoading($('cpOffboardingSave'), true, 'Saving…');
-    var { error } = await sb.from('client_offboarding').upsert(row, { onConflict:'client_id' });
-    setLoading($('cpOffboardingSave'), false, 'Save reflection');
-    if (error) { window.alert('Could not save: ' + error.message); return; }
-    if (viewingClientId !== clientId) return;
-    portalData.offboarding = row;
-    renderOffboardingForm();
-  });
-
   // Each core links to that client's page for the core, e.g. /client-portal/body/?client=<id>.
   function coreHref(key, clientId){
     return './' + key + '/?client=' + encodeURIComponent(clientId);
@@ -1247,14 +1193,6 @@
     });
     $('cpTaskList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No assignments yet.</p>';
     $('cpTaskCount').textContent = portalData.tasks.length + (portalData.tasks.length===1?' assignment':' assignments');
-  }
-
-  function renderBars(){
-    var vals = portalData.adherenceHistory || [];
-    if (!vals.length) { $('cpBars').innerHTML = '<p class="cp-caption" style="margin:0;">No history yet.</p>'; return; }
-    var max=Math.max.apply(null,vals), h='';
-    vals.forEach(function(v){ var ht=Math.round((v/max)*78),bg=v>=70?'#071f35':'rgba(7,31,53,0.16)'; h+='<div class="cp-bar" style="height:'+ht+'px;background:'+bg+'"></div>'; });
-    $('cpBars').innerHTML=h;
   }
 
   function renderNotesCard(){
@@ -2208,11 +2146,6 @@
     $('cpWinList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No wins logged yet.</p>';
   }
 
-  function renderMetrics(){
-    var h=''; portalData.metrics.forEach(function(m){ h+='<div class="cp-metric-row"><span class="cp-metric-label">'+esc(m.label)+'</span><span class="cp-metric-value">'+esc(m.value)+'</span></div>'; });
-    $('cpMetricList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No metrics yet.</p>';
-  }
-
   function renderChips(){
     var h=''; portalData.resources.forEach(function(r){ h+='<span class="cp-chip"><span class="cp-dot" style="background:'+(r.color||'#2a9df0')+'"></span>'+esc(r.label)+'</span>'; });
     $('cpResourceChips').innerHTML = h || '<p class="cp-caption" style="margin:0;">Nothing assigned yet.</p>';
@@ -2223,30 +2156,6 @@
     $('cpSessionAgenda').textContent = portalData.nextSessionAgenda || 'Your coach hasn\'t set an agenda yet.';
     renderSessionCTA();
   }
-
-  function renderMessages(){
-    var recent = portalData.messages.slice(-6);
-    var h=''; recent.forEach(function(m){
-      var who = m.sender === 'coach' ? 'Coach' : 'Client';
-      var when = m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '';
-      h+='<div class="cp-message"><p class="cp-message-meta">'+esc(who)+(when?' · '+esc(when):'')+'</p><p class="cp-message-body">'+esc(m.body)+'</p></div>';
-    });
-    $('cpMessageList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No messages yet.</p>';
-  }
-
-  $('cpMessageInput').addEventListener('keydown', async function(e){
-    if (e.key !== 'Enter') return;
-    var body = this.value.trim();
-    if (!body || !viewingClientId) return;
-    var clientId = viewingClientId;
-    this.value = '';
-    var sender = isCoachUser ? 'coach' : 'client';
-    await sb.from('client_messages').insert({ client_id: clientId, sender: sender, body: body });
-    if (viewingClientId !== clientId) return;
-    var { data } = await sb.from('client_messages').select('*').eq('client_id', clientId).order('created_at', { ascending:true });
-    portalData.messages = (data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; });
-    renderMessages();
-  });
 
   // ─── Calendar connect (Google / Outlook) ───────────────────────────────
   // Only the client sees this — a coach browsing a client's portal (see
@@ -3040,10 +2949,6 @@
          + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+(parseInt(c.pct,10)||0)+'%;background:'+c.color+'"></div></div></div>';
     });
     $('cpEditorPreviewCores').innerHTML = h;
-
-    var weekNow = $('cpEditWeekNow').value || 0, weekTotal = $('cpEditWeekTotal').value || 0;
-    $('cpEditorPreviewRoute').textContent = $('cpEditRoute').value || 'No route set';
-    $('cpEditorPreviewWeek').textContent = 'Week ' + weekNow + ' of ' + weekTotal;
 
     var openTasks = editSections.cpEditTaskList.items.filter(function(t){ return (t.label||'').trim() && !t.done; });
     $('cpEditorPreviewReminder').textContent = ($('cpEditReminderDay').value || 'Monday') + ' by ' + ($('cpEditReminderChannel').value || 'text')
