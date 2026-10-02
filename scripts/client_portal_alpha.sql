@@ -5,7 +5,9 @@
 --
 -- Backs the client-portal alpha features:
 --   - Homework tab        -> public.client_assignments
---   - Education tab       -> public.client_competency_questions
+--   - Education tab       -> public.education_questions (one shared curriculum,
+--                            organized core -> competency -> question; clients
+--                            answer verbally on calls, so no answers are stored)
 --   - Check-ins tab       -> clients can now submit the weekly pre-call form
 --                            straight from the portal (public.client_pre_call_submissions)
 --   - Goals tab           -> progress % on public.client_goals
@@ -13,8 +15,9 @@
 --
 -- Access model matches the rest of the portal: a client reads/writes their
 -- own rows, the coach reads/writes everyone's. Only the coach can create or
--- delete assignments and education questions; clients update them (status,
--- notes, uploads, answers).
+-- delete assignments (clients update status, notes, uploads). The education
+-- curriculum is readable by every signed-in user and editable only by the
+-- coach.
 
 -- ─── Homework assignments ────────────────────────────────────────────────
 create table if not exists public.client_assignments (
@@ -38,22 +41,19 @@ create table if not exists public.client_assignments (
 create index if not exists client_assignments_client_id_idx
   on public.client_assignments (client_id, due_date);
 
--- ─── Education (competency) questions ────────────────────────────────────
-create table if not exists public.client_competency_questions (
-  id              uuid primary key default gen_random_uuid(),
-  client_id       uuid not null references public.profiles(id) on delete cascade,
-  competency      text not null default '',       -- topic / competency the question belongs to
-  question        text not null,
-  answer          text not null default '',
-  answered_at     timestamptz,
-  coach_feedback  text not null default '',
-  position        int not null default 0,
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
+-- ─── Education curriculum (shared by every client) ───────────────────────
+create table if not exists public.education_questions (
+  id          uuid primary key default gen_random_uuid(),
+  core_key    text not null,                  -- body | mind | art | soul | career | life
+  competency  text not null default '',       -- competency the question builds, e.g. "Protein basics"
+  question    text not null,
+  position    int not null default 0,         -- order within the core
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
 );
 
-create index if not exists client_competency_questions_client_id_idx
-  on public.client_competency_questions (client_id, position);
+create index if not exists education_questions_core_idx
+  on public.education_questions (core_key, position);
 
 -- updated_at triggers (set_updated_at() is defined in goal_tab_migration.sql;
 -- redefined here so this file also works on its own)
@@ -70,17 +70,17 @@ create trigger client_assignments_set_updated_at
   before update on public.client_assignments
   for each row execute procedure public.set_updated_at();
 
-drop trigger if exists client_competency_questions_set_updated_at on public.client_competency_questions;
-create trigger client_competency_questions_set_updated_at
-  before update on public.client_competency_questions
+drop trigger if exists education_questions_set_updated_at on public.education_questions;
+create trigger education_questions_set_updated_at
+  before update on public.education_questions
   for each row execute procedure public.set_updated_at();
 
--- RLS: own or coach can select/update; only the coach inserts/deletes.
+-- RLS (assignments): own or coach can select/update; only the coach inserts/deletes.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['client_assignments','client_competency_questions']
+  foreach t in array array['client_assignments']
   loop
     execute format('alter table public.%I enable row level security', t);
 
@@ -108,6 +108,20 @@ begin
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
   end loop;
 end $$;
+
+-- RLS (curriculum): any signed-in user reads; only the coach writes.
+alter table public.education_questions enable row level security;
+
+drop policy if exists "signed in can read curriculum" on public.education_questions;
+create policy "signed in can read curriculum" on public.education_questions for select
+  using (auth.uid() is not null);
+
+drop policy if exists "coach can write curriculum" on public.education_questions;
+create policy "coach can write curriculum" on public.education_questions for all
+  using (public.is_coach(auth.uid()))
+  with check (public.is_coach(auth.uid()));
+
+grant select, insert, update, delete on public.education_questions to authenticated;
 
 -- ─── Weekly pre-call form submitted from the portal ──────────────────────
 -- Notion-synced rows keep their notion_page_id; portal submissions have none.

@@ -455,7 +455,7 @@
       sb.from('client_habits').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_goals').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_assignments').select('*').eq('client_id', clientId).order('created_at', { ascending:false }),
-      sb.from('client_competency_questions').select('*').eq('client_id', clientId).order('position').order('created_at', { ascending:true })
+      sb.from('education_questions').select('*').order('position')
     ]);
 
     var d = results[0].data || {};
@@ -500,7 +500,7 @@
       habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
       goals: (results[13].data || []).map(mapGoal),
       assignments: (results[14].data || []).map(mapAssignment),
-      eduQuestions: (results[15].data || []).map(mapEduQuestion)
+      eduQuestions: (results[15].data || []).map(curMap)
     };
   }
 
@@ -519,9 +519,7 @@
     };
   }
 
-  function mapEduQuestion(q){
-    return { id:q.id, competency:q.competency||'', question:q.question, answer:q.answer||'', answeredAt:q.answered_at, coachFeedback:q.coach_feedback||'', position:q.position||0 };
-  }
+
 
   // Pre-call rows keep their DB column names (PRECALL_FIELDS keys) so the
   // weekly form and the history view can read/write them directly.
@@ -1989,178 +1987,220 @@
     $('cpCiCardCta').textContent = (!cur && own) ? 'Fill out check-in' : 'View check-ins';
   }
 
-  // ─── Education tab: competency questions ──────────────────────────────
-  var eduEditingId = null;
+  // ─── Education tab: shared curriculum ─────────────────────────────────
+  // One curriculum (core -> competency -> question) shared by every client.
+  // Clients review the questions here and answer them verbally on calls, so
+  // nothing is answered or stored per client.
+  var eduCore = null;   // core shown on the Education tab
 
-  function findEdu(id){
-    return (portalData.eduQuestions || []).filter(function(q){ return q.id === id; })[0] || null;
+  function coreLabel(key){
+    var d = CORE_DEFS.filter(function(c){ return c.key === key; })[0];
+    return d ? d.label : key;
   }
 
-  function eduStatus(q){
-    if (!q.answer.trim()) return { label:'Awaiting answer', color:'#5b6b7a' };
-    if (q.coachFeedback.trim()) return { label:'Feedback given', color:'#3d9b37' };
-    return { label:'Answered', color:'#2a9df0' };
+  // Questions grouped by competency, in curriculum order.
+  function groupByCompetency(qs){
+    var order = [], groups = {};
+    qs.slice().sort(function(a, b){ return a.position - b.position; }).forEach(function(q){
+      var k = q.competency.trim() || 'General';
+      if (!groups[k]) { groups[k] = []; order.push(k); }
+      groups[k].push(q);
+    });
+    return order.map(function(k){ return { name:k, items:groups[k] }; });
   }
 
-  function eduCardHtml(q){
-    var own = isOwnPortal();
-    var st = eduStatus(q);
-    var h = '<div class="cp-edu-card" data-edu-card="'+esc(q.id)+'"><div class="cp-edu-top"><p class="cp-edu-q">'+esc(q.question)+'</p>'+statusPill(st.label, st.color)+'</div>';
-    if (own) {
-      h += '<textarea class="cp-textarea" data-edu-answer="'+esc(q.id)+'" aria-label="Your answer" placeholder="Answer in your own words…">'+esc(q.answer)+'</textarea>'
-        + '<div class="cp-btn-row"><button type="button" class="cp-btn-sm cp-btn-sm--primary" data-edu-save="'+esc(q.id)+'">Save answer</button><span class="cp-save-note" data-edu-note="'+esc(q.id)+'"></span></div>';
-    } else {
-      h += '<div class="cp-edu-answer-ro'+(q.answer.trim() ? '' : ' is-empty')+'">'+(q.answer.trim() ? linkify(q.answer) : 'No answer yet.')+'</div>';
-    }
-    if (isCoachUser) {
-      h += '<textarea class="cp-textarea" style="min-height:80px;" data-edu-feedback="'+esc(q.id)+'" aria-label="Feedback" placeholder="Feedback on their answer (optional)…">'+esc(q.coachFeedback)+'</textarea>'
-        + '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-edu-save-feedback="'+esc(q.id)+'">Save feedback</button>'
-        + '<button type="button" class="cp-link-btn" data-edu-edit="'+esc(q.id)+'">Edit question</button>'
-        + '<button type="button" class="cp-link-btn cp-link-btn--danger" data-edu-delete="'+esc(q.id)+'">Delete</button>'
-        + '<span class="cp-save-note" data-edu-note="'+esc(q.id)+'"></span></div>';
-    } else if (q.coachFeedback.trim()) {
-      h += '<p class="cp-caption">Coach feedback</p><div class="cp-hw-feedback" style="margin-top:8px;">'+linkify(q.coachFeedback)+'</div>';
-    }
-    return h + '</div>';
+  function coreChipsHtml(counts, active, attr, disableEmpty){
+    return CORE_DEFS.map(function(c){
+      var n = counts[c.key] || 0;
+      var sub = n ? n + ' question' + (n === 1 ? '' : 's') : 'Coming soon';
+      return '<button type="button" role="tab" class="cp-core-chip'+(c.key === active ? ' is-active' : '')+'" aria-selected="'+(c.key === active)+'" '+attr+'="'+c.key+'"'+(disableEmpty && !n ? ' disabled' : '')+'>'
+        + '<span class="cp-dot" style="background:'+c.color+'"></span>'+esc(c.label)+'<small>'+esc(sub)+'</small></button>';
+    }).join('');
   }
 
   function renderEducationTab(){
     if (!portalData) return;
     var qs = portalData.eduQuestions || [];
-    var answered = qs.filter(function(q){ return q.answer.trim(); }).length;
     $('cpEduAddBtn').hidden = !isCoachUser;
-    $('cpEduSummary').textContent = qs.length
-      ? answered + ' of ' + qs.length + ' answered'
-      : '';
-    setBadge('cpTabBadgeEducation', isOwnPortal() ? qs.length - answered : 0);
+    $('cpEduSummary').textContent = qs.length ? 'Be ready to answer these out loud on our calls.' : '';
 
-    var order = [], groups = {};
-    qs.forEach(function(q){
-      var k = q.competency.trim() || 'General';
-      if (!groups[k]) { groups[k] = []; order.push(k); }
-      groups[k].push(q);
-    });
+    var counts = {};
+    qs.forEach(function(q){ counts[q.coreKey] = (counts[q.coreKey] || 0) + 1; });
+    if (!eduCore || !counts[eduCore]) {
+      eduCore = (CORE_DEFS.filter(function(c){ return counts[c.key]; })[0] || CORE_DEFS[0]).key;
+    }
+    $('cpEduCoreChips').hidden = !qs.length;
+    $('cpEduCoreChips').innerHTML = coreChipsHtml(counts, eduCore, 'data-edu-core', true);
+
     var h = '';
     if (!qs.length) {
-      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No questions yet — use “Ask a question” to start building a competency.' : 'No questions yet. Your coach will post questions here for you to answer.') + '</div>';
+      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No curriculum yet — use “Edit curriculum” to add questions.' : 'Your coach is building these — check back soon.') + '</div>';
     }
-    order.forEach(function(k){
-      h += '<div class="cp-edu-group"><p class="cp-goals-section-label">'+esc(k)+'</p><div class="cp-edu-list">' + groups[k].map(eduCardHtml).join('') + '</div></div>';
+    groupByCompetency(qs.filter(function(q){ return q.coreKey === eduCore; })).forEach(function(g){
+      h += '<div class="cp-edu-group"><p class="cp-goals-section-label">'+esc(g.name)+'</p><div class="cp-edu-list">'
+        + g.items.map(function(q){ return '<div class="cp-edu-card"><p class="cp-edu-q">'+esc(q.question)+'</p></div>'; }).join('')
+        + '</div></div>';
     });
     $('cpEduList').innerHTML = h;
-    $('cpEduCompetencyList').innerHTML = order.filter(function(k){ return k !== 'General'; }).map(function(k){ return '<option value="'+esc(k)+'"></option>'; }).join('');
     renderEduCard();
   }
 
-  // Re-render one card only, so other half-written answers aren't wiped.
-  function refreshEduCard(q){
-    var el = $('cpEduList').querySelector('[data-edu-card="'+q.id+'"]');
-    if (el) el.outerHTML = eduCardHtml(q);
-    var qs = portalData.eduQuestions;
-    var answered = qs.filter(function(x){ return x.answer.trim(); }).length;
-    $('cpEduSummary').textContent = answered + ' of ' + qs.length + ' answered';
-    setBadge('cpTabBadgeEducation', isOwnPortal() ? qs.length - answered : 0);
-    renderEduCard();
-  }
+  $('cpEduCoreChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-edu-core]'); if (!b || b.disabled) return;
+    eduCore = b.getAttribute('data-edu-core');
+    renderEducationTab();
+  });
 
   function renderEduCard(){
     var qs = portalData.eduQuestions || [];
     $('cpEduCard').hidden = qs.length === 0;
     if (!qs.length) return;
-    var open = qs.filter(function(q){ return !q.answer.trim(); });
-    $('cpEduCardTitle').textContent = isOwnPortal()
-      ? (open.length ? open.length + ' question' + (open.length === 1 ? '' : 's') + ' waiting for you' : 'All questions answered')
-      : (qs.length - open.length) + ' of ' + qs.length + ' answered';
-    $('cpEduCardMeta').textContent = qs.length + ' total';
-    $('cpEduCardBody').textContent = open.length ? 'Next up: ' + open[0].question : 'Nice work — your coach will follow up with feedback.';
+    var cores = CORE_DEFS.filter(function(c){ return qs.some(function(q){ return q.coreKey === c.key; }); });
+    $('cpEduCardTitle').textContent = qs.length + ' competency question' + (qs.length === 1 ? '' : 's');
+    $('cpEduCardMeta').textContent = cores.map(function(c){ return c.label; }).join(' · ');
+    $('cpEduCardBody').textContent = 'Review these before your calls — you\'ll answer them out loud.';
   }
 
-  $('cpEduList').addEventListener('click', async function(e){
-    var t;
-    if ((t = e.target.closest('[data-edu-edit]'))) { openEduForm(findEdu(t.getAttribute('data-edu-edit'))); return; }
+  async function reloadEducation(clientId){
+    var { data } = await sb.from('education_questions').select('*').order('position');
+    if (viewingClientId !== clientId || !portalData) return;
+    portalData.eduQuestions = (data || []).map(curMap);
+    renderEducationTab();
+  }
 
-    if ((t = e.target.closest('[data-edu-delete]'))) {
-      var dq = findEdu(t.getAttribute('data-edu-delete')); if (!dq) return;
-      if (!confirm('Delete this question? Any answer to it is deleted too.')) return;
-      var del = await sb.from('client_competency_questions').delete().eq('id', dq.id);
-      if (del.error) { alert('Could not delete: ' + del.error.message); return; }
-      portalData.eduQuestions = portalData.eduQuestions.filter(function(x){ return x.id !== dq.id; });
-      renderEducationTab();
+  // ─── Coach: curriculum editor ─────────────────────────────────────────
+  var curBank = [];       // [{ id, coreKey, competency, question, position }]
+  var curCore = 'body';
+
+  function curMap(r){ return { id:r.id, coreKey:r.core_key, competency:r.competency || '', question:r.question, position:r.position || 0 }; }
+  function curFind(id){ return curBank.filter(function(q){ return q.id === id; })[0] || null; }
+
+  async function openCurriculum(){
+    if (!isCoachUser) return;
+    if (eduCore) curCore = eduCore;
+    $('cpCurOverlay').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('cpCurBody').innerHTML = '<p class="cp-caption">Loading…</p>';
+    setNote('cpCurNote', '');
+    var { data, error } = await sb.from('education_questions').select('*').order('position');
+    if (error) { $('cpCurBody').innerHTML = '<p class="cp-save-note is-error">Could not load the curriculum: '+esc(error.message)+'</p>'; return; }
+    curBank = (data || []).map(curMap);
+    curRender();
+  }
+
+  function closeCurriculum(){
+    $('cpCurOverlay').hidden = true;
+    document.body.style.overflow = '';
+    if (viewingClientId && portalData) reloadEducation(viewingClientId);
+  }
+
+  function curRender(){
+    var counts = {};
+    curBank.forEach(function(q){ counts[q.coreKey] = (counts[q.coreKey] || 0) + 1; });
+    $('cpCurCoreChips').innerHTML = coreChipsHtml(counts, curCore, 'data-cur-core', false);
+    $('cpCurCoreName').textContent = coreLabel(curCore);
+
+    var groups = groupByCompetency(curBank.filter(function(q){ return q.coreKey === curCore; }));
+    var h = '';
+    if (!groups.length) h = '<div class="cp-goal-empty" style="margin:0;">No ' + esc(coreLabel(curCore)) + ' questions yet — add some below.</div>';
+    groups.forEach(function(g){
+      h += '<div class="cp-cur-group"><div class="cp-cur-group-head"><input type="text" class="cp-ci-input" data-cur-comp="'+esc(g.name)+'" value="'+esc(g.name)+'" aria-label="Competency name" /></div>';
+      g.items.forEach(function(q){
+        h += '<div class="cp-cur-row" data-cur-id="'+esc(q.id)+'"><textarea class="cp-textarea" data-cur-q aria-label="Question">'+esc(q.question)+'</textarea>'
+          + '<div class="cp-cur-row-actions"><button type="button" data-cur-move="-1" aria-label="Move up">↑</button><button type="button" data-cur-move="1" aria-label="Move down">↓</button><button type="button" data-cur-del aria-label="Delete question">✕</button></div></div>';
+      });
+      h += '</div>';
+    });
+    $('cpCurBody').innerHTML = h;
+    $('cpCurCompetencyList').innerHTML = groups.map(function(g){ return '<option value="'+esc(g.name)+'"></option>'; }).join('');
+  }
+
+  $('cpCurOpenBtn').addEventListener('click', openCurriculum);
+  $('cpEduAddBtn').addEventListener('click', openCurriculum);
+  $('cpCurOverlay').addEventListener('click', function(e){ if (e.target.closest('[data-close-cur]')) closeCurriculum(); });
+
+  $('cpCurCoreChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-cur-core]'); if (!b) return;
+    curCore = b.getAttribute('data-cur-core');
+    curRender();
+  });
+
+  $('cpCurBody').addEventListener('change', async function(e){
+    var qEl = e.target.closest('[data-cur-q]');
+    if (qEl) {
+      var q = curFind(qEl.closest('[data-cur-id]').getAttribute('data-cur-id')); if (!q) return;
+      var text = qEl.value.trim();
+      if (!text) { qEl.value = q.question; return; }
+      setNote('cpCurNote', 'Saving…');
+      var r1 = await sb.from('education_questions').update({ question: text }).eq('id', q.id);
+      if (r1.error) { setNote('cpCurNote', 'Could not save: ' + r1.error.message, true); return; }
+      q.question = text;
+      setNote('cpCurNote', 'Saved');
+      return;
+    }
+    var cEl = e.target.closest('[data-cur-comp]');
+    if (cEl) {
+      var oldName = cEl.getAttribute('data-cur-comp');
+      var newName = cEl.value.trim() || 'General';
+      var items = curBank.filter(function(x){ return x.coreKey === curCore && (x.competency.trim() || 'General') === oldName; });
+      var ids = items.map(function(x){ return x.id; });
+      if (!ids.length || newName === oldName) return;
+      setNote('cpCurNote', 'Saving…');
+      var r2 = await sb.from('education_questions').update({ competency: newName === 'General' ? '' : newName }).in('id', ids);
+      if (r2.error) { setNote('cpCurNote', 'Could not rename: ' + r2.error.message, true); cEl.value = oldName; return; }
+      items.forEach(function(x){ x.competency = newName === 'General' ? '' : newName; });
+      setNote('cpCurNote', 'Saved');
+      curRender();
+    }
+  });
+
+  $('cpCurBody').addEventListener('click', async function(e){
+    var row = e.target.closest('[data-cur-id]'); if (!row) return;
+    var q = curFind(row.getAttribute('data-cur-id')); if (!q) return;
+
+    if (e.target.closest('[data-cur-del]')) {
+      if (!confirm('Delete this question for every client?')) return;
+      var del = await sb.from('education_questions').delete().eq('id', q.id);
+      if (del.error) { setNote('cpCurNote', 'Could not delete: ' + del.error.message, true); return; }
+      curBank = curBank.filter(function(x){ return x.id !== q.id; });
+      curRender();
       return;
     }
 
-    var isAnswer = !!(t = e.target.closest('[data-edu-save]'));
-    if (!t) t = e.target.closest('[data-edu-save-feedback]');
-    if (!t) return;
-    var id = t.getAttribute(isAnswer ? 'data-edu-save' : 'data-edu-save-feedback');
-    var q = findEdu(id); if (!q) return;
-    var card = t.closest('[data-edu-card]');
-    var noteEl = card.querySelector('[data-edu-note]');
-    var patch;
-    if (isAnswer) {
-      var answer = card.querySelector('[data-edu-answer]').value.trim();
-      patch = { answer: answer, answered_at: answer ? new Date().toISOString() : null };
-    } else {
-      patch = { coach_feedback: card.querySelector('[data-edu-feedback]').value.trim() };
-    }
-    var clientId = viewingClientId;
-    t.disabled = true;
-    noteEl.textContent = 'Saving…';
-    var { data, error } = await sb.from('client_competency_questions').update(patch).eq('id', q.id).select().single();
-    t.disabled = false;
-    if (error) { noteEl.textContent = 'Could not save: ' + error.message; noteEl.classList.add('is-error'); return; }
-    if (viewingClientId !== clientId) return;
-    var updated = mapEduQuestion(data);
-    portalData.eduQuestions = portalData.eduQuestions.map(function(x){ return x.id === updated.id ? updated : x; });
-    refreshEduCard(updated);
-    var fresh = $('cpEduList').querySelector('[data-edu-card="'+updated.id+'"] [data-edu-note]');
-    if (fresh) fresh.textContent = 'Saved';
+    var mv = e.target.closest('[data-cur-move]'); if (!mv) return;
+    var dir = parseInt(mv.getAttribute('data-cur-move'), 10);
+    var group = groupByCompetency(curBank.filter(function(x){ return x.coreKey === curCore; }))
+      .filter(function(g){ return g.items.indexOf(q) !== -1; })[0];
+    var i = group.items.indexOf(q), other = group.items[i + dir];
+    if (!other) return;
+    // Positions can tie (bulk adds), so give the pair distinct values on swap.
+    var a = Math.min(q.position, other.position), b = Math.max(q.position, other.position);
+    if (a === b) b = a + 1;
+    var qPos = dir < 0 ? a : b, oPos = dir < 0 ? b : a;
+    var res = await Promise.all([
+      sb.from('education_questions').update({ position: qPos }).eq('id', q.id),
+      sb.from('education_questions').update({ position: oPos }).eq('id', other.id)
+    ]);
+    var err = res.map(function(r){ return r.error; }).filter(Boolean)[0];
+    if (err) { setNote('cpCurNote', 'Could not reorder: ' + err.message, true); return; }
+    q.position = qPos; other.position = oPos;
+    curRender();
   });
 
-  function openEduForm(q){
-    eduEditingId = q ? q.id : null;
-    $('cpEduFormHeading').textContent = q ? 'Edit question' : 'Ask a question';
-    $('cpEduCompetency').value = q ? q.competency : '';
-    $('cpEduQuestion').value = q ? q.question : '';
-    $('cpEduAllClients').checked = false;
-    $('cpEduAllWrap').hidden = !!q;
-    openModal('cpEduFormOverlay');
-    (q ? $('cpEduQuestion') : $('cpEduCompetency')).focus();
-  }
-
-  $('cpEduAddBtn').addEventListener('click', function(){ openEduForm(null); });
-
-  $('cpEduFormSave').addEventListener('click', async function(){
-    var question = $('cpEduQuestion').value.trim();
-    if (!question) { $('cpEduQuestion').focus(); return; }
-    if (!viewingClientId || !isCoachUser) return;
-    var clientId = viewingClientId;
-    var fields = { competency: $('cpEduCompetency').value.trim(), question: question };
-
-    setLoading($('cpEduFormSave'), true, 'Saving…');
-    var res;
-    if (eduEditingId) {
-      res = await sb.from('client_competency_questions').update(fields).eq('id', eduEditingId).select();
-    } else {
-      var ids = $('cpEduAllClients').checked ? rosterClientIds() : [clientId];
-      var position = (portalData.eduQuestions || []).length;
-      res = await sb.from('client_competency_questions').insert(ids.map(function(id){
-        return Object.assign({ client_id: id, position: position }, fields);
-      })).select();
-    }
-    setLoading($('cpEduFormSave'), false, 'Save question');
-    if (res.error) { alert('Could not save question: ' + res.error.message); return; }
-    closeModal('cpEduFormOverlay');
-    if (viewingClientId !== clientId) return;
-
-    (res.data || []).filter(function(r){ return r.client_id === clientId; }).forEach(function(r){
-      var m = mapEduQuestion(r);
-      var exists = portalData.eduQuestions.some(function(x){ return x.id === m.id; });
-      portalData.eduQuestions = exists
-        ? portalData.eduQuestions.map(function(x){ return x.id === m.id ? m : x; })
-        : portalData.eduQuestions.concat([m]);
-    });
-    renderEducationTab();
+  $('cpCurAddBtn').addEventListener('click', async function(){
+    var lines = $('cpCurQuestions').value.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+    if (!lines.length) { $('cpCurQuestions').focus(); return; }
+    var competency = $('cpCurCompetency').value.trim();
+    var start = curBank.reduce(function(m, q){ return Math.max(m, q.position); }, -1) + 1;
+    var rows = lines.map(function(text, i){ return { core_key: curCore, competency: competency, question: text, position: start + i }; });
+    setLoading($('cpCurAddBtn'), true, 'Adding…');
+    var { data, error } = await sb.from('education_questions').insert(rows).select();
+    setLoading($('cpCurAddBtn'), false, 'Add questions');
+    if (error) { setNote('cpCurNote', 'Could not add: ' + error.message, true); return; }
+    curBank = curBank.concat((data || []).map(curMap));
+    $('cpCurQuestions').value = '';
+    setNote('cpCurNote', 'Added ' + lines.length + ' question' + (lines.length === 1 ? '' : 's'));
+    curRender();
   });
 
   function renderWins(){
@@ -2824,7 +2864,7 @@
     if(!$('cpSheetOverlay').hidden) closeSheet();
     if(!$('cpEditOverlay').hidden) closeEditPortal();
     if(!$('cpHwFormOverlay').hidden) { closeModal('cpHwFormOverlay'); return; }
-    if(!$('cpEduFormOverlay').hidden) { closeModal('cpEduFormOverlay'); return; }
+    if(!$('cpCurOverlay').hidden) { closeCurriculum(); return; }
     if(!$('cpGoalFormOverlay').hidden) { closeGoalForm(); return; }
     if(!$('cpHwSheetOverlay').hidden) closeHwSheet();
   });

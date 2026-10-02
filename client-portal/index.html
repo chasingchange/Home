@@ -223,6 +223,22 @@
       .cp-goal-edit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 10px;border-radius:99px;border:1px solid rgba(7,31,53,.12);}
       .cp-goal-edit-btn:hover{border-color:rgba(7,31,53,.4);color:#071f35;}
       .cp-queue-click{cursor:pointer;border-radius:10px;}
+      .cp-core-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;}
+      .cp-core-chip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);background:#fff;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;color:#071f35;}
+      .cp-core-chip small{font-family:"Muli","Mulish",sans-serif;font-size:11px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-core-chip.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-core-chip.is-active small{color:rgba(255,255,255,.65);}
+      .cp-core-chip:disabled{cursor:default;opacity:.5;}
+      .cp-core-chip:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
+      .cp-cur-group{margin-top:22px;}
+      .cp-cur-group-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+      .cp-cur-group-head input{max-width:none;flex:1;font-family:"Raleway",sans-serif;font-weight:800;}
+      .cp-cur-row{display:flex;gap:8px;align-items:flex-start;margin-top:8px;}
+      .cp-cur-row .cp-textarea{min-height:64px;flex:1;}
+      .cp-cur-row-actions{display:flex;flex-direction:column;gap:2px;}
+      .cp-cur-row-actions button{all:unset;cursor:pointer;width:30px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(7,31,53,.5);}
+      .cp-cur-row-actions button:hover{background:rgba(7,31,53,.07);color:#071f35;}
+      .cp-cur-row-actions button[data-cur-del]:hover{background:rgba(240,35,72,.1);color:#c01a38;}
       .cp-queue-click:hover{background:rgba(7,31,53,.03);}
       .cp-trainerize-view{display:grid;gap:14px;}
       .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
@@ -602,7 +618,7 @@
           <button type="button" class="cp-portal-tab" data-portal-tab="homework">Homework<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="education">Education<span class="cp-tab-badge" id="cpTabBadgeEducation" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="trainerize">Trainerize</button>
         </div>
 
@@ -782,8 +798,9 @@
         <div class="cp-goals-view" id="cpEducationView" hidden>
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">Education</h2><p class="cp-tab-sub" id="cpEduSummary"></p></div>
-            <button type="button" class="cp-goals-add-btn" id="cpEduAddBtn" hidden>+ Ask a question</button>
+            <button type="button" class="cp-goals-add-btn" id="cpEduAddBtn" hidden>Edit curriculum</button>
           </div>
+          <div class="cp-core-chips" id="cpEduCoreChips" role="tablist" aria-label="Core"></div>
           <div id="cpEduList"></div>
         </div>
 
@@ -810,30 +827,6 @@
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" data-close-modal="cpHwFormOverlay">Cancel</button>
               <button type="button" class="cp-goal-form-save" id="cpHwFormSave">Save assignment</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- EDUCATION QUESTION FORM (coach) -->
-        <div class="cp-modal-overlay" id="cpEduFormOverlay" hidden>
-          <div class="cp-goal-form-backdrop" data-close-modal="cpEduFormOverlay"></div>
-          <div class="cp-goal-form-sheet">
-            <div class="cp-goal-form-handle"></div>
-            <p class="cp-goal-form-title" id="cpEduFormHeading">Ask a question</p>
-            <p class="cp-goal-form-subtitle">Group questions under a competency so the client sees what each set is building.</p>
-            <div class="cp-goal-form-field">
-              <label for="cpEduCompetency">Competency</label>
-              <input type="text" id="cpEduCompetency" class="cp-goal-form-input" list="cpEduCompetencyList" placeholder="e.g. Nutrition fundamentals" maxlength="80" />
-              <datalist id="cpEduCompetencyList"></datalist>
-            </div>
-            <div class="cp-goal-form-field">
-              <label for="cpEduQuestion">Question</label>
-              <textarea id="cpEduQuestion" class="cp-goal-form-input cp-goal-form-input--ta" style="height:120px;" placeholder="e.g. In your own words, why does protein matter when you're in a deficit?"></textarea>
-            </div>
-            <label class="cp-check-line" id="cpEduAllWrap"><input type="checkbox" id="cpEduAllClients" /> Ask every client on the roster</label>
-            <div class="cp-goal-form-actions">
-              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpEduFormOverlay">Cancel</button>
-              <button type="button" class="cp-goal-form-save" id="cpEduFormSave">Save question</button>
             </div>
           </div>
         </div>
@@ -894,8 +887,10 @@
 
         <div class="cp-coach-view" id="cpCoachView" hidden>
           <div class="cp-card cp-roster-card">
-            <p class="cp-kicker">Roster</p>
-            <h3 class="cp-card-title">Active clients</h3>
+            <div class="cp-card-head" style="align-items:center;">
+              <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
+              <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
+            </div>
             <div class="cp-roster-list" id="cpRosterList"></div>
           </div>
           <aside class="cp-coach-aside">
@@ -946,6 +941,29 @@
       <div class="cp-sheet-backdrop" data-close-hw-sheet></div>
       <div class="cp-sheet" id="cpHwSheet" role="dialog" aria-modal="true" aria-labelledby="cpHwSheetTitle"></div>
       <input type="file" id="cpHwFileInput" multiple hidden />
+    </div>
+
+    <!-- EDUCATION CURRICULUM EDITOR (coach) — one curriculum shared by every client -->
+    <div class="cp-sheet-overlay" id="cpCurOverlay" hidden>
+      <div class="cp-sheet-backdrop" data-close-cur></div>
+      <div class="cp-sheet" role="dialog" aria-modal="true" aria-labelledby="cpCurTitle">
+        <div class="cp-sheet-head">
+          <div><p class="cp-kicker">Education</p><h2 class="cp-sheet-title" id="cpCurTitle">Curriculum</h2></div>
+          <button type="button" class="cp-sheet-close" data-close-cur aria-label="Close">×</button>
+        </div>
+        <p class="cp-sheet-lede">Every client sees these questions and answers them out loud on calls. Edits save as you go.</p>
+        <div class="cp-core-chips" id="cpCurCoreChips" role="tablist" aria-label="Core"></div>
+        <div id="cpCurBody"></div>
+        <div class="cp-panel" style="margin-top:24px;background:#f5f5f7;">
+          <p class="cp-ci-label" style="margin-bottom:12px;">Add questions to <span id="cpCurCoreName"></span></p>
+          <label class="cp-ci-hint" for="cpCurCompetency">Competency</label>
+          <input type="text" id="cpCurCompetency" class="cp-ci-input" style="max-width:none;" list="cpCurCompetencyList" placeholder="e.g. Protein basics" maxlength="80" />
+          <datalist id="cpCurCompetencyList"></datalist>
+          <label class="cp-ci-hint" for="cpCurQuestions" style="display:block;margin-top:14px;">Questions — one per line</label>
+          <textarea id="cpCurQuestions" class="cp-textarea" placeholder="Why does protein matter in a calorie deficit?&#10;Roughly how much protein do you aim for per day?"></textarea>
+          <div class="cp-btn-row"><button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpCurAddBtn">Add questions</button><span class="cp-save-note" id="cpCurNote"></span></div>
+        </div>
+      </div>
     </div>
 
     <div class="cp-editor-overlay" id="cpEditOverlay" hidden>
