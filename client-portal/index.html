@@ -185,20 +185,12 @@
       .cp-nickname-save{all:unset;cursor:pointer;padding:8px 16px;border-radius:16px;background:#071f35;color:#fff;font-size:13px;font-weight:700;}
       .cp-nickname-cancel{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.45);}
       .cp-nickname-cancel:hover{color:rgba(7,31,53,.75);}
-      .cp-bars{margin-top:22px;display:flex;align-items:flex-end;gap:6px;height:78px;}
-      .cp-bar{flex:1;border-radius:4px;}
       .cp-caption{margin:12px 0 0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
       .cp-note-list,.cp-win-list{margin-top:16px;display:grid;}
       .cp-note-row,.cp-win-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);}
       .cp-win-row{align-items:center;}
       .cp-note-label,.cp-win-label{font-size:15px;line-height:1.5;color:rgba(7,31,53,.75);flex:1;}
       .cp-note-meta,.cp-win-meta{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);flex-shrink:0;}
-      .cp-metrics-row{margin-top:16px;display:grid;grid-template-columns:1fr 96px;gap:16px;align-items:start;}
-      .cp-metric-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(7,31,53,.08);}
-      .cp-metric-label{font-size:14px;color:rgba(7,31,53,.6);}
-      .cp-metric-value{font-family:"Raleway",sans-serif;font-weight:800;font-size:15px;}
-      .cp-photo-placeholder{aspect-ratio:2/3;border-radius:12px;border:1px solid rgba(7,31,53,.1);display:flex;align-items:flex-end;padding:8px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);}
-      .cp-photo-placeholder span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;line-height:1.3;color:rgba(7,31,53,.5);}
       .cp-messages{margin-top:16px;display:grid;gap:12px;}
       .cp-message{border-radius:14px;background:#f5f5f7;padding:14px 16px;}
       .cp-message-meta{margin:0;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
@@ -544,24 +536,10 @@
               <p class="cp-body-text" id="cpSessionAgenda"></p>
               <div class="cp-cta-row"><a class="cp-cta-primary" id="cpJoinCallBtn" href="#" target="_blank" rel="noopener">Join call</a><span class="cp-cta-secondary">Reschedule</span></div>
             </div>
-            <div class="cp-card" id="cpStreakCard">
-              <p class="cp-kicker">Consistency</p>
-              <h3 class="cp-card-title" id="cpStreakLine"></h3>
-              <div class="cp-bars" id="cpBars"></div>
-              <p class="cp-caption">Last 14 weeks</p>
-            </div>
             <div class="cp-card" data-open="notes">
               <p class="cp-kicker">Session Notes</p>
               <h3 class="cp-card-title">Recaps &amp; decisions</h3>
               <div class="cp-note-list" id="cpNoteList"></div>
-            </div>
-            <div class="cp-card" id="cpMetricsCard">
-              <p class="cp-kicker">Body Metrics</p>
-              <h3 class="cp-card-title">Trend &amp; photos</h3>
-              <div class="cp-metrics-row">
-                <div class="cp-metric-list" id="cpMetricList"></div>
-                <div class="cp-photo-placeholder"><span>Photo uploads coming soon</span></div>
-              </div>
             </div>
             <div class="cp-card" id="cpMessagesCard">
               <p class="cp-kicker">Messages</p>
@@ -617,15 +595,6 @@
               </div>
               <p class="cp-body-text">Your most recent pre-call form submissions.</p>
               <div class="cp-note-list" id="cpPreCallList"></div>
-            </div>
-            <div class="cp-card cp-card--wide" id="cpOffboardingCard" hidden>
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Wrapping Up</p><h3 class="cp-card-title">Offboarding reflection</h3></div>
-                <span class="cp-meta" id="cpOffboardingStatus"></span>
-              </div>
-              <p class="cp-body-text">A few questions to close out the program — answer whenever you're ready, your coach sees your responses.</p>
-              <div id="cpOffboardingForm"></div>
-              <div class="cp-cta-row"><button type="button" class="cp-cta-primary" id="cpOffboardingSave" style="border:none;">Save reflection</button></div>
             </div>
           </div>
         </div>
