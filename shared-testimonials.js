@@ -168,6 +168,18 @@
         "If you are tired of living your life without a sense of purpose, or if you are eager for the results you have always desired, it is time to Chase Change and realize your true potential.",
       ],
     },
+    {
+      name: "JV",
+      year: "2026",
+      quote: "Eight months later, I can genuinely see the difference in how I think, how I approach challenges, and how I show up for myself.",
+      paragraphs: [
+        "Working with Tyler over the past eight months has had such a positive impact on my life. When I first started coaching with him, I could not have imagined how much I would grow, both personally and professionally.",
+        "Tyler has helped me navigate career goals, major life transitions, relationships, and some of the harder moments of learning who I am and what I truly want. He has a way of asking the right questions, challenging my thinking, and helping me see situations from a different perspective without ever telling me who I should be or what I should do.",
+        "What I appreciate most is that the work does not end when our sessions do. So many of our conversations have stayed with me and have helped me become more intentional about my choices, my boundaries, my goals, and the life I want to create.",
+        "The name Chasing Change could not be more fitting. Change is not always comfortable, and growth does not happen overnight, but Tyler has helped me understand that meaningful change is something we can actively pursue. Eight months later, I can genuinely see the difference in how I think, how I approach challenges, and how I show up for myself.",
+        "I am incredibly grateful for Tyler and Chasing Change and would highly recommend him to anyone who is ready to invest in themselves and create meaningful change in their life.",
+      ],
+    },
   ];
 
   const normalizeKey = (item) => `${item?.name || ""}::${item?.year || ""}`.toLowerCase();
