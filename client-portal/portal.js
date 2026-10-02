@@ -225,49 +225,6 @@
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 
-  // ─── Sidecar utility: 10-minute timer on the client dashboard rail ─────
-  var TIMER_SECONDS = 10 * 60;
-  var timerRemaining = TIMER_SECONDS;
-  var timerHandle = null;
-
-  function renderTimer(){
-    var m = Math.floor(timerRemaining / 60);
-    var s = timerRemaining % 60;
-    $('cpTimerDisplay').textContent = m + ':' + (s < 10 ? '0' : '') + s;
-    $('cpTimerBarFill').style.width = (timerRemaining / TIMER_SECONDS * 100) + '%';
-    $('cpTimerBox').classList.toggle('is-done', timerRemaining === 0);
-  }
-
-  function stopTimer(){
-    clearInterval(timerHandle);
-    timerHandle = null;
-    $('cpTimerToggle').textContent = 'Start';
-    $('cpTimerToggle').classList.remove('is-running');
-  }
-
-  function startTimer(){
-    if (timerRemaining === 0) timerRemaining = TIMER_SECONDS;
-    timerHandle = setInterval(function(){
-      timerRemaining--;
-      renderTimer();
-      if (timerRemaining <= 0) stopTimer();
-    }, 1000);
-    $('cpTimerToggle').textContent = 'Pause';
-    $('cpTimerToggle').classList.add('is-running');
-  }
-
-  $('cpTimerToggle').addEventListener('click', function(){
-    if (timerHandle) stopTimer(); else startTimer();
-  });
-
-  $('cpTimerReset').addEventListener('click', function(){
-    stopTimer();
-    timerRemaining = TIMER_SECONDS;
-    renderTimer();
-  });
-
-  renderTimer();
-
   // ─── Check existing session on load ───────────────────────────────────
   (async function(){
     var { data:{ session } } = await sb.auth.getSession();
@@ -807,7 +764,7 @@
     $('cpTabGoalsBtn').classList.toggle('is-active', tab === 'goals');
     $('cpTabTrainerizeBtn').classList.toggle('is-active', tab === 'trainerize');
     $('cpClientView').hidden = tab !== 'portal';
-    $('cpVisionBand').hidden = tab !== 'portal';
+    if (tab === 'portal') renderVisionBand(); else $('cpVisionBand').hidden = true;
     $('cpGoalsView').hidden = tab !== 'goals';
     $('cpTrainerizeView').hidden = tab !== 'trainerize';
   }
@@ -1070,13 +1027,18 @@
     renderOffboardingForm();
   });
 
+  // Each core links to that client's page for the core, e.g. /client-portal/body/?client=<id>.
+  function coreHref(key, clientId){
+    return './' + key + '/?client=' + encodeURIComponent(clientId);
+  }
+
   function renderCoreList(){
     var hasHabits = portalData.habits.length > 0;
     $('cpCoreKicker').textContent = hasHabits ? 'Habits' : 'The Six Cores';
     $('cpCoreList').hidden = hasHabits;
     $('cpHabitList').hidden = !hasHabits;
     if (hasHabits) { renderHabits(); return; }
-    var h=''; portalData.cores.forEach(function(c){ h+='<div class="cp-core-row"><div class="cp-core-row-top"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-pct">'+c.pct+'%</span></div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>'; });
+    var h=''; portalData.cores.forEach(function(c){ h+='<a class="cp-core-row cp-core-link" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
     $('cpCoreList').innerHTML=h;
   }
 

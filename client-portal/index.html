@@ -61,7 +61,7 @@
       .cp-magic-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;margin:0 0 12px;}
       .cp-magic-body{font-size:15px;line-height:1.6;color:rgba(7,31,53,.6);margin:0;}
       /* dashboard */
-      .cp-dash{width:min(100%,1120px);margin:0 auto;padding:24px 24px 96px;}
+      .cp-dash{width:min(100%,1120px);margin:0 auto;padding:0 24px 96px;}
       .cp-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:24px 0 36px;flex-wrap:wrap;}
       .cp-route-line{margin:14px 0 0;font-size:17px;line-height:1.6;color:rgba(7,31,53,.62);}
       .cp-back-roster-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);letter-spacing:.02em;}
@@ -74,7 +74,7 @@
       .cp-portal-tab.is-active{background:#071f35;color:#fff;}
 
       /* ── Goals tab ───────────────────────────────────────────── */
-      .cp-goals-view{width:min(100%,900px);margin:0 auto;}
+      .cp-goals-view{width:100%;}
       .cp-goals-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
       .cp-goals-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;margin:0;}
       .cp-goals-add-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:24px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;transition:opacity .15s;}
@@ -132,6 +132,10 @@
       .cp-core-list{margin-top:16px;display:grid;gap:2px;}
       .cp-core-row{display:grid;gap:7px;padding:11px 10px;border-radius:12px;}
       .cp-core-row-top{display:flex;align-items:center;gap:8px;}
+      .cp-core-link{display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;transition:background .15s;}
+      .cp-core-link:hover{background:rgba(7,31,53,.05);}
+      .cp-core-arrow{font-size:14px;color:rgba(7,31,53,.3);transition:color .15s,transform .15s;}
+      .cp-core-link:hover .cp-core-arrow{color:rgba(7,31,53,.7);transform:translateX(2px);}
       .cp-dot{width:8px;height:8px;border-radius:999px;flex-shrink:0;}
       .cp-core-label{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;flex:1;}
       .cp-core-pct{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
@@ -141,20 +145,6 @@
       .cp-label{margin:0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-route{margin:6px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;}
       .cp-week{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.55);}
-      .cp-timer-box{margin-top:20px;padding-top:18px;border-top:1px solid rgba(7,31,53,.1);}
-      .cp-timer-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
-      .cp-timer-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;margin:5px 0 0;}
-      .cp-timer-display{margin:14px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:34px;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-align:center;}
-      .cp-timer-box.is-done .cp-timer-display{color:#2a9df0;}
-      .cp-timer-bar{margin-top:12px;height:4px;border-radius:999px;background:rgba(7,31,53,.07);overflow:hidden;}
-      .cp-timer-bar-fill{height:100%;border-radius:999px;background:#2a9df0;transition:width .3s linear;}
-      .cp-timer-controls{margin-top:14px;display:flex;gap:8px;}
-      .cp-timer-btn{all:unset;box-sizing:border-box;cursor:pointer;flex:1;height:38px;border-radius:19px;font-family:"Raleway",sans-serif;font-weight:700;font-size:12.5px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s ease,background .15s ease;}
-      .cp-timer-btn--primary{background:#071f35;color:#fff;}
-      .cp-timer-btn--primary:hover{opacity:.9;}
-      .cp-timer-btn--primary.is-running{background:#2a9df0;}
-      .cp-timer-btn--ghost{background:rgba(7,31,53,.06);color:rgba(7,31,53,.65);}
-      .cp-timer-btn--ghost:hover{background:rgba(7,31,53,.1);}
       .cp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
       .cp-reminder-bar{grid-column:1 / -1;background:#071f35;border-radius:18px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
       .cp-reminder-text{cursor:pointer;}
@@ -527,17 +517,6 @@
               <p class="cp-label">Preferred Cardio</p>
               <p class="cp-route" id="cpCardioType"></p>
               <p class="cp-week" id="cpCardioGoal"></p>
-            </div>
-
-            <div class="cp-timer-box" id="cpTimerBox">
-              <p class="cp-timer-kicker">Chasing Change</p>
-              <p class="cp-timer-title">10-Minute Timer</p>
-              <p class="cp-timer-display" id="cpTimerDisplay">10:00</p>
-              <div class="cp-timer-bar"><div class="cp-timer-bar-fill" id="cpTimerBarFill" style="width:100%"></div></div>
-              <div class="cp-timer-controls">
-                <button type="button" class="cp-timer-btn cp-timer-btn--primary" id="cpTimerToggle">Start</button>
-                <button type="button" class="cp-timer-btn cp-timer-btn--ghost" id="cpTimerReset">Reset</button>
-              </div>
             </div>
           </aside>
           <div class="cp-card-grid">
