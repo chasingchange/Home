@@ -484,22 +484,20 @@
       preferredCardio: d.preferred_cardio || '',
       cardioGoal: d.cardio_goal || '',
       visionBoardUrl: d.vision_board_url || '',
-      trainerizeUrl: d.trainerize_url || '',
       cores: cores,
       tasks: (results[2].data || []).map(function(t){ return { id:t.id, label:t.label, coreKey:t.core_key, color:t.color, done:t.done }; }),
       notes: (results[3].data || []).map(function(n){ return { id:n.id, label:n.label, meta:n.meta, body:n.body }; }),
       metrics: (results[4].data || []).map(function(m){ return { id:m.id, label:m.label, value:m.value }; }),
       resources: (results[5].data || []).map(function(r){ return { id:r.id, label:r.label, color:r.color }; }),
       wins: (results[6].data || []).map(function(w){ return { id:w.id, label:w.label, meta:w.meta, color:w.color }; }),
-      messages: (results[7].data || []).map(function(m){ return { id:m.id, sender:m.sender, body:m.body, createdAt:m.created_at }; }),
-      onboardingItems: (results[8].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
-      offboarding: results[9].data || {},
-      nonNegotiables: (results[10].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
-      preCallSubmissions: (results[11].data || []).map(mapPreCall),
-      habits: (results[12].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
-      goals: (results[13].data || []).map(mapGoal),
-      assignments: (results[14].data || []).map(mapAssignment),
-      eduQuestions: (results[15].data || []).map(curMap)
+      onboardingItems: (results[7].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
+      offboarding: results[8].data || {},
+      nonNegotiables: (results[9].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
+      preCallSubmissions: (results[10].data || []).map(mapPreCall),
+      habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
+      goals: (results[12].data || []).map(mapGoal),
+      assignments: (results[13].data || []).map(mapAssignment),
+      eduQuestions: (results[14].data || []).map(curMap)
     };
   }
 
@@ -552,6 +550,7 @@
     renderViewToggle();
     renderVisionBand();
     calLoadForClient(clientId);
+    subscribePortalRealtime(clientId);
   }
 
   // ─── Coach: roster (loaded from every client's profile + dashboard row) ─
@@ -676,6 +675,9 @@
   }
 
   function exitClientPortalView(){
+    closeQuickEdit();
+    qeFlush();
+    unsubscribePortalRealtime();
     viewingClientId = null;
     portalData = null;
     state.view = 'coach';
@@ -844,36 +846,15 @@
     renderOnboarding();
     renderNonNegotiables();
     renderArchive();
-    renderOffboardingForm();
-    renderTrainerize();
     renderGoalsTab();
     renderHomeworkTab();
     renderCheckinsTab();
     renderEducationTab();
   }
 
-  // ─── Trainerize tab: per-client link, opened in a new tab ─────────────
-  // Trainerize sends X-Frame-Options/CSP headers that block iframing, so
-  // this links out instead of embedding.
-  function renderTrainerize(){
-    var url = portalData.trainerizeUrl || '';
-    var openBtn = $('cpTrainerizeOpenBtn');
-    var empty = $('cpTrainerizeEmpty');
-
-    if (!url) {
-      openBtn.hidden = true;
-      empty.hidden = false;
-      return;
-    }
-
-    openBtn.hidden = false;
-    openBtn.href = url;
-    empty.hidden = true;
-  }
-
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView',
-    checkins:'cpCheckinsView', education:'cpEducationView', trainerize:'cpTrainerizeView'
+    checkins:'cpCheckinsView', education:'cpEducationView'
   };
 
   function setPortalTab(tab){
@@ -2695,6 +2676,7 @@
     } else {
       hideAllPortalTabs();
     }
+    renderQeFab();
   }
 
   function findRosterClient(id){
@@ -2772,6 +2754,7 @@
     if(e.key!=='Escape') return;
     if(!$('cpSheetOverlay').hidden) closeSheet();
     if(!$('cpEditOverlay').hidden) closeEditPortal();
+    if(!$('cpQeOverlay').hidden) { closeQuickEdit(); return; }
     if(!$('cpHwFormOverlay').hidden) { closeModal('cpHwFormOverlay'); return; }
     if(!$('cpCurOverlay').hidden) { closeCurriculum(); return; }
     if(!$('cpGoalFormOverlay').hidden) { closeGoalForm(); return; }
@@ -2897,7 +2880,15 @@
     $('cpEditSave').disabled = true;
     $('cpEditOverlay').hidden = false;
 
-    var data = await fetchPortalData(clientId);
+    var data;
+    try {
+      data = await fetchPortalData(clientId);
+    } catch (err) {
+      console.error('Failed to load portal for editing:', err);
+      alert('Couldn\'t load this client\'s portal: ' + (err && err.message || err));
+      closeEditPortal();
+      return;
+    }
     editState = data;
 
     $('cpEditRoute').value = editState.route;
@@ -2914,7 +2905,6 @@
     $('cpEditCardioType').value = editState.preferredCardio;
     $('cpEditCardioType').dispatchEvent(new Event('change'));
     $('cpEditCardioGoal').value = editState.cardioGoal;
-    $('cpEditTrainerizeUrl').value = editState.trainerizeUrl;
 
     renderCoreEditor();
 
@@ -3006,8 +2996,7 @@
       reminder_channel: $('cpEditReminderChannel').value,
       reminder_on: $('cpEditReminderOn').checked,
       preferred_cardio: $('cpEditCardioType').value,
-      cardio_goal: $('cpEditCardioGoal').value.trim(),
-      trainerize_url: $('cpEditTrainerizeUrl').value.trim()
+      cardio_goal: $('cpEditCardioGoal').value.trim()
     };
 
     var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
@@ -3079,6 +3068,308 @@
   $('cpEditCancel').addEventListener('click',closeEditPortal);
   $('cpEditClose').addEventListener('click',closeEditPortal);
   $('cpEditBack').addEventListener('click',closeEditPortal);
+
+  // ─── Coach: quick edit popup (persists across every portal tab) ───────
+  // Edits write straight to Supabase as the coach types and re-render the
+  // portal behind the popup, so there's no Save step.
+  var qeTab = 'cores';
+  var qeTimers = {};
+  var qePending = 0;
+
+  function qeVisible(){ return !$('cpQeOverlay').hidden; }
+
+  function renderQeFab(){
+    $('cpQeFab').hidden = !(isCoachUser && state.view === 'client' && viewingClientId && portalData);
+  }
+
+  function qeSetStatus(kind, text){
+    var el = $('cpQeStatus');
+    el.classList.toggle('is-saving', kind === 'saving');
+    el.classList.toggle('is-error', kind === 'error');
+    el.textContent = text;
+  }
+
+  // Wraps a Supabase write so the header shows Saving… / Saved / error.
+  function qeWrite(promise){
+    qePending++;
+    qeSetStatus('saving', 'Saving…');
+    return Promise.resolve(promise).then(function(res){
+      qePending--;
+      if (res && res.error) {
+        console.error('Quick edit save failed:', res.error);
+        qeSetStatus('error', 'Couldn’t save: ' + res.error.message);
+      } else if (!qePending) {
+        qeSetStatus('ok', 'All changes saved');
+      }
+      return res;
+    }, function(err){
+      qePending--;
+      console.error('Quick edit save failed:', err);
+      qeSetStatus('error', 'Couldn’t save — check your connection');
+    });
+  }
+
+  function qeDebounce(key, fn, ms){
+    clearTimeout(qeTimers[key]);
+    qeSetStatus('saving', 'Saving…');
+    qeTimers[key] = setTimeout(function(){ delete qeTimers[key]; fn(); }, ms || 500);
+  }
+
+  function qeFlush(){
+    Object.keys(qeTimers).forEach(function(k){ clearTimeout(qeTimers[k]); });
+    qeTimers = {};
+  }
+
+  function coreOptionsHtml(selected){
+    return CORE_DEFS.map(function(c){
+      return '<option value="'+c.key+'"'+(c.key===selected?' selected':'')+'>'+esc(c.label)+'</option>';
+    }).join('');
+  }
+
+  function renderQeCores(){
+    $('cpQeCores').innerHTML = portalData.cores.map(function(c, i){
+      var pct = parseInt(c.pct,10) || 0;
+      return '<div class="cp-qe-core">'
+        + '<span class="cp-qe-core-name"><span class="cp-dot" style="background:'+c.color+'"></span>'+esc(c.label)+'</span>'
+        + '<input type="range" min="0" max="100" step="5" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" style="accent-color:'+c.color+'" aria-label="'+esc(c.label)+' score" />'
+        + '<span class="cp-qe-pct"><input type="number" min="0" max="100" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" aria-label="'+esc(c.label)+' percent" />%</span>'
+        + '<input type="text" class="cp-qe-input cp-qe-core-note" value="'+esc(c.note||'')+'" placeholder="Note for '+esc(c.label)+'" data-core-idx="'+i+'" data-core-field="note" />'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderQeTasks(){
+    var tasks = portalData.tasks;
+    $('cpQeTasks').innerHTML = tasks.length ? tasks.map(function(t, i){
+      return '<div class="cp-qe-task'+(t.done?' is-done':'')+'" data-task-idx="'+i+'">'
+        + '<button type="button" class="cp-qe-check'+(t.done?' is-done':'')+'" data-task-act="done" aria-label="Mark done">'+(t.done?'✓':'')+'</button>'
+        + '<span class="cp-dot" style="background:'+coreColor(t.coreKey)+'"></span>'
+        + '<input type="text" class="cp-qe-input" value="'+esc(t.label||'')+'" data-task-field="label" aria-label="Task" />'
+        + '<select class="cp-qe-input" data-task-field="coreKey" aria-label="Core">'+coreOptionsHtml(t.coreKey)+'</select>'
+        + '<button type="button" class="cp-qe-icon" data-task-act="up" aria-label="Move up"'+(i===0?' disabled':'')+'>↑</button>'
+        + '<button type="button" class="cp-qe-icon" data-task-act="down" aria-label="Move down"'+(i===tasks.length-1?' disabled':'')+'>↓</button>'
+        + '<button type="button" class="cp-qe-icon" data-task-act="del" aria-label="Delete task">✕</button>'
+        + '</div>';
+    }).join('') : '<p class="cp-caption" style="margin:0;">No tasks yet — add the first one below.</p>';
+  }
+
+  function fillQeOverview(){
+    $('cpQeRoute').value = portalData.route || '';
+    $('cpQeWeekNow').value = portalData.weekNow || 0;
+    $('cpQeWeekTotal').value = portalData.weekTotal || 0;
+    $('cpQeFlag').value = portalData.flagStatus || 'On track';
+    $('cpQeSession').value = portalData.nextSessionLabel || '';
+    $('cpQeAgenda').value = portalData.nextSessionAgenda || '';
+  }
+
+  function setQeTab(tab){
+    qeTab = tab;
+    $('cpQeTabs').querySelectorAll('[data-qe-tab]').forEach(function(b){
+      b.classList.toggle('is-active', b.getAttribute('data-qe-tab') === tab);
+    });
+    $('cpQeOverlay').querySelectorAll('[data-qe-pane]').forEach(function(p){
+      p.hidden = p.getAttribute('data-qe-pane') !== tab;
+    });
+  }
+
+  function openQuickEdit(){
+    if (!portalData) return;
+    var c = findRosterClient(viewingClientId);
+    $('cpQeTitle').textContent = 'Edit ' + ((c && c.name) || 'portal');
+    qeSetStatus('ok', 'Changes save live');
+    $('cpQeNewTaskCore').innerHTML = coreOptionsHtml(CORE_DEFS[0].key);
+    renderQeCores(); renderQeTasks(); fillQeOverview();
+    setQeTab(qeTab);
+    $('cpQeOverlay').hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeQuickEdit(){
+    $('cpQeOverlay').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  $('cpQeFab').addEventListener('click', openQuickEdit);
+  $('cpQeOverlay').addEventListener('click', function(e){
+    if (e.target.closest('[data-qe-close]')) { closeQuickEdit(); return; }
+    var tab = e.target.closest('[data-qe-tab]');
+    if (tab) setQeTab(tab.getAttribute('data-qe-tab'));
+  });
+  $('cpQeFull').addEventListener('click', function(){
+    var id = viewingClientId, c = findRosterClient(id);
+    closeQuickEdit();
+    openEditPortal(id, c ? c.name : '');
+  });
+
+  // Cores: slider and number stay in sync; the row upserts on (client_id, core_key).
+  function saveCore(idx){
+    var c = portalData.cores[idx], clientId = viewingClientId;
+    qeDebounce('core:'+c.key, function(){
+      qeWrite(sb.from('client_cores').upsert({
+        client_id: clientId, core_key: c.key, label: c.label, color: c.color,
+        pct: parseInt(c.pct,10)||0, note: c.note||'', position: idx
+      }, { onConflict: 'client_id,core_key' }));
+    });
+  }
+
+  $('cpQeCores').addEventListener('input', function(e){
+    var t = e.target.closest('[data-core-field]'); if (!t || !portalData) return;
+    var idx = parseInt(t.getAttribute('data-core-idx'),10);
+    var field = t.getAttribute('data-core-field');
+    var core = portalData.cores[idx];
+    if (field === 'pct') {
+      var v = Math.max(0, Math.min(100, parseInt(t.value,10) || 0));
+      core.pct = v;
+      $('cpQeCores').querySelectorAll('[data-core-idx="'+idx+'"][data-core-field="pct"]').forEach(function(el){ if (el !== t) el.value = v; });
+    } else {
+      core.note = t.value;
+    }
+    renderCoreList();
+    saveCore(idx);
+  });
+
+  // Tasks: each row writes on its own — no full-table replace.
+  function rerenderTasksBehind(){ renderTasks(); renderReminder(); }
+
+  function saveTaskPositions(){
+    var clientId = viewingClientId;
+    return qeWrite(Promise.all(portalData.tasks.map(function(t, i){
+      return t.id ? sb.from('client_tasks').update({ position: i }).eq('id', t.id).eq('client_id', clientId) : null;
+    })).then(function(rs){ return rs.filter(function(r){ return r && r.error; })[0] || {}; }));
+  }
+
+  $('cpQeTasks').addEventListener('input', function(e){
+    var f = e.target.closest('[data-task-field]'); if (!f || !portalData) return;
+    var row = f.closest('[data-task-idx]');
+    var task = portalData.tasks[parseInt(row.getAttribute('data-task-idx'),10)]; if (!task) return;
+    var field = f.getAttribute('data-task-field');
+    if (field === 'coreKey') {
+      task.coreKey = f.value;
+      task.color = coreColor(f.value);
+      row.querySelector('.cp-dot').style.background = task.color;
+      rerenderTasksBehind();
+      qeWrite(sb.from('client_tasks').update({ core_key: task.coreKey, color: task.color }).eq('id', task.id));
+      return;
+    }
+    task.label = f.value;
+    rerenderTasksBehind();
+    if (!task.label.trim()) return; // don't persist a blank label; delete is explicit
+    qeDebounce('task:'+task.id, function(){
+      qeWrite(sb.from('client_tasks').update({ label: task.label.trim() }).eq('id', task.id));
+    });
+  });
+
+  $('cpQeTasks').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-task-act]'); if (!btn || !portalData) return;
+    var idx = parseInt(btn.closest('[data-task-idx]').getAttribute('data-task-idx'),10);
+    var tasks = portalData.tasks, task = tasks[idx]; if (!task) return;
+    var act = btn.getAttribute('data-task-act');
+
+    if (act === 'done') {
+      task.done = !task.done;
+      qeWrite(sb.from('client_tasks').update({ done: task.done }).eq('id', task.id));
+    } else if (act === 'del') {
+      tasks.splice(idx, 1);
+      qeWrite(sb.from('client_tasks').delete().eq('id', task.id));
+    } else {
+      var to = act === 'up' ? idx - 1 : idx + 1;
+      if (to < 0 || to >= tasks.length) return;
+      tasks.splice(to, 0, tasks.splice(idx, 1)[0]);
+      saveTaskPositions();
+    }
+    renderQeTasks();
+    rerenderTasksBehind();
+  });
+
+  async function qeAddTask(){
+    var input = $('cpQeNewTask');
+    var label = input.value.trim(); if (!label || !portalData) return;
+    var coreKey = $('cpQeNewTaskCore').value;
+    var clientId = viewingClientId;
+    input.value = '';
+    var res = await qeWrite(sb.from('client_tasks').insert({
+      client_id: clientId, label: label, core_key: coreKey, color: coreColor(coreKey),
+      done: false, position: portalData.tasks.length
+    }).select().single());
+    if (!res || res.error || viewingClientId !== clientId) { if (res && res.error) input.value = label; return; }
+    var r = res.data;
+    portalData.tasks.push({ id:r.id, label:r.label, coreKey:r.core_key, color:r.color, done:r.done });
+    renderQeTasks();
+    rerenderTasksBehind();
+    input.focus();
+  }
+
+  $('cpQeAddTask').addEventListener('click', qeAddTask);
+  $('cpQeNewTask').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); qeAddTask(); } });
+
+  // Overview fields map 1:1 onto client_dashboard columns.
+  var QE_DASH_MAP = {
+    route: 'route', week_now: 'weekNow', week_total: 'weekTotal', flag_status: 'flagStatus',
+    next_session_label: 'nextSessionLabel', next_session_agenda: 'nextSessionAgenda'
+  };
+
+  function onQeDashInput(e){
+    var f = e.target.closest('[data-dash]'); if (!f || !portalData) return;
+    var col = f.getAttribute('data-dash');
+    var isNum = col === 'week_now' || col === 'week_total';
+    var val = isNum ? (parseInt(f.value,10) || 0) : f.value;
+    portalData[QE_DASH_MAP[col]] = val;
+    var patch = {}; patch[col] = isNum ? val : String(val).trim();
+    if (col === 'flag_status') { portalData.flagColor = FLAG_COLORS[val] || '#77d770'; patch.flag_color = portalData.flagColor; }
+    renderDashBehind();
+    qeDebounce('dash:'+col, function(){ qeWrite(persistDashPatch(patch)); });
+  }
+  $('cpQeOverlay').querySelector('[data-qe-pane="overview"]').addEventListener('input', onQeDashInput);
+  $('cpQeFlag').addEventListener('change', onQeDashInput);
+
+  function renderDashBehind(){
+    $('cpRouteLine').textContent = (portalData.route || 'No route set yet') + ' · Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
+    $('cpWeekLine2').textContent = 'Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
+    renderSessionCard();
+  }
+
+  // ─── Realtime: refresh the open portal when its data changes elsewhere ─
+  // (e.g. the client sees the coach's edits land without reloading).
+  // Requires scripts/client_portal_realtime.sql to have been run.
+  var rtChannel = null, rtTimer = null;
+
+  function unsubscribePortalRealtime(){
+    clearTimeout(rtTimer);
+    if (rtChannel) { sb.removeChannel(rtChannel); rtChannel = null; }
+  }
+
+  function subscribePortalRealtime(clientId){
+    unsubscribePortalRealtime();
+    var filter = 'client_id=eq.' + clientId;
+    var onChange = function(){
+      clearTimeout(rtTimer);
+      rtTimer = setTimeout(function(){ refreshFromRealtime(clientId); }, 400);
+    };
+    rtChannel = sb.channel('portal-' + clientId);
+    ['client_tasks','client_cores','client_dashboard'].forEach(function(table){
+      rtChannel.on('postgres_changes', { event:'*', schema:'public', table:table, filter:filter }, onChange);
+    });
+    // Filtered subscriptions don't receive deletes, so watch task deletes
+    // unfiltered and only react to ones for a task this portal shows.
+    rtChannel.on('postgres_changes', { event:'DELETE', schema:'public', table:'client_tasks' }, function(p){
+      var id = p.old && p.old.id;
+      if (portalData && portalData.tasks.some(function(t){ return t.id === id; })) onChange();
+    });
+    rtChannel.subscribe();
+  }
+
+  async function refreshFromRealtime(clientId){
+    // The coach's popup is the source of truth while it's open.
+    if (viewingClientId !== clientId || !portalData || qeVisible()) return;
+    var data = await fetchPortalData(clientId);
+    if (viewingClientId !== clientId || !portalData || qeVisible()) return;
+    ['cores','tasks','route','weekNow','weekTotal','flagStatus','flagColor','nextSessionLabel','nextSessionAgenda','reminderDay','reminderChannel','reminderOn'].forEach(function(k){
+      portalData[k] = data[k];
+    });
+    renderCoreList();
+    rerenderTasksBehind();
+    renderDashBehind();
+  }
 
   // ─── Editor: section jump nav + scrollspy ──────────────────────────────
   var EDITOR_SECTIONS = ['overview','cores','plan','progress','goals','library'];

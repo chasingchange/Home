@@ -129,6 +129,50 @@
       .cp-modal-overlay[hidden]{display:none !important;}
       @media(min-width:721px){ .cp-modal-overlay,#cpGoalFormOverlay{align-items:center;} .cp-modal-overlay .cp-goal-form-sheet,#cpGoalFormOverlay .cp-goal-form-sheet{border-radius:24px;padding-bottom:28px;} }
       select.cp-goal-form-input{padding:0 10px;}
+      /* ── Coach quick edit: floating button + live popup ───── */
+      .cp-qe-fab{all:unset;box-sizing:border-box;position:fixed;right:22px;bottom:22px;z-index:240;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 22px;border-radius:24px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 10px 28px rgba(7,31,53,.28);}
+      .cp-qe-fab[hidden]{display:none;}
+      .cp-qe-fab:hover{background:#0c2d4c;}
+      .cp-qe-sheet{max-width:640px;padding:22px 22px 24px;display:flex;flex-direction:column;}
+      .cp-qe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+      .cp-qe-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+      .cp-qe-status::before{content:"";width:7px;height:7px;border-radius:99px;background:#77d770;}
+      .cp-qe-status.is-saving::before{background:#ffbd59;}
+      .cp-qe-status.is-error{color:#f02348;}
+      .cp-qe-status.is-error::before{background:#f02348;}
+      .cp-qe-close{all:unset;cursor:pointer;width:34px;height:34px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(7,31,53,.5);}
+      .cp-qe-close:hover{background:rgba(7,31,53,.06);}
+      .cp-qe-tabs{display:flex;gap:6px;margin:14px 0 16px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-qe-tab{all:unset;cursor:pointer;padding:9px 12px;font-family:"Raleway",sans-serif;font-weight:800;font-size:13.5px;color:rgba(7,31,53,.5);border-bottom:2px solid transparent;margin-bottom:-1px;}
+      .cp-qe-tab.is-active{color:#071f35;border-bottom-color:#071f35;}
+      .cp-qe-core{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px 12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.07);}
+      .cp-qe-core:first-child{border-top:none;}
+      .cp-qe-core-name{display:flex;align-items:center;gap:8px;font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;min-width:70px;}
+      .cp-qe-core input[type=range]{width:100%;}
+      .cp-qe-pct{display:flex;align-items:center;gap:2px;font-size:13px;font-weight:700;color:rgba(7,31,53,.6);}
+      .cp-qe-pct input{width:52px;height:34px;border-radius:9px;border:1px solid rgba(7,31,53,.15);text-align:right;padding:0 6px;font:inherit;color:#071f35;box-sizing:border-box;}
+      .cp-qe-core-note{grid-column:1 / -1;}
+      .cp-qe-input{width:100%;height:40px;border-radius:11px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:14px;color:#071f35;box-sizing:border-box;}
+      select.cp-qe-input{padding:0 8px;}
+      .cp-qe-task{display:flex;align-items:center;gap:8px;padding:7px 0;}
+      .cp-qe-task .cp-qe-input{flex:1;min-width:0;}
+      .cp-qe-task select.cp-qe-input{flex:none;width:104px;}
+      .cp-qe-task.is-done .cp-qe-input[data-task-field=label]{text-decoration:line-through;color:rgba(7,31,53,.45);}
+      .cp-qe-check{all:unset;cursor:pointer;width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid rgba(7,31,53,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;}
+      .cp-qe-check.is-done{background:#3d9b37;border-color:#3d9b37;}
+      .cp-qe-icon{all:unset;cursor:pointer;width:28px;height:28px;flex:none;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(7,31,53,.45);}
+      .cp-qe-icon:hover{background:rgba(7,31,53,.06);color:#071f35;}
+      .cp-qe-icon:disabled{opacity:.25;cursor:default;background:none;}
+      .cp-qe-add{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-qe-add .cp-qe-input{flex:1;}
+      .cp-qe-add select.cp-qe-input{flex:none;width:104px;}
+      .cp-qe-add button{all:unset;cursor:pointer;height:40px;padding:0 18px;border-radius:20px;background:#071f35;color:#fff;font-weight:700;font-size:13.5px;}
+      .cp-qe-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+      .cp-qe-grid label{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+      .cp-qe-grid .is-full{grid-column:1 / -1;}
+      .cp-qe-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;font-size:12.5px;color:rgba(7,31,53,.5);}
+      .cp-qe-foot button{all:unset;cursor:pointer;font-weight:700;color:#071f35;text-decoration:underline;}
+      @media (max-width:560px){ .cp-qe-grid{grid-template-columns:1fr;} .cp-qe-task select.cp-qe-input,.cp-qe-add select.cp-qe-input{width:84px;} .cp-qe-fab{right:16px;bottom:16px;} }
       .cp-check-line{display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);margin:4px 0 0;cursor:pointer;}
       .cp-portal-tabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
       .cp-portal-tabs::-webkit-scrollbar{display:none;}
@@ -240,9 +284,6 @@
       .cp-cur-row-actions button:hover{background:rgba(7,31,53,.07);color:#071f35;}
       .cp-cur-row-actions button[data-cur-del]:hover{background:rgba(240,35,72,.1);color:#c01a38;}
       .cp-queue-click:hover{background:rgba(7,31,53,.03);}
-      .cp-trainerize-view{display:grid;gap:14px;}
-      .cp-trainerize-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:18px 22px;}
-      .cp-trainerize-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:48px 24px;text-align:center;color:rgba(7,31,53,.55);font-size:15px;}
       .cp-client-view{display:grid;grid-template-columns:264px 1fr;gap:28px;align-items:start;}
       .cp-core-rail{position:sticky;top:24px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:22px;}
       .cp-core-list{margin-top:16px;display:grid;gap:2px;}
@@ -278,6 +319,7 @@
       .cp-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;cursor:pointer;transition:box-shadow .18s;}
       .cp-card:hover{box-shadow:0 14px 34px rgba(7,31,53,.08);}
       .cp-card--wide{grid-column:1 / -1;}
+      .cp-trainerize-card{display:block;color:inherit;text-decoration:none;}
       .cp-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
       .cp-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:20px;margin:8px 0 0;}
       .cp-meta{font-size:13px;font-weight:700;color:rgba(7,31,53,.45);flex-shrink:0;}
@@ -605,7 +647,6 @@
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="trainerize">Trainerize</button>
         </div>
 
         <div class="cp-client-view" id="cpClientView">
@@ -652,6 +693,13 @@
               <p class="cp-body-text" id="cpCiCardBody"></p>
               <div class="cp-cta-row"><span class="cp-cta-primary" id="cpCiCardCta">Open check-ins</span></div>
             </div>
+            <a class="cp-card cp-card--wide cp-trainerize-card" id="cpTrainerizeCard" href="https://chasingchange.trainerize.com/app/overview" target="_blank" rel="noopener">
+              <div class="cp-card-head">
+                <div><p class="cp-kicker">Trainerize</p><h3 class="cp-card-title">Workouts &amp; training stats</h3></div>
+              </div>
+              <p class="cp-body-text">Log in to Trainerize to see your workouts, programs and progress.</p>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open Trainerize ↗</span></div>
+            </a>
             <div class="cp-card cp-card--wide" id="cpEduCard" data-goto-tab="education" hidden>
               <div class="cp-card-head">
                 <div><p class="cp-kicker">Education</p><h3 class="cp-card-title" id="cpEduCardTitle"></h3></div>
@@ -836,16 +884,6 @@
           </div>
         </div>
 
-        <div class="cp-trainerize-view" id="cpTrainerizeView" hidden>
-          <div class="cp-trainerize-bar">
-            <div><p class="cp-kicker">Trainerize</p><p class="cp-body-text" id="cpTrainerizeHint">Your workout stats live on Trainerize — Trainerize doesn't allow its pages to be embedded, so open it in its own tab.</p></div>
-            <a class="cp-cta-primary" id="cpTrainerizeOpenBtn" href="#" target="_blank" rel="noopener">Open in Trainerize ↗</a>
-          </div>
-          <div class="cp-trainerize-empty" id="cpTrainerizeEmpty" hidden>
-            <p>Your coach hasn't linked your Trainerize account yet — check back soon.</p>
-          </div>
-        </div>
-
         <div class="cp-coach-view" id="cpCoachView" hidden>
           <div class="cp-card cp-roster-card">
             <div class="cp-card-head" style="align-items:center;">
@@ -1011,10 +1049,6 @@
                   <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
                 </div>
               </div>
-              <div class="cp-edit-field cp-edit-field--full">
-                <label>Trainerize link</label>
-                <input type="url" id="cpEditTrainerizeUrl" class="cp-edit-input" placeholder="https://www.trainerize.com/…" />
-              </div>
             </div>
           </div>
 
@@ -1136,6 +1170,48 @@
         <div style="display:flex;gap:10px;">
           <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;height:44px;">Cancel</button>
           <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 28px;height:44px;">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="cp-qe-fab" id="cpQeFab" hidden>✎ Edit portal</button>
+    <div class="cp-modal-overlay" id="cpQeOverlay" hidden>
+      <div class="cp-goal-form-backdrop" data-qe-close></div>
+      <div class="cp-goal-form-sheet cp-qe-sheet" role="dialog" aria-modal="true" aria-labelledby="cpQeTitle">
+        <div class="cp-qe-head">
+          <div>
+            <p class="cp-goal-form-title" id="cpQeTitle">Edit portal</p>
+            <span class="cp-qe-status" id="cpQeStatus">Changes save live</span>
+          </div>
+          <button type="button" class="cp-qe-close" data-qe-close aria-label="Close">✕</button>
+        </div>
+        <div class="cp-qe-tabs" id="cpQeTabs">
+          <button type="button" class="cp-qe-tab is-active" data-qe-tab="cores">Six Cores</button>
+          <button type="button" class="cp-qe-tab" data-qe-tab="tasks">Tasks</button>
+          <button type="button" class="cp-qe-tab" data-qe-tab="overview">Overview</button>
+        </div>
+        <div data-qe-pane="cores"><div id="cpQeCores"></div></div>
+        <div data-qe-pane="tasks" hidden>
+          <div id="cpQeTasks"></div>
+          <div class="cp-qe-add">
+            <input type="text" class="cp-qe-input" id="cpQeNewTask" placeholder="Add a task…" maxlength="200" />
+            <select class="cp-qe-input" id="cpQeNewTaskCore" aria-label="Core"></select>
+            <button type="button" id="cpQeAddTask">Add</button>
+          </div>
+        </div>
+        <div data-qe-pane="overview" hidden>
+          <div class="cp-qe-grid">
+            <div class="is-full"><label for="cpQeRoute">Route</label><input type="text" class="cp-qe-input" id="cpQeRoute" data-dash="route" /></div>
+            <div><label for="cpQeWeekNow">Week</label><input type="number" min="0" class="cp-qe-input" id="cpQeWeekNow" data-dash="week_now" /></div>
+            <div><label for="cpQeWeekTotal">Of weeks</label><input type="number" min="0" class="cp-qe-input" id="cpQeWeekTotal" data-dash="week_total" /></div>
+            <div><label for="cpQeFlag">Status</label><select class="cp-qe-input" id="cpQeFlag" data-dash="flag_status"><option>On track</option><option>Needs a nudge</option><option>At risk</option></select></div>
+            <div><label for="cpQeSession">Next session</label><input type="text" class="cp-qe-input" id="cpQeSession" data-dash="next_session_label" placeholder="e.g. Thu 6pm" /></div>
+            <div class="is-full"><label for="cpQeAgenda">Session agenda</label><input type="text" class="cp-qe-input" id="cpQeAgenda" data-dash="next_session_agenda" /></div>
+          </div>
+        </div>
+        <div class="cp-qe-foot">
+          <span>The portal behind updates as you type.</span>
+          <button type="button" id="cpQeFull">Open full editor</button>
         </div>
       </div>
     </div>
