@@ -869,7 +869,6 @@
     renderTasks();
     renderNotesCard();
     renderChips();
-    renderWins();
     renderSessionCard();
     renderReminder();
     renderCardioBox();
@@ -2140,11 +2139,6 @@
     setNote('cpCurNote', 'Added ' + lines.length + ' question' + (lines.length === 1 ? '' : 's'));
     curRender();
   });
-
-  function renderWins(){
-    var h=''; portalData.wins.forEach(function(w){ h+='<div class="cp-win-row"><span class="cp-dot" style="background:'+(w.color||'#77d770')+'"></span><span class="cp-win-label">'+esc(w.label)+'</span><span class="cp-win-meta">'+esc(w.meta)+'</span></div>'; });
-    $('cpWinList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No wins logged yet.</p>';
-  }
 
   function renderChips(){
     var h=''; portalData.resources.forEach(function(r){ h+='<span class="cp-chip"><span class="cp-dot" style="background:'+(r.color||'#2a9df0')+'"></span>'+esc(r.label)+'</span>'; });
