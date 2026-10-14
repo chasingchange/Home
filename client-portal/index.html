@@ -475,31 +475,33 @@
       .cp-editor-foot-hint{font-size:13px;color:rgba(7,31,53,.55);}
       @media (max-width:1080px){ .cp-editor-body{grid-template-columns:200px minmax(0,1fr);} .cp-editor-aside{display:none;} }
       @media (max-width:720px){ .cp-editor-body{grid-template-columns:minmax(0,1fr);} .cp-editor-nav{display:none;} .cp-editor-grid{grid-template-columns:1fr;} .cp-editor-grid .cp-edit-field--full{grid-column:1;} }
-      /* vision board header — full-bleed (breaks out of .cp-dash's 1120px column to the
-         viewport edges) with every edge feathered + blurred into the page background.
-         A blurred copy of the image sits behind the sharp one; the sharp layer's mask
-         fades out sooner, so the edges read as soft blur rather than a hard crop. */
+      /* vision board — once uploaded, the photo becomes the backdrop of the whole page.
+         It sits in a fixed, viewport-sized layer behind everything (z-index:-1), and
+         object-fit:cover scales it uniformly to fill that layer, cropping the overflow
+         rather than stretching, whatever the screen size or the photo's proportions.
+         A page-coloured veil deepens down the page so cards and text stay legible.
+         The band itself is just a transparent window at the top of the dashboard
+         holding the upload / Reposition / Change / Remove controls. */
       #cpRoot{overflow-x:clip;}
-      .cp-vision-band{position:relative;width:100vw;margin:0 calc(50% - 50vw) 8px;}
-      .cp-vision-band-inner{position:relative;height:clamp(220px,34vw,440px);overflow:hidden;}
-      .cp-vision-band-img,.cp-vision-band-blur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;}
-      .cp-vision-band-blur{filter:blur(12px) saturate(1.05);transform:scale(1.04);opacity:.55;pointer-events:none;
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
-        -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
-        mask-composite:intersect;}
-      .cp-vision-band-img{
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
-        -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
-        mask-composite:intersect;}
+      .cp-vision-band{position:relative;margin:0 0 8px;}
+      .cp-vision-band-inner{position:relative;height:clamp(200px,28vw,360px);}
+      .cp-vision-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#eaeaee;}
+      .cp-vision-band-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;}
+      .cp-vision-veil{position:absolute;inset:0;pointer-events:none;
+        background:linear-gradient(to bottom,rgba(234,234,238,0) 0,rgba(234,234,238,.12) 30vh,rgba(234,234,238,.5) 70vh,rgba(234,234,238,.62) 100%);}
+      /* Reposition mode lifts the photo above the page, unveiled, so the client frames
+         exactly what will show full-screen; drag anywhere to move the focal point. */
+      .cp-vision-band.is-repositioning .cp-vision-bg{z-index:10030;pointer-events:auto;}
+      .cp-vision-band.is-repositioning .cp-vision-veil{opacity:0;}
       .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
       .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
-      .cp-vision-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:8px 16px;border-radius:999px;background:rgba(7,31,53,.6);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.02em;}
-      .cp-vision-empty{all:unset;box-sizing:border-box;position:absolute;top:0;bottom:0;left:max(24px,calc(50% - 536px));right:max(24px,calc(50% - 536px));display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed rgba(7,31,53,.22);border-radius:22px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);transition:border-color .15s,background-color .15s;}
+      .cp-vision-hint{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10031;pointer-events:none;padding:8px 16px;border-radius:999px;background:rgba(7,31,53,.6);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.02em;}
+      .cp-vision-empty{all:unset;box-sizing:border-box;position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed rgba(7,31,53,.22);border-radius:22px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);transition:border-color .15s,background-color .15s;}
       .cp-vision-empty:hover{border-color:rgba(7,31,53,.4);}
       .cp-vision-empty-text{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.45);}
-      .cp-vision-controls{position:absolute;top:14px;right:max(24px,calc(50% - 536px));z-index:3;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+      .cp-vision-empty-sub{font-size:12px;font-weight:600;color:rgba(7,31,53,.38);}
+      .cp-vision-controls{position:absolute;top:14px;right:0;z-index:3;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+      .cp-vision-band.is-repositioning #cpVisionEditControls{position:fixed;top:auto;bottom:24px;left:50%;right:auto;transform:translateX(-50%);z-index:10031;}
       .cp-vision-band.is-busy .cp-vision-controls{opacity:.5;pointer-events:none;}
       /* Once a photo is set, its Reposition/Change/Remove controls stay out of the way
          until the band is hovered (or focused via keyboard). Touch screens can't hover,
@@ -508,17 +510,16 @@
         #cpVisionControls{opacity:0;transition:opacity .18s ease;}
         .cp-vision-band:hover #cpVisionControls,#cpVisionControls:focus-within{opacity:1;}
       }
-      /* With a photo, the faded tail of the band runs under the welcome heading. The
-         image is near-transparent there, and a soft page-coloured halo keeps the words crisp. */
-      .cp-vision-band.has-image{margin-bottom:-84px;}
-      .cp-vision-band.has-image + .cp-dash-head{position:relative;z-index:1;}
-      .cp-vision-band.has-image + .cp-dash-head .cp-h1{text-shadow:0 0 18px rgba(234,234,238,.95),0 0 6px rgba(234,234,238,.9);}
+      /* Text that sits straight on the photo gets a soft page-coloured halo. */
+      .cp-vision-band.has-image ~ .cp-dash-head .cp-h1,
+      .cp-vision-band.has-image ~ .cp-dash-head .cp-kicker,
+      .cp-vision-band.has-image ~ .cp-dash-head .cp-route-line{text-shadow:0 0 18px rgba(234,234,238,.95),0 0 6px rgba(234,234,238,.9);}
       .cp-vision-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);font-size:12px;font-weight:800;letter-spacing:.02em;color:#071f35;box-shadow:0 2px 10px rgba(7,31,53,.14);}
       .cp-vision-btn:hover{background:#fff;}
       .cp-vision-btn--primary{background:#071f35;color:#fff;}
       .cp-vision-btn--primary:hover{background:#0d2e4d;}
       .cp-vision-btn--danger{color:#c01a38;}
-      @media(max-width:600px){.cp-vision-band-inner{height:230px;}.cp-vision-band.has-image{margin-bottom:-48px;}.cp-vision-empty{left:16px;right:16px;}.cp-vision-controls{right:16px;}}
+      @media(max-width:600px){.cp-vision-band-inner{height:180px;}}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-core-rail{position:static;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
@@ -630,16 +631,19 @@
       <!-- DASHBOARD -->
       <section class="cp-dash" id="cpDash" hidden>
         <div class="cp-vision-band" id="cpVisionBand" hidden>
+          <div class="cp-vision-bg" id="cpVisionBg" hidden>
+            <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" draggable="false" />
+            <div class="cp-vision-veil"></div>
+          </div>
+          <span class="cp-vision-hint" id="cpVisionHint" hidden>Drag to reposition</span>
           <div class="cp-vision-band-inner">
-            <img class="cp-vision-band-blur" id="cpVisionBlur" alt="" aria-hidden="true" hidden />
-            <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" draggable="false" hidden />
-            <span class="cp-vision-hint" id="cpVisionHint" hidden>Drag to reposition</span>
             <button type="button" class="cp-vision-empty" id="cpVisionEmptyBtn" hidden>
               <span class="cp-vision-empty-text">+ Upload your vision board</span>
+              <span class="cp-vision-empty-sub">Fills the whole page · best at 2560 × 1440 px (16:9) or larger</span>
             </button>
             <div class="cp-vision-controls" id="cpVisionControls" hidden>
               <button type="button" class="cp-vision-btn" id="cpVisionRepositionBtn">Reposition</button>
-              <button type="button" class="cp-vision-btn" id="cpVisionChangeBtn">Change</button>
+              <button type="button" class="cp-vision-btn" id="cpVisionChangeBtn" title="Best at 2560 × 1440 px (16:9) or larger">Change</button>
               <button type="button" class="cp-vision-btn cp-vision-btn--danger" id="cpVisionRemoveBtn">Remove</button>
             </div>
             <div class="cp-vision-controls" id="cpVisionEditControls" hidden>
