@@ -884,7 +884,7 @@
 
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView',
-    checkins:'cpCheckinsView', education:'cpEducationView'
+    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
   };
 
   function setPortalTab(tab){
@@ -2158,9 +2158,10 @@
   }
 
   // ─── Calendar connect (Google / Outlook) ───────────────────────────────
-  // Only the client sees this — a coach browsing a client's portal (see
-  // isCoachUser) gets the card hidden, since connecting is per-client and
-  // the OAuth flows below run as whoever is signed into this browser tab.
+  // Only the client can connect — the OAuth flows below run as whoever is
+  // signed into this browser tab. Each time the client's browser loads
+  // events it saves a copy (calSaveSnapshot), and a coach browsing the
+  // client's portal (see isCoachUser) sees that copy read-only.
   function calConfigured(provider){
     if (provider === 'google') return CALENDAR_CONFIG.googleClientId.indexOf('YOUR_') !== 0;
     return CALENDAR_CONFIG.microsoftClientId.indexOf('YOUR_') !== 0;
@@ -2177,6 +2178,22 @@
       { client_id: clientId, provider: provider, connected: connected, account_email: email || '', connected_at: new Date().toISOString() },
       { onConflict: 'client_id,provider' }
     );
+  }
+
+  async function calSaveSnapshot(clientId, provider){
+    var rows = calState[provider].events.map(function(ev){
+      return { id:ev.id, provider:ev.provider, title:ev.title, start:ev.start.toISOString(), end:ev.end.toISOString(), allDay:ev.allDay, joinUrl:ev.joinUrl };
+    });
+    await sb.from('client_calendar_connections')
+      .update({ events: rows, synced_at: new Date().toISOString() })
+      .eq('client_id', clientId).eq('provider', provider);
+  }
+
+  function calEventsFromSnapshot(rows){
+    var now = new Date();
+    return (rows || []).map(function(ev){
+      return { id:ev.id, provider:ev.provider, title:ev.title, start:new Date(ev.start), end:new Date(ev.end), allDay:!!ev.allDay, joinUrl:ev.joinUrl || '' };
+    }).filter(function(ev){ return ev.end > now; });   // the copy can be days old
   }
 
   // ─── Google Calendar (Google Identity Services token client) ──────────
@@ -2254,7 +2271,10 @@
       var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
       var info = infoRes.ok ? await infoRes.json() : {};
       calState.google.email = info.email || '';
-      if (viewingClientId === clientId) await calPersistConnection(clientId, 'google', true, calState.google.email);
+      if (viewingClientId === clientId) {
+        await calPersistConnection(clientId, 'google', true, calState.google.email);
+        await calSaveSnapshot(clientId, 'google');
+      }
     } catch (e) {
       calSetStatus('Couldn\'t connect Google Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
     }
@@ -2268,7 +2288,7 @@
       google.accounts.oauth2.revoke(calState.google.token, function(){});
     }
     calState.google = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
-    if (clientId) await calPersistConnection(clientId, 'google', false, '');
+    if (clientId) { await calPersistConnection(clientId, 'google', false, ''); await calSaveSnapshot(clientId, 'google'); }
     if (viewingClientId === clientId) calRenderCard();
   }
 
@@ -2331,7 +2351,10 @@
       calState.outlook.connected = true;
       calState.outlook.needsReconnect = false;
       calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
-      if (viewingClientId === clientId) await calPersistConnection(clientId, 'outlook', true, calState.outlook.email);
+      if (viewingClientId === clientId) {
+        await calPersistConnection(clientId, 'outlook', true, calState.outlook.email);
+        await calSaveSnapshot(clientId, 'outlook');
+      }
     } catch (e) {
       calSetStatus('Couldn\'t connect Outlook Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
     }
@@ -2346,7 +2369,7 @@
       try { await msalReady; await client.getTokenCache().removeAccount(calState.outlook.account); } catch (e) { /* best effort */ }
     }
     calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
-    if (clientId) await calPersistConnection(clientId, 'outlook', false, '');
+    if (clientId) { await calPersistConnection(clientId, 'outlook', false, ''); await calSaveSnapshot(clientId, 'outlook'); }
     if (viewingClientId === clientId) calRenderCard();
   }
 
@@ -2354,17 +2377,24 @@
   async function calLoadForClient(clientId){
     calState.google  = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
     calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
-    if (isCoachUser) { calRenderCard(); return; }   // clients only — see comment above
+    calState.google.syncedAt = calState.outlook.syncedAt = null;
 
     var { data } = await sb.from('client_calendar_connections').select('*').eq('client_id', clientId);
     if (viewingClientId !== clientId) return;
     (data || []).forEach(function(row){
-      if (!row.connected) return;
+      if (!row.connected || !calState[row.provider]) return;
       calState[row.provider].connected = true;
-      calState[row.provider].needsReconnect = true;   // flips false once a silent/real token comes back
       calState[row.provider].email = row.account_email || '';
+      if (isCoachUser) {
+        // Coach: show the client's last saved copy, read-only.
+        calState[row.provider].events = calEventsFromSnapshot(row.events);
+        calState[row.provider].syncedAt = row.synced_at ? new Date(row.synced_at) : null;
+      } else {
+        calState[row.provider].needsReconnect = true;   // flips false once a silent/real token comes back
+      }
     });
     calRenderCard();
+    if (isCoachUser) return;
 
     // We used to auto-attempt a "silent" Google token request here so
     // returning clients wouldn't have to click "Connect" every visit. GIS's
@@ -2386,11 +2416,17 @@
             calState.outlook.account = account;
             calState.outlook.needsReconnect = false;
             calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
-            if (viewingClientId === clientId) calRenderCard();
+            if (viewingClientId === clientId) { calRenderCard(); calSaveSnapshot(clientId, 'outlook'); }
           });
         }).catch(function(){ /* leave needsReconnect true */ });
       }
     }
+  }
+
+  function calCoachSyncNote(){
+    var times = [calState.google.syncedAt, calState.outlook.syncedAt].filter(Boolean).sort(function(a,b){ return b - a; });
+    if (!times.length) return calState.google.connected || calState.outlook.connected ? 'Read-only. Events show here after the client next opens their portal.' : '';
+    return 'Read-only copy, last updated ' + times[0].toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) + ' when the client opened their portal.';
   }
 
   function calSetStatus(msg, isError){
@@ -2401,6 +2437,7 @@
 
   function calProviderBtnLabel(provider, name){
     var s = calState[provider];
+    if (isCoachUser) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
     if (s.busy) return 'Connecting…';
     if (s.connected && s.needsReconnect) return 'Reconnect ' + name;
     if (s.connected) return name + ' · ' + (s.email || 'Connected');
@@ -2412,6 +2449,7 @@
     g.textContent = calProviderBtnLabel('google', 'Google');
     g.classList.toggle('is-connected', calState.google.connected && !calState.google.needsReconnect);
     g.classList.toggle('is-loading', calState.google.busy);
+    g.disabled = o.disabled = isCoachUser;
     o.textContent = calProviderBtnLabel('outlook', 'Outlook');
     o.classList.toggle('is-connected', calState.outlook.connected && !calState.outlook.needsReconnect);
     o.classList.toggle('is-loading', calState.outlook.busy);
@@ -2427,11 +2465,12 @@
     var events = calState.google.events.concat(calState.outlook.events)
       .sort(function(a,b){ return a.start - b.start; });
     if (!calState.google.connected && !calState.outlook.connected) {
+      if (isCoachUser) { $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">This client hasn\'t connected a calendar yet.</p>'; return; }
       $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Connect a calendar above to see your upcoming sessions and appointments here.</p>';
       return;
     }
     if (!events.length) {
-      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Nothing on your calendar in the next ' + CAL_WINDOW_DAYS + ' days.</p>';
+      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Nothing on ' + (isCoachUser ? 'the' : 'your') + ' calendar in the next ' + CAL_WINDOW_DAYS + ' days.</p>';
       return;
     }
     var dotColor = { google:'#f02348', outlook:'#2a9df0' };
@@ -2450,10 +2489,14 @@
   }
 
   function calRenderCard(){
-    $('cpCalendarCard').hidden = isCoachUser;
+    $('cpCalendarCard').hidden = false;
+    $('cpTabCalendar').hidden = false;
+    $('cpCalSub').textContent = isCoachUser
+      ? 'Upcoming events from this client\'s connected calendars.'
+      : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
-    if (isCoachUser) return;
     calRenderButtons();
+    if (isCoachUser) calSetStatus(calCoachSyncNote());
     calRenderEvents();
   }
 
@@ -2486,7 +2529,6 @@
   function renderSessionCTA(){
     var btn = $('cpJoinCallBtn');
     if (!btn) return;
-    if (isCoachUser) { $('cpSessionCard').querySelector('.cp-cta-row').hidden = true; return; }
     $('cpSessionCard').querySelector('.cp-cta-row').hidden = false;
     var meeting = calJoinableMeeting();
     if (meeting) {
@@ -2501,10 +2543,12 @@
   }
 
   $('cpCalConnectGoogle').addEventListener('click', function(){
+    if (isCoachUser) return;
     if (calState.google.connected && !calState.google.needsReconnect) calDisconnectGoogle();
     else calConnectGoogle();
   });
   $('cpCalConnectOutlook').addEventListener('click', function(){
+    if (isCoachUser) return;
     if (calState.outlook.connected && !calState.outlook.needsReconnect) calDisconnectOutlook();
     else calConnectOutlook();
   });

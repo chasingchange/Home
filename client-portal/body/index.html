@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="/Logo.png" />
+    <link rel="apple-touch-icon" href="/Logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Body | Client Portal | Chasing Change</title>
+    <meta name="description" content="Your Body core: workouts, programs and training stats." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <script src="../../shared-global-nav.js" defer></script>
+    <script src="../../shared-global-footer.js" defer></script>
+    <style>
+      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+      .cp-dash{width:min(100%,1120px);margin:0 auto;padding:0 24px 96px;box-sizing:border-box;}
+      .cp-dash-head{padding:24px 0 36px;}
+      .cp-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.5);text-decoration:none;}
+      .cp-back:hover{color:rgba(7,31,53,.8);}
+      .cp-kicker{font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cp-core-kicker{display:flex;align-items:center;gap:8px;margin-top:28px;}
+      .cp-dot{width:8px;height:8px;border-radius:999px;background:#77d770;}
+      .cp-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;margin:16px 0 0;line-height:1.06;font-size:clamp(34px,6vw,52px);}
+      .cp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+      .cp-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;cursor:pointer;transition:box-shadow .18s;}
+      .cp-card:hover{box-shadow:0 14px 34px rgba(7,31,53,.08);}
+      .cp-card--wide{grid-column:1 / -1;}
+      .cp-trainerize-card{display:block;color:inherit;text-decoration:none;}
+      .cp-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:20px;margin:8px 0 0;}
+      .cp-body-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
+      .cp-cta-row{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;}
+      .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;}
+      @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}}
+      @media(max-width:600px){.cp-dash{padding:0 16px 72px;}}
+    </style>
+  </head>
+  <body class="cc-page">
+    <main class="cp-dash">
+      <div class="cp-dash-head">
+        <a class="cp-back" href="../">← Client Portal</a>
+        <div class="cp-core-kicker"><span class="cp-dot"></span><p class="cp-kicker">The Six Cores</p></div>
+        <h1 class="cp-h1">Body</h1>
+      </div>
+
+      <div class="cp-card-grid">
+        <a class="cp-card cp-card--wide cp-trainerize-card" id="cpTrainerizeCard" href="https://chasingchange.trainerize.com/app/overview" target="_blank" rel="noopener">
+          <p class="cp-kicker">Trainerize</p>
+          <h3 class="cp-card-title">Workouts &amp; training stats</h3>
+          <p class="cp-body-text">Log in to Trainerize to see your workouts, programs and progress.</p>
+          <div class="cp-cta-row"><span class="cp-cta-primary">Open Trainerize ↗</span></div>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

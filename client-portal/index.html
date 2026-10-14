@@ -317,7 +317,6 @@
       .cp-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;cursor:pointer;transition:box-shadow .18s;}
       .cp-card:hover{box-shadow:0 14px 34px rgba(7,31,53,.08);}
       .cp-card--wide{grid-column:1 / -1;}
-      .cp-trainerize-card{display:block;color:inherit;text-decoration:none;}
       .cp-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
       .cp-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:20px;margin:8px 0 0;}
       .cp-meta{font-size:13px;font-weight:700;color:rgba(7,31,53,.45);flex-shrink:0;}
@@ -350,11 +349,12 @@
       .cp-chip-row{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;}
       .cp-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.1);font-size:13px;font-weight:700;color:rgba(7,31,53,.75);}
       /* calendar card */
-      .cp-cal-connect-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
+      .cp-cal-connect-row{display:flex;flex-wrap:wrap;gap:8px;}
       .cp-cal-provider-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;letter-spacing:.02em;color:rgba(7,31,53,.7);white-space:nowrap;transition:border-color .15s,color .15s,background .15s;}
       .cp-cal-provider-btn:hover{border-color:rgba(7,31,53,.35);}
       .cp-cal-provider-btn.is-connected{background:#071f35;border-color:#071f35;color:#fff;}
       .cp-cal-provider-btn.is-disabled{cursor:not-allowed;opacity:.45;}
+      .cp-cal-provider-btn:disabled:not(.is-disabled){cursor:default;}
       .cp-cal-provider-btn.is-loading{opacity:.6;cursor:wait;}
       .cp-cal-status{margin:14px 0 0;font-size:13px;color:rgba(7,31,53,.5);}
       .cp-cal-status.is-error{color:#c01a38;}
@@ -683,6 +683,7 @@
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="calendar" id="cpTabCalendar" hidden>Calendar</button>
         </div>
 
         <div class="cp-client-view" id="cpClientView">
@@ -730,13 +731,6 @@
               <p class="cp-body-text" id="cpCiCardBody"></p>
               <div class="cp-cta-row"><span class="cp-cta-primary" id="cpCiCardCta">Open check-ins</span></div>
             </div>
-            <a class="cp-card cp-card--wide cp-trainerize-card" id="cpTrainerizeCard" href="https://chasingchange.trainerize.com/app/overview" target="_blank" rel="noopener">
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Trainerize</p><h3 class="cp-card-title">Workouts &amp; training stats</h3></div>
-              </div>
-              <p class="cp-body-text">Log in to Trainerize to see your workouts, programs and progress.</p>
-              <div class="cp-cta-row"><span class="cp-cta-primary">Open Trainerize ↗</span></div>
-            </a>
             <div class="cp-card cp-card--wide" id="cpEduCard" data-goto-tab="education" hidden>
               <div class="cp-card-head">
                 <div><p class="cp-kicker">Education</p><h3 class="cp-card-title" id="cpEduCardTitle"></h3></div>
@@ -754,18 +748,6 @@
               <p class="cp-kicker">Session Notes</p>
               <h3 class="cp-card-title">Recaps &amp; decisions</h3>
               <div class="cp-note-list" id="cpNoteList"></div>
-            </div>
-            <div class="cp-card cp-card--wide" id="cpCalendarCard" hidden>
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Calendar</p><h3 class="cp-card-title">Upcoming</h3></div>
-                <div class="cp-cal-connect-row" id="cpCalConnectRow">
-                  <button type="button" class="cp-cal-provider-btn" id="cpCalConnectGoogle" data-provider="google">Connect Google</button>
-                  <button type="button" class="cp-cal-provider-btn" id="cpCalConnectOutlook" data-provider="outlook">Connect Outlook</button>
-                  <button type="button" class="cp-cal-provider-btn is-disabled" id="cpCalConnectApple" disabled title="Apple Calendar doesn't support this kind of connection yet — coming soon.">Apple · Coming soon</button>
-                </div>
-              </div>
-              <p class="cp-cal-status" id="cpCalStatus"></p>
-              <div class="cp-cal-event-list" id="cpCalEventList"></div>
             </div>
             <div class="cp-card" id="cpLibraryCard">
               <p class="cp-kicker">Resource Library</p>
@@ -848,6 +830,22 @@
           </div>
           <div class="cp-core-chips" id="cpEduCoreChips" role="tablist" aria-label="Core"></div>
           <div id="cpEduList"></div>
+        </div>
+
+        <!-- CALENDAR TAB -->
+        <div class="cp-goals-view" id="cpCalendarView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Calendar</h2><p class="cp-tab-sub" id="cpCalSub"></p></div>
+          </div>
+          <div class="cp-panel" id="cpCalendarCard" hidden>
+            <div class="cp-cal-connect-row" id="cpCalConnectRow">
+              <button type="button" class="cp-cal-provider-btn" id="cpCalConnectGoogle" data-provider="google">Connect Google</button>
+              <button type="button" class="cp-cal-provider-btn" id="cpCalConnectOutlook" data-provider="outlook">Connect Outlook</button>
+              <button type="button" class="cp-cal-provider-btn is-disabled" id="cpCalConnectApple" disabled title="Apple Calendar doesn't support this kind of connection yet — coming soon.">Apple · Coming soon</button>
+            </div>
+            <p class="cp-cal-status" id="cpCalStatus"></p>
+            <div class="cp-cal-event-list" id="cpCalEventList"></div>
+          </div>
         </div>
 
         <!-- ASSIGNMENT CREATE / EDIT FORM (coach) -->
