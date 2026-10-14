@@ -894,7 +894,7 @@
       btn.classList.toggle('is-active', btn.getAttribute('data-portal-tab') === tab);
     });
     Object.keys(PORTAL_TABS).forEach(function(k){ $(PORTAL_TABS[k]).hidden = k !== tab; });
-    if (tab === 'portal') renderVisionBand(); else $('cpVisionBand').hidden = true;
+    renderVisionBand(); // the vision board stays up on every tab
   }
 
   function hideAllPortalTabs(){
@@ -2561,7 +2561,7 @@
     sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
   });
 
-  // ─── Vision board (client-uploaded image, used as the full-page backdrop) ──
+  // ─── Vision board header (client-uploaded image, faded into the page) ──
   // The client's chosen focal point is stored as a "#pos=x,y" fragment (percentages,
   // fed straight into object-position) on vision_board_url itself, so recentering
   // needs no extra column. The fragment never reaches the storage server.
@@ -2581,7 +2581,9 @@
   }
 
   function applyVisionPos(x, y){
-    $('cpVisionImg').style.objectPosition = x + '% ' + y + '%';
+    var pos = x + '% ' + y + '%';
+    $('cpVisionImg').style.objectPosition = pos;
+    $('cpVisionBlur').style.objectPosition = pos;
   }
 
   function renderVisionBand(){
@@ -2596,15 +2598,16 @@
     band.hidden = false;
     band.classList.remove('is-busy');
 
-    var img = $('cpVisionImg'), bg = $('cpVisionBg');
+    var img = $('cpVisionImg'), blur = $('cpVisionBlur');
     if (url) {
       var parsed = parseVisionUrl(url);
-      if (img.getAttribute('src') !== parsed.src) img.src = parsed.src;
-      bg.hidden = false;
+      if (img.getAttribute('src') !== parsed.src) { img.src = parsed.src; blur.src = parsed.src; }
+      img.hidden = false; blur.hidden = false;
       if (visionEdit) applyVisionPos(visionEdit.x, visionEdit.y);
       else applyVisionPos(parsed.x, parsed.y);
     } else {
-      bg.hidden = true; img.removeAttribute('src');
+      img.hidden = true; img.removeAttribute('src');
+      blur.hidden = true; blur.removeAttribute('src');
     }
 
     var editing = !!visionEdit;
@@ -2645,7 +2648,7 @@
   });
 
   // Drag the image to move its focal point. With object-fit:cover only the axis
-  // that overflows the viewport can move; dragging by the full overflow distance
+  // that overflows the band can move; dragging by the full overflow distance
   // sweeps object-position from 0% to 100% on that axis.
   (function(){
     var img = $('cpVisionImg');
