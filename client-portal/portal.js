@@ -2543,24 +2543,124 @@
   });
 
   // ─── Vision board header (client-uploaded image, faded into the page) ──
+  // The client's chosen focal point is stored as a "#pos=x,y" fragment (percentages,
+  // fed straight into object-position) on vision_board_url itself, so recentering
+  // needs no extra column. The fragment never reaches the storage server.
+  var visionEdit = null; // { x, y } draft position while repositioning, else null
+
+  function parseVisionUrl(url){
+    var m = /#pos=(-?[\d.]+),(-?[\d.]+)$/.exec(url || '');
+    return {
+      src: (url || '').replace(/#.*$/, ''),
+      x: m ? clampPct(parseFloat(m[1])) : 50,
+      y: m ? clampPct(parseFloat(m[2])) : 50
+    };
+  }
+  function clampPct(n){ return isFinite(n) ? Math.min(100, Math.max(0, n)) : 50; }
+  function buildVisionUrl(src, x, y){
+    return src + '#pos=' + Math.round(x * 10) / 10 + ',' + Math.round(y * 10) / 10;
+  }
+
+  function applyVisionPos(x, y){
+    var pos = x + '% ' + y + '%';
+    $('cpVisionImg').style.objectPosition = pos;
+    $('cpVisionBlur').style.objectPosition = pos;
+  }
+
   function renderVisionBand(){
     var band = $('cpVisionBand');
-    if (state.view !== 'client' || !portalData) { band.hidden = true; return; }
+    if (state.view !== 'client' || !portalData) { visionEdit = null; band.hidden = true; return; }
 
     var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
     var url = portalData.visionBoardUrl;
-    if (!url && !isOwner) { band.hidden = true; return; }
+    if (!url && !isOwner) { visionEdit = null; band.hidden = true; return; }
+    if (!url || !isOwner) visionEdit = null;
 
     band.hidden = false;
     band.classList.remove('is-busy');
 
-    var img = $('cpVisionImg');
-    if (url) { img.src = url; img.hidden = false; }
-    else { img.hidden = true; img.removeAttribute('src'); }
+    var img = $('cpVisionImg'), blur = $('cpVisionBlur');
+    if (url) {
+      var parsed = parseVisionUrl(url);
+      if (img.getAttribute('src') !== parsed.src) { img.src = parsed.src; blur.src = parsed.src; }
+      img.hidden = false; blur.hidden = false;
+      if (visionEdit) applyVisionPos(visionEdit.x, visionEdit.y);
+      else applyVisionPos(parsed.x, parsed.y);
+    } else {
+      img.hidden = true; img.removeAttribute('src');
+      blur.hidden = true; blur.removeAttribute('src');
+    }
 
+    var editing = !!visionEdit;
+    band.classList.toggle('is-repositioning', editing);
+    $('cpVisionHint').hidden = !editing;
     $('cpVisionEmptyBtn').hidden = !(isOwner && !url);
-    $('cpVisionControls').hidden = !(isOwner && url);
+    $('cpVisionControls').hidden = !(isOwner && url && !editing);
+    $('cpVisionEditControls').hidden = !(isOwner && url && editing);
   }
+
+  function startVisionReposition(){
+    if (!portalData || !portalData.visionBoardUrl) return;
+    var parsed = parseVisionUrl(portalData.visionBoardUrl);
+    visionEdit = { x: parsed.x, y: parsed.y };
+    renderVisionBand();
+  }
+
+  $('cpVisionRepositionBtn').addEventListener('click', startVisionReposition);
+  $('cpVisionCancelPosBtn').addEventListener('click', function(){
+    visionEdit = null;
+    renderVisionBand();
+  });
+  $('cpVisionSavePosBtn').addEventListener('click', async function(){
+    if (!visionEdit || !portalData || !portalData.visionBoardUrl) return;
+    var prevUrl = portalData.visionBoardUrl;
+    var url = buildVisionUrl(parseVisionUrl(prevUrl).src, visionEdit.x, visionEdit.y);
+    portalData.visionBoardUrl = url;
+    visionEdit = null;
+    setVisionBusy(true);
+    var res = await persistDashPatch({ vision_board_url: url });
+    setVisionBusy(false);
+    if (res && res.error) {
+      portalData.visionBoardUrl = prevUrl;
+      alert('Saving the new position failed: ' + res.error.message);
+    }
+    renderVisionBand();
+  });
+
+  // Drag the image to move its focal point. With object-fit:cover only the axis
+  // that overflows the band can move; dragging by the full overflow distance
+  // sweeps object-position from 0% to 100% on that axis.
+  (function(){
+    var img = $('cpVisionImg');
+    var drag = null;
+    img.addEventListener('pointerdown', function(e){
+      if (!visionEdit || !img.naturalWidth) return;
+      e.preventDefault();
+      var box = img.getBoundingClientRect();
+      var scale = Math.max(box.width / img.naturalWidth, box.height / img.naturalHeight);
+      drag = {
+        id: e.pointerId, startX: e.clientX, startY: e.clientY,
+        x0: visionEdit.x, y0: visionEdit.y,
+        overX: img.naturalWidth * scale - box.width,
+        overY: img.naturalHeight * scale - box.height
+      };
+      img.setPointerCapture(e.pointerId);
+      $('cpVisionBand').classList.add('is-dragging');
+    });
+    img.addEventListener('pointermove', function(e){
+      if (!drag || e.pointerId !== drag.id || !visionEdit) return;
+      if (drag.overX > 1) visionEdit.x = clampPct(drag.x0 - (e.clientX - drag.startX) / drag.overX * 100);
+      if (drag.overY > 1) visionEdit.y = clampPct(drag.y0 - (e.clientY - drag.startY) / drag.overY * 100);
+      applyVisionPos(visionEdit.x, visionEdit.y);
+    });
+    function endDrag(e){
+      if (!drag || e.pointerId !== drag.id) return;
+      drag = null;
+      $('cpVisionBand').classList.remove('is-dragging');
+    }
+    img.addEventListener('pointerup', endDrag);
+    img.addEventListener('pointercancel', endDrag);
+  })();
 
   function setVisionBusy(busy){
     $('cpVisionBand').classList.toggle('is-busy', busy);
@@ -2572,6 +2672,7 @@
   $('cpVisionRemoveBtn').addEventListener('click', async function(){
     if (!viewingClientId || !portalData) return;
     if (!window.confirm('Remove your vision board image?')) return;
+    visionEdit = null;
     setVisionBusy(true);
     await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
     var prevUrl = portalData.visionBoardUrl;
@@ -2610,7 +2711,12 @@
     if (res && res.error) {
       portalData.visionBoardUrl = prevUrl;
       alert('The image uploaded, but saving it to your dashboard failed: ' + res.error.message);
+      renderVisionBand();
+      return;
     }
+    // Fresh upload starts centered; drop straight into reposition mode so the
+    // client can frame it before moving on.
+    visionEdit = { x: 50, y: 50 };
     renderVisionBand();
   });
 
