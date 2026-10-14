@@ -509,17 +509,38 @@
       @media (hover:hover){
         #cpVisionControls{opacity:0;transition:opacity .18s ease;}
         .cp-vision-band:hover #cpVisionControls,#cpVisionControls:focus-within{opacity:1;}
+        .cp-dash:has(.cp-dash-head:hover) #cpVisionControls{opacity:1;}
       }
-      /* Text that sits straight on the photo gets a soft page-coloured halo. */
-      .cp-vision-band.has-image ~ .cp-dash-head .cp-h1,
-      .cp-vision-band.has-image ~ .cp-dash-head .cp-kicker,
-      .cp-vision-band.has-image ~ .cp-dash-head .cp-route-line{text-shadow:0 0 18px rgba(234,234,238,.95),0 0 6px rgba(234,234,238,.9);}
+      /* Over the photo, nothing sits straight on the image: the welcome header, tabs
+         and banner become white cards like the rest of the dashboard. */
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-dash-head{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:24px 28px;margin-bottom:20px;box-shadow:0 8px 28px rgba(7,31,53,.08);}
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-dash-head .cp-h1{margin-top:12px;}
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-portal-tabs{width:fit-content;max-width:100%;box-sizing:border-box;flex-wrap:wrap;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:16px;padding:6px;box-shadow:0 8px 28px rgba(7,31,53,.08);}
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-biometric-banner{background:#fff;margin:0 0 20px;}
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-client-view .cp-core-rail,
+      .cp-vision-band.has-image:not([hidden]) ~ .cp-client-view .cp-card{box-shadow:0 8px 28px rgba(7,31,53,.08);}
+      /* The photo starts below the site nav: a solid page-coloured strip runs full width
+         behind the nav (from the top of the page down to the dashboard), and the footer
+         turns solid white, so neither has to be read over the image. */
+      body:has(.cp-vision-band.has-image:not([hidden])){overflow-x:clip;}
+      body:has(.cp-vision-band.has-image:not([hidden])) .cc-global-nav-wrap::before{content:"";position:absolute;z-index:-1;top:-3rem;bottom:-0.75rem;left:50%;width:100vw;transform:translateX(-50%);background:#eaeaee;border-bottom:1px solid rgba(7,31,53,.1);pointer-events:none;}
+      body:has(.cp-vision-band.has-image:not([hidden])) .cc-global-footer{background:#fff;}
       .cp-vision-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);font-size:12px;font-weight:800;letter-spacing:.02em;color:#071f35;box-shadow:0 2px 10px rgba(7,31,53,.14);}
       .cp-vision-btn:hover{background:#fff;}
       .cp-vision-btn--primary{background:#071f35;color:#fff;}
       .cp-vision-btn--primary:hover{background:#0d2e4d;}
       .cp-vision-btn--danger{color:#c01a38;}
       @media(max-width:600px){.cp-vision-band-inner{height:180px;}}
+      /* With a photo set the band takes no space, so the Portal tab starts at the same
+         height as the other tabs. Its controls float in the welcome card's top-right
+         corner instead (on phones they sit in a small row above the card). */
+      .cp-vision-band.has-image{margin-bottom:0;}
+      .cp-vision-band.has-image .cp-vision-band-inner{height:0;}
+      .cp-vision-band.has-image #cpVisionControls{top:14px;right:16px;}
+      @media(max-width:600px){
+        .cp-vision-band.has-image .cp-vision-band-inner{height:auto;}
+        .cp-vision-band.has-image #cpVisionControls{position:static;margin-bottom:12px;}
+      }
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-core-rail{position:static;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
