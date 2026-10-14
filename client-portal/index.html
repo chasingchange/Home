@@ -259,9 +259,7 @@
       .cp-link-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);text-decoration:underline;text-underline-offset:3px;}
       .cp-link-btn:hover{color:rgba(7,31,53,.8);}
       .cp-link-btn--danger:hover{color:#c01a38;}
-      /* goals: status + progress */
-      .cp-goal-progress{display:grid;gap:6px;}
-      .cp-goal-progress-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:rgba(7,31,53,.5);}
+      /* goals: status */
       .cp-goal-status-select{height:32px;border-radius:99px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",sans-serif;font-size:12px;font-weight:700;color:#071f35;}
       .cp-goal-card-foot{flex-wrap:wrap;}
       .cp-goal-edit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 10px;border-radius:99px;border:1px solid rgba(7,31,53,.12);}
@@ -911,9 +909,8 @@
               <p class="cp-goal-form-hint">Give yourself a deadline. No deadline = no urgency.</p>
               <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
             </div>
-            <div class="cp-goal-form-field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div><label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select></div>
-              <div><label for="cpGoalProgress">Progress · <span id="cpGoalProgressVal">0%</span></label><input type="range" id="cpGoalProgress" min="0" max="100" step="5" value="0" style="width:100%;height:46px;" /></div>
+            <div class="cp-goal-form-field">
+              <label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select>
             </div>
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>

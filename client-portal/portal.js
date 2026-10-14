@@ -504,7 +504,7 @@
   // Row -> portal-shape mappers, shared by the initial load and every
   // targeted re-fetch after a save.
   function mapGoal(g){
-    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), progress:g.progress||0, createdBy:g.created_by||'client' };
+    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client' };
   }
 
   function mapAssignment(a){
@@ -906,7 +906,6 @@
   function buildGoalCard(g, idx){
     var color = coreColor(g.coreKey);
     var isAchieved = g.status === 'achieved';
-    var pct = Math.max(0, Math.min(100, parseInt(g.progress, 10) || 0));
     var dateHtml = g.targetDate ? '<span class="cp-goal-date-chip">📅 ' + esc(goalDateLabel(g.targetDate)) + '</span>' : '';
     var statusSel = '<select class="cp-goal-status-select" data-goal-status="'+idx+'" aria-label="Status for '+esc(g.title)+'">'
       + GOAL_STATUSES.map(function(st){ return '<option value="'+st.key+'"'+(st.key===g.status?' selected':'')+'>'+esc(st.label)+'</option>'; }).join('')
@@ -915,8 +914,6 @@
       +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+color+';border-radius:18px 18px 0 0;"></div>'
       +'<div class="cp-goal-card-head"><p class="cp-goal-card-title">'+esc(g.title)+'</p></div>'
       +(g.description?'<p class="cp-goal-card-desc">'+esc(g.description)+'</p>':'')
-      +'<div class="cp-goal-progress"><div class="cp-goal-progress-top"><span>Progress</span><span>'+pct+'%</span></div>'
-      +'<div class="cp-meter"><div class="cp-meter-fill" style="width:'+pct+'%;background:'+color+'"></div></div></div>'
       +'<div class="cp-goal-card-foot">'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'+coreChip(g.coreKey)+dateHtml+'</div>'
         +'<div class="cp-goal-card-actions">'
@@ -956,7 +953,6 @@
   }
 
   $('cpGoalStatus').innerHTML = GOAL_STATUSES.map(function(st){ return '<option value="'+st.key+'">'+esc(st.label)+'</option>'; }).join('');
-  $('cpGoalProgress').addEventListener('input', function(){ $('cpGoalProgressVal').textContent = this.value + '%'; });
 
   var goalEditingId = null;
 
@@ -968,8 +964,6 @@
     $('cpGoalDesc').value = goal ? goal.description : '';
     $('cpGoalDate').value = goal ? goal.targetDate : '';
     $('cpGoalStatus').value = goal ? goal.status : 'not_started';
-    $('cpGoalProgress').value = goal ? (goal.progress || 0) : 0;
-    $('cpGoalProgressVal').textContent = $('cpGoalProgress').value + '%';
     var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
     radios.forEach(function(r){ r.checked = !!goal && r.value === goal.coreKey; });
     $('cpGoalFormOverlay').hidden = false;
@@ -994,15 +988,12 @@
 
     var coreEl = $('cpGoalCoreGrid').querySelector('input[type=radio]:checked');
     var status = $('cpGoalStatus').value;
-    var progress = parseInt($('cpGoalProgress').value, 10) || 0;
-    if (status === 'achieved') progress = 100;
     var fields = {
       title: title,
       description: $('cpGoalDesc').value.trim(),
       core_key: coreEl ? coreEl.value : '',
       target_date: $('cpGoalDate').value || null,
-      status: status,
-      progress: progress
+      status: status
     };
 
     setLoading($('cpGoalFormSave'), true, 'Saving…');
@@ -1039,15 +1030,13 @@
   async function goalsGridChangeHandler(e){
     var sel = e.target.closest('[data-goal-status]'); if (!sel || !portalData) return;
     var goal = portalData.goals[parseInt(sel.getAttribute('data-goal-status'), 10)]; if (!goal) return;
-    var prev = { status: goal.status, progress: goal.progress };
+    var prevStatus = goal.status;
     var patch = { status: sel.value };
-    if (sel.value === 'achieved' && goal.progress < 100) patch.progress = 100;
     goal.status = patch.status;
-    if ('progress' in patch) goal.progress = patch.progress;
     renderGoalsTab();
     var { error } = await sb.from('client_goals').update(patch).eq('id', goal.id);
     if (error) {
-      goal.status = prev.status; goal.progress = prev.progress;
+      goal.status = prevStatus;
       renderGoalsTab();
       alert('Could not update goal: ' + error.message);
     }
@@ -2964,7 +2953,7 @@
   $('cpEditResourceAdd').addEventListener('click', function(){ editSections.cpEditResourceList.items.push({label:'',color:'#2a9df0'}); renderListEditor('cpEditResourceList'); });
   $('cpEditWinAdd').addEventListener('click', function(){ editSections.cpEditWinList.items.push({label:'',meta:'',color:'#77d770'}); renderListEditor('cpEditWinList'); });
   $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',done:false}); renderListEditor('cpEditHabitList'); });
-  $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',progress:0,createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
+  $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
 
   function renderCoreEditor(){
     var h='';
@@ -3023,7 +3012,7 @@
     editSections.cpEditResourceList.items = editState.resources;
     editSections.cpEditWinList.items = editState.wins;
     editSections.cpEditHabitList.items = editState.habits;
-    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, description:g.description, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, progress:g.progress, createdBy:g.createdBy }; });
+    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, description:g.description, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, createdBy:g.createdBy }; });
     Object.keys(editSections).forEach(renderListEditor);
 
     $('cpEditorPreviewKicker').textContent = 'What ' + (name.split(' ')[0] || 'they') + ' sees';
@@ -3136,9 +3125,9 @@
     });
 
     var goalRows = editSections.cpEditGoalList.items.filter(function(g){ return (g.title||'').trim(); }).map(function(g){
-      // Re-inserted with their original id/description/progress so a save
+      // Re-inserted with their original id/description so a save
       // here doesn't wipe what was set from the Goals tab.
-      var row = { client_id: clientId, title: g.title.trim(), description: g.description||'', core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'not_started', progress: g.progress||0, created_by: g.createdBy||'coach' };
+      var row = { client_id: clientId, title: g.title.trim(), description: g.description||'', core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'not_started', created_by: g.createdBy||'coach' };
       if (g.id) row.id = g.id;
       return row;
     });
