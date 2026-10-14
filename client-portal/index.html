@@ -354,6 +354,7 @@
       .cp-cal-provider-btn:hover{border-color:rgba(7,31,53,.35);}
       .cp-cal-provider-btn.is-connected{background:#071f35;border-color:#071f35;color:#fff;}
       .cp-cal-provider-btn.is-disabled{cursor:not-allowed;opacity:.45;}
+      .cp-cal-provider-btn:disabled:not(.is-disabled){cursor:default;}
       .cp-cal-provider-btn.is-loading{opacity:.6;cursor:wait;}
       .cp-cal-status{margin:14px 0 0;font-size:13px;color:rgba(7,31,53,.5);}
       .cp-cal-status.is-error{color:#c01a38;}
@@ -834,7 +835,7 @@
         <!-- CALENDAR TAB -->
         <div class="cp-goals-view" id="cpCalendarView" hidden>
           <div class="cp-goals-header">
-            <div><h2 class="cp-goals-title">Calendar</h2><p class="cp-tab-sub">Upcoming events from your connected calendars.</p></div>
+            <div><h2 class="cp-goals-title">Calendar</h2><p class="cp-tab-sub" id="cpCalSub"></p></div>
           </div>
           <div class="cp-panel" id="cpCalendarCard" hidden>
             <div class="cp-cal-connect-row" id="cpCalConnectRow">

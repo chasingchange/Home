@@ -1,9 +1,10 @@
 -- Run this once in the Supabase SQL editor, AFTER client_portal_profile.sql
 -- (this depends on public.is_coach(uuid), defined there).
 --
--- Backs the "Connect your calendar" card in the client portal. Only clients
--- connect and see their own calendar (not the coach) — see client-portal/
--- portal.js for the Google Calendar / Outlook OAuth flows.
+-- Backs the Calendar tab in the client portal. Only clients connect their
+-- own calendar — see client-portal/portal.js for the Google Calendar /
+-- Outlook OAuth flows. The coach sees a read-only copy of the client's
+-- events; see client_calendar_snapshot.sql.
 --
 -- The Next Session card's "Join call" button reads whichever connected
 -- calendar(s) surface a video link (Google hangoutLink/conferenceData, or
