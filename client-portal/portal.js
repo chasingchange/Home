@@ -191,6 +191,10 @@
   var BIOMETRIC_CRED_KEY     = 'cpBiometricCredentialId';
   var BIOMETRIC_EMAIL_KEY    = 'cpBiometricEmail';
   var BIOMETRIC_DECLINED_KEY = 'cpBiometricDeclined';
+  // After a Face ID / Touch ID unlock (or a fresh sign-in) the portal stays open on
+  // this device for 24 hours; only then does it ask to unlock again.
+  var BIOMETRIC_UNLOCKED_KEY = 'cpBiometricUnlockedAt';
+  var BIOMETRIC_LOCK_AFTER_MS = 24 * 60 * 60 * 1000;
 
   function b64urlToBuf(s){
     s = s.replace(/-/g,'+').replace(/_/g,'/');
@@ -219,6 +223,20 @@
     return !!(biometricSupported() && localStorage.getItem(BIOMETRIC_CRED_KEY) && localStorage.getItem(BIOMETRIC_EMAIL_KEY) === email);
   }
 
+  function markUnlocked(email){
+    if (!email) return;
+    try { localStorage.setItem(BIOMETRIC_UNLOCKED_KEY, JSON.stringify({ email: email, at: Date.now() })); } catch (e) {}
+  }
+
+  function biometricLockDue(email){
+    if (!biometricEnabledFor(email)) return false;
+    var last = null;
+    try { last = JSON.parse(localStorage.getItem(BIOMETRIC_UNLOCKED_KEY) || 'null'); } catch (e) {}
+    if (!last || last.email !== email || !isFinite(last.at)) return true;
+    var age = Date.now() - last.at;
+    return age < 0 || age >= BIOMETRIC_LOCK_AFTER_MS;
+  }
+
   async function registerBiometric(user){
     var cred = await navigator.credentials.create({
       publicKey: {
@@ -234,6 +252,7 @@
     localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
     localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
     localStorage.removeItem(BIOMETRIC_DECLINED_KEY);
+    markUnlocked(user.email);
   }
 
   async function authenticateBiometric(){
@@ -277,7 +296,7 @@
     var { data:{ session } } = await sb.auth.getSession();
     if (session) {
       if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
-      if (biometricEnabledFor(session.user.email)) { showBiometricLock(session.user); return; }
+      if (biometricLockDue(session.user.email)) { showBiometricLock(session.user); return; }
       showDash(session.user);
       return;
     }
@@ -290,6 +309,7 @@
         return;
       }
       if (session && event === 'SIGNED_IN' && (!currentUser || currentUser.id !== session.user.id)) {
+        markUnlocked(session.user.email);
         showDash(session.user);
       }
     });
@@ -346,6 +366,7 @@
     if (error) { showErr('cpEmailError','Incorrect email or password.'); return; }
     // Signing in with a password proves one is set — self-heal the flag.
     await sb.from('profiles').upsert({ id: data.user.id, has_password: true }, { onConflict: 'id' });
+    markUnlocked(data.user.email);
     showDash(data.user);
   });
 
@@ -808,11 +829,20 @@
       setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
       var user = pendingUser;
       pendingUser = null;
-      showDash(user);
+      markUnlocked(user.email);
+      // Re-locked while the dashboard was already open: just reveal it again.
+      if (currentUser && currentUser.id === user.id) { $('cpAuth').hidden = true; $('cpDash').hidden = false; }
+      else showDash(user);
     } catch (e) {
       setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
       showErr('cpBiometricError','Could not verify. Try again or use email.');
     }
+  });
+
+  // A tab left open past the 24-hour window locks the next time it's looked at.
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState !== 'visible' || !currentUser || $('cpDash').hidden) return;
+    if (biometricLockDue(currentUser.email)) showBiometricLock(currentUser);
   });
 
   $('cpBiometricUseEmail').addEventListener('click', async function(){
