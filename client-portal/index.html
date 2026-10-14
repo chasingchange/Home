@@ -701,7 +701,8 @@
             </div>
           </aside>
           <div class="cp-card-grid">
-            <div class="cp-reminder-bar">
+            <!-- Weekly reminder is switched off for now; markup and data kept so it can come back. -->
+            <div class="cp-reminder-bar" hidden>
               <div class="cp-reminder-text" data-open="reminders">
                 <p class="cp-kicker cp-kicker--light">Weekly Reminder</p>
                 <p class="cp-reminder-line" id="cpRemLine"></p>
@@ -951,7 +952,7 @@
               <p class="cp-body-text" id="cpNonNegQueueSummary"></p>
               <div class="cp-flag-list" id="cpNonNegQueueList"></div>
             </div>
-            <div class="cp-reminder-queue">
+            <div class="cp-reminder-queue" hidden>
               <div class="cp-card-head">
                 <p class="cp-kicker cp-kicker--light">Reminder Queue</p>
               </div>
@@ -1062,7 +1063,7 @@
                   <option>At risk</option>
                 </select>
               </div>
-              <div class="cp-edit-field">
+              <div class="cp-edit-field" hidden>
                 <label>Weekly reminder</label>
                 <div class="cp-edit-week-row">
                   <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
@@ -1186,7 +1187,7 @@
             <div id="cpEditorPreviewCores"></div>
           </div>
 
-          <div class="cp-editor-preview-card" style="background:#071f35;">
+          <div class="cp-editor-preview-card" style="background:#071f35;" hidden>
             <p class="cp-editor-preview-kicker" style="color:rgba(255,255,255,.5);">Weekly Reminder</p>
             <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#fff;" id="cpEditorPreviewReminder"></p>
           </div>
