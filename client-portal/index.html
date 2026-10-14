@@ -485,15 +485,15 @@
       .cp-vision-band{position:relative;width:100vw;margin:0 calc(50% - 50vw) 8px;}
       .cp-vision-band-inner{position:relative;height:clamp(220px,34vw,440px);overflow:hidden;}
       .cp-vision-band-img,.cp-vision-band-blur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;}
-      .cp-vision-band-blur{filter:blur(22px) saturate(1.1);transform:scale(1.08);opacity:.85;pointer-events:none;
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,#000 50%,transparent 90%);
+      .cp-vision-band-blur{filter:blur(12px) saturate(1.05);transform:scale(1.04);opacity:.55;pointer-events:none;
+        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
         -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,#000 50%,transparent 90%);
+        mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
         mask-composite:intersect;}
       .cp-vision-band-img{
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 45%,transparent 92%);
+        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
         -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 45%,transparent 92%);
+        mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
         mask-composite:intersect;}
       .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
       .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
@@ -503,12 +503,24 @@
       .cp-vision-empty-text{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.45);}
       .cp-vision-controls{position:absolute;top:14px;right:max(24px,calc(50% - 536px));z-index:3;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
       .cp-vision-band.is-busy .cp-vision-controls{opacity:.5;pointer-events:none;}
+      /* Once a photo is set, its Reposition/Change/Remove controls stay out of the way
+         until the band is hovered (or focused via keyboard). Touch screens can't hover,
+         so they keep the controls visible. */
+      @media (hover:hover){
+        #cpVisionControls{opacity:0;transition:opacity .18s ease;}
+        .cp-vision-band:hover #cpVisionControls,#cpVisionControls:focus-within{opacity:1;}
+      }
+      /* With a photo, the faded tail of the band runs under the welcome heading. The
+         image is near-transparent there, and a soft page-coloured halo keeps the words crisp. */
+      .cp-vision-band.has-image{margin-bottom:-84px;}
+      .cp-vision-band.has-image + .cp-dash-head{position:relative;z-index:1;}
+      .cp-vision-band.has-image + .cp-dash-head .cp-h1{text-shadow:0 0 18px rgba(234,234,238,.95),0 0 6px rgba(234,234,238,.9);}
       .cp-vision-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);font-size:12px;font-weight:800;letter-spacing:.02em;color:#071f35;box-shadow:0 2px 10px rgba(7,31,53,.14);}
       .cp-vision-btn:hover{background:#fff;}
       .cp-vision-btn--primary{background:#071f35;color:#fff;}
       .cp-vision-btn--primary:hover{background:#0d2e4d;}
       .cp-vision-btn--danger{color:#c01a38;}
-      @media(max-width:600px){.cp-vision-band-inner{height:230px;}.cp-vision-empty{left:16px;right:16px;}.cp-vision-controls{right:16px;}}
+      @media(max-width:600px){.cp-vision-band-inner{height:230px;}.cp-vision-band.has-image{margin-bottom:-48px;}.cp-vision-empty{left:16px;right:16px;}.cp-vision-controls{right:16px;}}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-core-rail{position:static;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>

@@ -2593,6 +2593,7 @@
 
     var editing = !!visionEdit;
     band.classList.toggle('is-repositioning', editing);
+    band.classList.toggle('has-image', !!url);
     $('cpVisionHint').hidden = !editing;
     $('cpVisionEmptyBtn').hidden = !(isOwner && !url);
     $('cpVisionControls').hidden = !(isOwner && url && !editing);
