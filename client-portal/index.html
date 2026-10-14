@@ -477,19 +477,38 @@
       .cp-editor-foot-hint{font-size:13px;color:rgba(7,31,53,.55);}
       @media (max-width:1080px){ .cp-editor-body{grid-template-columns:200px minmax(0,1fr);} .cp-editor-aside{display:none;} }
       @media (max-width:720px){ .cp-editor-body{grid-template-columns:minmax(0,1fr);} .cp-editor-nav{display:none;} .cp-editor-grid{grid-template-columns:1fr;} .cp-editor-grid .cp-edit-field--full{grid-column:1;} }
-      /* vision board header */
-      .cp-vision-band{position:relative;margin:0 0 8px;}
-      .cp-vision-band-inner{position:relative;height:280px;border-radius:22px;overflow:hidden;background:#eaeaee;}
-      .cp-vision-band-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 96%);mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 96%);}
-      .cp-vision-empty{all:unset;box-sizing:border-box;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed rgba(7,31,53,.22);border-radius:22px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);transition:border-color .15s,background-color .15s;}
+      /* vision board header — full-bleed (breaks out of .cp-dash's 1120px column to the
+         viewport edges) with every edge feathered + blurred into the page background.
+         A blurred copy of the image sits behind the sharp one; the sharp layer's mask
+         fades out sooner, so the edges read as soft blur rather than a hard crop. */
+      #cpRoot{overflow-x:clip;}
+      .cp-vision-band{position:relative;width:100vw;margin:0 calc(50% - 50vw) 8px;}
+      .cp-vision-band-inner{position:relative;height:clamp(220px,34vw,440px);overflow:hidden;}
+      .cp-vision-band-img,.cp-vision-band-blur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;}
+      .cp-vision-band-blur{filter:blur(22px) saturate(1.1);transform:scale(1.08);opacity:.85;pointer-events:none;
+        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,#000 50%,transparent 90%);
+        -webkit-mask-composite:source-in;
+        mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,#000 50%,transparent 90%);
+        mask-composite:intersect;}
+      .cp-vision-band-img{
+        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 45%,transparent 92%);
+        -webkit-mask-composite:source-in;
+        mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 45%,transparent 92%);
+        mask-composite:intersect;}
+      .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
+      .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
+      .cp-vision-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:8px 16px;border-radius:999px;background:rgba(7,31,53,.6);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.02em;}
+      .cp-vision-empty{all:unset;box-sizing:border-box;position:absolute;top:0;bottom:0;left:max(24px,calc(50% - 536px));right:max(24px,calc(50% - 536px));display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed rgba(7,31,53,.22);border-radius:22px;background:repeating-linear-gradient(135deg,#f3f3f6 0 7px,#e9e9ee 7px 14px);transition:border-color .15s,background-color .15s;}
       .cp-vision-empty:hover{border-color:rgba(7,31,53,.4);}
       .cp-vision-empty-text{font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.45);}
-      .cp-vision-controls{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:8px;}
+      .cp-vision-controls{position:absolute;top:14px;right:max(24px,calc(50% - 536px));z-index:3;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
       .cp-vision-band.is-busy .cp-vision-controls{opacity:.5;pointer-events:none;}
       .cp-vision-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);font-size:12px;font-weight:800;letter-spacing:.02em;color:#071f35;box-shadow:0 2px 10px rgba(7,31,53,.14);}
       .cp-vision-btn:hover{background:#fff;}
+      .cp-vision-btn--primary{background:#071f35;color:#fff;}
+      .cp-vision-btn--primary:hover{background:#0d2e4d;}
       .cp-vision-btn--danger{color:#c01a38;}
-      @media(max-width:600px){.cp-vision-band-inner{height:190px;}}
+      @media(max-width:600px){.cp-vision-band-inner{height:230px;}.cp-vision-empty{left:16px;right:16px;}.cp-vision-controls{right:16px;}}
       @media(max-width:900px){.cp-client-view,.cp-card-grid,.cp-coach-view{grid-template-columns:1fr !important;}.cp-core-rail{position:static;}.cp-roster-row{grid-template-columns:1fr;gap:4px;}}
     </style>
   </head>
@@ -602,13 +621,20 @@
       <section class="cp-dash" id="cpDash" hidden>
         <div class="cp-vision-band" id="cpVisionBand" hidden>
           <div class="cp-vision-band-inner">
-            <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" hidden />
+            <img class="cp-vision-band-blur" id="cpVisionBlur" alt="" aria-hidden="true" hidden />
+            <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" draggable="false" hidden />
+            <span class="cp-vision-hint" id="cpVisionHint" hidden>Drag to reposition</span>
             <button type="button" class="cp-vision-empty" id="cpVisionEmptyBtn" hidden>
               <span class="cp-vision-empty-text">+ Upload your vision board</span>
             </button>
             <div class="cp-vision-controls" id="cpVisionControls" hidden>
+              <button type="button" class="cp-vision-btn" id="cpVisionRepositionBtn">Reposition</button>
               <button type="button" class="cp-vision-btn" id="cpVisionChangeBtn">Change</button>
               <button type="button" class="cp-vision-btn cp-vision-btn--danger" id="cpVisionRemoveBtn">Remove</button>
+            </div>
+            <div class="cp-vision-controls" id="cpVisionEditControls" hidden>
+              <button type="button" class="cp-vision-btn" id="cpVisionCancelPosBtn">Cancel</button>
+              <button type="button" class="cp-vision-btn cp-vision-btn--primary" id="cpVisionSavePosBtn">Save position</button>
             </div>
           </div>
           <input type="file" id="cpVisionFileInput" accept="image/*" hidden />

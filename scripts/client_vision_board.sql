@@ -17,6 +17,10 @@
 -- stored as "<client_id>/vision-board" (no extension, upsert'd in place —
 -- see the cpVisionFileInput handler in portal.js) so re-uploading never
 -- leaves orphaned files behind.
+--
+-- The client can drag the image to recenter it; the chosen focal point is
+-- appended to vision_board_url as a "#pos=x,y" fragment (object-position
+-- percentages), so no extra column is needed for it.
 
 alter table public.client_dashboard
   add column if not exists vision_board_url text not null default '';
