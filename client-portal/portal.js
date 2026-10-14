@@ -191,6 +191,10 @@
   var BIOMETRIC_CRED_KEY     = 'cpBiometricCredentialId';
   var BIOMETRIC_EMAIL_KEY    = 'cpBiometricEmail';
   var BIOMETRIC_DECLINED_KEY = 'cpBiometricDeclined';
+  // After a Face ID / Touch ID unlock (or a fresh sign-in) the portal stays open on
+  // this device for 24 hours; only then does it ask to unlock again.
+  var BIOMETRIC_UNLOCKED_KEY = 'cpBiometricUnlockedAt';
+  var BIOMETRIC_LOCK_AFTER_MS = 24 * 60 * 60 * 1000;
 
   function b64urlToBuf(s){
     s = s.replace(/-/g,'+').replace(/_/g,'/');
@@ -219,6 +223,20 @@
     return !!(biometricSupported() && localStorage.getItem(BIOMETRIC_CRED_KEY) && localStorage.getItem(BIOMETRIC_EMAIL_KEY) === email);
   }
 
+  function markUnlocked(email){
+    if (!email) return;
+    try { localStorage.setItem(BIOMETRIC_UNLOCKED_KEY, JSON.stringify({ email: email, at: Date.now() })); } catch (e) {}
+  }
+
+  function biometricLockDue(email){
+    if (!biometricEnabledFor(email)) return false;
+    var last = null;
+    try { last = JSON.parse(localStorage.getItem(BIOMETRIC_UNLOCKED_KEY) || 'null'); } catch (e) {}
+    if (!last || last.email !== email || !isFinite(last.at)) return true;
+    var age = Date.now() - last.at;
+    return age < 0 || age >= BIOMETRIC_LOCK_AFTER_MS;
+  }
+
   async function registerBiometric(user){
     var cred = await navigator.credentials.create({
       publicKey: {
@@ -234,6 +252,7 @@
     localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
     localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
     localStorage.removeItem(BIOMETRIC_DECLINED_KEY);
+    markUnlocked(user.email);
   }
 
   async function authenticateBiometric(){
@@ -277,7 +296,7 @@
     var { data:{ session } } = await sb.auth.getSession();
     if (session) {
       if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
-      if (biometricEnabledFor(session.user.email)) { showBiometricLock(session.user); return; }
+      if (biometricLockDue(session.user.email)) { showBiometricLock(session.user); return; }
       showDash(session.user);
       return;
     }
@@ -290,6 +309,7 @@
         return;
       }
       if (session && event === 'SIGNED_IN' && (!currentUser || currentUser.id !== session.user.id)) {
+        markUnlocked(session.user.email);
         showDash(session.user);
       }
     });
@@ -346,6 +366,7 @@
     if (error) { showErr('cpEmailError','Incorrect email or password.'); return; }
     // Signing in with a password proves one is set — self-heal the flag.
     await sb.from('profiles').upsert({ id: data.user.id, has_password: true }, { onConflict: 'id' });
+    markUnlocked(data.user.email);
     showDash(data.user);
   });
 
@@ -808,11 +829,20 @@
       setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
       var user = pendingUser;
       pendingUser = null;
-      showDash(user);
+      markUnlocked(user.email);
+      // Re-locked while the dashboard was already open: just reveal it again.
+      if (currentUser && currentUser.id === user.id) { $('cpAuth').hidden = true; $('cpDash').hidden = false; }
+      else showDash(user);
     } catch (e) {
       setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
       showErr('cpBiometricError','Could not verify. Try again or use email.');
     }
+  });
+
+  // A tab left open past the 24-hour window locks the next time it's looked at.
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState !== 'visible' || !currentUser || $('cpDash').hidden) return;
+    if (biometricLockDue(currentUser.email)) showBiometricLock(currentUser);
   });
 
   $('cpBiometricUseEmail').addEventListener('click', async function(){
@@ -2531,7 +2561,7 @@
     sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
   });
 
-  // ─── Vision board header (client-uploaded image, faded into the page) ──
+  // ─── Vision board (client-uploaded image, used as the full-page backdrop) ──
   // The client's chosen focal point is stored as a "#pos=x,y" fragment (percentages,
   // fed straight into object-position) on vision_board_url itself, so recentering
   // needs no extra column. The fragment never reaches the storage server.
@@ -2551,9 +2581,7 @@
   }
 
   function applyVisionPos(x, y){
-    var pos = x + '% ' + y + '%';
-    $('cpVisionImg').style.objectPosition = pos;
-    $('cpVisionBlur').style.objectPosition = pos;
+    $('cpVisionImg').style.objectPosition = x + '% ' + y + '%';
   }
 
   function renderVisionBand(){
@@ -2568,16 +2596,15 @@
     band.hidden = false;
     band.classList.remove('is-busy');
 
-    var img = $('cpVisionImg'), blur = $('cpVisionBlur');
+    var img = $('cpVisionImg'), bg = $('cpVisionBg');
     if (url) {
       var parsed = parseVisionUrl(url);
-      if (img.getAttribute('src') !== parsed.src) { img.src = parsed.src; blur.src = parsed.src; }
-      img.hidden = false; blur.hidden = false;
+      if (img.getAttribute('src') !== parsed.src) img.src = parsed.src;
+      bg.hidden = false;
       if (visionEdit) applyVisionPos(visionEdit.x, visionEdit.y);
       else applyVisionPos(parsed.x, parsed.y);
     } else {
-      img.hidden = true; img.removeAttribute('src');
-      blur.hidden = true; blur.removeAttribute('src');
+      bg.hidden = true; img.removeAttribute('src');
     }
 
     var editing = !!visionEdit;
@@ -2618,7 +2645,7 @@
   });
 
   // Drag the image to move its focal point. With object-fit:cover only the axis
-  // that overflows the band can move; dragging by the full overflow distance
+  // that overflows the viewport can move; dragging by the full overflow distance
   // sweeps object-position from 0% to 100% on that axis.
   (function(){
     var img = $('cpVisionImg');
