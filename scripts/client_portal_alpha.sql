@@ -10,7 +10,6 @@
 --                            answer verbally on calls, so no answers are stored)
 --   - Check-ins tab       -> clients can now submit the weekly pre-call form
 --                            straight from the portal (public.client_pre_call_submissions)
---   - Goals tab           -> progress % on public.client_goals
 --   - File uploads        -> private storage bucket "client-uploads"
 --
 -- Access model matches the rest of the portal: a client reads/writes their
@@ -144,11 +143,9 @@ create policy "Own or coach can update pre-call submissions"
 
 grant insert, update on public.client_pre_call_submissions to authenticated;
 
--- ─── Goal progress ───────────────────────────────────────────────────────
+-- ─── Goal status ─────────────────────────────────────────────────────────
 -- status now uses: not_started | in_progress | on_hold | achieved
 -- (legacy 'active' rows are shown as in_progress by the portal).
-alter table public.client_goals
-  add column if not exists progress int not null default 0;
 
 -- ─── Private bucket for homework + check-in uploads ──────────────────────
 -- Paths: "<client_id>/homework/<assignment_id>/<file>" and
