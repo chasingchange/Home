@@ -884,11 +884,12 @@
 
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView',
-    checkins:'cpCheckinsView', education:'cpEducationView'
+    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
   };
 
   function setPortalTab(tab){
     if (!PORTAL_TABS[tab]) tab = 'portal';
+    if (tab === 'calendar' && isCoachUser) tab = 'portal'; // calendars connect client-side, so coaches never see one
     state.portalTab = tab;
     $('cpPortalTabs').querySelectorAll('[data-portal-tab]').forEach(function(btn){
       btn.classList.toggle('is-active', btn.getAttribute('data-portal-tab') === tab);
@@ -2451,6 +2452,8 @@
 
   function calRenderCard(){
     $('cpCalendarCard').hidden = isCoachUser;
+    $('cpTabCalendar').hidden = isCoachUser;
+    if (isCoachUser && state.portalTab === 'calendar') setPortalTab('portal');
     renderSessionCTA();
     if (isCoachUser) return;
     calRenderButtons();
