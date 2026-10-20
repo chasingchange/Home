@@ -530,7 +530,11 @@
   // Row -> portal-shape mappers, shared by the initial load and every
   // targeted re-fetch after a save.
   function mapGoal(g){
-    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client' };
+    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client', milestones:mapMilestones(g.milestones), coachNote:g.coach_note||'' };
+  }
+
+  function mapMilestones(ms){
+    return (Array.isArray(ms) ? ms : []).filter(function(m){ return m && m.label; }).map(function(m){ return { label:String(m.label), done:!!m.done }; });
   }
 
   function mapAssignment(a){
@@ -902,6 +906,7 @@
       btn.classList.toggle('is-active', btn.getAttribute('data-portal-tab') === tab);
     });
     Object.keys(PORTAL_TABS).forEach(function(k){ $(PORTAL_TABS[k]).hidden = k !== tab; });
+    if (tab === 'goals') renderGoalsTab(); // the timeline measures its width once visible
     renderVisionBand(); // the vision board stays up on every tab
   }
 
@@ -935,50 +940,320 @@
   }
 
   // ─── Goals tab ─────────────────────────────────────────────────────────
-  function goalDateLabel(iso){
+  // An overview card (Six Cores rail, or a six-month deadline timeline),
+  // status filter chips, then one section per core. Each goal row expands
+  // to its milestones, the coach's note and quick status/edit controls.
+  var GOAL_STATUS_COLORS = { not_started:'#5b6b7b', in_progress:'#1a6fa8', on_hold:'#a07820', achieved:'#3d8c39' };
+  var goalsUi = { view:'cores', status:'all', core:null, open:null };
+
+  function goalDateLabel(iso, withYear){
     if (!iso) return '';
     var d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+    return d.toLocaleDateString(undefined, withYear === false ? { month:'short', day:'numeric' } : { month:'short', day:'numeric', year:'numeric' });
   }
 
-  function buildGoalCard(g, idx){
-    var color = coreColor(g.coreKey);
-    var isAchieved = g.status === 'achieved';
-    var dateHtml = g.targetDate ? '<span class="cp-goal-date-chip">📅 ' + esc(goalDateLabel(g.targetDate)) + '</span>' : '';
-    var statusSel = '<select class="cp-goal-status-select" data-goal-status="'+idx+'" aria-label="Status for '+esc(g.title)+'">'
-      + GOAL_STATUSES.map(function(st){ return '<option value="'+st.key+'"'+(st.key===g.status?' selected':'')+'>'+esc(st.label)+'</option>'; }).join('')
-      + '</select>';
-    return '<div class="cp-goal-card'+(isAchieved?' is-achieved':'')+'" style="--goal-color:'+color+'">'
-      +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+color+';border-radius:18px 18px 0 0;"></div>'
-      +'<div class="cp-goal-card-head"><p class="cp-goal-card-title">'+esc(g.title)+'</p></div>'
-      +(g.description?'<p class="cp-goal-card-desc">'+esc(g.description)+'</p>':'')
-      +'<div class="cp-goal-card-foot">'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'+coreChip(g.coreKey)+dateHtml+'</div>'
-        +'<div class="cp-goal-card-actions">'
-          +statusSel
-          +'<button type="button" class="cp-goal-edit-btn" data-goal-edit="'+idx+'">Edit</button>'
-          +'<button type="button" class="cp-goal-delete-btn" data-goal-del="'+idx+'" title="Delete goal" aria-label="Delete goal">✕</button>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
+  function todayMidnight(){
+    var t = new Date(); t.setHours(0, 0, 0, 0); return t;
+  }
+
+  function goalStatusLabel(key){
+    var st = GOAL_STATUSES.filter(function(s){ return s.key === key; })[0];
+    return st ? st.label : key;
+  }
+
+  // Due line under the date: weeks out, days out, or overdue.
+  function goalDue(g){
+    if (g.status === 'achieved') return { text:'Achieved', cls:'' };
+    if (!g.targetDate) return { text:'No deadline', cls:'' };
+    var days = Math.round((new Date(g.targetDate + 'T00:00:00') - todayMidnight()) / 864e5);
+    if (days < 0) return { text: (-days) + (days === -1 ? ' day' : ' days') + ' overdue', cls:'is-late' };
+    if (days === 0) return { text:'Due today', cls:'is-soon' };
+    if (days <= 45) return { text: days + (days === 1 ? ' day' : ' days') + ' left', cls:'is-soon' };
+    return { text: Math.round(days / 7) + ' weeks left', cls:'' };
+  }
+
+  function goalById(id){
+    return (portalData && portalData.goals || []).filter(function(g){ return g.id === id; })[0];
+  }
+
+  function goalByDate(a, b){
+    return (a.targetDate || '9999') < (b.targetDate || '9999') ? -1 : (a.targetDate || '9999') > (b.targetDate || '9999') ? 1 : 0;
+  }
+
+  function goalMsStats(list){
+    var t = 0, d = 0;
+    list.forEach(function(g){ t += g.milestones.length; d += g.milestones.filter(function(m){ return m.done; }).length; });
+    return { total:t, done:d, pct: t ? Math.round(d / t * 100) : 0 };
+  }
+
+  function goalMatches(g, useStatus){
+    return (!goalsUi.core || g.coreKey === goalsUi.core) && (!useStatus || goalsUi.status === 'all' || g.status === goalsUi.status);
   }
 
   function renderGoalsTab(){
     if (!portalData) return;
     var goals = portalData.goals || [];
-    var achieved = goals.filter(function(g){ return g.status === 'achieved'; });
+    var active = goals.filter(function(g){ return g.status !== 'achieved'; });
+    var next = active.filter(function(g){ return g.targetDate; }).sort(goalByDate)[0];
 
-    // Cards carry their index into portalData.goals so handlers can find them.
-    var activeHtml = '', achievedHtml = '';
-    goals.forEach(function(g, i){
-      if (g.status === 'achieved') achievedHtml += buildGoalCard(g, i);
-      else activeHtml += buildGoalCard(g, i);
+    // Overview toggle + meta line
+    $('cpGoalsViewToggle').querySelectorAll('[data-goal-view]').forEach(function(b){
+      var on = b.getAttribute('data-goal-view') === goalsUi.view;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('cpGoalsRail').hidden = goalsUi.view !== 'cores';
+    $('cpGoalsTimelineWrap').hidden = goalsUi.view !== 'deadlines';
+    $('cpGoalsMeta').textContent = goalsUi.view === 'cores'
+      ? active.length + ' active · ' + (goals.length - active.length) + ' achieved' + (next ? ' · next deadline ' + goalDateLabel(next.targetDate, false) : '')
+      : timelineRange().label;
+
+    // Six Cores rail: "All cores" plus one cell per core
+    $('cpGoalsRail').innerHTML = [{ key:null, label:'All cores', color:'#071f35' }].concat(CORE_DEFS).map(function(c){
+      var list = goals.filter(function(g){ return !c.key || g.coreKey === c.key; });
+      var p = goalMsStats(list);
+      var sub = !list.length ? 'No goals' : p.total ? p.pct + '% done' : 'No milestones';
+      return '<button type="button" class="cp-gl-cell'+(goalsUi.core === c.key ? ' is-active' : '')+'" data-goal-core="'+(c.key || '')+'" aria-pressed="'+(goalsUi.core === c.key)+'">'
+        + '<span class="cp-gl-cell-name"><i style="background:'+c.color+'"></i>'+esc(c.label)+'</span>'
+        + '<span class="cp-gl-cell-num"><b>'+list.length+'</b><span>'+sub+'</span></span>'
+        + '<span class="cp-gl-bar"><i style="background:'+c.color+';width:'+p.pct+'%"></i></span>'
+      + '</button>';
+    }).join('');
+
+    if (goalsUi.view === 'deadlines') renderGoalsTimeline(goals);
+
+    // Status chips (counts respect the core filter)
+    var inCore = goals.filter(function(g){ return goalMatches(g, false); });
+    var coreDef = goalsUi.core ? CORE_DEFS.filter(function(c){ return c.key === goalsUi.core; })[0] : null;
+    $('cpGoalsChips').innerHTML = [{ key:'all', label:'All' }].concat(GOAL_STATUSES).map(function(o){
+      var n = inCore.filter(function(g){ return o.key === 'all' || g.status === o.key; }).length;
+      return '<button type="button" class="cp-gl-chip'+(goalsUi.status === o.key ? ' is-active' : '')+'" data-goal-filter="'+o.key+'">'+esc(o.label)+'<span>'+n+'</span></button>';
+    }).join('') + (coreDef
+      ? '<button type="button" class="cp-gl-chip cp-gl-chip--core" data-goal-core="" title="Show every core"><i style="background:'+coreDef.color+'"></i>'+esc(coreDef.label)+' ✕</button>'
+      : '');
+
+    // One section per core (plus "No core" for goals without one)
+    var groups = CORE_DEFS.concat([{ key:'', label:'No core', color:'rgba(7,31,53,.3)' }]).map(function(c){
+      var list = goals.filter(function(g){
+        var key = CORE_DEFS.some(function(d){ return d.key === g.coreKey; }) ? g.coreKey : '';
+        return key === c.key && goalMatches(g, true);
+      }).sort(function(a, b){ return ((a.status === 'achieved') - (b.status === 'achieved')) || goalByDate(a, b); });
+      return { def:c, goals:list };
+    }).filter(function(s){ return s.goals.length; });
+
+    if (!groups.length) {
+      $('cpGoalsSections').innerHTML = '<div class="cp-goal-empty" style="margin:0;text-align:left;">'
+        + (goals.length ? 'No goals match this filter.' : (isCoachUser ? 'No goals yet — add one to give ' + esc(viewingClientName || 'the client') + ' something to aim at.' : 'No goals yet — add one to get started.'))
+        + '</div>';
+      return;
+    }
+    $('cpGoalsSections').innerHTML = groups.map(function(s){
+      return '<div class="cp-gl-section">'
+        + '<div class="cp-gl-section-head"><i style="background:'+s.def.color+'"></i><b>'+esc(s.def.label)+'</b><span>'+s.goals.length+(s.goals.length === 1 ? ' goal' : ' goals')+'</span></div>'
+        + s.goals.map(function(g){ return goalRowHtml(g, s.def.color); }).join('')
+      + '</div>';
+    }).join('');
+  }
+
+  function goalRowHtml(g, color){
+    var open = goalsUi.open === g.id;
+    var done = g.milestones.filter(function(m){ return m.done; }).length;
+    var due = goalDue(g);
+    var pill = GOAL_STATUS_COLORS[g.status] || '#5b6b7b';
+    var segs = g.milestones.length
+      ? g.milestones.map(function(m){ return '<i'+(m.done ? ' style="background:'+color+'"' : '')+'></i>'; }).join('')
+      : '<i'+(g.status === 'achieved' ? ' style="background:'+color+'"' : '')+'></i>';
+    var h = '<div class="cp-gl-goal'+(open ? ' is-open' : '')+(g.status === 'achieved' ? ' is-achieved' : '')+'" data-goal-id="'+esc(g.id)+'">'
+      + '<button type="button" class="cp-gl-row" data-goal-toggle aria-expanded="'+open+'">'
+        + '<span class="cp-gl-row-main" style="min-width:0;"><span class="cp-gl-row-title">'+esc(g.title)+'</span>'
+          + (g.description ? '<span class="cp-gl-row-desc">'+esc(g.description)+'</span>' : '') + '</span>'
+        + '<span class="cp-gl-row-meta">'
+          + '<span class="cp-gl-progress"><span class="cp-gl-segs">'+segs+'</span><span class="cp-gl-small">'
+            + (g.milestones.length ? done + ' of ' + g.milestones.length + ' milestones' : 'No milestones') + '</span></span>'
+          + '<span class="cp-gl-due"><b>'+(g.targetDate ? esc(goalDateLabel(g.targetDate)) : '—')+'</b><span class="'+due.cls+'">'+esc(due.text)+'</span></span>'
+          + '<span>'+statusPill(goalStatusLabel(g.status), pill)+'</span>'
+        + '</span>'
+        + '<svg class="cp-gl-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(7,31,53,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'
+      + '</button>';
+    if (open) h += goalDetailHtml(g);
+    return h + '</div>';
+  }
+
+  function goalDetailHtml(g){
+    var who = viewingClientName || 'the client';
+    var ms = g.milestones.length
+      ? g.milestones.map(function(m, j){
+          return '<button type="button" class="cp-gl-ms'+(m.done ? ' is-done' : '')+'" data-goal-ms="'+j+'" aria-pressed="'+!!m.done+'">'
+            + '<span class="cp-gl-ms-box">'+(m.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '')+'</span>'
+            + '<span class="cp-gl-ms-label">'+esc(m.label)+'</span></button>';
+        }).join('')
+      : '<p class="cp-gl-ms-empty">No milestones yet — use Edit to break this into steps.</p>';
+    var note = isCoachUser
+      ? '<textarea data-goal-note placeholder="Leave a note on this goal…" maxlength="1000">'+esc(g.coachNote)+'</textarea><span class="cp-gl-note-status" data-goal-note-status></span>'
+      : '<p'+(g.coachNote ? '' : ' class="is-empty"')+'>'+esc(g.coachNote || 'No note from your coach yet.')+'</p>';
+    var by = g.createdBy === 'coach'
+      ? (isCoachUser ? 'Set by you' : 'Set by your coach')
+      : (isCoachUser ? 'Set by ' + who : 'Set by you');
+    return '<div class="cp-gl-detail">'
+      + '<div>'
+        + (g.description ? '<p class="cp-gl-kicker">How you’ll know</p><p class="cp-gl-fulldesc">'+esc(g.description)+'</p>' : '')
+        + '<p class="cp-gl-kicker">Milestones</p>' + ms
+      + '</div>'
+      + '<div class="cp-gl-side">'
+        + '<div class="cp-gl-note"><p class="cp-gl-kicker">'+(isCoachUser ? 'Your note to ' + esc(who) : 'From your coach')+'</p>'+note+'</div>'
+        + '<div class="cp-gl-actions">'
+          + '<select class="cp-goal-status-select" data-goal-status aria-label="Status for '+esc(g.title)+'">'
+            + GOAL_STATUSES.map(function(st){ return '<option value="'+st.key+'"'+(st.key === g.status ? ' selected' : '')+'>'+esc(st.label)+'</option>'; }).join('')
+          + '</select>'
+          + '<button type="button" class="cp-goal-edit-btn" data-goal-edit>Edit</button>'
+          + '<button type="button" class="cp-goal-delete-btn" data-goal-del title="Delete goal" aria-label="Delete goal">✕</button>'
+          + '<span class="cp-gl-by">'+esc(by)+'</span>'
+        + '</div>'
+      + '</div>'
+    + '</div>';
+  }
+
+  // Six months from the start of this month.
+  function timelineRange(){
+    var t = todayMidnight();
+    var start = new Date(t.getFullYear(), t.getMonth(), 1);
+    var end = new Date(t.getFullYear(), t.getMonth() + 6, 1);
+    var months = [];
+    for (var i = 0; i < 6; i++) {
+      var m = new Date(t.getFullYear(), t.getMonth() + i, 1);
+      months.push(m.toLocaleDateString(undefined, (i === 0 || m.getMonth() === 0) ? { month:'short', year:'numeric' } : { month:'short' }));
+    }
+    var last = new Date(end.getTime() - 864e5);
+    return { start:start, end:end, months:months,
+      label: start.toLocaleDateString(undefined, { month:'short', year:'numeric' }) + ' – ' + last.toLocaleDateString(undefined, { month:'short', year:'numeric' }) };
+  }
+
+  function renderGoalsTimeline(goals){
+    var r = timelineRange(), s = r.start.getTime(), e = r.end.getTime();
+    var pos = function(t){ return Math.max(0, Math.min(100, (t - s) / (e - s) * 100)); };
+    var list = goals.filter(function(g){ return g.targetDate && goalMatches(g, true); }).sort(goalByDate);
+    var inRange = [], overdue = 0, later = 0;
+    list.forEach(function(g){
+      var t = new Date(g.targetDate + 'T00:00:00').getTime();
+      if (t < s) { if (g.status !== 'achieved') overdue++; }
+      else if (t >= e) later++;
+      else inRange.push({ g:g, t:t });
     });
 
-    $('cpGoalsActiveGrid').innerHTML = activeHtml || '<div class="cp-goal-empty">No active goals yet — add one to get started.</div>';
-    $('cpGoalsAchievedLabel').hidden = achieved.length === 0;
-    $('cpGoalsAchievedGrid').innerHTML = achievedHtml;
+    // Stack labels into lanes so they never overlap; labels near the right
+    // edge flip to point left.
+    var width = Math.max(640, $('cpGoalsTimeline').clientWidth || $('cpGoalsTimelineWrap').clientWidth - 44 || 640);
+    var lanes = [];
+    var markers = inRange.map(function(m){
+      var left = pos(m.t), flip = left > 72, px = left / 100 * width;
+      var span = flip ? [px - 198, px + 7] : [px - 7, px + 198];
+      var lane = lanes.findIndex(function(occ){ return occ.every(function(o){ return span[1] + 6 <= o[0] || span[0] - 6 >= o[1]; }); });
+      if (lane < 0) { lane = lanes.length; lanes.push([]); }
+      lanes[lane].push(span);
+      var color = coreColor(m.g.coreKey);
+      return '<button type="button" class="cp-gl-marker'+(flip ? ' is-flip' : '')+(goalsUi.open === m.g.id ? ' is-active' : '')+'" data-goal-jump="'+esc(m.g.id)+'"'
+        + ' style="left:'+left+'%;top:'+(30 + lane * 32)+'px;transform:'+(flip ? 'translateX(calc(-100% + 7px))' : 'translateX(-7px)')+';"'
+        + ' title="'+esc(m.g.title + ' · ' + goalDateLabel(m.g.targetDate))+'">'
+        + '<i style="background:'+color+'"></i><span>'+esc(m.g.title)+'</span></button>';
+    });
+    var height = Math.max(200, 30 + lanes.length * 32 + 34);
+    var extra = [];
+    if (overdue) extra.push(overdue + ' overdue');
+    if (later) extra.push(later + ' later');
+    var today = pos(todayMidnight().getTime());
+    $('cpGoalsTimeline').style.height = height + 'px';
+    $('cpGoalsTimeline').innerHTML = '<div class="cp-gl-months">'+r.months.map(function(m){ return '<div>'+esc(m)+'</div>'; }).join('')+'</div>'
+      + '<div class="cp-gl-today" style="left:'+today+'%"></div><div class="cp-gl-today-tag" style="left:'+today+'%">Today</div>'
+      + markers.join('')
+      + (!markers.length ? '<div class="cp-gl-timeline-empty" style="position:absolute;left:10px;top:40px;">No deadlines in the next six months'+(goalsUi.core || goalsUi.status !== 'all' ? ' for this filter' : '')+'.</div>' : '')
+      + (extra.length ? '<div class="cp-gl-timeline-note" style="top:auto;bottom:0;">'+esc(extra.join(' · '))+'</div>' : '');
   }
+
+  // Persist a patch to one goal, optimistically; roll back on failure.
+  async function patchGoal(goal, patch, rowPatch){
+    var prev = {};
+    Object.keys(patch).forEach(function(k){ prev[k] = goal[k]; goal[k] = patch[k]; });
+    renderGoalsTab();
+    var { error } = await sb.from('client_goals').update(rowPatch).eq('id', goal.id);
+    if (error) {
+      Object.keys(prev).forEach(function(k){ goal[k] = prev[k]; });
+      renderGoalsTab();
+      alert('Could not update goal: ' + error.message);
+      return false;
+    }
+    return true;
+  }
+
+  $('cpGoalsViewToggle').addEventListener('click', function(e){
+    var b = e.target.closest('[data-goal-view]'); if (!b) return;
+    goalsUi.view = b.getAttribute('data-goal-view');
+    renderGoalsTab();
+  });
+
+  $('cpGoalsView').addEventListener('click', async function(e){
+    if (!portalData) return;
+    var coreBtn = e.target.closest('[data-goal-core]');
+    if (coreBtn) { goalsUi.core = coreBtn.getAttribute('data-goal-core') || null; renderGoalsTab(); return; }
+    var filterBtn = e.target.closest('[data-goal-filter]');
+    if (filterBtn) { goalsUi.status = filterBtn.getAttribute('data-goal-filter'); renderGoalsTab(); return; }
+    var jump = e.target.closest('[data-goal-jump]');
+    if (jump) {
+      goalsUi.open = jump.getAttribute('data-goal-jump');
+      renderGoalsTab();
+      var row = $('cpGoalsSections').querySelector('.cp-gl-goal.is-open');
+      if (row) row.scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+
+    var wrap = e.target.closest('[data-goal-id]'); if (!wrap) return;
+    var goal = goalById(wrap.getAttribute('data-goal-id')); if (!goal) return;
+
+    if (e.target.closest('[data-goal-toggle]')) {
+      goalsUi.open = goalsUi.open === goal.id ? null : goal.id;
+      renderGoalsTab();
+      return;
+    }
+    var msBtn = e.target.closest('[data-goal-ms]');
+    if (msBtn) {
+      var j = parseInt(msBtn.getAttribute('data-goal-ms'), 10);
+      var ms = goal.milestones.map(function(m, k){ return k === j ? { label:m.label, done:!m.done } : m; });
+      patchGoal(goal, { milestones:ms }, { milestones:ms });
+      return;
+    }
+    if (e.target.closest('[data-goal-edit]')) { openGoalForm(goal); return; }
+    if (e.target.closest('[data-goal-del]')) {
+      if (!confirm('Delete "' + goal.title + '"? This cannot be undone.')) return;
+      var { error } = await sb.from('client_goals').delete().eq('id', goal.id);
+      if (error) { alert('Could not delete goal: ' + error.message); return; }
+      portalData.goals = portalData.goals.filter(function(g){ return g.id !== goal.id; });
+      if (goalsUi.open === goal.id) goalsUi.open = null;
+      renderGoalsTab();
+    }
+  });
+
+  $('cpGoalsView').addEventListener('change', async function(e){
+    if (!portalData) return;
+    var wrap = e.target.closest('[data-goal-id]'); if (!wrap) return;
+    var goal = goalById(wrap.getAttribute('data-goal-id')); if (!goal) return;
+    if (e.target.matches('[data-goal-status]')) {
+      patchGoal(goal, { status:e.target.value }, { status:e.target.value });
+      return;
+    }
+    if (e.target.matches('[data-goal-note]')) {
+      // Saved in place so the open textarea keeps focus and cursor.
+      var note = e.target.value.trim(), status = wrap.querySelector('[data-goal-note-status]');
+      if (note === goal.coachNote) return;
+      if (status) status.textContent = 'Saving…';
+      var { error } = await sb.from('client_goals').update({ coach_note:note }).eq('id', goal.id);
+      if (error) { if (status) status.textContent = ''; alert('Could not save note: ' + error.message); return; }
+      goal.coachNote = note;
+      if (status) status.textContent = 'Saved';
+    }
+  });
+
+  window.addEventListener('resize', function(){
+    if (goalsUi.view === 'deadlines' && state.portalTab === 'goals' && portalData) renderGoalsTimeline(portalData.goals || []);
+  });
 
   // Build core picker for goal form
   function buildGoalCoreGrid(){
@@ -993,6 +1268,32 @@
   $('cpGoalStatus').innerHTML = GOAL_STATUSES.map(function(st){ return '<option value="'+st.key+'">'+esc(st.label)+'</option>'; }).join('');
 
   var goalEditingId = null;
+  var goalFormMs = [];   // milestones being edited in the form
+
+  function renderGoalFormMs(){
+    $('cpGoalMsList').innerHTML = goalFormMs.map(function(m, i){
+      return '<div class="cp-gl-form-ms-item"><b>'+(i + 1)+'</b><span>'+esc(m.label)+'</span>'
+        + '<button type="button" data-goal-ms-remove="'+i+'" aria-label="Remove '+esc(m.label)+'">✕</button></div>';
+    }).join('');
+  }
+
+  function addGoalFormMs(){
+    var v = $('cpGoalMsInput').value.trim(); if (!v) return;
+    goalFormMs.push({ label:v, done:false });
+    $('cpGoalMsInput').value = '';
+    renderGoalFormMs();
+    $('cpGoalMsInput').focus();
+  }
+
+  $('cpGoalMsAdd').addEventListener('click', addGoalFormMs);
+  $('cpGoalMsInput').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); addGoalFormMs(); }
+  });
+  $('cpGoalMsList').addEventListener('click', function(e){
+    var b = e.target.closest('[data-goal-ms-remove]'); if (!b) return;
+    goalFormMs.splice(parseInt(b.getAttribute('data-goal-ms-remove'), 10), 1);
+    renderGoalFormMs();
+  });
 
   function openGoalForm(goal){
     goalEditingId = goal ? goal.id : null;
@@ -1002,8 +1303,16 @@
     $('cpGoalDesc').value = goal ? goal.description : '';
     $('cpGoalDate').value = goal ? goal.targetDate : '';
     $('cpGoalStatus').value = goal ? goal.status : 'not_started';
+    goalFormMs = goal ? goal.milestones.map(function(m){ return { label:m.label, done:!!m.done }; }) : [];
+    $('cpGoalMsInput').value = '';
+    renderGoalFormMs();
+    $('cpGoalNoteField').hidden = !isCoachUser;
+    $('cpGoalNoteLabel').textContent = 'Note for ' + (viewingClientName || 'the client');
+    $('cpGoalNote').value = goal ? goal.coachNote : '';
     var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
-    radios.forEach(function(r){ r.checked = !!goal && r.value === goal.coreKey; });
+    // New goals start in the core being filtered on, if any.
+    var core = goal ? goal.coreKey : (goalsUi.core || '');
+    radios.forEach(function(r){ r.checked = r.value === core; });
     $('cpGoalFormOverlay').hidden = false;
     document.body.style.overflow = 'hidden';
     $('cpGoalTitle').focus();
@@ -1024,6 +1333,9 @@
     if (!viewingClientId) return;
     var clientId = viewingClientId;
 
+    // A step typed but not yet added still counts.
+    if ($('cpGoalMsInput').value.trim()) addGoalFormMs();
+
     var coreEl = $('cpGoalCoreGrid').querySelector('input[type=radio]:checked');
     var status = $('cpGoalStatus').value;
     var fields = {
@@ -1031,8 +1343,10 @@
       description: $('cpGoalDesc').value.trim(),
       core_key: coreEl ? coreEl.value : '',
       target_date: $('cpGoalDate').value || null,
-      status: status
+      status: status,
+      milestones: goalFormMs.slice()
     };
+    if (isCoachUser) fields.coach_note = $('cpGoalNote').value.trim();
 
     setLoading($('cpGoalFormSave'), true, 'Saving…');
     var res = goalEditingId
@@ -1047,42 +1361,11 @@
     portalData.goals = exists
       ? portalData.goals.map(function(g){ return g.id === saved.id ? saved : g; })
       : portalData.goals.concat([saved]);
+    // Make sure the saved goal is visible and open.
+    if (!exists) { goalsUi.status = 'all'; goalsUi.core = null; }
+    goalsUi.open = saved.id;
     renderGoalsTab();
     closeGoalForm();
-  });
-
-  async function goalsGridClickHandler(e){
-    if (!portalData) return;
-    var editBtn = e.target.closest('[data-goal-edit]');
-    if (editBtn) { openGoalForm(portalData.goals[parseInt(editBtn.getAttribute('data-goal-edit'), 10)]); return; }
-
-    var delBtn = e.target.closest('.cp-goal-delete-btn'); if (!delBtn) return;
-    var delGoal = portalData.goals[parseInt(delBtn.getAttribute('data-goal-del'), 10)]; if (!delGoal) return;
-    if (!confirm('Delete "' + delGoal.title + '"? This cannot be undone.')) return;
-    var { error } = await sb.from('client_goals').delete().eq('id', delGoal.id);
-    if (error) { alert('Could not delete goal: ' + error.message); return; }
-    portalData.goals = portalData.goals.filter(function(g){ return g.id !== delGoal.id; });
-    renderGoalsTab();
-  }
-
-  async function goalsGridChangeHandler(e){
-    var sel = e.target.closest('[data-goal-status]'); if (!sel || !portalData) return;
-    var goal = portalData.goals[parseInt(sel.getAttribute('data-goal-status'), 10)]; if (!goal) return;
-    var prevStatus = goal.status;
-    var patch = { status: sel.value };
-    goal.status = patch.status;
-    renderGoalsTab();
-    var { error } = await sb.from('client_goals').update(patch).eq('id', goal.id);
-    if (error) {
-      goal.status = prevStatus;
-      renderGoalsTab();
-      alert('Could not update goal: ' + error.message);
-    }
-  }
-
-  ['cpGoalsActiveGrid','cpGoalsAchievedGrid'].forEach(function(id){
-    $(id).addEventListener('click', goalsGridClickHandler);
-    $(id).addEventListener('change', goalsGridChangeHandler);
   });
 
   // ─── Preferred cardio + goal (set by the coach, seen by the client) ───
@@ -4103,7 +4386,7 @@
     editSections.cpEditResourceList.items = editState.resources;
     editSections.cpEditWinList.items = editState.wins;
     editSections.cpEditHabitList.items = editState.habits;
-    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, description:g.description, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, createdBy:g.createdBy }; });
+    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, description:g.description, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, createdBy:g.createdBy, milestones:g.milestones, coachNote:g.coachNote }; });
     Object.keys(editSections).forEach(renderListEditor);
 
     $('cpEditorPreviewKicker').textContent = 'What ' + (name.split(' ')[0] || 'they') + ' sees';
@@ -4209,9 +4492,9 @@
     });
 
     var goalRows = editSections.cpEditGoalList.items.filter(function(g){ return (g.title||'').trim(); }).map(function(g){
-      // Re-inserted with their original id/description so a save
+      // Re-inserted with their original id/description/milestones/note so a save
       // here doesn't wipe what was set from the Goals tab.
-      var row = { client_id: clientId, title: g.title.trim(), description: g.description||'', core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'not_started', created_by: g.createdBy||'coach' };
+      var row = { client_id: clientId, title: g.title.trim(), description: g.description||'', core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'not_started', created_by: g.createdBy||'coach', milestones: g.milestones||[], coach_note: g.coachNote||'' };
       if (g.id) row.id = g.id;
       return row;
     });
