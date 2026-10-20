@@ -288,6 +288,112 @@
       .cp-goal-card-foot{flex-wrap:wrap;}
       .cp-goal-edit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 10px;border-radius:99px;border:1px solid rgba(7,31,53,.12);}
       .cp-goal-edit-btn:hover{border-color:rgba(7,31,53,.4);color:#071f35;}
+      /* goals: overview card (Six Cores rail / deadline timeline) */
+      .cp-gl-overview{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;overflow:hidden;margin-bottom:20px;}
+      .cp-gl-overview-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 22px 0;}
+      .cp-gl-seg{display:flex;gap:4px;background:#f5f5f7;border-radius:12px;padding:4px;}
+      .cp-gl-seg-btn{all:unset;cursor:pointer;padding:7px 16px;border-radius:9px;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;color:rgba(7,31,53,.5);}
+      .cp-gl-seg-btn.is-active{background:#fff;color:#071f35;box-shadow:0 1px 3px rgba(7,31,53,.12);}
+      .cp-gl-meta{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-gl-rail{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;padding:10px 12px 12px;}
+      .cp-gl-rail[hidden]{display:none;}
+      .cp-gl-cell{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;padding:12px 12px 14px;border-radius:12px;min-width:0;}
+      .cp-gl-cell:hover{background:rgba(7,31,53,.05);}
+      .cp-gl-cell.is-active{background:rgba(7,31,53,.06);}
+      .cp-gl-cell-name{display:flex;align-items:center;gap:8px;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .cp-gl-cell-name i{width:8px;height:8px;border-radius:999px;flex-shrink:0;}
+      .cp-gl-cell-num{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+      .cp-gl-cell-num b{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;line-height:1;}
+      .cp-gl-cell-num span{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-gl-bar{height:4px;border-radius:999px;background:rgba(7,31,53,.07);overflow:hidden;display:block;}
+      .cp-gl-bar i{display:block;height:100%;border-radius:999px;}
+      .cp-gl-timeline-wrap{overflow-x:auto;padding:10px 22px 18px;}
+      .cp-gl-timeline-wrap[hidden]{display:none;}
+      .cp-gl-timeline{position:relative;min-width:640px;}
+      .cp-gl-months{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));}
+      .cp-gl-months div{border-left:1px solid rgba(7,31,53,.08);padding-left:10px;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-gl-today{position:absolute;top:22px;bottom:0;width:2px;border-radius:2px;background:#071f35;}
+      .cp-gl-today-tag{position:absolute;bottom:0;padding:2px 8px;margin-left:6px;border-radius:99px;background:#071f35;color:#fff;font-size:11px;font-weight:800;}
+      .cp-gl-marker{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;display:flex;align-items:center;gap:7px;max-width:190px;padding:3px 10px 3px 4px;border-radius:99px;background:#fff;border:1px solid rgba(7,31,53,.12);color:#071f35;}
+      .cp-gl-marker.is-flip{flex-direction:row-reverse;padding:3px 4px 3px 10px;}
+      .cp-gl-marker.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-gl-marker i{width:10px;height:10px;border-radius:999px;flex:none;box-shadow:0 0 0 3px #fff;}
+      .cp-gl-marker span{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .cp-gl-timeline-note{position:absolute;right:0;top:0;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-gl-timeline-empty{padding:28px 0;font-size:14px;color:rgba(7,31,53,.45);}
+      /* goals: filters + core sections */
+      .cp-gl-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+      .cp-gl-chips{display:flex;gap:8px;flex-wrap:wrap;}
+      .cp-gl-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);background:#fff;color:#071f35;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;}
+      .cp-gl-chip span{font-family:"Muli","Mulish",sans-serif;font-size:11px;font-weight:700;opacity:.6;}
+      .cp-gl-chip.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-gl-chip--core i{width:8px;height:8px;border-radius:999px;}
+      .cp-gl-sections{display:flex;flex-direction:column;gap:20px;}
+      .cp-gl-section{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;overflow:hidden;}
+      .cp-gl-section-head{display:flex;align-items:center;gap:10px;padding:16px 22px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-gl-section-head i{width:10px;height:10px;border-radius:999px;}
+      .cp-gl-section-head b{font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
+      .cp-gl-section-head span{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
+      .cp-gl-goal + .cp-gl-goal{border-top:1px solid rgba(7,31,53,.08);}
+      .cp-gl-row{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) 120px 118px 112px 18px;gap:20px;align-items:center;padding:18px 22px;}
+      .cp-gl-row:hover{background:rgba(7,31,53,.02);}
+      .cp-gl-row-title{display:block;font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;line-height:1.3;}
+      .cp-gl-goal.is-achieved .cp-gl-row-title{color:rgba(7,31,53,.55);}
+      .cp-gl-row-desc{display:block;font-size:14px;line-height:1.5;color:rgba(7,31,53,.6);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .cp-gl-segs{display:flex;gap:3px;}
+      .cp-gl-segs i{flex:1;height:4px;border-radius:999px;background:rgba(7,31,53,.08);}
+      .cp-gl-small{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-gl-progress{display:flex;flex-direction:column;gap:6px;}
+      .cp-gl-due{display:flex;flex-direction:column;gap:2px;}
+      .cp-gl-due b{font-size:13px;font-weight:700;}
+      .cp-gl-due span{font-size:12px;color:rgba(7,31,53,.5);}
+      .cp-gl-due span.is-soon{color:#a07820;}
+      .cp-gl-due span.is-late{color:#c01a38;}
+      .cp-gl-chev{transition:transform .2s;}
+      .cp-gl-goal.is-open .cp-gl-chev{transform:rotate(180deg);}
+      .cp-gl-detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;padding:0 22px 22px;}
+      .cp-gl-kicker{margin:0 0 6px;font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-gl-fulldesc{margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.7);}
+      .cp-gl-ms{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-gl-ms-box{width:18px;height:18px;border-radius:6px;border:1px solid rgba(7,31,53,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+      .cp-gl-ms-label{flex:1;font-size:15px;line-height:1.5;color:rgba(7,31,53,.8);}
+      .cp-gl-ms.is-done .cp-gl-ms-box{background:#071f35;border-color:#071f35;}
+      .cp-gl-ms.is-done .cp-gl-ms-label{color:rgba(7,31,53,.4);text-decoration:line-through;}
+      .cp-gl-ms-empty{margin:0;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);font-size:14px;color:rgba(7,31,53,.45);}
+      .cp-gl-side{display:flex;flex-direction:column;gap:12px;}
+      .cp-gl-note{border-radius:14px;background:rgba(119,215,112,.1);border:1px solid rgba(119,215,112,.35);padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+      .cp-gl-note .cp-gl-kicker{margin:0;color:#3d8c39;}
+      .cp-gl-note p{margin:0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.8);white-space:pre-wrap;}
+      .cp-gl-note p.is-empty{color:rgba(7,31,53,.4);}
+      .cp-gl-note textarea{width:100%;box-sizing:border-box;min-height:76px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:10px 12px;font-family:"Muli","Mulish",sans-serif;font-size:14px;line-height:1.55;color:#071f35;resize:vertical;}
+      .cp-gl-note-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);min-height:16px;}
+      .cp-gl-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+      .cp-gl-goal.is-open .cp-gl-row-desc{display:none;}
+      .cp-gl-actions .cp-goal-status-select{width:auto;flex:none;}
+      .cp-gl-by{margin-left:auto;font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
+      .cp-gl-form-ms .cp-gl-form-ms-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-gl-form-ms-item b{width:22px;height:22px;border-radius:99px;background:rgba(7,31,53,.06);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+      .cp-gl-form-ms-item span{flex:1;font-size:14px;}
+      .cp-gl-form-ms-item button{all:unset;cursor:pointer;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.4);}
+      .cp-gl-form-ms-item button:hover{background:rgba(240,35,72,.1);color:#c01a38;}
+      .cp-gl-form-ms-add{display:flex;gap:8px;margin-top:8px;}
+      .cp-gl-form-ms-add .cp-goal-form-input{height:42px;flex:1;}
+      .cp-gl-form-ms-add .cp-btn-sm{height:42px;border:1px solid rgba(7,31,53,.15);}
+      .cp-gl-form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
+      @media(max-width:900px){ .cp-gl-rail{grid-template-columns:repeat(4,minmax(0,1fr));} }
+      @media(max-width:720px){
+        .cp-gl-rail{grid-template-columns:repeat(2,minmax(0,1fr));}
+        .cp-gl-row{grid-template-columns:minmax(0,1fr) 18px;gap:10px 14px;padding:16px 18px;}
+        .cp-gl-row-main{grid-column:1;}
+        .cp-gl-row .cp-gl-chev{grid-column:2;grid-row:1;}
+        .cp-gl-row-meta{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;}
+        .cp-gl-progress{min-width:120px;}
+        .cp-gl-detail{grid-template-columns:1fr;gap:18px;padding:0 18px 18px;}
+        .cp-gl-section-head{padding:14px 18px;}
+        .cp-gl-overview-head{padding:14px 16px 0;}
+        .cp-gl-timeline-wrap{padding:10px 16px 16px;}
+      }
+      @media(min-width:721px){ .cp-gl-row-meta{display:contents;} }
       .cp-queue-click{cursor:pointer;border-radius:10px;}
       .cp-core-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;}
       .cp-core-chip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);background:#fff;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;color:#071f35;}
@@ -893,14 +999,22 @@
 
         <!-- GOALS TAB -->
         <div class="cp-goals-view" id="cpGoalsView" hidden>
-          <div class="cp-goals-header">
-            <h2 class="cp-goals-title">Your Goals</h2>
+          <div class="cp-gl-overview">
+            <div class="cp-gl-overview-head">
+              <div class="cp-gl-seg" id="cpGoalsViewToggle" role="tablist" aria-label="Goals overview">
+                <button type="button" class="cp-gl-seg-btn is-active" data-goal-view="cores" role="tab" aria-selected="true">Six Cores</button>
+                <button type="button" class="cp-gl-seg-btn" data-goal-view="deadlines" role="tab" aria-selected="false">Deadlines</button>
+              </div>
+              <span class="cp-gl-meta" id="cpGoalsMeta"></span>
+            </div>
+            <div class="cp-gl-rail" id="cpGoalsRail"></div>
+            <div class="cp-gl-timeline-wrap" id="cpGoalsTimelineWrap" hidden><div class="cp-gl-timeline" id="cpGoalsTimeline"></div></div>
+          </div>
+          <div class="cp-gl-toolbar">
+            <div class="cp-gl-chips" id="cpGoalsChips"></div>
             <button type="button" class="cp-goals-add-btn" id="cpGoalAddBtn">+ Add goal</button>
           </div>
-          <p class="cp-goals-section-label" id="cpGoalsActiveLabel">Active</p>
-          <div class="cp-goals-grid" id="cpGoalsActiveGrid"></div>
-          <p class="cp-goals-section-label" id="cpGoalsAchievedLabel" hidden>Achieved</p>
-          <div class="cp-goals-grid" id="cpGoalsAchievedGrid"></div>
+          <div class="cp-gl-sections" id="cpGoalsSections"></div>
         </div>
 
         <!-- HABITS TAB -->
@@ -1095,12 +1209,26 @@
               <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
             </div>
             <div class="cp-goal-form-field">
-              <label>Target date (Time-bound)</label>
-              <p class="cp-goal-form-hint">Give yourself a deadline. No deadline = no urgency.</p>
-              <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
+              <label for="cpGoalMsInput">Milestones</label>
+              <p class="cp-goal-form-hint">Break it into steps you can tick off along the way.</p>
+              <div class="cp-gl-form-ms" id="cpGoalMsList"></div>
+              <div class="cp-gl-form-ms-add">
+                <input type="text" id="cpGoalMsInput" class="cp-goal-form-input" placeholder="Add a step…" maxlength="140" />
+                <button type="button" class="cp-btn-sm" id="cpGoalMsAdd">Add</button>
+              </div>
             </div>
-            <div class="cp-goal-form-field">
-              <label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select>
+            <div class="cp-gl-form-row">
+              <div class="cp-goal-form-field">
+                <label for="cpGoalDate">Deadline (Time-bound)</label>
+                <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
+              </div>
+              <div class="cp-goal-form-field">
+                <label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select>
+              </div>
+            </div>
+            <div class="cp-goal-form-field" id="cpGoalNoteField" hidden>
+              <label for="cpGoalNote" id="cpGoalNoteLabel">Note for the client</label>
+              <textarea id="cpGoalNote" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="Why this goal matters, what to watch for…" maxlength="1000"></textarea>
             </div>
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" id="cpGoalFormCancel">Cancel</button>
