@@ -21,9 +21,11 @@
   // browser: no client secret, no token ever touches Supabase.
   var CALENDAR_CONFIG = {
     googleClientId:    '976458437286-ufpguk5m0aoa3ob8ghjhf1bvqih747h0.apps.googleusercontent.com',
-    googleScope:       'https://www.googleapis.com/auth/calendar.readonly',
+    // calendar.events = read + write events (add / move / remove from the
+    // Calendar tab); email = show "Google · you@gmail.com" on the button.
+    googleScope:       'https://www.googleapis.com/auth/calendar.events email',
     microsoftClientId: 'YOUR_MICROSOFT_ENTRA_APPLICATION_CLIENT_ID',
-    microsoftScopes:   ['Calendars.Read']
+    microsoftScopes:   ['Calendars.ReadWrite']
   };
   var CAL_WINDOW_DAYS = 14;
 
@@ -175,12 +177,10 @@
   var ciWeekByClient = {};  // coach view: client_id -> this week's latest pre-call submission time
 
   var viewingClientId = null;   // client_id currently shown in the client view
+  var viewingClientName = '';   // their first name, for coach-facing copy
   var portalData = null;        // that client's loaded dashboard content
 
-  var calState = {
-    google:  { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false },
-    outlook: { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false }
-  };
+  var calState = { google:calBlankState('google'), outlook:calBlankState('outlook'), meta:{}, ops:[] };
   var googleTokenClient = null;
   var msalInstance = null;
   var msalReady = null;   // promise, resolves once msalInstance.initialize() has run
@@ -558,6 +558,7 @@
 
   async function loadClientPortal(clientId, displayName){
     viewingClientId = clientId;
+    viewingClientName = String(displayName || '').split(' ')[0];
     portalData = null;
     ciEditing = false;
     ciDraft = null;
@@ -2340,10 +2341,33 @@
   // Only the client can connect — the OAuth flows below run as whoever is
   // signed into this browser tab. Each time the client's browser loads
   // events it saves a copy (calSaveSnapshot), and a coach browsing the
-  // client's portal (see isCoachUser) sees that copy read-only.
+  // client's portal (see isCoachUser) sees that copy.
+  //
+  // Writes: with a live token the client's browser adds / moves / removes
+  // events straight on Google or Outlook. The coach never holds the client's
+  // token, so the coach's edits queue in client_calendar_pending_ops and the
+  // client's portal applies them the next time it has a token
+  // (calApplyPendingOps). Core tags live only in client_calendar_event_meta.
+  // See scripts/client_calendar_write.sql.
+  var CAL_GOOGLE_WRITE_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+  var CAL_PROVIDER_COLORS = { google:'#f02348', outlook:'#2a9df0' };
+
   function calConfigured(provider){
     if (provider === 'google') return CALENDAR_CONFIG.googleClientId.indexOf('YOUR_') !== 0;
     return CALENDAR_CONFIG.microsoftClientId.indexOf('YOUR_') !== 0;
+  }
+
+  function calBlankState(provider){
+    var s = { connected:false, needsReconnect:false, canWrite:false, email:'', events:[], busy:false, syncedAt:null };
+    if (provider === 'google') s.token = null; else s.account = null;
+    return s;
+  }
+
+  function calProviderName(provider){ return provider === 'google' ? 'Google' : 'Outlook'; }
+
+  function calCanWrite(provider){
+    var s = calState[provider];
+    return !!(s.connected && !s.needsReconnect && s.canWrite);
   }
 
   function calWindow(){
@@ -2386,12 +2410,14 @@
     return googleTokenClient;
   }
 
+  // Resolves with the whole token response so the caller can check which
+  // scopes the client actually granted (they can untick calendar access).
   function calRequestGoogleToken(silent){
     return new Promise(function(resolve, reject){
       var client = calGoogleTokenClient();
       if (!client) { reject(new Error('Google Identity Services not loaded yet.')); return; }
       client.callback = function(resp){
-        if (resp && resp.access_token) resolve(resp.access_token);
+        if (resp && resp.access_token) resolve(resp);
         else reject(new Error((resp && resp.error) || 'No access token returned.'));
       };
       client.error_callback = function(err){ reject(err || new Error('Google sign-in failed.')); };
@@ -2399,27 +2425,30 @@
     });
   }
 
+  function calMapGoogleEvent(ev){
+    var allDay = !!(ev.start && ev.start.date && !ev.start.dateTime);
+    return {
+      id: 'google:' + ev.id,
+      provider: 'google',
+      title: ev.summary || '(No title)',
+      // All-day dates are calendar dates, not UTC instants.
+      start: allDay ? parseLocalDate(ev.start.date) : new Date(ev.start.dateTime),
+      end: allDay ? parseLocalDate(ev.end.date) : new Date(ev.end.dateTime),
+      allDay: allDay,
+      joinUrl: calGoogleJoinUrl(ev)
+    };
+  }
+
   async function calFetchGoogleEvents(token){
     var win = calWindow();
     var url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
       + '?timeMin=' + encodeURIComponent(win.start.toISOString())
       + '&timeMax=' + encodeURIComponent(win.end.toISOString())
-      + '&singleEvents=true&orderBy=startTime&maxResults=20';
+      + '&singleEvents=true&orderBy=startTime&maxResults=250';
     var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
     if (!res.ok) throw new Error('Google Calendar API error (' + res.status + ')');
     var data = await res.json();
-    return (data.items || []).map(function(ev){
-      var allDay = !!(ev.start && ev.start.date && !ev.start.dateTime);
-      return {
-        id: 'google:' + ev.id,
-        provider: 'google',
-        title: ev.summary || '(No title)',
-        start: new Date(allDay ? ev.start.date : ev.start.dateTime),
-        end: new Date(allDay ? ev.end.date : ev.end.dateTime),
-        allDay: allDay,
-        joinUrl: calGoogleJoinUrl(ev)
-      };
-    });
+    return (data.items || []).filter(function(ev){ return ev.status !== 'cancelled'; }).map(calMapGoogleEvent);
   }
 
   // A meeting link, in priority order: the Meet link Google surfaces
@@ -2440,20 +2469,25 @@
   async function calConnectGoogle(){
     if (!calConfigured('google')) { calSetStatus('Google Calendar isn\'t set up yet — ask your coach to finish the connection setup.', true); return; }
     var clientId = viewingClientId;
+    calSetStatus('');
     calState.google.busy = true; calRenderCard();
     try {
-      var token = await calRequestGoogleToken(false);
+      var resp = await calRequestGoogleToken(false);
+      var token = resp.access_token;
       calState.google.token = token;
       calState.google.connected = true;
       calState.google.needsReconnect = false;
+      calState.google.canWrite = google.accounts.oauth2.hasGrantedAllScopes(resp, CAL_GOOGLE_WRITE_SCOPE);
       calState.google.events = await calFetchGoogleEvents(token);
       var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
       var info = infoRes.ok ? await infoRes.json() : {};
       calState.google.email = info.email || '';
       if (viewingClientId === clientId) {
         await calPersistConnection(clientId, 'google', true, calState.google.email);
+        await calApplyPendingOps(clientId, 'google');
         await calSaveSnapshot(clientId, 'google');
       }
+      if (!calState.google.canWrite) calSetStatus('Google is connected read-only. Reconnect and allow calendar access to add or move events.', true);
     } catch (e) {
       calSetStatus('Couldn\'t connect Google Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
     }
@@ -2466,7 +2500,7 @@
     if (calState.google.token && window.google && google.accounts && google.accounts.oauth2) {
       google.accounts.oauth2.revoke(calState.google.token, function(){});
     }
-    calState.google = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
+    calState.google = calBlankState('google');
     if (clientId) { await calPersistConnection(clientId, 'google', false, ''); await calSaveSnapshot(clientId, 'google'); }
     if (viewingClientId === clientId) calRenderCard();
   }
@@ -2484,27 +2518,35 @@
     return msalInstance;
   }
 
+  // Graph returns times in UTC (see the Prefer header). All-day events are
+  // calendar dates, so only their date part is used.
+  function calMapOutlookEvent(ev){
+    var allDay = !!ev.isAllDay;
+    function when(dt){
+      if (allDay) return parseLocalDate(dt.dateTime.slice(0, 10));
+      return new Date(dt.dateTime + (dt.dateTime.slice(-1) === 'Z' ? '' : 'Z'));
+    }
+    return {
+      id: 'outlook:' + ev.id,
+      provider: 'outlook',
+      title: ev.subject || '(No title)',
+      start: when(ev.start),
+      end: when(ev.end),
+      allDay: allDay,
+      joinUrl: calOutlookJoinUrl(ev)
+    };
+  }
+
   async function calFetchOutlookEvents(token){
     var win = calWindow();
     var url = 'https://graph.microsoft.com/v1.0/me/calendarview'
       + '?startDateTime=' + encodeURIComponent(win.start.toISOString())
       + '&endDateTime=' + encodeURIComponent(win.end.toISOString())
-      + '&$orderby=start/dateTime&$top=20';
+      + '&$orderby=start/dateTime&$top=250';
     var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="UTC"' } });
     if (!res.ok) throw new Error('Outlook Calendar API error (' + res.status + ')');
     var data = await res.json();
-    return (data.value || []).map(function(ev){
-      var allDay = !!ev.isAllDay;
-      return {
-        id: 'outlook:' + ev.id,
-        provider: 'outlook',
-        title: ev.subject || '(No title)',
-        start: new Date(ev.start.dateTime + (ev.start.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
-        end: new Date(ev.end.dateTime + (ev.end.dateTime.slice(-1) === 'Z' ? '' : 'Z')),
-        allDay: allDay,
-        joinUrl: calOutlookJoinUrl(ev)
-      };
-    });
+    return (data.value || []).map(calMapOutlookEvent);
   }
 
   function calOutlookJoinUrl(ev){
@@ -2514,11 +2556,20 @@
     return '';
   }
 
+  async function calOutlookToken(){
+    var client = calGetMsal();
+    if (!client || !calState.outlook.account) throw new Error('No Outlook account.');
+    await msalReady;
+    var resp = await client.acquireTokenSilent({ scopes: CALENDAR_CONFIG.microsoftScopes, account: calState.outlook.account });
+    return resp.accessToken;
+  }
+
   async function calConnectOutlook(){
     if (!calConfigured('outlook')) { calSetStatus('Outlook Calendar isn\'t set up yet — ask your coach to finish the connection setup.', true); return; }
     var clientId = viewingClientId;
     var client = calGetMsal();
     if (!client) { calSetStatus('Microsoft sign-in is still loading — try again in a moment.', true); return; }
+    calSetStatus('');
     calState.outlook.busy = true; calRenderCard();
     try {
       await msalReady;
@@ -2529,9 +2580,11 @@
       calState.outlook.email = loginResp.account.username || '';
       calState.outlook.connected = true;
       calState.outlook.needsReconnect = false;
+      calState.outlook.canWrite = true;
       calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
       if (viewingClientId === clientId) {
         await calPersistConnection(clientId, 'outlook', true, calState.outlook.email);
+        await calApplyPendingOps(clientId, 'outlook');
         await calSaveSnapshot(clientId, 'outlook');
       }
     } catch (e) {
@@ -2547,25 +2600,198 @@
     if (client && calState.outlook.account) {
       try { await msalReady; await client.getTokenCache().removeAccount(calState.outlook.account); } catch (e) { /* best effort */ }
     }
-    calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
+    calState.outlook = calBlankState('outlook');
     if (clientId) { await calPersistConnection(clientId, 'outlook', false, ''); await calSaveSnapshot(clientId, 'outlook'); }
     if (viewingClientId === clientId) calRenderCard();
   }
 
+  // ─── Writing to the client's calendar (client's browser only) ─────────
+  function calRawId(eventId){ return eventId.slice(eventId.indexOf(':') + 1); }
+
+  function calTz(){
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; }
+  }
+
+  // An expired / missing token reads as "reconnect", same as the buttons.
+  function calReconnectError(provider){
+    calState[provider].needsReconnect = true;
+    var e = new Error('reconnect ' + calProviderName(provider) + ' to make changes to your calendar.');
+    e.status = 401;
+    return e;
+  }
+
+  async function calApi(provider, method, rawId, body){
+    var url, headers = { 'Content-Type':'application/json' };
+    if (provider === 'google') {
+      if (!calState.google.token) throw calReconnectError('google');
+      url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events' + (rawId ? '/' + encodeURIComponent(rawId) : '');
+      headers.Authorization = 'Bearer ' + calState.google.token;
+    } else {
+      var token;
+      try { token = await calOutlookToken(); } catch (e) { throw calReconnectError('outlook'); }
+      url = 'https://graph.microsoft.com/v1.0/me/events' + (rawId ? '/' + encodeURIComponent(rawId) : '');
+      headers.Authorization = 'Bearer ' + token;
+      headers.Prefer = 'outlook.timezone="UTC"';
+    }
+    var res = await fetch(url, { method:method, headers:headers, body: body ? JSON.stringify(body) : undefined });
+    if (res.status === 401) throw calReconnectError(provider);
+    if (!res.ok) {
+      var err = new Error(calProviderName(provider) + ' Calendar API error (' + res.status + ')');
+      err.status = res.status;
+      throw err;
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  // Start/end in each provider's shape. Outlook all-day events must sit on
+  // midnight, so they're written as UTC dates (read back the same way).
+  function calTimesBody(provider, start, end, allDay){
+    if (provider === 'google') {
+      return allDay
+        ? { start:{ date:calDateKey(start) }, end:{ date:calDateKey(end) } }
+        : { start:{ dateTime:start.toISOString(), timeZone:calTz() }, end:{ dateTime:end.toISOString(), timeZone:calTz() } };
+    }
+    return allDay
+      ? { isAllDay:true, start:{ dateTime:calDateKey(start) + 'T00:00:00', timeZone:'UTC' }, end:{ dateTime:calDateKey(end) + 'T00:00:00', timeZone:'UTC' } }
+      : { start:{ dateTime:start.toISOString().slice(0, 19), timeZone:'UTC' }, end:{ dateTime:end.toISOString().slice(0, 19), timeZone:'UTC' } };
+  }
+
+  function calMapProviderEvent(provider, data){
+    return provider === 'google' ? calMapGoogleEvent(data) : calMapOutlookEvent(data);
+  }
+
+  async function calProviderCreate(provider, f){
+    var body = calTimesBody(provider, f.start, f.end, false);
+    if (provider === 'google') {
+      body.summary = f.title;
+      if (f.joinUrl) body.location = f.joinUrl;
+    } else {
+      body.subject = f.title;
+      if (f.joinUrl) body.location = { displayName: f.joinUrl };
+    }
+    return calMapProviderEvent(provider, await calApi(provider, 'POST', '', body));
+  }
+
+  async function calProviderMove(provider, eventId, start, end, allDay){
+    return calMapProviderEvent(provider, await calApi(provider, 'PATCH', calRawId(eventId), calTimesBody(provider, start, end, allDay)));
+  }
+
+  async function calProviderDelete(provider, eventId){
+    try { await calApi(provider, 'DELETE', calRawId(eventId)); }
+    catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }   // already gone
+  }
+
+  // ─── Portal-only event metadata (core tag, who added it) ──────────────
+  // Updates local state first so the caller can re-render straight away.
+  function calSaveMeta(clientId, eventId, fields){
+    var cur = calState.meta[eventId] || { core:null, createdBy:null };
+    var next = {
+      core: 'core' in fields ? fields.core : cur.core,
+      createdBy: 'createdBy' in fields ? fields.createdBy : cur.createdBy
+    };
+    calState.meta[eventId] = next;
+    return sb.from('client_calendar_event_meta').upsert(
+      { client_id:clientId, provider:eventId.split(':')[0], event_id:eventId, core:next.core, created_by:next.createdBy, updated_at:new Date().toISOString() },
+      { onConflict:'client_id,event_id' }
+    );
+  }
+
+  function calDeleteMeta(clientId, eventId){
+    delete calState.meta[eventId];
+    return sb.from('client_calendar_event_meta').delete().eq('client_id', clientId).eq('event_id', eventId);
+  }
+
+  // ─── Coach edits, queued until the client's portal has a token ────────
+  var calOpSeq = 0;
+
+  function calMapOp(row){
+    return { id:row.id, key:'pending:' + row.id, provider:row.provider, op:row.op, eventId:row.event_id, payload:row.payload || {} };
+  }
+
+  // The op is added locally before the insert so a dragged event stays put.
+  async function calQueueOp(clientId, provider, kind, eventId, payload){
+    var op = { id:null, key:'pending:new' + (++calOpSeq), provider:provider, op:kind, eventId:eventId, payload:payload };
+    calState.ops.push(op);
+    var { data, error } = await sb.from('client_calendar_pending_ops')
+      .insert({ client_id:clientId, provider:provider, op:kind, event_id:eventId, payload:payload })
+      .select().single();
+    if (error) { calState.ops = calState.ops.filter(function(o){ return o !== op; }); throw error; }
+    op.id = data.id;
+    return op;
+  }
+
+  async function calUpdateOp(op, payload){
+    op.payload = payload;
+    if (op.id == null) return;
+    var { error } = await sb.from('client_calendar_pending_ops').update({ payload:payload }).eq('id', op.id);
+    if (error) throw error;
+  }
+
+  async function calDropOp(op){
+    calState.ops = calState.ops.filter(function(o){ return o !== op; });
+    if (op.id == null) return;
+    var { error } = await sb.from('client_calendar_pending_ops').delete().eq('id', op.id);
+    if (error) throw error;
+  }
+
+  // Client side: replay the coach's queued edits on the client's calendar.
+  async function calApplyPendingOps(clientId, provider){
+    var ops = calState.ops.filter(function(o){ return o.provider === provider; });
+    if (!ops.length || !calCanWrite(provider)) return;
+    var applied = 0;
+    for (var i = 0; i < ops.length; i++) {
+      var op = ops[i], p = op.payload;
+      try {
+        if (op.op === 'create') {
+          var ev = await calProviderCreate(provider, { title:p.title || 'New event', start:new Date(p.start), end:new Date(p.end), joinUrl:calSafeUrl(p.joinUrl) });
+          await calSaveMeta(clientId, ev.id, { core:p.core || null, createdBy:'coach' });
+        } else if (op.op === 'move') {
+          await calProviderMove(provider, op.eventId, new Date(p.start), new Date(p.end), !!p.allDay);
+        } else if (op.op === 'delete') {
+          await calProviderDelete(provider, op.eventId);
+          await calDeleteMeta(clientId, op.eventId);
+        }
+      } catch (e) {
+        // No token, rate-limited or provider down: try again next time.
+        if (!e.status || e.status === 401 || e.status === 429 || e.status >= 500) break;
+        // Anything else (event deleted, not the organizer…) can never apply.
+      }
+      await sb.from('client_calendar_pending_ops').delete().eq('id', op.id);
+      calState.ops = calState.ops.filter(function(o){ return o !== op; });
+      applied++;
+    }
+    if (!applied || viewingClientId !== clientId) return;
+    try {
+      calState[provider].events = provider === 'google'
+        ? await calFetchGoogleEvents(calState.google.token)
+        : await calFetchOutlookEvents(await calOutlookToken());
+    } catch (e) { /* keep what we have; the snapshot catches up next load */ }
+  }
+
   // ─── Load + render ──────────────────────────────────────────────────────
   async function calLoadForClient(clientId){
-    calState.google  = { connected:false, needsReconnect:false, token:null, email:'', events:[], busy:false };
-    calState.outlook = { connected:false, needsReconnect:false, account:null, email:'', events:[], busy:false };
-    calState.google.syncedAt = calState.outlook.syncedAt = null;
+    calState.google  = calBlankState('google');
+    calState.outlook = calBlankState('outlook');
+    calState.meta = {};
+    calState.ops = [];
+    calUi.selId = null;
+    calUi.cursor = calMidnight(new Date());
+    calUi.statusMsg = '';
 
-    var { data } = await sb.from('client_calendar_connections').select('*').eq('client_id', clientId);
+    var results = await Promise.all([
+      sb.from('client_calendar_connections').select('*').eq('client_id', clientId),
+      sb.from('client_calendar_event_meta').select('event_id, core, created_by').eq('client_id', clientId),
+      sb.from('client_calendar_pending_ops').select('*').eq('client_id', clientId).order('created_at')
+    ]);
     if (viewingClientId !== clientId) return;
-    (data || []).forEach(function(row){
+    (results[1].data || []).forEach(function(m){ calState.meta[m.event_id] = { core:m.core || null, createdBy:m.created_by || null }; });
+    calState.ops = (results[2].data || []).map(calMapOp);
+    (results[0].data || []).forEach(function(row){
       if (!row.connected || !calState[row.provider]) return;
       calState[row.provider].connected = true;
       calState[row.provider].email = row.account_email || '';
       if (isCoachUser) {
-        // Coach: show the client's last saved copy, read-only.
+        // Coach: show the client's last saved copy, with queued edits on top.
         calState[row.provider].events = calEventsFromSnapshot(row.events);
         calState[row.provider].syncedAt = row.synced_at ? new Date(row.synced_at) : null;
       } else {
@@ -2594,7 +2820,9 @@
             if (viewingClientId !== clientId) return;
             calState.outlook.account = account;
             calState.outlook.needsReconnect = false;
+            calState.outlook.canWrite = true;
             calState.outlook.events = await calFetchOutlookEvents(tokenResp.accessToken);
+            await calApplyPendingOps(clientId, 'outlook');
             if (viewingClientId === clientId) { calRenderCard(); calSaveSnapshot(clientId, 'outlook'); }
           });
         }).catch(function(){ /* leave needsReconnect true */ });
@@ -2603,14 +2831,41 @@
   }
 
   function calCoachSyncNote(){
+    if (!calState.google.connected && !calState.outlook.connected) return '';
+    var name = viewingClientName || 'the client';
     var times = [calState.google.syncedAt, calState.outlook.syncedAt].filter(Boolean).sort(function(a,b){ return b - a; });
-    if (!times.length) return calState.google.connected || calState.outlook.connected ? 'Read-only. Events show here after the client next opens their portal.' : '';
-    return 'Read-only copy, last updated ' + times[0].toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) + ' when the client opened their portal.';
+    var synced = times.length
+      ? 'Events last synced ' + times[0].toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) + '.'
+      : 'Events show here after ' + name + ' next opens their portal.';
+    return synced + ' Anything you add syncs the next time ' + name + ' opens their portal.';
   }
 
+  function calClientNote(){
+    var connected = ['google','outlook'].filter(function(p){ return calState[p].connected; });
+    if (!connected.length) return 'Connect Google or Outlook above to see your calendar here and add events to it.';
+    var blocked = connected.filter(function(p){ return !calCanWrite(p); });
+    if (!blocked.length) return '';
+    var names = blocked.map(calProviderName).join(' and ');
+    var waiting = calState.ops.some(function(o){ return blocked.indexOf(o.provider) !== -1; });
+    return waiting
+      ? 'Your coach added changes to your calendar. Reconnect ' + names + ' to sync them.'
+      : 'Reconnect ' + names + ' to see your latest events and make changes.';
+  }
+
+  // An error sticks until the next action; otherwise the bar shows the
+  // default note for whoever is looking.
   function calSetStatus(msg, isError){
+    calUi.statusMsg = msg || '';
+    calUi.statusErr = !!isError;
+    calPaintStatus();
+  }
+
+  function calPaintStatus(){
     var el = $('cpCalStatus');
-    el.textContent = msg || '';
+    var msg = calUi.statusMsg, isError = calUi.statusErr;
+    if (!msg) { msg = isCoachUser ? calCoachSyncNote() : calClientNote(); isError = false; }
+    el.textContent = msg;
+    el.hidden = !msg;
     el.classList.toggle('is-error', !!isError);
   }
 
@@ -2618,20 +2873,21 @@
     var s = calState[provider];
     if (isCoachUser) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
     if (s.busy) return 'Connecting…';
-    if (s.connected && s.needsReconnect) return 'Reconnect ' + name;
+    if (s.connected && (s.needsReconnect || !s.canWrite)) return 'Reconnect ' + name;
     if (s.connected) return name + ' · ' + (s.email || 'Connected');
     return 'Connect ' + name;
   }
 
   function calRenderButtons(){
-    var g = $('cpCalConnectGoogle'), o = $('cpCalConnectOutlook');
-    g.textContent = calProviderBtnLabel('google', 'Google');
-    g.classList.toggle('is-connected', calState.google.connected && !calState.google.needsReconnect);
-    g.classList.toggle('is-loading', calState.google.busy);
-    g.disabled = o.disabled = isCoachUser;
-    o.textContent = calProviderBtnLabel('outlook', 'Outlook');
-    o.classList.toggle('is-connected', calState.outlook.connected && !calState.outlook.needsReconnect);
-    o.classList.toggle('is-loading', calState.outlook.busy);
+    [['google','cpCalConnectGoogle','Google'], ['outlook','cpCalConnectOutlook','Outlook']].forEach(function(p){
+      var s = calState[p[0]], btn = $(p[1]);
+      var on = s.connected && !s.needsReconnect && (isCoachUser || s.canWrite);
+      btn.innerHTML = (on ? '<span class="cp-cal-provider-dot" style="background:' + CAL_PROVIDER_COLORS[p[0]] + '"></span>' : '')
+        + esc(calProviderBtnLabel(p[0], p[2]));
+      btn.classList.toggle('is-connected', on);
+      btn.classList.toggle('is-loading', s.busy);
+      btn.disabled = isCoachUser;
+    });
   }
 
   function calFormatEventWhen(ev){
@@ -2640,31 +2896,264 @@
       + ev.start.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
   }
 
-  function calRenderEvents(){
-    var events = calState.google.events.concat(calState.outlook.events)
-      .sort(function(a,b){ return a.start - b.start; });
-    if (!calState.google.connected && !calState.outlook.connected) {
-      if (isCoachUser) { $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">This client hasn\'t connected a calendar yet.</p>'; return; }
-      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Connect a calendar above to see your upcoming sessions and appointments here.</p>';
-      return;
-    }
-    if (!events.length) {
-      $('cpCalEventList').innerHTML = '<p class="cp-caption" style="margin:0;">Nothing on ' + (isCoachUser ? 'the' : 'your') + ' calendar in the next ' + CAL_WINDOW_DAYS + ' days.</p>';
-      return;
-    }
-    var dotColor = { google:'#f02348', outlook:'#2a9df0' };
-    var h = '';
-    events.forEach(function(ev){
-      h += '<div class="cp-cal-event-row">'
-        + '<span class="cp-cal-event-when">' + esc(calFormatEventWhen(ev)) + '</span>'
-        + '<div class="cp-cal-event-body">'
-        + '<p class="cp-cal-event-title">' + esc(ev.title) + '</p>'
-        + '<p class="cp-cal-event-meta"><span class="cp-cal-provider-dot" style="background:' + dotColor[ev.provider] + '"></span>' + (ev.provider === 'google' ? 'Google Calendar' : 'Outlook')
-        + (ev.joinUrl ? '<a class="cp-cal-event-join" href="' + esc(ev.joinUrl) + '" target="_blank" rel="noopener">Join</a>' : '')
-        + '</p>'
-        + '</div></div>';
+  // ─── Calendar view (Week / Month / Agenda) ─────────────────────────────
+  var CAL_HOUR_START = 7, CAL_HOUR_END = 22, CAL_ROW = 48;   // 48px per hour
+  var CAL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var CAL_NO_CORE = '#9aa3ad';
+
+  function calPad(n){ return String(n).padStart(2, '0'); }
+  function calDateKey(d){ return d.getFullYear() + '-' + calPad(d.getMonth() + 1) + '-' + calPad(d.getDate()); }
+  function calHHMM(h){ return calPad(Math.floor(h)) + ':' + calPad(Math.round((h % 1) * 60)); }
+  function calMidnight(d){ var x = new Date(d); x.setHours(0,0,0,0); return x; }
+  function calAddDays(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function calShifted(d, days, mins){ var x = new Date(d); x.setDate(x.getDate() + days); x.setMinutes(x.getMinutes() + mins); return x; }
+  function calSameDay(a, b){ return a.toDateString() === b.toDateString(); }
+  function calFmtTime(d){ return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' }).replace(':00', ''); }
+  function calTimeLabel(e){ return e.allDay ? 'All day' : calFmtTime(e.start) + ' – ' + calFmtTime(e.end); }
+  function calSafeUrl(u){ u = String(u || '').trim(); return /^https?:\/\//i.test(u) ? u : ''; }
+
+  // All-day events cover every day up to their (exclusive) end date.
+  function calOnDay(e, day){
+    if (!e.allDay) return calSameDay(e.start, day);
+    var d0 = calMidnight(day);
+    return (e.start <= d0 && e.end > d0) || calSameDay(e.start, day);
+  }
+
+  function calCoreDef(e){ return e.core ? CORE_DEFS.filter(function(c){ return c.key === e.core; })[0] || null : null; }
+  function calCoreColor(e){ var c = calCoreDef(e); return c ? c.color : CAL_NO_CORE; }
+  function calTint(e, a){
+    var c = calCoreDef(e);
+    if (!c) return 'rgba(7,31,53,' + (a * 0.4).toFixed(3) + ')';
+    var n = parseInt(c.color.slice(1), 16);
+    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  function calColorVars(e){
+    return '--core:' + calCoreColor(e) + ';--tint:' + calTint(e, .26) + ';--tint-soft:' + calTint(e, .1) + ';--tint-chip:' + calTint(e, .24) + ';';
+  }
+
+  var calUi = { view:'week', cursor:null, selId:null, drag:null, dragId:null, justDragged:0, form:null, statusMsg:'', statusErr:false };
+
+  // Every event to show: the provider events plus their core / creator, and
+  // for the coach, their queued edits layered on top.
+  function calEvents(){
+    var evs = calState.google.events.concat(calState.outlook.events).map(function(e){
+      var m = calState.meta[e.id] || {};
+      return Object.assign({}, e, { core:m.core || null, createdBy:m.createdBy || null });
     });
-    $('cpCalEventList').innerHTML = h;
+    if (isCoachUser) {
+      calState.ops.forEach(function(op){
+        var p = op.payload;
+        if (op.op === 'create') {
+          evs.push({ id:op.key, provider:op.provider, title:p.title || 'New event', start:new Date(p.start), end:new Date(p.end),
+            allDay:false, joinUrl:calSafeUrl(p.joinUrl), core:p.core || null, createdBy:'coach', pendingOp:op });
+        } else if (op.op === 'delete') {
+          evs = evs.filter(function(e){ return e.id !== op.eventId; });
+        } else if (op.op === 'move') {
+          evs.forEach(function(e){ if (e.id === op.eventId) { e.start = new Date(p.start); e.end = new Date(p.end); e.moveOp = op; } });
+        }
+      });
+    }
+    return evs.sort(function(a,b){ return a.start - b.start; });
+  }
+
+  function calFindEvent(id){ return calEvents().filter(function(e){ return e.id === id; })[0] || null; }
+  function calIsPending(e){ return !!(e.pendingOp || e.moveOp); }
+
+  function calRangeTitle(){
+    var c = calUi.cursor;
+    if (calUi.view === 'agenda') return 'Next ' + CAL_WINDOW_DAYS + ' days';
+    if (calUi.view === 'month') return c.toLocaleDateString(undefined, { month:'long', year:'numeric' });
+    var ws = startOfWeek(c), we = calAddDays(ws, 6);
+    var m1 = ws.toLocaleDateString(undefined, { month:'short' }), m2 = we.toLocaleDateString(undefined, { month:'short' });
+    return m1 + ' ' + ws.getDate() + ' – ' + (m1 === m2 ? '' : m2 + ' ') + we.getDate() + ', ' + we.getFullYear();
+  }
+
+  function calChipHtml(e, label, draggable){
+    // Draggable chips are divs: browsers won't start a drag from a <button>.
+    var cls = 'cp-cal-chip' + (calIsPending(e) ? ' is-pending' : '') + (e.id === calUi.selId ? ' is-selected' : '');
+    var tag = draggable ? 'div' : 'button';
+    return '<' + tag + (draggable ? ' role="button" tabindex="0" draggable="true"' : ' type="button"') + ' class="' + cls + '" data-cal-event="' + esc(e.id) + '"'
+      + ' style="' + calColorVars(e) + '">' + esc(label) + '</' + tag + '>';
+  }
+
+  // Overlapping events share their column side by side: each takes the
+  // first free lane within its cluster of overlaps.
+  function calLanes(items){
+    var out = [], cluster = [], laneEnds = [], clusterEnd = 0;
+    function flush(){
+      cluster.forEach(function(c){ c.lanes = laneEnds.length; });
+      out = out.concat(cluster); cluster = []; laneEnds = [];
+    }
+    items.forEach(function(e){
+      if (cluster.length && e.start.getTime() >= clusterEnd) flush();
+      var lane = laneEnds.findIndex(function(end){ return end <= e.start.getTime(); });
+      if (lane === -1) { lane = laneEnds.length; laneEnds.push(e.end.getTime()); } else laneEnds[lane] = e.end.getTime();
+      clusterEnd = cluster.length ? Math.max(clusterEnd, e.end.getTime()) : e.end.getTime();
+      cluster.push({ ev:e, lane:lane });
+    });
+    flush();
+    return out;
+  }
+
+  function calBlockHtml(item, now){
+    var e = item.ev;
+    var sH = e.start.getHours() + e.start.getMinutes() / 60;
+    var eH = calSameDay(e.start, e.end) ? e.end.getHours() + e.end.getMinutes() / 60 : 24;
+    var span = CAL_HOUR_END - CAL_HOUR_START;
+    var top = Math.min(Math.max(0, (sH - CAL_HOUR_START) * CAL_ROW), span * CAL_ROW - 22);
+    var height = Math.max(22, (Math.min(eH, CAL_HOUR_END) - Math.max(sH, CAL_HOUR_START)) * CAL_ROW - 3);
+    var w = 100 / item.lanes;
+    var short = height < 40, sel = e.id === calUi.selId, pending = calIsPending(e);
+    var cls = 'cp-cal-block' + (short ? ' is-short' : '') + (pending ? ' is-pending' : '') + (sel ? ' is-selected' : '') + (e.end < now && !sel ? ' is-past' : '');
+    var style = calColorVars(e) + 'top:' + (top + 1) + 'px;height:' + height + 'px;left:calc(' + (item.lane * w) + '% + 4px);width:calc(' + w + '% - 8px);';
+    return '<button type="button" class="' + cls + '" data-cal-event="' + esc(e.id) + '" style="' + style + '">'
+      + '<span class="cp-cal-block-title">' + esc(e.title) + '</span>'
+      + '<span class="cp-cal-block-time">' + esc(short ? calFmtTime(e.start) : calTimeLabel(e)) + '</span>'
+      + (pending && height >= 56 ? '<span class="cp-cal-block-pending">Pending sync</span>' : '')
+      + '</button>';
+  }
+
+  function calRenderWeek(evs){
+    var now = new Date(), today = calMidnight(now), ws = startOfWeek(calUi.cursor);
+    var days = []; for (var i = 0; i < 7; i++) days.push(calAddDays(ws, i));
+
+    var head = '<div class="cp-cal-week-row cp-cal-week-row--head"><div></div>';
+    var allDay = '', anyAllDay = false, cols = '';
+    days.forEach(function(day, i){
+      var key = calDateKey(day), isToday = calSameDay(day, today), past = day < today;
+      head += '<div class="cp-cal-dayhead' + (past ? ' is-past' : '') + '"><span class="cp-cal-dow">' + CAL_DOW[i] + '</span>'
+        + '<span class="cp-cal-daynum' + (isToday ? ' is-today' : '') + '">' + day.getDate() + '</span></div>';
+
+      var dayAll = evs.filter(function(e){ return e.allDay && calOnDay(e, day); });
+      if (dayAll.length) anyAllDay = true;
+      allDay += '<div class="cp-cal-allday-cell">' + dayAll.map(function(e){ return calChipHtml(e, e.title, false); }).join('') + '</div>';
+
+      var timed = evs.filter(function(e){ return !e.allDay && calSameDay(e.start, day); });
+      cols += '<div class="cp-cal-daycol' + (past ? ' is-past' : '') + '" data-cal-day="' + key + '" data-cal-col="' + i + '" title="Click to add an event">'
+        + calLanes(timed).map(function(item){ return calBlockHtml(item, now); }).join('');
+      if (isToday) {
+        var nowH = now.getHours() + now.getMinutes() / 60;
+        if (nowH >= CAL_HOUR_START && nowH <= CAL_HOUR_END) cols += '<div class="cp-cal-now" style="top:' + ((nowH - CAL_HOUR_START) * CAL_ROW) + 'px"></div>';
+      }
+      cols += '</div>';
+    });
+    head += '</div>';
+
+    var gutter = '<div class="cp-cal-gutter">';
+    for (var h = CAL_HOUR_START; h < CAL_HOUR_END; h++) {
+      gutter += '<div class="cp-cal-hour"><span>' + (h === CAL_HOUR_START ? '' : (h % 12 || 12) + (h < 12 ? ' AM' : ' PM')) + '</span></div>';
+    }
+    gutter += '</div>';
+
+    return '<div class="cp-cal-scroll"><div class="cp-cal-week">' + head
+      + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label">All day</div>' + allDay + '</div>' : '')
+      + '<div class="cp-cal-week-row">' + gutter + cols + '</div></div></div>';
+  }
+
+  function calRenderMonth(evs){
+    var today = calMidnight(new Date()), c = calUi.cursor;
+    var gridStart = startOfWeek(new Date(c.getFullYear(), c.getMonth(), 1));
+    var mEnd = new Date(c.getFullYear(), c.getMonth() + 1, 0);
+    var weeks = Math.ceil((Math.round((mEnd - gridStart) / 86400000) + 1) / 7);
+    var h = '<div class="cp-cal-scroll"><div class="cp-cal-month"><div class="cp-cal-month-head">'
+      + CAL_DOW.map(function(d){ return '<div>' + d + '</div>'; }).join('') + '</div><div class="cp-cal-month-grid">';
+    for (var i = 0; i < weeks * 7; i++) {
+      var day = calAddDays(gridStart, i), key = calDateKey(day);
+      var items = evs.filter(function(e){ return calOnDay(e, day); });
+      var cls = 'cp-cal-cell' + (day.getMonth() !== c.getMonth() ? ' is-outside' : day < today ? ' is-past' : '');
+      h += '<div class="' + cls + '" data-cal-day="' + key + '">'
+        + '<span class="cp-cal-cellnum' + (calSameDay(day, today) ? ' is-today' : '') + '">' + day.getDate() + '</span>'
+        + items.slice(0, 3).map(function(e){ return calChipHtml(e, e.allDay ? e.title : calFmtTime(e.start) + '  ' + e.title, true); }).join('')
+        + (items.length > 3 ? '<button type="button" class="cp-cal-more" data-cal-openday="' + key + '">+' + (items.length - 3) + ' more</button>' : '')
+        + '</div>';
+    }
+    return h + '</div></div></div>';
+  }
+
+  function calRenderAgenda(evs){
+    var today = calMidnight(new Date()), h = '';
+    for (var i = 0; i < CAL_WINDOW_DAYS; i++) {
+      var day = calAddDays(today, i);
+      var items = evs.filter(function(e){ return calOnDay(e, day); });
+      if (!items.length) continue;
+      h += '<div class="cp-cal-agenda-day"><div class="cp-cal-agenda-date">'
+        + '<span class="cp-cal-dow">' + esc(i === 0 ? 'Today' : day.toLocaleDateString(undefined, { weekday:'short' })) + '</span>'
+        + '<span class="cp-cal-agenda-num' + (i === 0 ? ' is-today' : '') + '">' + day.getDate() + '</span>'
+        + '<span class="cp-cal-agenda-mon">' + esc(day.toLocaleDateString(undefined, { month:'short' })) + '</span>'
+        + '</div><div class="cp-cal-agenda-items">';
+      items.forEach(function(e){
+        var join = calSafeUrl(e.joinUrl);
+        h += '<div class="cp-cal-agenda-item' + (e.id === calUi.selId ? ' is-selected' : '') + '" role="button" tabindex="0" data-cal-event="' + esc(e.id) + '">'
+          + '<span class="cp-cal-agenda-time">' + esc(calTimeLabel(e)) + '</span>'
+          + '<span class="cp-cal-agenda-title"><span class="cp-cal-dot" style="background:' + calCoreColor(e) + '"></span><span>' + esc(e.title) + '</span></span>'
+          + (join ? '<a class="cp-cal-join" href="' + esc(join) + '" target="_blank" rel="noopener">Join</a>' : '<span></span>')
+          + '</div>';
+      });
+      h += '</div></div>';
+    }
+    return '<div class="cp-cal-agenda">' + (h || '<p class="cp-cal-empty" style="padding:22px 0 10px;">Nothing in the next ' + CAL_WINDOW_DAYS + ' days.</p>') + '</div>';
+  }
+
+  function calCoreChipsHtml(cur, attr){
+    return [{ key:'', label:'None', color:CAL_NO_CORE }].concat(CORE_DEFS).map(function(c){
+      return '<button type="button" class="cp-core-chip' + ((cur || '') === c.key ? ' is-active' : '') + '" ' + attr + '="' + c.key + '">'
+        + '<span class="cp-cal-dot" style="background:' + c.color + '"></span>' + esc(c.label) + '</button>';
+    }).join('');
+  }
+
+  function calStatusLine(e){
+    var cal = e.provider === 'google' ? 'Google Calendar' : 'Outlook';
+    var name = viewingClientName || 'the client';
+    if (isCoachUser) {
+      if (e.pendingOp) return 'Pending — this lands on ' + name + '’s ' + cal + ' the next time they open their portal.';
+      if (e.moveOp) return 'Moved — updates on ' + name + '’s ' + cal + ' the next time they open their portal.';
+      if (e.createdBy === 'coach') return 'You added this. It’s on ' + name + '’s ' + cal + '.';
+      if (e.createdBy === 'client') return name + ' added this from their portal.';
+      return '';
+    }
+    if (e.createdBy === 'coach') return 'Added by your coach.';
+    if (e.createdBy === 'client') return 'Added to your ' + cal + '.';
+    return '';
+  }
+
+  // Only events made in the portal can be removed from it.
+  function calRemovable(e){ return isCoachUser ? !!(e.pendingOp || e.createdBy === 'coach') : !!e.createdBy; }
+
+  function calRenderPop(evs){
+    var pop = $('cpCalPop');
+    var e = calUi.selId ? evs.filter(function(x){ return x.id === calUi.selId; })[0] : null;
+    if (!e) { pop.hidden = true; pop.innerHTML = ''; return; }
+    var core = calCoreDef(e), note = calStatusLine(e), join = calSafeUrl(e.joinUrl);
+    var when = e.start.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' }) + ' · ' + calTimeLabel(e);
+    pop.innerHTML = '<div class="cp-cal-pop-head"><p class="cp-cal-pop-kicker"><span class="cp-cal-dot" style="background:' + calCoreColor(e) + '"></span>'
+      + esc((e.provider === 'google' ? 'Google Calendar' : 'Outlook') + (core ? ' · ' + core.label : '')) + '</p>'
+      + '<button type="button" class="cp-cal-pop-close" data-cal-action="close" aria-label="Close">✕</button></div>'
+      + '<h4 class="cp-cal-pop-title">' + esc(e.title) + '</h4>'
+      + '<p class="cp-cal-pop-when">' + esc(when) + '</p>'
+      + '<p class="cp-cal-pop-label">Core</p><div class="cp-cal-chip-row">' + calCoreChipsHtml(e.core, 'data-cal-setcore') + '</div>'
+      + (note ? '<p class="cp-cal-pop-note">' + esc(note) + '</p>' : '')
+      + (calRemovable(e) ? '<div><button type="button" class="cp-cal-pop-remove" data-cal-action="remove">Remove event</button></div>' : '')
+      + (join ? '<div><a class="cp-cta-primary" href="' + esc(join) + '" target="_blank" rel="noopener">Join call</a></div>' : '');
+    pop.hidden = false;
+  }
+
+  function calRenderCalendar(){
+    if (!calUi.cursor) calUi.cursor = calMidnight(new Date());
+    var view = calUi.view, today = calMidnight(new Date());
+    document.querySelectorAll('[data-cal-view]').forEach(function(b){ b.classList.toggle('is-active', b.getAttribute('data-cal-view') === view); });
+    $('cpCalNav').hidden = view === 'agenda';
+    $('cpCalRange').textContent = calRangeTitle();
+    $('cpCalLegend').innerHTML = CORE_DEFS.map(function(c){ return '<span><span class="cp-cal-dot" style="background:' + c.color + '"></span>' + esc(c.label) + '</span>'; }).join('');
+    $('cpCalWindowNote').textContent = 'Synced through ' + calAddDays(today, CAL_WINDOW_DAYS - 1).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+
+    var evs = calEvents();
+    if (calUi.selId && !evs.some(function(e){ return e.id === calUi.selId; })) calUi.selId = null;
+    var body = view === 'month' ? calRenderMonth(evs) : view === 'agenda' ? calRenderAgenda(evs) : calRenderWeek(evs);
+    if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
+      body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
+    }
+    $('cpCalBody').innerHTML = body;
+    calRenderPop(evs);
   }
 
   function calRenderCard(){
@@ -2675,9 +3164,300 @@
       : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
     calRenderButtons();
-    if (isCoachUser) calSetStatus(calCoachSyncNote());
-    calRenderEvents();
+    calPaintStatus();
+    calRenderCalendar();
   }
+
+  // ─── Calendar edits: move, core, remove, add ───────────────────────────
+  async function calMoveEvent(id, days, mins){
+    var ev = calFindEvent(id); if (!ev) return;
+    var start = calShifted(ev.start, days, mins);
+    var end = ev.allDay ? calShifted(ev.end, days, 0) : new Date(start.getTime() + (ev.end - ev.start));
+    var clientId = viewingClientId;
+    calUi.selId = id;
+    calSetStatus('');
+
+    if (isCoachUser) {
+      var times = { start:start.toISOString(), end:end.toISOString() };
+      var saving = ev.pendingOp ? calUpdateOp(ev.pendingOp, Object.assign({}, ev.pendingOp.payload, times))
+        : ev.moveOp ? calUpdateOp(ev.moveOp, Object.assign({ allDay:ev.allDay }, times))
+        : calQueueOp(clientId, ev.provider, 'move', ev.id, Object.assign({ allDay:ev.allDay }, times));
+      calRenderCalendar();
+      try { await saving; } catch (e) { calSetStatus('Couldn\'t save that move: ' + (e.message || 'try again.'), true); }
+      if (viewingClientId === clientId) calRenderCalendar();
+      return;
+    }
+
+    if (!calCanWrite(ev.provider)) {
+      calSetStatus('Reconnect ' + calProviderName(ev.provider) + ' to move events on your calendar.', true);
+      calRenderCalendar();
+      return;
+    }
+    var raw = calState[ev.provider].events.filter(function(x){ return x.id === id; })[0];
+    var prev = { start:raw.start, end:raw.end };
+    raw.start = start; raw.end = end;
+    calRenderCalendar();
+    try {
+      Object.assign(raw, await calProviderMove(ev.provider, id, start, end, ev.allDay));
+      calSaveSnapshot(clientId, ev.provider);
+    } catch (e) {
+      raw.start = prev.start; raw.end = prev.end;
+      calSetStatus('Couldn\'t move “' + ev.title + '”: ' + (e.message || 'try again.'), true);
+    }
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  function calSetCore(id, core){
+    var ev = calFindEvent(id); if (!ev) return;
+    var saving = ev.pendingOp
+      ? calUpdateOp(ev.pendingOp, Object.assign({}, ev.pendingOp.payload, { core:core }))
+      : calSaveMeta(viewingClientId, id, { core:core });
+    Promise.resolve(saving).then(function(res){ if (res && res.error) throw res.error; })
+      .catch(function(e){ calSetStatus('Couldn\'t save that core: ' + (e.message || 'try again.'), true); });
+    calRenderCalendar();
+  }
+
+  async function calRemoveEvent(id){
+    var ev = calFindEvent(id); if (!ev) return;
+    if (!ev.pendingOp && !confirm('Remove "' + ev.title + '" from ' + (isCoachUser ? (viewingClientName || 'the client') + '’s' : 'your') + ' calendar?')) return;
+    var clientId = viewingClientId;
+    calSetStatus('');
+    try {
+      if (isCoachUser) {
+        if (ev.pendingOp) await calDropOp(ev.pendingOp);
+        else {
+          if (ev.moveOp) await calDropOp(ev.moveOp);
+          await calQueueOp(clientId, ev.provider, 'delete', ev.id, {});
+        }
+      } else {
+        if (!calCanWrite(ev.provider)) throw new Error('reconnect ' + calProviderName(ev.provider) + ' first.');
+        await calProviderDelete(ev.provider, id);
+        calState[ev.provider].events = calState[ev.provider].events.filter(function(x){ return x.id !== id; });
+        calDeleteMeta(clientId, id);
+        calSaveSnapshot(clientId, ev.provider);
+      }
+      calUi.selId = null;
+    } catch (e) {
+      calSetStatus('Couldn\'t remove that event: ' + (e.message || 'try again.'), true);
+    }
+    if (viewingClientId === clientId) calRenderCard();
+  }
+
+  function calFormProviders(){
+    return ['google','outlook'].filter(function(p){ return calState[p].connected; });
+  }
+
+  function calFormError(msg){
+    var el = $('cpCalFormError');
+    el.textContent = msg || '';
+    el.classList.toggle('show', !!msg);
+  }
+
+  function calRenderFormChips(){
+    var f = calUi.form;
+    $('cpCalFormProviders').innerHTML = calFormProviders().map(function(p){
+      return '<button type="button" class="cp-core-chip' + (f.provider === p ? ' is-active' : '') + '" data-cal-formprovider="' + p + '">'
+        + '<span class="cp-cal-dot" style="background:' + CAL_PROVIDER_COLORS[p] + '"></span>'
+        + esc(calProviderName(p) + (calState[p].email ? ' · ' + calState[p].email : '')) + '</button>';
+    }).join('');
+    $('cpCalFormCores').innerHTML = calCoreChipsHtml(f.core, 'data-cal-formcore');
+  }
+
+  function calOpenForm(day, hour){
+    var providers = calFormProviders();
+    var name = viewingClientName || 'the client';
+    if (!providers.length) {
+      calSetStatus(isCoachUser ? name + ' hasn\'t connected a calendar yet.' : 'Connect Google or Outlook above first, then add events here.', true);
+      return;
+    }
+    var preferred = providers.filter(function(p){ return isCoachUser || calCanWrite(p); })[0] || providers[0];
+    var h = Math.min(Math.max(hour == null ? 9 : hour, 0), 23);
+    calUi.form = { provider:preferred, core:null, saving:false };
+    $('cpCalFormHeading').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
+    $('cpCalFormSub').textContent = isCoachUser
+      ? 'Goes onto the calendar ' + name + ' has connected. It shows as pending here until it syncs.'
+      : 'Goes straight onto your connected calendar. Your coach will see it too.';
+    $('cpCalFormSave').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add event';
+    $('cpCalFormTitle').value = '';
+    $('cpCalFormDate').value = calDateKey(day);
+    $('cpCalFormStart').value = calHHMM(h);
+    $('cpCalFormEnd').value = calHHMM(Math.min(h + 1, 23.75));
+    $('cpCalFormJoin').value = '';
+    $('cpCalFormSave').disabled = false;
+    calFormError('');
+    calRenderFormChips();
+    openModal('cpCalFormOverlay');
+    setTimeout(function(){ $('cpCalFormTitle').focus(); }, 50);
+  }
+
+  async function calSaveForm(){
+    var f = calUi.form; if (!f || f.saving) return;
+    var date = $('cpCalFormDate').value, st = $('cpCalFormStart').value, en = $('cpCalFormEnd').value;
+    if (!date || !st || !en) return calFormError('Pick a date, start and end time.');
+    var start = new Date(date + 'T' + st), end = new Date(date + 'T' + en);
+    if (end <= start) return calFormError('End time needs to be after the start time.');
+    if (!isCoachUser && !calCanWrite(f.provider)) {
+      return calFormError('Reconnect ' + calProviderName(f.provider) + ' first — the portal needs permission to add events to your calendar.');
+    }
+    var joinRaw = $('cpCalFormJoin').value.trim();
+    if (joinRaw && !calSafeUrl(joinRaw)) return calFormError('Call links need to start with https://');
+    var title = $('cpCalFormTitle').value.trim() || 'New event';
+    var clientId = viewingClientId;
+
+    f.saving = true; $('cpCalFormSave').disabled = true; calFormError('');
+    try {
+      var newId;
+      if (isCoachUser) {
+        var op = await calQueueOp(clientId, f.provider, 'create', null,
+          { title:title, start:start.toISOString(), end:end.toISOString(), joinUrl:joinRaw, core:f.core });
+        newId = op.key;
+      } else {
+        var ev = await calProviderCreate(f.provider, { title:title, start:start, end:end, joinUrl:joinRaw });
+        calState[f.provider].events.push(ev);
+        calSaveMeta(clientId, ev.id, { core:f.core, createdBy:'client' });
+        calSaveSnapshot(clientId, f.provider);
+        newId = ev.id;
+      }
+      closeModal('cpCalFormOverlay');
+      calUi.form = null;
+      calUi.selId = newId;
+      calUi.cursor = calMidnight(start);
+      if (viewingClientId === clientId) calRenderCard();
+    } catch (e) {
+      calFormError('Couldn\'t add that event: ' + (e.message || 'try again.'));
+      if (e.status === 401) calRenderButtons();
+      f.saving = false; $('cpCalFormSave').disabled = false;
+    }
+  }
+
+  function calAction(a){
+    var today = calMidnight(new Date());
+    if (a === 'today') { calUi.cursor = today; calUi.selId = null; }
+    else if (a === 'prev' || a === 'next') {
+      var dir = a === 'next' ? 1 : -1, c = new Date(calUi.cursor);
+      if (calUi.view === 'month') c.setMonth(c.getMonth() + dir, 1); else c.setDate(c.getDate() + dir * 7);
+      calUi.cursor = c; calUi.selId = null;
+    }
+    else if (a === 'add') { calOpenForm(calUi.cursor < today ? today : calUi.cursor, 9); return; }
+    else if (a === 'close') calUi.selId = null;
+    else if (a === 'remove') { calRemoveEvent(calUi.selId); return; }
+    calRenderCalendar();
+  }
+
+  $('cpCalendarCard').addEventListener('click', function(e){
+    var t;
+    if ((t = e.target.closest('[data-cal-view]'))) { calUi.view = t.getAttribute('data-cal-view'); calUi.selId = null; calRenderCalendar(); return; }
+    if ((t = e.target.closest('[data-cal-action]'))) { calAction(t.getAttribute('data-cal-action')); return; }
+    if ((t = e.target.closest('[data-cal-setcore]'))) { calSetCore(calUi.selId, t.getAttribute('data-cal-setcore') || null); return; }
+    if ((t = e.target.closest('[data-cal-openday]'))) {
+      calUi.view = 'week'; calUi.cursor = parseLocalDate(t.getAttribute('data-cal-openday')); calUi.selId = null;
+      calRenderCalendar(); return;
+    }
+    if (e.target.closest('a') || e.target.closest('.cp-cal-pop')) return;
+    if ((t = e.target.closest('[data-cal-event]'))) {
+      // Week blocks select on pointerup (see the drag handler); a keyboard
+      // "click" (detail 0) still toggles here.
+      if (t.classList.contains('cp-cal-block') && e.detail !== 0) return;
+      var id = t.getAttribute('data-cal-event');
+      calUi.selId = calUi.selId === id ? null : id;
+      calRenderCalendar(); return;
+    }
+    if ((t = e.target.closest('.cp-cal-daycol'))) {
+      if (Date.now() - calUi.justDragged < 400) return;
+      var r = t.getBoundingClientRect();
+      calOpenForm(parseLocalDate(t.getAttribute('data-cal-day')), CAL_HOUR_START + Math.floor(((e.clientY - r.top) / CAL_ROW) * 2) / 2);
+    }
+  });
+
+  $('cpCalendarCard').addEventListener('keydown', function(e){
+    var t = e.target.closest('div[role="button"][data-cal-event]');
+    if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); t.click(); }
+  });
+
+  function calEl(e){ return e.target.nodeType === 1 ? e.target : e.target.parentElement; }
+
+  // Week view: drag a block to move it. Vertical snaps to 15 minutes,
+  // horizontal to whole days within the visible week.
+  $('cpCalBody').addEventListener('pointerdown', function(e){
+    var block = calEl(e).closest('.cp-cal-block');
+    if (!block || e.button !== 0) return;
+    e.stopPropagation();
+    var col = block.parentElement;
+    var drag = { id:block.getAttribute('data-cal-event'), x0:e.clientX, y0:e.clientY, w:col.getBoundingClientRect().width,
+      col:parseInt(col.getAttribute('data-cal-col'), 10), moved:false, dMin:0, dDay:0 };
+    var ev0 = calFindEvent(drag.id);
+    var timeEl = block.querySelector('.cp-cal-block-time');
+    var short = block.classList.contains('is-short');
+    calUi.drag = drag;
+
+    function move(m){
+      var dx = m.clientX - drag.x0, dy = m.clientY - drag.y0;
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+      if (!drag.moved) { drag.moved = true; block.classList.add('is-dragging'); document.body.style.userSelect = 'none'; }
+      drag.dMin = Math.round((dy / CAL_ROW) * 4) * 15;
+      drag.dDay = Math.max(-drag.col, Math.min(6 - drag.col, Math.round(dx / drag.w)));
+      block.style.transform = 'translate(' + (drag.dDay * drag.w) + 'px,' + (drag.dMin / 60 * CAL_ROW) + 'px)';
+      if (ev0 && timeEl) {
+        var s = calShifted(ev0.start, drag.dDay, drag.dMin);
+        timeEl.textContent = short ? calFmtTime(s) : calTimeLabel({ start:s, end:new Date(s.getTime() + (ev0.end - ev0.start)) });
+      }
+    }
+    function up(){
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      document.body.style.userSelect = '';
+      calUi.drag = null;
+      calUi.justDragged = Date.now();
+      if (!drag.moved) { calUi.selId = calUi.selId === drag.id ? null : drag.id; calRenderCalendar(); return; }
+      if (drag.dMin || drag.dDay) calMoveEvent(drag.id, drag.dDay, drag.dMin);
+      else { calUi.selId = drag.id; calRenderCalendar(); }
+    }
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  });
+
+  // Month view: drag a chip onto another day (keeps its time of day).
+  $('cpCalBody').addEventListener('dragstart', function(e){
+    var chip = calEl(e).closest('.cp-cal-chip[draggable]'); if (!chip) return;
+    calUi.dragId = chip.getAttribute('data-cal-event');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', calUi.dragId);
+  });
+  $('cpCalBody').addEventListener('dragover', function(e){
+    var cell = calEl(e).closest('.cp-cal-cell'); if (!cell || !calUi.dragId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    $('cpCalBody').querySelectorAll('.cp-cal-cell.is-over').forEach(function(c){ if (c !== cell) c.classList.remove('is-over'); });
+    cell.classList.add('is-over');
+  });
+  $('cpCalBody').addEventListener('dragend', function(){
+    calUi.dragId = null;
+    $('cpCalBody').querySelectorAll('.cp-cal-cell.is-over').forEach(function(c){ c.classList.remove('is-over'); });
+  });
+  $('cpCalBody').addEventListener('drop', function(e){
+    var cell = calEl(e).closest('.cp-cal-cell'); if (!cell || !calUi.dragId) return;
+    e.preventDefault();
+    var id = calUi.dragId; calUi.dragId = null;
+    var ev = calFindEvent(id); if (!ev) return;
+    var days = Math.round((parseLocalDate(cell.getAttribute('data-cal-day')) - calMidnight(ev.start)) / 86400000);
+    if (days) calMoveEvent(id, days, 0);
+    else { calUi.selId = id; calRenderCalendar(); }
+  });
+
+  $('cpCalFormOverlay').addEventListener('click', function(e){
+    var t = e.target.closest('[data-cal-formprovider]');
+    if (t) { calUi.form.provider = t.getAttribute('data-cal-formprovider'); calRenderFormChips(); return; }
+    t = e.target.closest('[data-cal-formcore]');
+    if (t) { calUi.form.core = t.getAttribute('data-cal-formcore') || null; calRenderFormChips(); }
+  });
+  $('cpCalFormSave').addEventListener('click', calSaveForm);
+
+  // Keeps the now line moving.
+  setInterval(function(){
+    if (viewingClientId && !$('cpCalendarView').hidden && !calUi.drag && !calUi.dragId) calRenderCalendar();
+  }, 60000);
 
   // ─── Next Session card: "Join call" wired to the connected calendar(s) ──
   // A meeting is "appropriate" to join if it has a call link and is either

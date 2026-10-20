@@ -371,24 +371,113 @@
       .cp-note-meta{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);flex-shrink:0;}
       .cp-chip-row{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;}
       .cp-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.1);font-size:13px;font-weight:700;color:rgba(7,31,53,.75);}
-      /* calendar card */
+      /* calendar */
       .cp-cal-connect-row{display:flex;flex-wrap:wrap;gap:8px;}
-      .cp-cal-provider-btn{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;letter-spacing:.02em;color:rgba(7,31,53,.7);white-space:nowrap;transition:border-color .15s,color .15s,background .15s;}
+      .cp-cal-provider-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;letter-spacing:.02em;color:rgba(7,31,53,.7);white-space:nowrap;transition:border-color .15s,color .15s,background .15s;}
       .cp-cal-provider-btn:hover{border-color:rgba(7,31,53,.35);}
       .cp-cal-provider-btn.is-connected{background:#071f35;border-color:#071f35;color:#fff;}
       .cp-cal-provider-btn.is-disabled{cursor:not-allowed;opacity:.45;}
       .cp-cal-provider-btn:disabled:not(.is-disabled){cursor:default;}
       .cp-cal-provider-btn.is-loading{opacity:.6;cursor:wait;}
-      .cp-cal-status{margin:14px 0 0;font-size:13px;color:rgba(7,31,53,.5);}
+      .cp-cal-provider-dot{display:inline-block;width:7px;height:7px;border-radius:999px;flex-shrink:0;}
+      .cp-cal-panel{position:relative;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;overflow:hidden;}
+      .cp-cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-cal-toolbar-left,.cp-cal-toolbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+      .cp-cal-today{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:18px;font-size:13px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:rgba(7,31,53,.75);}
+      .cp-cal-today:hover{border-color:rgba(7,31,53,.4);}
+      .cp-cal-nav{display:flex;gap:2px;}
+      .cp-cal-nav-btn{all:unset;cursor:pointer;width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(7,31,53,.6);}
+      .cp-cal-nav-btn:hover{background:rgba(7,31,53,.06);}
+      .cp-cal-range{margin:0 0 0 4px;text-transform:none;letter-spacing:normal;font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:700;font-size:18px;white-space:nowrap;line-height:1.2;}
+      .cp-cal-views{display:flex;padding:3px;border-radius:12px;background:rgba(7,31,53,.06);}
+      .cp-cal-view-btn{all:unset;cursor:pointer;padding:7px 14px;border-radius:9px;color:rgba(7,31,53,.55);font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;}
+      .cp-cal-view-btn:hover{color:#071f35;}
+      .cp-cal-view-btn.is-active{background:#071f35;color:#fff;}
+      .cp-cal-status{margin:0;padding:10px 22px;font-size:13px;color:rgba(7,31,53,.5);background:#f5f5f7;border-bottom:1px solid rgba(7,31,53,.08);}
       .cp-cal-status.is-error{color:#c01a38;}
-      .cp-cal-event-list{margin-top:10px;display:grid;gap:0;}
-      .cp-cal-event-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
-      .cp-cal-event-when{flex:0 0 118px;font-size:12px;font-weight:800;letter-spacing:.03em;color:rgba(7,31,53,.5);padding-top:1px;}
-      .cp-cal-event-body{flex:1;min-width:0;}
-      .cp-cal-event-title{margin:0;font-size:14px;font-weight:700;color:#071f35;overflow-wrap:anywhere;}
-      .cp-cal-event-meta{margin:3px 0 0;font-size:12px;color:rgba(7,31,53,.45);}
-      .cp-cal-event-join{margin-left:8px;font-size:12px;font-weight:800;color:#071f35;text-decoration:underline;text-underline-offset:2px;}
-      .cp-cal-provider-dot{display:inline-block;width:7px;height:7px;border-radius:999px;margin-right:6px;position:relative;top:-1px;}
+      .cp-cal-empty{margin:0;padding:28px 22px;font-size:14px;color:rgba(7,31,53,.55);}
+      .cp-cal-scroll{overflow-x:auto;}
+      .cp-cal-week{min-width:760px;}
+      .cp-cal-week-row{display:grid;grid-template-columns:64px repeat(7,minmax(0,1fr));}
+      .cp-cal-week-row--head,.cp-cal-week-row--allday{border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-cal-dayhead{padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;border-left:1px solid rgba(7,31,53,.06);}
+      .cp-cal-dayhead.is-past{opacity:.5;}
+      .cp-cal-dow{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);}
+      .cp-cal-daynum{width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;color:#071f35;}
+      .cp-cal-daynum.is-today{background:#071f35;color:#fff;}
+      .cp-cal-allday-label{padding:8px 10px 8px 0;text-align:right;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-cal-allday-cell{padding:5px 4px;display:grid;gap:3px;align-content:start;min-height:30px;border-left:1px solid rgba(7,31,53,.06);min-width:0;}
+      .cp-cal-gutter{position:relative;}
+      .cp-cal-hour{height:48px;position:relative;}
+      .cp-cal-hour span{position:absolute;top:-7px;right:10px;font-size:11px;font-weight:700;color:rgba(7,31,53,.4);white-space:nowrap;}
+      .cp-cal-daycol{cursor:pointer;position:relative;height:720px;border-left:1px solid rgba(7,31,53,.06);background-image:repeating-linear-gradient(to bottom,rgba(7,31,53,.07) 0,rgba(7,31,53,.07) 1px,transparent 1px,transparent 48px);}
+      .cp-cal-daycol.is-past{background-color:rgba(7,31,53,.025);}
+      .cp-cal-block{all:unset;box-sizing:border-box;position:absolute;padding:6px 8px;border-radius:9px;overflow:hidden;z-index:1;color:#071f35;touch-action:none;cursor:grab;background:var(--tint);}
+      .cp-cal-block.is-short{padding:3px 8px;display:flex;gap:6px;align-items:baseline;}
+      .cp-cal-block.is-pending{background:var(--tint-soft);border:1.5px dashed var(--core);}
+      .cp-cal-block.is-past{opacity:.55;}
+      .cp-cal-block.is-selected{z-index:3;opacity:1;box-shadow:inset 0 0 0 2px #071f35,0 8px 20px rgba(7,31,53,.16);background:var(--tint);border:none;}
+      .cp-cal-block.is-dragging{z-index:6;opacity:.92;cursor:grabbing;box-shadow:0 14px 30px rgba(7,31,53,.22);}
+      .cp-cal-block-title{display:block;font-size:12.5px;font-weight:800;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .cp-cal-block-time{display:block;font-size:11.5px;font-weight:600;line-height:1.3;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .cp-cal-block-pending{display:block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;margin-top:2px;}
+      .cp-cal-now{position:absolute;left:0;right:0;height:2px;background:#f02348;z-index:4;pointer-events:none;}
+      .cp-cal-now::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:999px;background:#f02348;}
+      .cp-cal-chip{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;padding:3px 7px;border-radius:6px;font-size:11.5px;font-weight:700;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--tint-chip);color:#071f35;}
+      .cp-cal-chip[draggable="true"]{-webkit-user-drag:element;user-select:none;}
+      .cp-cal-chip.is-pending{box-shadow:inset 0 0 0 1.5px var(--core);}
+      .cp-cal-chip.is-selected{box-shadow:inset 0 0 0 2px #071f35;}
+      .cp-cal-month{min-width:700px;}
+      .cp-cal-month-head{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-cal-month-head div{padding:10px 12px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);}
+      .cp-cal-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
+      .cp-cal-cell{min-height:112px;padding:8px 6px;display:flex;flex-direction:column;gap:3px;border-top:1px solid rgba(7,31,53,.07);border-left:1px solid rgba(7,31,53,.07);background:#fff;box-sizing:border-box;min-width:0;}
+      .cp-cal-cell:nth-child(7n+1){border-left:none;}
+      .cp-cal-cell.is-past{background:rgba(7,31,53,.02);}
+      .cp-cal-cell.is-outside{background:#f7f7f9;}
+      .cp-cal-cell.is-over{background:rgba(42,157,240,.08);}
+      .cp-cal-cellnum{width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:700;font-size:13px;color:#071f35;}
+      .cp-cal-cell.is-past .cp-cal-cellnum{color:rgba(7,31,53,.4);}
+      .cp-cal-cell.is-outside .cp-cal-cellnum{color:rgba(7,31,53,.3);}
+      .cp-cal-cellnum.is-today{background:#071f35;color:#fff !important;}
+      .cp-cal-more{all:unset;cursor:pointer;font-size:11.5px;font-weight:800;color:rgba(7,31,53,.5);padding:0 6px;}
+      .cp-cal-agenda{padding:6px 22px 18px;}
+      .cp-cal-agenda-day{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-cal-agenda-day:first-child{border-top:none;}
+      .cp-cal-agenda-date{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+      .cp-cal-agenda-num{height:38px;display:flex;align-items:center;font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:700;font-size:22px;}
+      .cp-cal-agenda-num.is-today{width:38px;justify-content:center;border-radius:999px;background:#071f35;color:#fff;font-size:18px;}
+      .cp-cal-agenda-mon{font-size:11px;font-weight:700;color:rgba(7,31,53,.4);}
+      .cp-cal-agenda-items{display:grid;gap:6px;align-content:start;}
+      .cp-cal-agenda-item{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:140px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;}
+      .cp-cal-agenda-item:hover,.cp-cal-agenda-item.is-selected{background:rgba(7,31,53,.04);}
+      .cp-cal-agenda-time{font-size:12px;font-weight:800;letter-spacing:.03em;color:rgba(7,31,53,.5);white-space:nowrap;}
+      .cp-cal-agenda-title{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;font-weight:700;color:#071f35;}
+      .cp-cal-agenda-title span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .cp-cal-dot{width:8px;height:8px;border-radius:999px;flex-shrink:0;display:inline-block;}
+      .cp-cal-join{font-size:12px;font-weight:800;color:#071f35;text-decoration:underline;text-underline-offset:2px;}
+      .cp-cal-footer{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:12px 22px;border-top:1px solid rgba(7,31,53,.08);font-size:12px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-cal-legend{display:inline-flex;flex-wrap:wrap;gap:18px;}
+      .cp-cal-legend span{display:inline-flex;align-items:center;gap:6px;}
+      .cp-cal-footer-hint{color:rgba(7,31,53,.4);font-weight:600;}
+      .cp-cal-footer-window{margin-left:auto;}
+      .cp-cal-pop{position:absolute;top:76px;right:18px;width:min(320px,calc(100% - 36px));background:#fff;border:1px solid rgba(7,31,53,.12);border-radius:16px;box-shadow:0 18px 44px rgba(7,31,53,.16);padding:18px 18px 16px;box-sizing:border-box;z-index:8;}
+      .cp-cal-pop-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+      .cp-cal-pop-kicker{margin:0;display:inline-flex;align-items:center;gap:7px;font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.45);}
+      .cp-cal-pop-close{all:unset;cursor:pointer;width:28px;height:28px;margin:-6px -6px 0 0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:15px;color:rgba(7,31,53,.5);}
+      .cp-cal-pop-close:hover{background:rgba(7,31,53,.06);}
+      .cp-cal-pop-title{margin:10px 0 0;font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;line-height:1.3;overflow-wrap:anywhere;}
+      .cp-cal-pop-when{margin:6px 0 0;font-size:14px;color:rgba(7,31,53,.65);}
+      .cp-cal-pop-label{margin:14px 0 6px;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);text-transform:uppercase;letter-spacing:.06em;}
+      .cp-cal-pop-note{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#f5f5f7;font-size:13px;line-height:1.5;color:rgba(7,31,53,.65);}
+      .cp-cal-pop-remove{all:unset;cursor:pointer;margin-top:14px;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);text-decoration:underline;text-underline-offset:3px;}
+      .cp-cal-pop-remove:hover{color:#c01a38;}
+      .cp-cal-pop .cp-cta-primary{margin-top:16px;height:38px;padding:0 18px;border-radius:19px;font-size:13px;}
+      .cp-cal-chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+      .cp-cal-chip-row .cp-core-chip{padding:7px 12px;}
+      .cp-cal-form-when{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:10px;}
+      .cp-cal-form-when .cp-goal-form-input{padding:0 10px;}
+      @media(max-width:600px){.cp-cal-toolbar{padding:14px 16px;}.cp-cal-agenda{padding:6px 16px 14px;}.cp-cal-agenda-item{grid-template-columns:1fr auto;}.cp-cal-agenda-time{grid-column:1 / -1;}.cp-cal-footer-window{margin-left:0;}}
       .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
@@ -859,15 +948,75 @@
         <div class="cp-goals-view" id="cpCalendarView" hidden>
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">Calendar</h2><p class="cp-tab-sub" id="cpCalSub"></p></div>
-          </div>
-          <div class="cp-panel" id="cpCalendarCard" hidden>
             <div class="cp-cal-connect-row" id="cpCalConnectRow">
               <button type="button" class="cp-cal-provider-btn" id="cpCalConnectGoogle" data-provider="google">Connect Google</button>
               <button type="button" class="cp-cal-provider-btn" id="cpCalConnectOutlook" data-provider="outlook">Connect Outlook</button>
               <button type="button" class="cp-cal-provider-btn is-disabled" id="cpCalConnectApple" disabled title="Apple Calendar doesn't support this kind of connection yet — coming soon.">Apple · Coming soon</button>
             </div>
-            <p class="cp-cal-status" id="cpCalStatus"></p>
-            <div class="cp-cal-event-list" id="cpCalEventList"></div>
+          </div>
+          <div class="cp-cal-panel" id="cpCalendarCard" hidden>
+            <div class="cp-cal-toolbar">
+              <div class="cp-cal-toolbar-left">
+                <button type="button" class="cp-cal-today" data-cal-action="today">Today</button>
+                <div class="cp-cal-nav" id="cpCalNav">
+                  <button type="button" class="cp-cal-nav-btn" data-cal-action="prev" aria-label="Previous">&lsaquo;</button>
+                  <button type="button" class="cp-cal-nav-btn" data-cal-action="next" aria-label="Next">&rsaquo;</button>
+                </div>
+                <h3 class="cp-cal-range" id="cpCalRange"></h3>
+              </div>
+              <div class="cp-cal-toolbar-right">
+                <div class="cp-cal-views" role="tablist" aria-label="Calendar view">
+                  <button type="button" class="cp-cal-view-btn" data-cal-view="week">Week</button>
+                  <button type="button" class="cp-cal-view-btn" data-cal-view="month">Month</button>
+                  <button type="button" class="cp-cal-view-btn" data-cal-view="agenda">Agenda</button>
+                </div>
+                <button type="button" class="cp-goals-add-btn" data-cal-action="add">+ Add event</button>
+              </div>
+            </div>
+            <p class="cp-cal-status" id="cpCalStatus" hidden></p>
+            <div id="cpCalBody"></div>
+            <div class="cp-cal-footer">
+              <span class="cp-cal-legend" id="cpCalLegend"></span>
+              <span class="cp-cal-footer-hint">Drag events to move them</span>
+              <span class="cp-cal-footer-window" id="cpCalWindowNote"></span>
+            </div>
+            <div class="cp-cal-pop" id="cpCalPop" hidden></div>
+          </div>
+        </div>
+
+        <!-- CALENDAR ADD EVENT FORM -->
+        <div class="cp-modal-overlay" id="cpCalFormOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-close-modal="cpCalFormOverlay"></div>
+          <div class="cp-goal-form-sheet">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title" id="cpCalFormHeading">Add to your calendar</p>
+            <p class="cp-goal-form-subtitle" id="cpCalFormSub"></p>
+            <div class="cp-goal-form-field">
+              <label for="cpCalFormTitle">Title</label>
+              <input type="text" id="cpCalFormTitle" class="cp-goal-form-input" placeholder="e.g. Morning lift, or protected focus time" maxlength="120" />
+            </div>
+            <div class="cp-cal-form-when">
+              <div class="cp-goal-form-field"><label for="cpCalFormDate">Date</label><input type="date" id="cpCalFormDate" class="cp-goal-form-input" /></div>
+              <div class="cp-goal-form-field"><label for="cpCalFormStart">Start</label><input type="time" id="cpCalFormStart" class="cp-goal-form-input" step="900" /></div>
+              <div class="cp-goal-form-field"><label for="cpCalFormEnd">End</label><input type="time" id="cpCalFormEnd" class="cp-goal-form-input" step="900" /></div>
+            </div>
+            <div class="cp-goal-form-field">
+              <label>Add to</label>
+              <div class="cp-cal-chip-row" id="cpCalFormProviders"></div>
+            </div>
+            <div class="cp-goal-form-field">
+              <label>Core</label>
+              <div class="cp-cal-chip-row" id="cpCalFormCores"></div>
+            </div>
+            <div class="cp-goal-form-field">
+              <label for="cpCalFormJoin">Call link (optional)</label>
+              <input type="url" id="cpCalFormJoin" class="cp-goal-form-input" placeholder="https://meet.google.com/…" />
+            </div>
+            <div class="cp-auth-error" id="cpCalFormError"></div>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpCalFormOverlay">Cancel</button>
+              <button type="button" class="cp-goal-form-save" id="cpCalFormSave">Add event</button>
+            </div>
           </div>
         </div>
 
