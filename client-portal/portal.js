@@ -475,7 +475,8 @@
       sb.from('client_habits').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_goals').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_assignments').select('*').eq('client_id', clientId).order('created_at', { ascending:false }),
-      sb.from('education_questions').select('*').order('position')
+      sb.from('education_questions').select('*').order('position'),
+      sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS)))
     ]);
 
     var d = results[0].data || {};
@@ -518,7 +519,8 @@
       habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
       goals: (results[12].data || []).map(mapGoal),
       assignments: (results[13].data || []).map(mapAssignment),
-      eduQuestions: (results[14].data || []).map(curMap)
+      eduQuestions: (results[14].data || []).map(curMap),
+      habitLogs: mapHabitLogs(results[15].data || [])
     };
   }
 
@@ -876,13 +878,14 @@
     renderNonNegotiables();
     renderArchive();
     renderGoalsTab();
+    renderHabitsTab();
     renderHomeworkTab();
     renderCheckinsTab();
     renderEducationTab();
   }
 
   var PORTAL_TABS = {
-    portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView',
+    portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView', habits:'cpHabitsView',
     checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
   };
 
@@ -1166,10 +1169,13 @@
     $('cpCoreList').innerHTML=h;
   }
 
+  // Sidebar habits are checked off for today; the Habits tab shows the week.
   function renderHabits(){
+    var today = dayKey(new Date());
     var h='';
     portalData.habits.forEach(function(hb,i){
-      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(hb.done?' is-done':'')+'" data-idx="'+i+'">'+(hb.done?'✓':'')+'</button><span class="cp-task-label'+(hb.done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
+      var done = habitDoneOn(hb.label, today);
+      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(done?' is-done':'')+'" data-idx="'+i+'">'+(done?'✓':'')+'</button><span class="cp-task-label'+(done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
     });
     $('cpHabitList').innerHTML = h;
   }
@@ -1177,11 +1183,131 @@
   $('cpHabitList').addEventListener('click', function(e){
     var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
     e.stopPropagation();
-    var idx = parseInt(btn.getAttribute('data-idx'),10);
+    toggleHabitDay(parseInt(btn.getAttribute('data-idx'),10), dayKey(new Date()));
+  });
+
+  // ─── Habits tab ────────────────────────────────────────────────────────
+  // History lives in client_habit_logs (scripts/client_habit_logs.sql): one
+  // row per habit label per day it was done. portalData.habitLogs mirrors it
+  // as { label: { 'YYYY-MM-DD': true } }.
+  var HABIT_LOG_DAYS = 120;
+  var HABIT_RATE_DAYS = 30;
+
+  function dayKey(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function addDays(d, n){ var c = new Date(d); c.setDate(c.getDate() + n); return c; }
+
+  function mapHabitLogs(rows){
+    var logs = {};
+    rows.forEach(function(r){ (logs[r.habit_label] = logs[r.habit_label] || {})[r.day] = true; });
+    return logs;
+  }
+
+  function habitDoneOn(label, key){
+    var l = portalData.habitLogs && portalData.habitLogs[label];
+    return !!(l && l[key]);
+  }
+
+  // Consecutive days done, counting back from today — or from yesterday when
+  // today isn't checked yet, so a streak doesn't read 0 first thing in the morning.
+  function habitStreak(label){
+    var d = new Date();
+    if (!habitDoneOn(label, dayKey(d))) d = addDays(d, -1);
+    var n = 0;
+    while (habitDoneOn(label, dayKey(d))) { n++; d = addDays(d, -1); }
+    return n;
+  }
+
+  function habitRate(label){
+    var done = 0, d = new Date();
+    for (var i = 0; i < HABIT_RATE_DAYS; i++) { if (habitDoneOn(label, dayKey(d))) done++; d = addDays(d, -1); }
+    return Math.round(done / HABIT_RATE_DAYS * 100);
+  }
+
+  function renderHabitsTab(){
+    if (!portalData) return;
+    var habits = portalData.habits;
+    var today = new Date(), todayKey = dayKey(today);
+    var doneToday = habits.filter(function(hb){ return habitDoneOn(hb.label, todayKey); }).length;
+    $('cpHabitsSummary').textContent = habits.length
+      ? doneToday + ' of ' + habits.length + ' done today'
+      : '';
+
+    var h = '';
+    habits.forEach(function(hb, idx){
+      var streak = habitStreak(hb.label), rate = habitRate(hb.label);
+      var week = '';
+      for (var i = 6; i >= 0; i--) {
+        var d = addDays(today, -i), key = dayKey(d), done = habitDoneOn(hb.label, key);
+        var name = i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday:'short' });
+        week += '<button type="button" class="cp-habit-day'+(done?' is-done':'')+(i===0?' is-today':'')+'" data-habit-idx="'+idx+'" data-habit-day="'+key+'" aria-pressed="'+done+'" aria-label="'+esc(hb.label)+', '+esc(d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'">'
+          + '<span class="cp-habit-day-name">'+esc(name)+'</span><span class="cp-habit-day-dot">'+(done?'✓':'')+'</span></button>';
+      }
+      h += '<div class="cp-habit-card">'
+        + '<div class="cp-habit-card-head"><p class="cp-habit-card-title">'+esc(hb.label)+'</p>'
+        + '<span class="cp-habit-streak'+(streak>=3?' is-hot':'')+'">'+(streak>=3?'🔥 ':'')+streak+'-day streak</span></div>'
+        + '<div class="cp-habit-week">'+week+'</div>'
+        + '<div class="cp-habit-card-foot"><span class="cp-habit-rate">'+rate+'% of the last '+HABIT_RATE_DAYS+' days</span>'
+        + '<span class="cp-habit-bar"><span style="width:'+rate+'%"></span></span>'
+        + (isCoachUser ? '<button type="button" class="cp-goal-delete-btn" data-habit-del="'+idx+'" title="Remove habit" aria-label="Remove habit">✕</button>' : '')
+        + '</div></div>';
+    });
+    $('cpHabitsGrid').innerHTML = h || '<div class="cp-goal-empty" style="grid-column:1/-1;">No habits yet — add one to start a streak.</div>';
+  }
+
+  async function toggleHabitDay(idx, key){
     var habit = portalData.habits[idx]; if (!habit) return;
-    habit.done = !habit.done;
-    renderHabits();
-    sb.from('client_habits').update({ done: habit.done }).eq('id', habit.id);
+    var clientId = portalData.clientId, label = habit.label;
+    var logs = portalData.habitLogs[label] = portalData.habitLogs[label] || {};
+    var nowDone = !logs[key];
+    if (nowDone) logs[key] = true; else delete logs[key];
+    renderHabits(); renderHabitsTab();
+    var res = nowDone
+      ? await sb.from('client_habit_logs').upsert({ client_id: clientId, habit_label: label, day: key }, { onConflict:'client_id,habit_label,day', ignoreDuplicates:true })
+      : await sb.from('client_habit_logs').delete().eq('client_id', clientId).eq('habit_label', label).eq('day', key);
+    if (res.error) {
+      console.error('habit log save failed', res.error);
+      if (nowDone) delete logs[key]; else logs[key] = true;
+      if (portalData.clientId === clientId) { renderHabits(); renderHabitsTab(); }
+    }
+  }
+
+  $('cpHabitsGrid').addEventListener('click', async function(e){
+    if (!portalData) return;
+    var day = e.target.closest('[data-habit-day]');
+    if (day) { toggleHabitDay(parseInt(day.getAttribute('data-habit-idx'),10), day.getAttribute('data-habit-day')); return; }
+    var del = e.target.closest('[data-habit-del]'); if (!del) return;
+    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
+    if (!confirm('Remove "' + habit.label + '"? Its check-in history is kept.')) return;
+    var { error } = await sb.from('client_habits').delete().eq('id', habit.id);
+    if (error) { alert('Could not remove habit: ' + error.message); return; }
+    portalData.habits = portalData.habits.filter(function(h){ return h.id !== habit.id; });
+    renderCoreList(); renderHabitsTab();
+  });
+
+  function showHabitAddForm(show){
+    $('cpHabitAddForm').hidden = !show;
+    $('cpHabitAddBtn').hidden = show;
+    $('cpHabitAddInput').value = '';
+    if (show) $('cpHabitAddInput').focus();
+  }
+  $('cpHabitAddBtn').addEventListener('click', function(){ showHabitAddForm(true); });
+  $('cpHabitAddCancel').addEventListener('click', function(){ showHabitAddForm(false); });
+  $('cpHabitAddForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!portalData) return;
+    var label = $('cpHabitAddInput').value.trim(); if (!label) return;
+    if (portalData.habits.some(function(h){ return h.label.toLowerCase() === label.toLowerCase(); })) { alert('You already have that habit.'); return; }
+    var clientId = portalData.clientId;
+    var { data, error } = await sb.from('client_habits')
+      .insert({ client_id: clientId, label: label, done: false, position: portalData.habits.length })
+      .select().single();
+    if (error) { alert('Could not add habit: ' + error.message); return; }
+    if (portalData.clientId !== clientId) return;
+    portalData.habits.push({ id:data.id, label:data.label, done:data.done });
+    showHabitAddForm(false);
+    renderCoreList(); renderHabitsTab();
   });
 
   function renderTasks(){
@@ -2621,7 +2747,6 @@
   function applyVisionPos(x, y){
     var pos = x + '% ' + y + '%';
     $('cpVisionImg').style.objectPosition = pos;
-    $('cpVisionBlur').style.objectPosition = pos;
   }
 
   function renderVisionBand(){
@@ -2636,16 +2761,15 @@
     band.hidden = false;
     band.classList.remove('is-busy');
 
-    var img = $('cpVisionImg'), blur = $('cpVisionBlur');
+    var img = $('cpVisionImg');
     if (url) {
       var parsed = parseVisionUrl(url);
-      if (img.getAttribute('src') !== parsed.src) { img.src = parsed.src; blur.src = parsed.src; }
-      img.hidden = false; blur.hidden = false;
+      if (img.getAttribute('src') !== parsed.src) img.src = parsed.src;
+      img.hidden = false;
       if (visionEdit) applyVisionPos(visionEdit.x, visionEdit.y);
       else applyVisionPos(parsed.x, parsed.y);
     } else {
       img.hidden = true; img.removeAttribute('src');
-      blur.hidden = true; blur.removeAttribute('src');
     }
 
     var editing = !!visionEdit;

@@ -95,6 +95,32 @@
       .cp-goal-card.is-achieved .cp-goal-achieve-btn{color:#77d770;border-color:#77d770;}
       .cp-goal-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:36px 24px;text-align:center;color:rgba(7,31,53,.45);font-size:15px;margin-bottom:36px;}
 
+      /* ── Habits tab ──────────────────────────────────────────── */
+      .cp-habit-add-row{display:flex;gap:10px;align-items:center;margin:-8px 0 20px;}
+      .cp-habit-add-row .cp-goal-form-input{flex:1;}
+      .cp-habit-add-cancel{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);padding:10px 6px;}
+      .cp-habit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:36px;}
+      .cp-habit-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;}
+      .cp-habit-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+      .cp-habit-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;margin:0;line-height:1.3;}
+      .cp-habit-streak{flex-shrink:0;padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:800;color:rgba(7,31,53,.6);white-space:nowrap;}
+      .cp-habit-streak.is-hot{background:rgba(255,189,89,.22);color:#9a5b00;}
+      .cp-habit-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+      .cp-habit-day{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;}
+      .cp-habit-day-name{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
+      .cp-habit-day-dot{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(7,31,53,.16);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;transition:background .15s,border-color .15s;}
+      .cp-habit-day:hover .cp-habit-day-dot{border-color:rgba(7,31,53,.4);}
+      .cp-habit-day:hover,.cp-habit-day:active,.cp-habit-day:focus{background:transparent;box-shadow:none;transform:none;filter:none;}
+      .cp-habit-day:focus-visible .cp-habit-day-dot{outline:2px solid #071f35;outline-offset:2px;}
+      .cp-habit-day.is-done .cp-habit-day-dot{background:#77d770;border-color:#77d770;}
+      .cp-habit-day.is-today .cp-habit-day-name{color:#071f35;}
+      .cp-habit-day.is-today .cp-habit-day-dot{box-shadow:0 0 0 3px rgba(7,31,53,.1);}
+      .cp-habit-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+      .cp-habit-rate{font-size:12.5px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-habit-bar{flex:1;max-width:140px;height:6px;border-radius:99px;background:rgba(7,31,53,.08);overflow:hidden;}
+      .cp-habit-bar span{display:block;height:100%;background:#77d770;border-radius:99px;}
+      @media(max-width:420px){.cp-habit-grid{grid-template-columns:1fr;}.cp-habit-day-dot{width:30px;height:30px;}}
+
       /* Goal add form — fixed overlay on #cpGoalFormOverlay itself */
       #cpGoalFormOverlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
       #cpGoalFormOverlay[hidden]{display:none !important;}
@@ -475,23 +501,14 @@
       @media (max-width:1080px){ .cp-editor-body{grid-template-columns:200px minmax(0,1fr);} .cp-editor-aside{display:none;} }
       @media (max-width:720px){ .cp-editor-body{grid-template-columns:minmax(0,1fr);} .cp-editor-nav{display:none;} .cp-editor-grid{grid-template-columns:1fr;} .cp-editor-grid .cp-edit-field--full{grid-column:1;} }
       /* vision board header — full-bleed (breaks out of .cp-dash's 1120px column to the
-         viewport edges) with every edge feathered + blurred into the page background.
-         A blurred copy of the image sits behind the sharp one; the sharp layer's mask
-         fades out sooner, so the edges read as soft blur rather than a hard crop. */
+         viewport edges). The photo bleeds straight off the left, right and top edges;
+         only the bottom fades out, so the welcome heading can sit over its tail. */
       #cpRoot{overflow-x:clip;}
       .cp-vision-band{position:relative;width:100vw;margin:0 calc(50% - 50vw) 8px;}
       .cp-vision-band-inner{position:relative;height:clamp(220px,34vw,440px);overflow:hidden;}
-      .cp-vision-band-img,.cp-vision-band-blur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;}
-      .cp-vision-band-blur{filter:blur(12px) saturate(1.05);transform:scale(1.04);opacity:.55;pointer-events:none;
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
-        -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 14%,rgba(0,0,0,.7) 55%,transparent 92%);
-        mask-composite:intersect;}
-      .cp-vision-band-img{
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
-        -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to right,transparent 0%,#000 14%,#000 86%,transparent 100%),linear-gradient(to bottom,transparent 0%,#000 10%,#000 50%,rgba(0,0,0,.3) 78%,transparent 96%);
-        mask-composite:intersect;}
+      .cp-vision-band-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);
+        mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);}
       .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
       .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
       .cp-vision-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:8px 16px;border-radius:999px;background:rgba(7,31,53,.6);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.02em;}
@@ -630,7 +647,6 @@
       <section class="cp-dash" id="cpDash" hidden>
         <div class="cp-vision-band" id="cpVisionBand" hidden>
           <div class="cp-vision-band-inner">
-            <img class="cp-vision-band-blur" id="cpVisionBlur" alt="" aria-hidden="true" hidden />
             <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" draggable="false" hidden />
             <span class="cp-vision-hint" id="cpVisionHint" hidden>Drag to reposition</span>
             <button type="button" class="cp-vision-empty" id="cpVisionEmptyBtn" hidden>
@@ -680,6 +696,7 @@
           <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="homework">Homework<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="habits">Habits</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="calendar" id="cpTabCalendar" hidden>Calendar</button>
@@ -795,6 +812,20 @@
           <div class="cp-goals-grid" id="cpGoalsActiveGrid"></div>
           <p class="cp-goals-section-label" id="cpGoalsAchievedLabel" hidden>Achieved</p>
           <div class="cp-goals-grid" id="cpGoalsAchievedGrid"></div>
+        </div>
+
+        <!-- HABITS TAB -->
+        <div class="cp-goals-view" id="cpHabitsView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Habits</h2><p class="cp-tab-sub" id="cpHabitsSummary"></p></div>
+            <button type="button" class="cp-goals-add-btn" id="cpHabitAddBtn">+ Add habit</button>
+          </div>
+          <form class="cp-habit-add-row" id="cpHabitAddForm" hidden>
+            <input type="text" class="cp-goal-form-input" id="cpHabitAddInput" placeholder="e.g. 10 minutes of reading" maxlength="120" />
+            <button type="submit" class="cp-goals-add-btn">Add</button>
+            <button type="button" class="cp-habit-add-cancel" id="cpHabitAddCancel">Cancel</button>
+          </form>
+          <div class="cp-habit-grid" id="cpHabitsGrid"></div>
         </div>
 
         <!-- HOMEWORK TAB -->
