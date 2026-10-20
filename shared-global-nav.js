@@ -20,6 +20,7 @@
   nav.innerHTML = `
     <div class="cc-global-nav-backdrop" id="ccGlobalNavBackdrop" aria-hidden="true"></div>
     <div class="cc-global-nav-mobile-bar">
+      <a href="${root}client-portal/" class="cc-global-nav-auth" id="ccGlobalNavAuth">Sign in</a>
       <button
         id="ccGlobalNavToggle"
         type="button"
@@ -107,6 +108,56 @@
   }
 
   setActivePrimaryLink();
+
+  // Sign in / Sign out, pinned top-right on every page. Supabase keeps the
+  // session in localStorage (sb-<project>-auth-token), so the nav can tell
+  // whether someone is signed in without loading the Supabase client.
+  const authButton = nav.querySelector("#ccGlobalNavAuth");
+  const AUTH_KEY_PATTERN = /^sb-[a-z0-9]+-auth-token$/;
+
+  function authStorageKeys() {
+    try {
+      return Object.keys(window.localStorage).filter((key) => AUTH_KEY_PATTERN.test(key));
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function isSignedIn() {
+    return authStorageKeys().some((key) => {
+      try {
+        return (window.localStorage.getItem(key) || "").includes("access_token");
+      } catch (error) {
+        return false;
+      }
+    });
+  }
+
+  function renderAuthButton() {
+    const signedIn = isSignedIn();
+    authButton.textContent = signedIn ? "Sign out" : "Sign in";
+    authButton.classList.toggle("is-signed-in", signedIn);
+  }
+
+  authButton.addEventListener("click", async (event) => {
+    if (!isSignedIn()) return;
+    event.preventDefault();
+    // Pages with a live Supabase client (the client portal) sign out through it.
+    if (typeof window.ccSignOut === "function") {
+      await window.ccSignOut();
+      return;
+    }
+    authStorageKeys().forEach((key) => {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (error) {}
+    });
+    window.location.reload();
+  });
+
+  renderAuthButton();
+  window.addEventListener("storage", renderAuthButton);
+  document.addEventListener("cc-auth-change", renderAuthButton);
 
   function isMobileViewport() {
     return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
