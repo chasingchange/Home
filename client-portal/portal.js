@@ -2446,9 +2446,17 @@
       + '&timeMax=' + encodeURIComponent(win.end.toISOString())
       + '&singleEvents=true&orderBy=startTime&maxResults=250';
     var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-    if (!res.ok) throw new Error('Google Calendar API error (' + res.status + ')');
+    if (!res.ok) throw new Error(await calGoogleErrorText(res));
     var data = await res.json();
     return (data.items || []).filter(function(ev){ return ev.status !== 'cancelled'; }).map(calMapGoogleEvent);
+  }
+
+  // Google's own reason (e.g. "Calendar API has not been used in project…")
+  // beats a bare status code when the client reports a problem.
+  async function calGoogleErrorText(res){
+    var detail = '';
+    try { var body = await res.json(); detail = body && body.error && body.error.message || ''; } catch (e) { /* not JSON */ }
+    return 'Google Calendar API error (' + res.status + ')' + (detail ? ': ' + detail : '');
   }
 
   // A meeting link, in priority order: the Meet link Google surfaces
@@ -2474,11 +2482,18 @@
     try {
       var resp = await calRequestGoogleToken(false);
       var token = resp.access_token;
+      // Google's consent screen has a checkbox per scope, and the calendar
+      // one is easy to leave unticked. Without it there are no events to
+      // read, so stop here rather than show a connected, empty calendar.
+      if (!google.accounts.oauth2.hasGrantedAllScopes(resp, CAL_GOOGLE_WRITE_SCOPE)) {
+        google.accounts.oauth2.revoke(token, function(){});
+        throw new Error('calendar access wasn\'t allowed. Click Connect Google again and tick the box that lets this site see and edit your calendar events.');
+      }
+      calState.google.events = await calFetchGoogleEvents(token);
       calState.google.token = token;
       calState.google.connected = true;
       calState.google.needsReconnect = false;
-      calState.google.canWrite = google.accounts.oauth2.hasGrantedAllScopes(resp, CAL_GOOGLE_WRITE_SCOPE);
-      calState.google.events = await calFetchGoogleEvents(token);
+      calState.google.canWrite = true;
       var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
       var info = infoRes.ok ? await infoRes.json() : {};
       calState.google.email = info.email || '';
@@ -2487,7 +2502,6 @@
         await calApplyPendingOps(clientId, 'google');
         await calSaveSnapshot(clientId, 'google');
       }
-      if (!calState.google.canWrite) calSetStatus('Google is connected read-only. Reconnect and allow calendar access to add or move events.', true);
     } catch (e) {
       calSetStatus('Couldn\'t connect Google Calendar: ' + (e && e.message ? e.message : 'try again.'), true);
     }
