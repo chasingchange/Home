@@ -66,8 +66,6 @@
       .cp-route-line{margin:14px 0 0;font-size:17px;line-height:1.6;color:rgba(7,31,53,.62);}
       .cp-back-roster-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);letter-spacing:.02em;}
       .cp-back-roster-btn:hover{color:rgba(7,31,53,.85);}
-      .cp-signout-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.4);letter-spacing:.04em;}
-      .cp-signout-btn:hover{color:rgba(7,31,53,.7);}
       .cp-portal-tabs{display:flex;gap:6px;margin-bottom:20px;}
       .cp-portal-tab{all:unset;cursor:pointer;padding:10px 20px;border-radius:12px;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.5);}
       .cp-portal-tab:hover{color:rgba(7,31,53,.8);}
@@ -441,6 +439,7 @@
       .cp-edit-field label{display:block;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);margin-bottom:8px;}
       .cp-edit-week-row{display:flex;align-items:center;gap:10px;}
       .cp-edit-week-row input{width:90px;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 12px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:15px;color:#071f35;box-sizing:border-box;}
+      .cp-edit-timeline{margin:0;font-size:13px;color:rgba(7,31,53,.55);}
       .cp-edit-week-row span{color:rgba(7,31,53,.4);font-size:14px;}
       .cp-assign-list{margin-top:6px;display:grid;gap:8px;}
       .cp-assign-row{display:flex;align-items:center;gap:8px;}
@@ -680,7 +679,6 @@
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
             <button type="button" class="cp-back-roster-btn" id="cpBackToRoster" hidden>← Back to roster</button>
-            <button type="button" class="cp-signout-btn" id="cpSignOut">Sign out</button>
           </div>
         </div>
 
@@ -1041,7 +1039,6 @@
         <nav class="cp-editor-nav" id="cpEditorNav">
           <p class="cp-editor-nav-kicker">Sections</p>
           <button type="button" class="cp-editor-nav-btn is-active" data-editor-jump="overview">Overview</button>
-          <button type="button" class="cp-editor-nav-btn" data-editor-jump="cores">Six Cores</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="plan">The plan</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="progress">Progress</button>
           <button type="button" class="cp-editor-nav-btn" data-editor-jump="goals">Goals</button>
@@ -1052,28 +1049,17 @@
 
           <div class="cp-editor-section" data-editor-sec="overview">
             <h3>Overview</h3>
-            <p class="cp-editor-section-lede">Route, pacing and the next call.</p>
+            <p class="cp-editor-section-lede">Program dates, status and the next call. Route and week follow from the dates.</p>
             <div class="cp-editor-card cp-editor-grid">
-              <div class="cp-edit-field cp-edit-field--full">
-                <label>Route</label>
-                <input type="text" id="cpEditRoute" class="cp-edit-input" placeholder="The 10K" />
+              <div class="cp-edit-field">
+                <label for="cpEditOnboard">Onboarding date</label>
+                <input type="date" id="cpEditOnboard" class="cp-edit-input" />
               </div>
               <div class="cp-edit-field">
-                <label>Week</label>
-                <div class="cp-edit-week-row">
-                  <input type="number" min="0" id="cpEditWeekNow" />
-                  <span>of</span>
-                  <input type="number" min="1" id="cpEditWeekTotal" />
-                </div>
+                <label for="cpEditOffboard">Offboarding date</label>
+                <input type="date" id="cpEditOffboard" class="cp-edit-input" />
               </div>
-              <div class="cp-edit-field">
-                <label>Streak (weeks) &amp; adherence (%)</label>
-                <div class="cp-edit-week-row">
-                  <input type="number" min="0" id="cpEditStreak" />
-                  <span>·</span>
-                  <input type="number" min="0" max="100" id="cpEditAdherence" />
-                </div>
-              </div>
+              <p class="cp-edit-timeline cp-edit-field--full" id="cpEditTimeline"></p>
               <div class="cp-edit-field">
                 <label>Status</label>
                 <select id="cpEditFlagStatus" class="cp-edit-input">
@@ -1108,14 +1094,6 @@
                   <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="cp-editor-section" data-editor-sec="cores">
-            <h3>The Six Cores</h3>
-            <p class="cp-editor-section-lede">Score and a note per core — drives the rail on their dashboard.</p>
-            <div class="cp-editor-card">
-              <div class="cp-assign-list" id="cpEditCoreList"></div>
             </div>
           </div>
 
@@ -1260,9 +1238,9 @@
         </div>
         <div data-qe-pane="overview" hidden>
           <div class="cp-qe-grid">
-            <div class="is-full"><label for="cpQeRoute">Route</label><input type="text" class="cp-qe-input" id="cpQeRoute" data-dash="route" /></div>
-            <div><label for="cpQeWeekNow">Week</label><input type="number" min="0" class="cp-qe-input" id="cpQeWeekNow" data-dash="week_now" /></div>
-            <div><label for="cpQeWeekTotal">Of weeks</label><input type="number" min="0" class="cp-qe-input" id="cpQeWeekTotal" data-dash="week_total" /></div>
+            <div><label for="cpQeOnboard">Onboarding date</label><input type="date" class="cp-qe-input" id="cpQeOnboard" data-dash="onboard_date" /></div>
+            <div><label for="cpQeOffboard">Offboarding date</label><input type="date" class="cp-qe-input" id="cpQeOffboard" data-dash="offboard_date" /></div>
+            <p class="is-full cp-edit-timeline" id="cpQeTimeline"></p>
             <div><label for="cpQeFlag">Status</label><select class="cp-qe-input" id="cpQeFlag" data-dash="flag_status"><option>On track</option><option>Needs a nudge</option><option>At risk</option></select></div>
             <div><label for="cpQeSession">Next session</label><input type="text" class="cp-qe-input" id="cpQeSession" data-dash="next_session_label" placeholder="e.g. Thu 6pm" /></div>
             <div class="is-full"><label for="cpQeAgenda">Session agenda</label><input type="text" class="cp-qe-input" id="cpQeAgenda" data-dash="next_session_agenda" /></div>

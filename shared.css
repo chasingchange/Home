@@ -739,7 +739,39 @@ main[class*="max-w-"],
 }
 
 .cc-global-nav-mobile-bar {
+  position: absolute;
+  top: -0.3rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cc-global-nav-mobile-bar .cc-global-nav-toggle {
   display: none;
+}
+
+.cc-global-nav-auth {
+  color: #24272b;
+  font-family: var(--cc-body-font);
+  font-size: clamp(0.84rem, 0.79rem + 0.16vw, 0.93rem);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(36, 39, 43, 0.18);
+  border-radius: 999px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cc-global-nav-auth:hover {
+  border-color: rgba(36, 39, 43, 0.35);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.cc-global-nav-auth:focus-visible {
+  outline: 2px solid rgba(36, 39, 43, 0.4);
+  outline-offset: 2px;
 }
 
 .cc-global-nav-toggle {
@@ -845,6 +877,22 @@ main[class*="max-w-"],
   font-weight: 500;
   letter-spacing: normal;
   font-family: var(--cc-body-font);
+}
+
+/* Below this width the links share the row with the Sign in / Sign out
+   button, so they wrap and leave it room on the right. */
+@media (min-width: 641px) and (max-width: 1199px) {
+  .cc-global-nav {
+    flex-wrap: wrap;
+    padding-right: 6.5rem;
+  }
+}
+
+/* Wide screens: the button sits past the links, in the page's top-right. */
+@media (min-width: 1200px) {
+  .cc-global-nav-mobile-bar {
+    right: calc((100% - 100vw) / 2 + 1.5rem);
+  }
 }
 
 @media (max-width: 900px) {
@@ -974,7 +1022,13 @@ main[class*="max-w-"],
     align-items: center;
     margin-bottom: 0.2rem;
     position: relative;
+    top: auto;
+    right: auto;
     z-index: 10023;
+  }
+
+  .cc-global-nav-mobile-bar .cc-global-nav-toggle {
+    display: inline-flex;
   }
 
   .cc-global-nav-backdrop {

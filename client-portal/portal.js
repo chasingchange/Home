@@ -396,6 +396,7 @@
 
   // ─── Show dashboard ───────────────────────────────────────────────────
   async function showDash(user){
+    document.dispatchEvent(new CustomEvent('cc-auth-change'));
     // Get profile from Supabase (role + name)
     var { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
 
@@ -488,13 +489,16 @@
       return { key:def.key, label:def.label, color:def.color, pct: c ? c.pct : 0, note: c ? c.note : '' };
     });
 
+    var timeline = programTimeline(d);
+
     return {
       clientId: clientId,
-      route: d.route || '',
-      weekNow: d.week_now || 0,
-      weekTotal: d.week_total || 0,
-      streakWeeks: d.streak_weeks || 0,
-      adherencePct: d.adherence_pct || 0,
+      onboardDate: d.onboard_date || '',
+      offboardDate: d.offboard_date || '',
+      route: timeline.route,
+      weekNow: timeline.weekNow,
+      weekTotal: timeline.weekTotal,
+      startsOn: timeline.startsOn,
       flagStatus: d.flag_status || 'On track',
       flagColor: d.flag_color || '#77d770',
       nextSessionLabel: d.next_session_label || '',
@@ -502,7 +506,6 @@
       reminderDay: d.reminder_day || 'Tuesday',
       reminderChannel: d.reminder_channel || 'text',
       reminderOn: d.reminder_on !== false,
-      adherenceHistory: d.adherence_history || [],
       preferredCardio: d.preferred_cardio || '',
       cardioGoal: d.cardio_goal || '',
       visionBoardUrl: d.vision_board_url || '',
@@ -566,8 +569,8 @@
     if (viewingClientId !== clientId) return; // superseded by a newer view
 
     portalData = data;
-    $('cpRouteLine').textContent = (data.route || 'No route set yet') + ' · Week ' + data.weekNow + ' of ' + data.weekTotal;
-    $('cpWeekLine2').textContent = 'Week ' + data.weekNow + ' of ' + data.weekTotal;
+    $('cpRouteLine').textContent = routeLine(data);
+    $('cpWeekLine2').textContent = weekLabel(data);
 
     renderClientPortal();
     renderViewToggle();
@@ -610,13 +613,15 @@
 
     roster = clients.map(function(p){
       var d = dashByClient[p.id] || {};
+      var t = programTimeline(d);
       return {
         id: p.id,
         name: p.preferred_name || p.full_name || p.email,
-        route: d.route || 'No route set',
-        weekNow: d.week_now || 0,
-        weekTotal: d.week_total || 0,
-        adh: d.adherence_pct || 0,
+        route: t.route || 'No route set',
+        weekNow: t.weekNow,
+        weekTotal: t.weekTotal,
+        startsOn: t.startsOn,
+        progress: t.weekTotal ? Math.round(t.weekNow / t.weekTotal * 100) : 0,
         flag: d.flag_status || 'On track',
         color: d.flag_color || '#77d770',
         next: d.next_session_label || 'Not scheduled',
@@ -628,7 +633,7 @@
     });
 
     flags = roster.filter(function(c){ return c.flag !== 'On track'; }).map(function(c){
-      return { name: c.name, why: 'Adherence ' + c.adh + '% · flagged "' + c.flag + '"' };
+      return { name: c.name, why: weekLabel(c) + ' · flagged "' + c.flag + '"' };
     });
 
     remQueue = roster.filter(function(c){ return c.reminderOn; }).map(function(c){
@@ -816,11 +821,11 @@
 
   $('cpBackFromForgot').addEventListener('click', function(){ showStep('cpStepEmail'); });
 
-  // ─── Sign out ─────────────────────────────────────────────────────────
-  $('cpSignOut').addEventListener('click', async function(){
+  // ─── Sign out (the button lives in the global nav, top-right) ─────────
+  window.ccSignOut = async function(){
     await sb.auth.signOut();
     location.reload();
-  });
+  };
 
   // ─── Biometric unlock step ─────────────────────────────────────────────
   $('cpBiometricUnlock').addEventListener('click', async function(){
@@ -1331,6 +1336,60 @@
   function shortDate(d){ return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }); }
   function longDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
   function todayStart(){ var t = new Date(); t.setHours(0,0,0,0); return t; }
+
+  // ─── Program timeline: onboarding/offboarding dates drive route + week ─
+  // The program length picks the route; a week of grace keeps a date that
+  // lands a few days past a threshold on the shorter route.
+  function parseDay(s){
+    if (!s) return null;
+    var p = String(s).slice(0, 10).split('-');
+    return p.length === 3 ? new Date(+p[0], p[1] - 1, +p[2]) : null;
+  }
+  function addMonths(d, n){ var c = new Date(d); c.setMonth(c.getMonth() + n); return c; }
+  function daysBetween(a, b){ return Math.round((b - a) / 86400000); }
+
+  function routeForProgram(on, off){
+    var end = addDays(off, -7);
+    if (end <= addDays(on, 12 * 7)) return 'The 5K';
+    if (end <= addMonths(on, 6)) return 'The 10K';
+    return 'The Marathon';
+  }
+
+  // Dashboard row -> { route, weekNow, weekTotal, startsOn }. Without both
+  // dates it falls back to whatever route/week was stored on the row.
+  function programTimeline(d){
+    var on = parseDay(d.onboard_date), off = parseDay(d.offboard_date);
+    if (!on || !off || off <= on) {
+      return { route: d.route || '', weekNow: d.week_now || 0, weekTotal: d.week_total || 0, startsOn: null };
+    }
+    var total = Math.max(1, Math.ceil(daysBetween(on, off) / 7));
+    var elapsed = daysBetween(on, todayStart());
+    return {
+      route: routeForProgram(on, off),
+      weekNow: elapsed < 0 ? 0 : Math.min(total, Math.floor(elapsed / 7) + 1),
+      weekTotal: total,
+      startsOn: elapsed < 0 ? on : null
+    };
+  }
+
+  function weekLabel(p){
+    if (p.startsOn) return 'Starts ' + shortDate(p.startsOn);
+    return 'Week ' + p.weekNow + ' of ' + p.weekTotal;
+  }
+  function routeLine(p){ return (p.route || 'No route set yet') + ' · ' + weekLabel(p); }
+
+  // client_dashboard columns for a pair of dates. route/week are stored as
+  // a snapshot alongside them, but the portal always recomputes on load.
+  function timelinePatch(onboard, offboard){
+    var patch = { onboard_date: onboard || null, offboard_date: offboard || null };
+    var p = programTimeline(patch);
+    if (onboard && offboard && p.weekTotal) {
+      patch.route = p.route;
+      patch.week_now = p.weekNow;
+      patch.week_total = p.weekTotal;
+    }
+    return patch;
+  }
 
   // Weeks run Monday-Sunday; a check-in counts for the week it was sent in.
   function startOfWeek(d){
@@ -2906,7 +2965,7 @@
   function renderRoster(){
     var h='';
     roster.forEach(function(c){
-      h+='<div class="cp-roster-row" data-view-client="'+c.id+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">Wk '+c.weekNow+' / '+c.weekTotal+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.adh+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
+      h+='<div class="cp-roster-row" data-view-client="'+c.id+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
     });
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
@@ -3147,20 +3206,17 @@
   $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',done:false}); renderListEditor('cpEditHabitList'); });
   $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
 
-  function renderCoreEditor(){
-    var h='';
-    editState.cores.forEach(function(c,i){
-      h+='<div class="cp-assign-row"><span class="cp-core-edit-label">'+esc(c.label)+'</span><input type="number" min="0" max="100" value="'+c.pct+'" data-core-idx="'+i+'" data-core-field="pct" style="width:70px;flex:none;" /><input type="text" value="'+esc(c.note)+'" placeholder="Note" data-core-idx="'+i+'" data-core-field="note" /></div>';
-    });
-    $('cpEditCoreList').innerHTML = h;
+  // Coach sees what the dates work out to; the client only sees route + week.
+  function timelineHint(onboard, offboard){
+    if (!onboard || !offboard) return 'Set both dates to start the route and week counter.';
+    var p = programTimeline({ onboard_date: onboard, offboard_date: offboard });
+    if (!p.weekTotal || parseDay(offboard) <= parseDay(onboard)) return 'Offboarding needs to be after onboarding.';
+    return routeLine(p) + ' (' + p.weekTotal + ' weeks)';
   }
 
-  $('cpEditCoreList').addEventListener('input', function(e){
-    var t = e.target.closest('[data-core-field]'); if (!t || !editState) return;
-    var idx = parseInt(t.getAttribute('data-core-idx'),10);
-    var field = t.getAttribute('data-core-field');
-    editState.cores[idx][field] = field === 'pct' ? (parseInt(t.value,10) || 0) : t.value;
-  });
+  function renderEditTimeline(){
+    $('cpEditTimeline').textContent = timelineHint($('cpEditOnboard').value, $('cpEditOffboard').value);
+  }
 
   async function openEditPortal(clientId, name){
     editState = null;
@@ -3179,11 +3235,9 @@
     }
     editState = data;
 
-    $('cpEditRoute').value = editState.route;
-    $('cpEditWeekNow').value = editState.weekNow;
-    $('cpEditWeekTotal').value = editState.weekTotal;
-    $('cpEditStreak').value = editState.streakWeeks;
-    $('cpEditAdherence').value = editState.adherencePct;
+    $('cpEditOnboard').value = editState.onboardDate;
+    $('cpEditOffboard').value = editState.offboardDate;
+    renderEditTimeline();
     $('cpEditFlagStatus').value = editState.flagStatus;
     $('cpEditSessionLabel').value = editState.nextSessionLabel;
     $('cpEditSessionAgenda').value = editState.nextSessionAgenda;
@@ -3193,8 +3247,6 @@
     $('cpEditCardioType').value = editState.preferredCardio;
     $('cpEditCardioType').dispatchEvent(new Event('change'));
     $('cpEditCardioGoal').value = editState.cardioGoal;
-
-    renderCoreEditor();
 
     editSections.cpEditOnboardingList.items = editState.onboardingItems;
     editSections.cpEditNonNegList.items = editState.nonNegotiables.filter(function(t){ return t.status !== 'archived'; });
@@ -3244,6 +3296,7 @@
   }
 
   $('cpEditOverlay').addEventListener('input', renderEditorPreview);
+  ['cpEditOnboard','cpEditOffboard'].forEach(function(id){ $(id).addEventListener('input', renderEditTimeline); });
   $('cpEditOverlay').addEventListener('change', renderEditorPreview);
 
   function closeEditPortal(){ editState = null; $('cpEditOverlay').hidden = true; }
@@ -3269,13 +3322,8 @@
     setLoading($('cpEditSave'), true, 'Saving…');
 
     var flagVal = $('cpEditFlagStatus').value;
-    var dashRow = {
+    var dashRow = Object.assign({
       client_id: clientId,
-      route: $('cpEditRoute').value.trim(),
-      week_now: parseInt($('cpEditWeekNow').value,10) || 0,
-      week_total: parseInt($('cpEditWeekTotal').value,10) || 0,
-      streak_weeks: parseInt($('cpEditStreak').value,10) || 0,
-      adherence_pct: parseInt($('cpEditAdherence').value,10) || 0,
       flag_status: flagVal,
       flag_color: FLAG_COLORS[flagVal] || '#77d770',
       next_session_label: $('cpEditSessionLabel').value.trim(),
@@ -3285,15 +3333,12 @@
       reminder_on: $('cpEditReminderOn').checked,
       preferred_cardio: $('cpEditCardioType').value,
       cardio_goal: $('cpEditCardioGoal').value.trim()
-    };
+    }, timelinePatch($('cpEditOnboard').value, $('cpEditOffboard').value));
 
     var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
       return { client_id: clientId, label: t.label.trim(), done: !!t.done, position:i };
     });
 
-    var coreRows = editState.cores.map(function(c,i){
-      return { client_id: clientId, core_key: c.key, label: c.label, color: c.color, pct: parseInt(c.pct,10)||0, note: c.note||'', position:i };
-    });
     var taskRows = editState.tasks.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
       return { client_id: clientId, label: t.label.trim(), core_key: t.coreKey||'', color: coreColor(t.coreKey), done: !!t.done, position:i };
     });
@@ -3326,7 +3371,6 @@
 
     var results = await Promise.all([
       sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
-      syncListTable('client_cores', clientId, coreRows, 'core_key'),
       syncListTable('client_onboarding_items', clientId, onboardingRows),
       syncListTable('client_tasks', clientId, taskRows),
       syncListTable('client_notes', clientId, noteRows),
@@ -3442,9 +3486,9 @@
   }
 
   function fillQeOverview(){
-    $('cpQeRoute').value = portalData.route || '';
-    $('cpQeWeekNow').value = portalData.weekNow || 0;
-    $('cpQeWeekTotal').value = portalData.weekTotal || 0;
+    $('cpQeOnboard').value = portalData.onboardDate || '';
+    $('cpQeOffboard').value = portalData.offboardDate || '';
+    $('cpQeTimeline').textContent = timelineHint(portalData.onboardDate, portalData.offboardDate);
     $('cpQeFlag').value = portalData.flagStatus || 'On track';
     $('cpQeSession').value = portalData.nextSessionLabel || '';
     $('cpQeAgenda').value = portalData.nextSessionAgenda || '';
@@ -3592,17 +3636,25 @@
 
   // Overview fields map 1:1 onto client_dashboard columns.
   var QE_DASH_MAP = {
-    route: 'route', week_now: 'weekNow', week_total: 'weekTotal', flag_status: 'flagStatus',
+    onboard_date: 'onboardDate', offboard_date: 'offboardDate', flag_status: 'flagStatus',
     next_session_label: 'nextSessionLabel', next_session_agenda: 'nextSessionAgenda'
   };
 
   function onQeDashInput(e){
     var f = e.target.closest('[data-dash]'); if (!f || !portalData) return;
     var col = f.getAttribute('data-dash');
-    var isNum = col === 'week_now' || col === 'week_total';
-    var val = isNum ? (parseInt(f.value,10) || 0) : f.value;
+    var val = f.value;
     portalData[QE_DASH_MAP[col]] = val;
-    var patch = {}; patch[col] = isNum ? val : String(val).trim();
+    var patch = {}; patch[col] = String(val).trim();
+    if (col === 'onboard_date' || col === 'offboard_date') {
+      patch = timelinePatch(portalData.onboardDate, portalData.offboardDate);
+      // Until both dates are in, keep showing the route/week already stored.
+      Object.assign(portalData, programTimeline(Object.assign({
+        route: portalData.route, week_now: portalData.weekNow, week_total: portalData.weekTotal
+      }, patch)));
+      $('cpQeTimeline').textContent = timelineHint(portalData.onboardDate, portalData.offboardDate);
+      col = 'dates';
+    }
     if (col === 'flag_status') { portalData.flagColor = FLAG_COLORS[val] || '#77d770'; patch.flag_color = portalData.flagColor; }
     renderDashBehind();
     qeDebounce('dash:'+col, function(){ qeWrite(persistDashPatch(patch)); });
@@ -3611,8 +3663,8 @@
   $('cpQeFlag').addEventListener('change', onQeDashInput);
 
   function renderDashBehind(){
-    $('cpRouteLine').textContent = (portalData.route || 'No route set yet') + ' · Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
-    $('cpWeekLine2').textContent = 'Week ' + portalData.weekNow + ' of ' + portalData.weekTotal;
+    $('cpRouteLine').textContent = routeLine(portalData);
+    $('cpWeekLine2').textContent = weekLabel(portalData);
     renderSessionCard();
   }
 
@@ -3651,7 +3703,7 @@
     if (viewingClientId !== clientId || !portalData || qeVisible()) return;
     var data = await fetchPortalData(clientId);
     if (viewingClientId !== clientId || !portalData || qeVisible()) return;
-    ['cores','tasks','route','weekNow','weekTotal','flagStatus','flagColor','nextSessionLabel','nextSessionAgenda','reminderDay','reminderChannel','reminderOn'].forEach(function(k){
+    ['cores','tasks','onboardDate','offboardDate','route','weekNow','weekTotal','startsOn','flagStatus','flagColor','nextSessionLabel','nextSessionAgenda','reminderDay','reminderChannel','reminderOn'].forEach(function(k){
       portalData[k] = data[k];
     });
     renderCoreList();
@@ -3660,7 +3712,7 @@
   }
 
   // ─── Editor: section jump nav + scrollspy ──────────────────────────────
-  var EDITOR_SECTIONS = ['overview','cores','plan','progress','goals','library'];
+  var EDITOR_SECTIONS = ['overview','plan','progress','goals','library'];
 
   function scrollToEditorSection(id){
     var root = $('cpEditorScroll');
