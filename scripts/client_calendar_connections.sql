@@ -60,7 +60,9 @@ create policy "own can delete" on public.client_calendar_connections for delete
 --      "Authorized JavaScript origins". No redirect URI is needed — the
 --      portal uses Google Identity Services' token client (popup), not a
 --      redirect flow.
---   3. Enable the "Google Calendar API" for the project.
+--   3. Enable the "Google Calendar API" for the project, and add the
+--      ".../auth/calendar.events" scope to the OAuth consent screen (the
+--      Calendar tab writes events — see client_calendar_write.sql).
 --   4. Copy the Client ID into CALENDAR_CONFIG.googleClientId in
 --      client-portal/portal.js.
 --   5. While the OAuth consent screen is in "Testing" mode, add each client's
@@ -71,7 +73,8 @@ create policy "own can delete" on public.client_calendar_connections for delete
 --      registration.
 --   2. Platform: "Single-page application (SPA)". Redirect URI: this
 --      portal's URL (e.g. https://yourdomain.com/client-portal/).
---   3. API permissions → Microsoft Graph → Delegated → add "Calendars.Read".
+--   3. API permissions → Microsoft Graph → Delegated → add
+--      "Calendars.ReadWrite" (see client_calendar_write.sql).
 --   4. No client secret is needed (SPA is a public client using PKCE).
 --   5. Copy the Application (client) ID into
 --      CALENDAR_CONFIG.microsoftClientId in client-portal/portal.js.
