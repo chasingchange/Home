@@ -399,7 +399,8 @@
       .cp-cal-scroll{overflow-x:auto;}
       .cp-cal-week{min-width:760px;}
       .cp-cal-week-row{display:grid;grid-template-columns:64px repeat(7,minmax(0,1fr));}
-      .cp-cal-week-row--head,.cp-cal-week-row--allday{border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-cal-week-row--head,.cp-cal-week-row--allday{border-bottom:1px solid rgba(7,31,53,.08);overflow:hidden;scrollbar-gutter:stable;}
+      .cp-cal-week-body{max-height:720px;overflow-y:auto;scrollbar-gutter:stable;}
       .cp-cal-dayhead{padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;border-left:1px solid rgba(7,31,53,.06);}
       .cp-cal-dayhead.is-past{opacity:.5;}
       .cp-cal-dow{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);}
@@ -410,7 +411,7 @@
       .cp-cal-gutter{position:relative;}
       .cp-cal-hour{height:48px;position:relative;}
       .cp-cal-hour span{position:absolute;top:-7px;right:10px;font-size:11px;font-weight:700;color:rgba(7,31,53,.4);white-space:nowrap;}
-      .cp-cal-daycol{cursor:pointer;position:relative;height:720px;border-left:1px solid rgba(7,31,53,.06);background-image:repeating-linear-gradient(to bottom,rgba(7,31,53,.07) 0,rgba(7,31,53,.07) 1px,transparent 1px,transparent 48px);}
+      .cp-cal-daycol{cursor:pointer;position:relative;height:1152px;border-left:1px solid rgba(7,31,53,.06);background-image:repeating-linear-gradient(to bottom,rgba(7,31,53,.07) 0,rgba(7,31,53,.07) 1px,transparent 1px,transparent 48px);}
       .cp-cal-daycol.is-past{background-color:rgba(7,31,53,.025);}
       .cp-cal-block{all:unset;box-sizing:border-box;position:absolute;padding:6px 8px;border-radius:9px;overflow:hidden;z-index:1;color:#071f35;touch-action:none;cursor:grab;background:var(--tint);}
       .cp-cal-block.is-short{padding:3px 8px;display:flex;gap:6px;align-items:baseline;}
@@ -477,6 +478,8 @@
       .cp-cal-chip-row .cp-core-chip{padding:7px 12px;}
       .cp-cal-form-when{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:10px;}
       .cp-cal-form-when .cp-goal-form-input{padding:0 10px;}
+      .cp-cal-form-repeat{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2fr);gap:10px;}
+      .cp-cal-form-repeat .cp-goal-form-input{padding:0 10px;}
       @media(max-width:600px){.cp-cal-toolbar{padding:14px 16px;}.cp-cal-agenda{padding:6px 16px 14px;}.cp-cal-agenda-item{grid-template-columns:1fr auto;}.cp-cal-agenda-time{grid-column:1 / -1;}.cp-cal-footer-window{margin-left:0;}}
       .cp-coach-view{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
       .cp-roster-card{cursor:default;}
@@ -999,6 +1002,23 @@
               <div class="cp-goal-form-field"><label for="cpCalFormDate">Date</label><input type="date" id="cpCalFormDate" class="cp-goal-form-input" /></div>
               <div class="cp-goal-form-field"><label for="cpCalFormStart">Start</label><input type="time" id="cpCalFormStart" class="cp-goal-form-input" step="900" /></div>
               <div class="cp-goal-form-field"><label for="cpCalFormEnd">End</label><input type="time" id="cpCalFormEnd" class="cp-goal-form-input" step="900" /></div>
+            </div>
+            <div class="cp-cal-form-repeat">
+              <div class="cp-goal-form-field">
+                <label for="cpCalFormRepeat">Repeats</label>
+                <select id="cpCalFormRepeat" class="cp-goal-form-input">
+                  <option value="">Doesn't repeat</option>
+                  <option value="daily">Every day</option>
+                  <option value="weekdays">Every weekday (Mon–Fri)</option>
+                  <option value="weekly">Every week</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Every month</option>
+                </select>
+              </div>
+              <div class="cp-goal-form-field" id="cpCalFormUntilField" hidden>
+                <label for="cpCalFormUntil">Until (optional)</label>
+                <input type="date" id="cpCalFormUntil" class="cp-goal-form-input" />
+              </div>
             </div>
             <div class="cp-goal-form-field">
               <label>Add to</label>
