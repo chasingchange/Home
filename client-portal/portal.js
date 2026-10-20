@@ -2385,7 +2385,7 @@
 
   async function calSaveSnapshot(clientId, provider){
     var rows = calState[provider].events.map(function(ev){
-      return { id:ev.id, provider:ev.provider, title:ev.title, start:ev.start.toISOString(), end:ev.end.toISOString(), allDay:ev.allDay, joinUrl:ev.joinUrl };
+      return { id:ev.id, provider:ev.provider, title:ev.title, start:ev.start.toISOString(), end:ev.end.toISOString(), allDay:ev.allDay, joinUrl:ev.joinUrl, seriesId:ev.seriesId || '' };
     });
     await sb.from('client_calendar_connections')
       .update({ events: rows, synced_at: new Date().toISOString() })
@@ -2395,7 +2395,7 @@
   function calEventsFromSnapshot(rows){
     var now = new Date();
     return (rows || []).map(function(ev){
-      return { id:ev.id, provider:ev.provider, title:ev.title, start:new Date(ev.start), end:new Date(ev.end), allDay:!!ev.allDay, joinUrl:ev.joinUrl || '' };
+      return { id:ev.id, provider:ev.provider, title:ev.title, start:new Date(ev.start), end:new Date(ev.end), allDay:!!ev.allDay, joinUrl:ev.joinUrl || '', seriesId:ev.seriesId || '' };
     }).filter(function(ev){ return ev.end > now; });   // the copy can be days old
   }
 
@@ -2435,7 +2435,9 @@
       start: allDay ? parseLocalDate(ev.start.date) : new Date(ev.start.dateTime),
       end: allDay ? parseLocalDate(ev.end.date) : new Date(ev.end.dateTime),
       allDay: allDay,
-      joinUrl: calGoogleJoinUrl(ev)
+      joinUrl: calGoogleJoinUrl(ev),
+      // Occurrences of a repeating event share their series' core tag.
+      seriesId: ev.recurringEventId ? 'google:' + ev.recurringEventId : ''
     };
   }
 
@@ -2547,7 +2549,8 @@
       start: when(ev.start),
       end: when(ev.end),
       allDay: allDay,
-      joinUrl: calOutlookJoinUrl(ev)
+      joinUrl: calOutlookJoinUrl(ev),
+      seriesId: ev.seriesMasterId ? 'outlook:' + ev.seriesMasterId : ''
     };
   }
 
@@ -2670,20 +2673,61 @@
       : { start:{ dateTime:start.toISOString().slice(0, 19), timeZone:'UTC' }, end:{ dateTime:end.toISOString().slice(0, 19), timeZone:'UTC' } };
   }
 
+  // Repeat options from the add-event form. Google takes an RRULE; Outlook
+  // takes a pattern + range. "until" is an inclusive local date (or '').
+  var CAL_RRULE = { daily:'FREQ=DAILY', weekdays:'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR', weekly:'FREQ=WEEKLY', biweekly:'FREQ=WEEKLY;INTERVAL=2', monthly:'FREQ=MONTHLY' };
+  var CAL_GRAPH_DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
+  function calGoogleRecurrence(repeat, until){
+    var rule = 'RRULE:' + CAL_RRULE[repeat];
+    // UNTIL is UTC: the end of the chosen day in the client's own time zone.
+    if (until) rule += ';UNTIL=' + new Date(until + 'T23:59:59').toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+    return [rule];
+  }
+
+  function calOutlookRecurrence(repeat, until, start){
+    var day = CAL_GRAPH_DAYS[start.getDay()];
+    var pattern = repeat === 'daily' ? { type:'daily', interval:1 }
+      : repeat === 'weekdays' ? { type:'weekly', interval:1, daysOfWeek:['monday','tuesday','wednesday','thursday','friday'], firstDayOfWeek:'sunday' }
+      : repeat === 'monthly' ? { type:'absoluteMonthly', interval:1, dayOfMonth:start.getDate() }
+      : { type:'weekly', interval:repeat === 'biweekly' ? 2 : 1, daysOfWeek:[day], firstDayOfWeek:'sunday' };
+    var range = until ? { type:'endDate', startDate:calDateKey(start), endDate:until } : { type:'noEnd', startDate:calDateKey(start) };
+    return { pattern:pattern, range:range };
+  }
+
   function calMapProviderEvent(provider, data){
     return provider === 'google' ? calMapGoogleEvent(data) : calMapOutlookEvent(data);
   }
 
   async function calProviderCreate(provider, f){
     var body = calTimesBody(provider, f.start, f.end, false);
+    var repeat = CAL_RRULE[f.repeat] ? f.repeat : '';
     if (provider === 'google') {
       body.summary = f.title;
       if (f.joinUrl) body.location = f.joinUrl;
+      if (repeat) body.recurrence = calGoogleRecurrence(repeat, f.until);
     } else {
       body.subject = f.title;
       if (f.joinUrl) body.location = { displayName: f.joinUrl };
+      if (repeat) {
+        // A UTC series would drift an hour across daylight-saving changes,
+        // so repeating Outlook events are written in local time.
+        body.start = { dateTime:calDateKey(f.start) + 'T' + calHHMM(f.start.getHours() + f.start.getMinutes() / 60) + ':00', timeZone:calTz() };
+        body.end = { dateTime:calDateKey(f.end) + 'T' + calHHMM(f.end.getHours() + f.end.getMinutes() / 60) + ':00', timeZone:calTz() };
+        body.recurrence = calOutlookRecurrence(repeat, f.until, f.start);
+      }
     }
-    return calMapProviderEvent(provider, await calApi(provider, 'POST', '', body));
+    var created = calMapProviderEvent(provider, await calApi(provider, 'POST', '', body));
+    created.repeats = !!repeat;
+    return created;
+  }
+
+  // A new series comes back as one master event; the calendar shows each
+  // occurrence, so re-read the window to pick them all up.
+  async function calRefetch(provider){
+    calState[provider].events = provider === 'google'
+      ? await calFetchGoogleEvents(calState.google.token)
+      : await calFetchOutlookEvents(await calOutlookToken());
   }
 
   async function calProviderMove(provider, eventId, start, end, allDay){
@@ -2757,7 +2801,7 @@
       var op = ops[i], p = op.payload;
       try {
         if (op.op === 'create') {
-          var ev = await calProviderCreate(provider, { title:p.title || 'New event', start:new Date(p.start), end:new Date(p.end), joinUrl:calSafeUrl(p.joinUrl) });
+          var ev = await calProviderCreate(provider, { title:p.title || 'New event', start:new Date(p.start), end:new Date(p.end), joinUrl:calSafeUrl(p.joinUrl), repeat:p.repeat || '', until:p.until || '' });
           await calSaveMeta(clientId, ev.id, { core:p.core || null, createdBy:'coach' });
         } else if (op.op === 'move') {
           await calProviderMove(provider, op.eventId, new Date(p.start), new Date(p.end), !!p.allDay);
@@ -2775,11 +2819,7 @@
       applied++;
     }
     if (!applied || viewingClientId !== clientId) return;
-    try {
-      calState[provider].events = provider === 'google'
-        ? await calFetchGoogleEvents(calState.google.token)
-        : await calFetchOutlookEvents(await calOutlookToken());
-    } catch (e) { /* keep what we have; the snapshot catches up next load */ }
+    try { await calRefetch(provider); } catch (e) { /* keep what we have; the snapshot catches up next load */ }
   }
 
   // ─── Load + render ──────────────────────────────────────────────────────
@@ -2911,7 +2951,8 @@
   }
 
   // ─── Calendar view (Week / Month / Agenda) ─────────────────────────────
-  var CAL_HOUR_START = 7, CAL_HOUR_END = 22, CAL_ROW = 48;   // 48px per hour
+  var CAL_HOUR_START = 0, CAL_HOUR_END = 24, CAL_ROW = 48;   // 48px per hour
+  var CAL_SCROLL_HOUR = 7;   // the week grid opens scrolled to 7 AM
   var CAL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   var CAL_NO_CORE = '#9aa3ad';
 
@@ -2951,7 +2992,7 @@
   // for the coach, their queued edits layered on top.
   function calEvents(){
     var evs = calState.google.events.concat(calState.outlook.events).map(function(e){
-      var m = calState.meta[e.id] || {};
+      var m = calState.meta[e.id] || (e.seriesId && calState.meta[e.seriesId]) || {};
       return Object.assign({}, e, { core:m.core || null, createdBy:m.createdBy || null });
     });
     if (isCoachUser) {
@@ -3061,7 +3102,7 @@
 
     return '<div class="cp-cal-scroll"><div class="cp-cal-week">' + head
       + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label">All day</div>' + allDay + '</div>' : '')
-      + '<div class="cp-cal-week-row">' + gutter + cols + '</div></div></div>';
+      + '<div class="cp-cal-week-body"><div class="cp-cal-week-row">' + gutter + cols + '</div></div></div></div>';
   }
 
   function calRenderMonth(evs){
@@ -3166,7 +3207,12 @@
     if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
       body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
     }
+    // Re-renders (select, drag, sync) keep the grid where the client left it.
+    var oldGrid = $('cpCalBody').querySelector('.cp-cal-week-body');
+    var gridTop = oldGrid ? oldGrid.scrollTop : CAL_SCROLL_HOUR * CAL_ROW;
     $('cpCalBody').innerHTML = body;
+    var grid = $('cpCalBody').querySelector('.cp-cal-week-body');
+    if (grid) grid.scrollTop = gridTop;
     calRenderPop(evs);
   }
 
@@ -3297,6 +3343,9 @@
     $('cpCalFormStart').value = calHHMM(h);
     $('cpCalFormEnd').value = calHHMM(Math.min(h + 1, 23.75));
     $('cpCalFormJoin').value = '';
+    $('cpCalFormRepeat').value = '';
+    $('cpCalFormUntil').value = '';
+    $('cpCalFormUntilField').hidden = true;
     $('cpCalFormSave').disabled = false;
     calFormError('');
     calRenderFormChips();
@@ -3316,6 +3365,8 @@
     var joinRaw = $('cpCalFormJoin').value.trim();
     if (joinRaw && !calSafeUrl(joinRaw)) return calFormError('Call links need to start with https://');
     var title = $('cpCalFormTitle').value.trim() || 'New event';
+    var repeat = $('cpCalFormRepeat').value, until = repeat ? $('cpCalFormUntil').value : '';
+    if (until && until < date) return calFormError('The repeat end date needs to be on or after the event date.');
     var clientId = viewingClientId;
 
     f.saving = true; $('cpCalFormSave').disabled = true; calFormError('');
@@ -3323,14 +3374,21 @@
       var newId;
       if (isCoachUser) {
         var op = await calQueueOp(clientId, f.provider, 'create', null,
-          { title:title, start:start.toISOString(), end:end.toISOString(), joinUrl:joinRaw, core:f.core });
+          { title:title, start:start.toISOString(), end:end.toISOString(), joinUrl:joinRaw, core:f.core, repeat:repeat, until:until });
         newId = op.key;
       } else {
-        var ev = await calProviderCreate(f.provider, { title:title, start:start, end:end, joinUrl:joinRaw });
-        calState[f.provider].events.push(ev);
+        var ev = await calProviderCreate(f.provider, { title:title, start:start, end:end, joinUrl:joinRaw, repeat:repeat, until:until });
+        // The core is saved on the series, so every occurrence picks it up.
         calSaveMeta(clientId, ev.id, { core:f.core, createdBy:'client' });
-        calSaveSnapshot(clientId, f.provider);
         newId = ev.id;
+        if (ev.repeats) {
+          try { await calRefetch(f.provider); } catch (e) { calState[f.provider].events.push(ev); }
+          var first = calState[f.provider].events.filter(function(x){ return x.seriesId === ev.id; })[0];
+          if (first) newId = first.id;
+        } else {
+          calState[f.provider].events.push(ev);
+        }
+        calSaveSnapshot(clientId, f.provider);
       }
       closeModal('cpCalFormOverlay');
       calUi.form = null;
@@ -3467,6 +3525,7 @@
     if (t) { calUi.form.core = t.getAttribute('data-cal-formcore') || null; calRenderFormChips(); }
   });
   $('cpCalFormSave').addEventListener('click', calSaveForm);
+  $('cpCalFormRepeat').addEventListener('change', function(){ $('cpCalFormUntilField').hidden = !this.value; });
 
   // Keeps the now line moving.
   setInterval(function(){
