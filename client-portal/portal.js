@@ -2952,7 +2952,6 @@
 
   // ─── Calendar view (Week / Month / Agenda) ─────────────────────────────
   var CAL_HOUR_START = 0, CAL_HOUR_END = 24, CAL_ROW = 48;   // 48px per hour
-  var CAL_SCROLL_HOUR = 7;   // the week grid opens scrolled to 7 AM
   var CAL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   var CAL_NO_CORE = '#9aa3ad';
 
@@ -3207,12 +3206,7 @@
     if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
       body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
     }
-    // Re-renders (select, drag, sync) keep the grid where the client left it.
-    var oldGrid = $('cpCalBody').querySelector('.cp-cal-week-body');
-    var gridTop = oldGrid ? oldGrid.scrollTop : CAL_SCROLL_HOUR * CAL_ROW;
     $('cpCalBody').innerHTML = body;
-    var grid = $('cpCalBody').querySelector('.cp-cal-week-body');
-    if (grid) grid.scrollTop = gridTop;
     calRenderPop(evs);
   }
 
