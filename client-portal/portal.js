@@ -557,6 +557,8 @@
       s[f.key] = (f.type === 'multi' || f.type === 'files') ? (Array.isArray(v) ? v : []) : (v || '');
     });
     s.url_upload = row.url_upload || '';
+    s.coach_wins = row.coach_wins || '';
+    s.coach_todos = row.coach_todos || '';
     return s;
   }
 
@@ -566,6 +568,7 @@
     portalData = null;
     ciEditing = false;
     ciDraft = null;
+    ciCoachEdit = null;
     if (hwOpenId) closeHwSheet();
     $('cpWelcome').textContent = 'Welcome to Your Race, ' + displayName + '.';
     $('cpRouteLine').textContent = 'Loading…';
@@ -597,7 +600,7 @@
         sb.from('client_tasks').select('client_id, done').in('client_id', ids),
         sb.from('client_nonnegotiables').select('*').in('client_id', ids).eq('status','claimed').order('claimed_at'),
         sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).eq('status','submitted').order('submitted_at'),
-        sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString())
+        sb.from('client_pre_call_submissions').select('client_id, submitted_at, source, coaching_call_objective').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString())
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
@@ -656,7 +659,7 @@
       return { clientId: r.client_id, clientName: nameById[r.client_id] || 'Client', title: r.title, submittedAt: r.submitted_at };
     });
     ciWeekByClient = {};
-    ciRows.forEach(function(r){
+    ciRows.filter(isClientCheckin).forEach(function(r){
       if (!ciWeekByClient[r.client_id] || r.submitted_at > ciWeekByClient[r.client_id]) ciWeekByClient[r.client_id] = r.submitted_at;
     });
 
@@ -2115,14 +2118,38 @@
   // ─── Check-ins tab: weekly pre-call form + history ────────────────────
   var ciEditing = false;   // client chose to edit this week's submission
   var ciDraft = null;      // { id, existing:{field:[files]}, pending:{field:[File]}, removed:[files] }
+  var ciCoachEdit = null;  // coach editing wins/to-dos: { id } (id null = new check-in)
 
   function findPreCall(id){
     return (portalData && portalData.preCallSubmissions || []).filter(function(s){ return String(s.id) === String(id); })[0] || null;
   }
 
-  function thisWeeksPreCall(){
+  // A row the coach started (wins/to-dos) counts as the client's check-in
+  // only once the client has filled in their side. Takes mapped or raw rows.
+  function isClientCheckin(s){ return s.source !== 'coach' || !!s.coaching_call_objective; }
+
+  function thisWeeksRows(){
     var ws = startOfWeek(new Date());
-    return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; })[0] || null;
+    return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; });
+  }
+  function thisWeeksPreCall(){ return thisWeeksRows().filter(isClientCheckin)[0] || null; }
+  function thisWeeksCoachShell(){
+    return thisWeeksRows().filter(function(s){ return !isClientCheckin(s); })[0] || null;
+  }
+
+  // "Week 4 of 12" for the program week a date falls in, '' when unknown.
+  function programWeekLabel(date){
+    var p = portalData;
+    if (!p || !p.weekTotal || !date) return '';
+    var on = parseDay(p.onboardDate), off = parseDay(p.offboardDate), n;
+    if (on && off && off > on) {
+      var d = new Date(date); d.setHours(0,0,0,0);
+      n = Math.floor(daysBetween(on, d) / 7) + 1;
+    } else {
+      n = p.weekNow - Math.round(daysBetween(startOfWeek(date), startOfWeek(new Date())) / 7);
+    }
+    if (n < 1) return '';
+    return 'Week ' + Math.min(n, p.weekTotal) + ' of ' + p.weekTotal;
   }
 
   function isReviewedStatus(status){ return /^(reviewed|done)$/i.test(status || ''); }
@@ -2130,8 +2157,10 @@
   function renderCheckinsTab(){
     if (!portalData) return;
     var ws = startOfWeek(new Date());
-    $('cpCiWeekLabel').textContent = 'Week of ' + ws.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })
+    var wk = programWeekLabel(new Date());
+    $('cpCiWeekLabel').textContent = (wk ? wk + ' · ' : '') + 'Week of ' + ws.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })
       + (isOwnPortal() ? ' — fill this out before your call.' : '');
+    $('cpCiNewBtn').hidden = !isCoachUser || isOwnPortal();
     setBadge('cpTabBadgeCheckins', isOwnPortal() && !thisWeeksPreCall() ? 1 : 0);
     renderCiFormCard();
     renderCiHistory();
@@ -2143,6 +2172,11 @@
     var own = isOwnPortal();
     var card = $('cpCiFormCard');
 
+    if (!own && isCoachUser && ciCoachEdit) {
+      card.innerHTML = ciCoachFormHtml(ciCoachEdit.id ? findPreCall(ciCoachEdit.id) : null);
+      return;
+    }
+
     if (own && (ciEditing || !cur)) {
       var base = ciEditing ? cur : null;
       if (!ciDraft || ciDraft.id !== (base ? base.id : null)) {
@@ -2153,7 +2187,10 @@
           ciDraft.pending[f.key] = [];
         });
       }
-      card.innerHTML = ciFormHtml(base);
+      var shell = thisWeeksCoachShell();
+      card.innerHTML = (!base && shell && shell.coach_todos
+        ? '<div class="cp-ci-col cp-ci-col--coach" style="margin-bottom:24px;"><span class="cp-ci-col-label">Your coach’s to-dos for this call</span><div class="cp-ci-value">'+linkify(shell.coach_todos)+'</div></div>'
+        : '') + ciFormHtml(base);
       PRECALL_FIELDS.forEach(function(f){ if (f.type === 'files') renderCiFiles(f.key); });
       return;
     }
@@ -2169,6 +2206,84 @@
     }
 
     card.innerHTML = '<p class="cp-body-text" style="margin:0;">No check-in submitted yet this week.</p>';
+  }
+
+  // Coach side of a check-in: the client's objective next to my to-dos for
+  // the call, plus the wins to celebrate. sub null = a brand-new check-in.
+  function ciCoachFormHtml(sub){
+    var when = sub && sub.submittedAt ? new Date(sub.submittedAt) : new Date();
+    var wk = programWeekLabel(when);
+    var objective = sub && sub.coaching_call_objective;
+    return '<form id="cpCiCoachForm" novalidate>'
+      + '<p class="cp-card-title" style="margin:0;">'+(sub ? 'Check-in · ' + esc(longDate(when)) : 'New check-in')+'</p>'
+      + (wk ? '<p class="cp-ci-hint" style="margin-top:4px;">'+esc(wk)+'</p>' : '')
+      + '<div class="cp-ci-split">'
+      +   '<div class="cp-ci-col"><span class="cp-ci-col-label">'+esc(clientLabel())+' objective for the call</span>'
+      +     (objective ? '<div class="cp-ci-value">'+linkify(objective)+'</div>' : '<p class="cp-caption" style="margin:0;">Not submitted yet.</p>') + '</div>'
+      +   '<div class="cp-ci-col cp-ci-col--coach"><label class="cp-ci-col-label" for="cpCiCoachTodos">My to-dos for the call</label>'
+      +     '<textarea class="cp-textarea" id="cpCiCoachTodos" placeholder="What I want to cover, follow up on, or prepare">'+esc(sub ? sub.coach_todos : '')+'</textarea></div>'
+      + '</div>'
+      + '<div class="cp-ci-field"><label class="cp-ci-label" for="cpCiCoachWins">Wins</label>'
+      +   '<p class="cp-ci-hint">What went well since the last check-in.</p>'
+      +   '<textarea class="cp-textarea" id="cpCiCoachWins">'+esc(sub ? sub.coach_wins : '')+'</textarea></div>'
+      + '<div class="cp-btn-row" style="margin-top:24px;"><button type="submit" class="cp-btn-sm cp-btn-sm--primary" id="cpCiCoachSave">'+(sub ? 'Save' : 'Create check-in')+'</button>'
+      +   '<button type="button" class="cp-btn-sm" data-ci-coach-cancel>Cancel</button>'
+      +   '<span class="cp-save-note" id="cpCiCoachNote"></span></div>'
+      + '</form>';
+  }
+
+  // "Client's" / "Sam's" for coach-facing labels.
+  function clientLabel(){ return viewingClientName ? viewingClientName + '’s' : 'Client’s'; }
+
+  function openCiCoachEditor(id){
+    ciCoachEdit = { id: id || null };
+    renderCiFormCard();
+    $('cpCiFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
+    var t = $('cpCiCoachTodos'); if (t) t.focus({ preventScroll:true });
+  }
+
+  // New check-in: picks up this week's row if there is one, so my to-dos
+  // land next to the client's objective instead of in a duplicate.
+  $('cpCiNewBtn').addEventListener('click', function(){
+    if (!portalData || !isCoachUser) return;
+    var cur = thisWeeksRows()[0];
+    openCiCoachEditor(cur ? cur.id : null);
+  });
+
+  async function saveCiCoach(){
+    var clientId = viewingClientId;
+    var editId = ciCoachEdit && ciCoachEdit.id;
+    var row = { coach_todos: $('cpCiCoachTodos').value.trim(), coach_wins: $('cpCiCoachWins').value.trim() };
+    if (!editId && !row.coach_todos && !row.coach_wins) {
+      setNote('cpCiCoachNote', 'Add a to-do or a win first.', true);
+      return;
+    }
+    var btn = $('cpCiCoachSave');
+    btn.disabled = true;
+    setNote('cpCiCoachNote', 'Saving…');
+    var res;
+    if (editId) {
+      res = await sb.from('client_pre_call_submissions').update(row).eq('id', editId).select().single();
+    } else {
+      row.client_id = clientId;
+      row.source = 'coach';
+      row.status = 'Not started';
+      row.submitted_at = new Date().toISOString();
+      res = await sb.from('client_pre_call_submissions').insert(row).select().single();
+    }
+    btn.disabled = false;
+    if (res.error) { setNote('cpCiCoachNote', 'Could not save: ' + res.error.message, true); return; }
+    if (viewingClientId !== clientId) return;
+    upsertPreCall(mapPreCall(res.data));
+    ciCoachEdit = null;
+    renderCheckinsTab();
+  }
+
+  function upsertPreCall(saved){
+    var exists = portalData.preCallSubmissions.some(function(s){ return s.id === saved.id; });
+    portalData.preCallSubmissions = exists
+      ? portalData.preCallSubmissions.map(function(s){ return s.id === saved.id ? saved : s; })
+      : [saved].concat(portalData.preCallSubmissions);
   }
 
   function ciFormHtml(sub){
@@ -2225,6 +2340,11 @@
   });
 
   $('cpCiFormCard').addEventListener('click', function(e){
+    if (e.target.closest('[data-ci-coach-cancel]')) {
+      ciCoachEdit = null;
+      renderCiFormCard();
+      return;
+    }
     var act = e.target.closest('[data-ci-action]');
     if (act) {
       var action = act.getAttribute('data-ci-action');
@@ -2251,6 +2371,7 @@
 
   $('cpCiFormCard').addEventListener('submit', async function(e){
     e.preventDefault();
+    if (e.target.id === 'cpCiCoachForm') { if (isCoachUser) saveCiCoach(); return; }
     var form = $('cpCiForm');
     if (!form || !ciDraft || !isOwnPortal()) return;
     var clientId = viewingClientId;
@@ -2298,8 +2419,15 @@
 
     setNote('cpCiNote', 'Saving…');
     var res;
+    var shell = draft.id ? null : thisWeeksCoachShell();
     if (draft.id) {
       res = await sb.from('client_pre_call_submissions').update(row).eq('id', draft.id).select().single();
+    } else if (shell) {
+      // Coach already started this week's check-in: fill in the client side.
+      row.source = 'portal';
+      row.status = 'Submitted';
+      row.submitted_at = new Date().toISOString();
+      res = await sb.from('client_pre_call_submissions').update(row).eq('id', shell.id).select().single();
     } else {
       row.client_id = clientId;
       row.source = 'portal';
@@ -2316,11 +2444,7 @@
     removeStoredFiles(draft.removed);
     if (viewingClientId !== clientId) return;
 
-    var saved = mapPreCall(res.data);
-    var exists = portalData.preCallSubmissions.some(function(s){ return s.id === saved.id; });
-    portalData.preCallSubmissions = exists
-      ? portalData.preCallSubmissions.map(function(s){ return s.id === saved.id ? saved : s; })
-      : [saved].concat(portalData.preCallSubmissions);
+    upsertPreCall(mapPreCall(res.data));
     ciEditing = false;
     ciDraft = null;
     renderCheckinsTab();
@@ -2332,17 +2456,34 @@
       $('cpCiHistory').innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
       return;
     }
+    var own = isOwnPortal();
     var h = '';
     rows.forEach(function(sub, idx){
+      var fromClient = isClientCheckin(sub);
       var reviewed = isReviewedStatus(sub.status);
+      var date = sub.submittedAt ? new Date(sub.submittedAt) : null;
+      var wk = programWeekLabel(date);
       h += '<details class="cp-ci-item"'+(idx === 0 ? ' open' : '')+'><summary>'
-        + '<span class="cp-ci-date">'+esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated')+'</span>'
-        + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
-        + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : 'Notion')+'</span>'
+        + (wk ? '<span class="cp-ci-week">'+esc(wk)+'</span>' : '')
+        + '<span class="cp-ci-date">'+esc(date ? longDate(date) : 'Undated')+'</span>'
+        + (fromClient ? statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7') : statusPill('Waiting on client', '#5b6b7a'))
+        + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : sub.source === 'coach' ? 'Coach' : 'Notion')+'</span>'
         + (sub.coaching_call_objective ? '<p class="cp-ci-snippet">'+esc(sub.coaching_call_objective)+'</p>' : '')
         + '</summary><div class="cp-ci-body">';
-      var any = false;
+
+      // Both sides of the call, side by side.
+      h += '<div class="cp-ci-split">'
+        + '<div class="cp-ci-col"><span class="cp-ci-col-label">'+(own ? 'Your objective for the call' : esc(clientLabel()) + ' objective for the call')+'</span>'
+        +   (sub.coaching_call_objective ? '<div class="cp-ci-value">'+linkify(sub.coaching_call_objective)+'</div>' : '<p class="cp-caption" style="margin:0;">Not submitted yet.</p>') + '</div>'
+        + '<div class="cp-ci-col cp-ci-col--coach"><span class="cp-ci-col-label">'+(own ? 'Coach’s to-dos for the call' : 'My to-dos for the call')+'</span>'
+        +   (sub.coach_todos ? '<div class="cp-ci-value">'+linkify(sub.coach_todos)+'</div>' : '<p class="cp-caption" style="margin:0;">None added.</p>') + '</div>'
+        + '</div>';
+      if (sub.coach_wins) {
+        h += '<div class="cp-ci-wins"><span class="cp-ci-col-label">Wins</span><div class="cp-ci-value">'+linkify(sub.coach_wins)+'</div></div>';
+      }
+
       PRECALL_FIELDS.forEach(function(f){
+        if (f.key === 'coaching_call_objective') return;
         var v = sub[f.key], html;
         if (f.type === 'files') {
           if (!v.length) return;
@@ -2354,13 +2495,13 @@
           if (!v) return;
           html = linkify(v);
         }
-        any = true;
         h += '<div class="cp-ci-row"><span class="cp-ci-key">'+esc(f.label)+'</span><div class="cp-ci-value">'+html+'</div></div>';
       });
-      if (sub.url_upload) { any = true; h += '<div class="cp-ci-row"><span class="cp-ci-key">Link</span><div class="cp-ci-value">'+linkify(sub.url_upload)+'</div></div>'; }
-      if (!any) h += '<p class="cp-caption">No answers recorded.</p>';
-      if (isCoachUser) {
-        h += '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-review="'+esc(sub.id)+'">'+(reviewed ? 'Mark not reviewed' : 'Mark reviewed')+'</button></div>';
+      if (sub.url_upload) { h += '<div class="cp-ci-row"><span class="cp-ci-key">Link</span><div class="cp-ci-value">'+linkify(sub.url_upload)+'</div></div>'; }
+      if (isCoachUser && !own) {
+        h += '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-coach-edit="'+esc(sub.id)+'">Edit wins &amp; to-dos</button>'
+          + (fromClient ? '<button type="button" class="cp-btn-sm" data-ci-review="'+esc(sub.id)+'">'+(reviewed ? 'Mark not reviewed' : 'Mark reviewed')+'</button>' : '')
+          + '</div>';
       }
       h += '</div></details>';
     });
@@ -2368,6 +2509,8 @@
   }
 
   $('cpCiHistory').addEventListener('click', async function(e){
+    var edit = e.target.closest('[data-ci-coach-edit]');
+    if (edit && isCoachUser) { openCiCoachEditor(edit.getAttribute('data-ci-coach-edit')); return; }
     var btn = e.target.closest('[data-ci-review]'); if (!btn || !isCoachUser) return;
     var sub = findPreCall(btn.getAttribute('data-ci-review')); if (!sub) return;
     var clientId = viewingClientId;
@@ -2384,7 +2527,7 @@
   function renderCheckinCard(){
     var cur = thisWeeksPreCall();
     var own = isOwnPortal();
-    var total = (portalData.preCallSubmissions || []).length;
+    var total = (portalData.preCallSubmissions || []).filter(isClientCheckin).length;
     $('cpCiCardTitle').textContent = cur ? 'Submitted for this week ✓' : 'Not submitted yet';
     $('cpCiCardBody').textContent = (cur
       ? 'Sent ' + longDate(new Date(cur.submittedAt)) + '.'

@@ -270,7 +270,14 @@
       .cp-ci-key{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-ci-value{font-size:15px;line-height:1.55;color:rgba(7,31,53,.85);white-space:pre-wrap;overflow-wrap:anywhere;}
       .cp-ci-value .cp-file-list{margin-top:0;}
-      @media(max-width:600px){ .cp-ci-row{grid-template-columns:1fr;gap:4px;} }
+      .cp-ci-week{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#071f35;border-radius:999px;padding:4px 10px;}
+      .cp-ci-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 4px;}
+      .cp-ci-col{border:1px solid rgba(7,31,53,.1);border-radius:14px;padding:14px 16px;background:rgba(7,31,53,.02);min-width:0;}
+      .cp-ci-col--coach{background:rgba(42,157,240,.06);border-color:rgba(42,157,240,.25);}
+      .cp-ci-col .cp-textarea{margin-top:4px;background:#fff;}
+      .cp-ci-col-label{display:block;font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.5);margin:0 0 8px;}
+      .cp-ci-wins{margin:12px 0 4px;border-radius:14px;padding:14px 16px;background:rgba(119,215,112,.12);border:1px solid rgba(61,140,57,.2);}
+      @media(max-width:600px){ .cp-ci-row{grid-template-columns:1fr;gap:4px;} .cp-ci-split{grid-template-columns:1fr;} }
       /* education */
       .cp-edu-group{margin-bottom:30px;}
       .cp-edu-list{display:grid;gap:12px;}
@@ -1044,6 +1051,7 @@
         <div class="cp-goals-view" id="cpCheckinsView" hidden>
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
+            <button type="button" class="cp-goals-add-btn" id="cpCiNewBtn" hidden>+ New check-in</button>
           </div>
           <div class="cp-panel" id="cpCiFormCard"></div>
           <p class="cp-goals-section-label" style="margin-top:32px;">Past check-ins</p>
