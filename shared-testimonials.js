@@ -180,6 +180,16 @@
         "I am incredibly grateful for Tyler and Chasing Change and would highly recommend him to anyone who is ready to invest in themselves and create meaningful change in their life.",
       ],
     },
+    {
+      name: "Josh",
+      year: "2026",
+      quote: "I realized that what I wanted was never truly out of reach.",
+      paragraphs: [
+        "When I first started working with Tyler, I felt stuck in a cycle of consistently working out but falling short of the results I wanted. I was tired of scrolling past photos of men with the physiques I aspired to, wondering how to get there myself. With a demanding career and often unpredictable hours, I had convinced myself that achieving the level of fitness I truly wanted was simply out of reach.",
+        "Signing up for Chasing Change felt like finding the missing piece of the puzzle. Tyler’s holistic approach helped me understand what I had been missing and gave me the tools to finally bridge the gap between where I was and where I wanted to be. The process wasn’t always easy, but it was undoubtedly one of the most fulfilling investments I’ve ever made in myself.",
+        "Through working with Tyler, I realized that what I wanted was never truly out of reach. I simply needed the right knowledge, guidance, and tools to get there. Tyler is just as knowledgeable about nutrition and exercise science as he is thoughtful, supportive, and genuinely kind. He was an absolute gem to work with, and I’m incredibly glad I finally decided to chase change.",
+      ],
+    },
   ];
 
   const normalizeKey = (item) => `${item?.name || ""}::${item?.year || ""}`.toLowerCase();
