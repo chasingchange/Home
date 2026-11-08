@@ -3269,6 +3269,7 @@
     calState.ops = [];
     calUi.selId = null;
     calUi.cursor = calMidnight(new Date());
+    calUi.weekLeft = null;
     calUi.statusMsg = '';
 
     var results = await Promise.all([
@@ -3442,7 +3443,7 @@
     return '--core:' + calCoreColor(e) + ';--tint:' + calTint(e, .26) + ';--tint-soft:' + calTint(e, .1) + ';--tint-chip:' + calTint(e, .24) + ';';
   }
 
-  var calUi = { view:'week', cursor:null, selId:null, drag:null, dragId:null, justDragged:0, form:null, statusMsg:'', statusErr:false };
+  var calUi = { view:'week', cursor:null, weekLeft:null, weekFrac:0, stripStart:null, selId:null, drag:null, dragId:null, justDragged:0, form:null, statusMsg:'', statusErr:false };
 
   // Every event to show: the provider events plus their core / creator, and
   // for the coach, their queued edits layered on top.
@@ -3475,7 +3476,8 @@
     var c = calUi.cursor;
     if (calUi.view === 'agenda') return 'Next ' + CAL_WINDOW_DAYS + ' days';
     if (calUi.view === 'month') return c.toLocaleDateString(undefined, { month:'long', year:'numeric' });
-    var ws = startOfWeek(c), we = calAddDays(ws, 6);
+    var ws = calUi.weekLeft ? calAddDays(calUi.weekLeft, calUi.weekFrac > 0.5 ? 1 : 0) : startOfWeek(c);
+    var we = calAddDays(ws, (calUi.weekLeft ? calVisibleDays() : 7) - 1);
     var m1 = ws.toLocaleDateString(undefined, { month:'short' }), m2 = we.toLocaleDateString(undefined, { month:'short' });
     return m1 + ' ' + ws.getDate() + ' – ' + (m1 === m2 ? '' : m2 + ' ') + we.getDate() + ', ' + we.getFullYear();
   }
@@ -3525,15 +3527,41 @@
       + '</button>';
   }
 
-  function calRenderWeek(evs){
-    var now = new Date(), today = calMidnight(now), ws = startOfWeek(calUi.cursor);
-    var days = []; for (var i = 0; i < 7; i++) days.push(calAddDays(ws, i));
+  // ─── Week view: one long strip of days you scroll through freely ──────
+  // The strip runs CAL_STRIP_WEEKS either side of where you are, a week's
+  // worth of days fills the screen, and the grid scrolls natively (so
+  // trackpad / touch momentum feels like any other scroll). When you get
+  // near either end the strip is re-centred under you without moving.
+  var CAL_STRIP_WEEKS = 12, CAL_GUTTER = 64, CAL_DAY_MIN = 96;
+  function calDayDiff(a, b){ return Math.round((calMidnight(a) - calMidnight(b)) / 86400000); }
+  function calDayWidth(){
+    var w = ($('cpCalBody').clientWidth || 760) - CAL_GUTTER;
+    return Math.max(CAL_DAY_MIN, w / 7);
+  }
+  function calVisibleDays(){ return Math.max(1, Math.round((($('cpCalBody').clientWidth || 760) - CAL_GUTTER) / calDayWidth())); }
+  // Leftmost day to show for a given date: its whole week when a week
+  // fits on screen, otherwise the day itself.
+  function calWeekLeftFor(d){ return calVisibleDays() >= 7 ? startOfWeek(d) : calMidnight(d); }
+  function calStripStart(){ return calAddDays(startOfWeek(calUi.weekLeft), -CAL_STRIP_WEEKS * 7); }
 
-    var head = '<div class="cp-cal-week-row cp-cal-week-row--head"><div></div>';
+  function calRenderWeek(evs){
+    // Something moved the cursor off screen (Today, a month-view day, a new
+    // event far away): jump the strip there.
+    if (calUi.weekLeft) {
+      var off = calDayDiff(calUi.cursor, calUi.weekLeft);
+      if (off < 0 || off >= calVisibleDays() + (calUi.weekFrac ? 1 : 0)) calUi.weekLeft = null;
+    }
+    if (!calUi.weekLeft) { calUi.weekLeft = calWeekLeftFor(calUi.cursor); calUi.weekFrac = 0; }
+    var now = new Date(), today = calMidnight(now), ws = calStripStart();
+    calUi.stripStart = ws;
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7, dayW = calDayWidth();
+    var days = []; for (var i = 0; i < n; i++) days.push(calAddDays(ws, i));
+
+    var head = '<div class="cp-cal-week-row cp-cal-week-row--head"><div class="cp-cal-stick"></div>';
     var allDay = '', anyAllDay = false, cols = '';
     days.forEach(function(day, i){
       var key = calDateKey(day), isToday = calSameDay(day, today), past = day < today;
-      head += '<div class="cp-cal-dayhead' + (past ? ' is-past' : '') + '"><span class="cp-cal-dow">' + CAL_DOW[i] + '</span>'
+      head += '<div class="cp-cal-dayhead' + (past ? ' is-past' : '') + '"><span class="cp-cal-dow">' + CAL_DOW[i % 7] + '</span>'
         + '<span class="cp-cal-daynum' + (isToday ? ' is-today' : '') + '">' + day.getDate() + '</span></div>';
 
       var dayAll = evs.filter(function(e){ return e.allDay && calOnDay(e, day); });
@@ -3551,14 +3579,14 @@
     });
     head += '</div>';
 
-    var gutter = '<div class="cp-cal-gutter">';
+    var gutter = '<div class="cp-cal-gutter cp-cal-stick">';
     for (var h = CAL_HOUR_START; h < CAL_HOUR_END; h++) {
       gutter += '<div class="cp-cal-hour"><span>' + (h === CAL_HOUR_START ? '' : (h % 12 || 12) + (h < 12 ? ' AM' : ' PM')) + '</span></div>';
     }
     gutter += '</div>';
 
-    return '<div class="cp-cal-scroll"><div class="cp-cal-week">' + head
-      + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label">All day</div>' + allDay + '</div>' : '')
+    return '<div class="cp-cal-scroll cp-cal-scroll--strip"><div class="cp-cal-week cp-cal-week--strip" style="--cal-n:' + n + ';--cal-day:' + dayW + 'px;width:' + (CAL_GUTTER + n * dayW) + 'px" data-cal-n="' + n + '">' + head
+      + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label cp-cal-stick">All day</div>' + allDay + '</div>' : '')
       + '<div class="cp-cal-week-body"><div class="cp-cal-week-row">' + gutter + cols + '</div></div></div></div>';
   }
 
@@ -3667,6 +3695,7 @@
     }
     $('cpCalBody').innerHTML = body;   // also drops any paging ghost
     if (calPager) calPager.ghostDir = 0;
+    if (view === 'week') calWeekRestoreScroll();
     calRenderPop(evs);
   }
 
@@ -3946,9 +3975,13 @@
 
   function calAction(a){
     var today = calMidnight(new Date());
-    if (a === 'today') { calUi.cursor = today; calUi.selId = null; }
+    if (a === 'today') {
+      calUi.cursor = today; calUi.selId = null;
+      if (calUi.view === 'week' && calWeekScrollTo(calWeekLeftFor(today), true)) { calRenderPop(calEvents()); return; }
+    }
     else if (a === 'prev' || a === 'next') {
       if (calUi.view === 'agenda') return;
+      if (calUi.view === 'week') { calWeekStep(a === 'next' ? 1 : -1); return; }
       calSettle(a === 'next' ? 1 : -1); return;
     }
     else if (a === 'add') { calOpenForm(calUi.cursor < today ? today : calUi.cursor, 9); return; }
@@ -3989,17 +4022,72 @@
 
   function calEl(e){ return e.target.nodeType === 1 ? e.target : e.target.parentElement; }
 
+  // ─── Week strip: keep track of where you've scrolled ──────────────────
+  function calWeekScroller(){ return $('cpCalBody').querySelector('.cp-cal-scroll--strip'); }
+  function calWeekRestoreScroll(){
+    var sc = calWeekScroller(); if (!sc || !calUi.stripStart) return;
+    sc.scrollLeft = (calDayDiff(calUi.weekLeft, calUi.stripStart) + (calUi.weekFrac || 0)) * calDayWidth();
+    $('cpCalRange').textContent = calRangeTitle();
+  }
+  // Scroll the strip so `day` is the leftmost column. False if it's
+  // outside the strip (the caller re-renders instead).
+  function calWeekScrollTo(day, smooth){
+    var sc = calWeekScroller(); if (!sc || !calUi.stripStart) return false;
+    var idx = calDayDiff(day, calUi.stripStart);
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7;
+    if (idx < 0 || idx > n - calVisibleDays()) return false;
+    sc.scrollTo({ left: idx * calDayWidth(), behavior: smooth && !calReducedMotion() ? 'smooth' : 'auto' });
+    return true;
+  }
+  // Arrow keys / prev-next: glide a screenful (a week on desktop).
+  function calWeekStep(dir){
+    var target = calAddDays(calUi.weekLeft, (calUi.weekFrac > 0.5 ? 1 : 0) + dir * calVisibleDays());
+    if (calVisibleDays() >= 7) target = startOfWeek(calAddDays(target, 3));
+    calUi.selId = null; calRenderPop(calEvents());
+    if (!calWeekScrollTo(target, true)) { calUi.cursor = target; calUi.weekLeft = null; calRenderCalendar(); }
+  }
+  var calRecenterTimer = null;
+  $('cpCalBody').addEventListener('scroll', function(e){
+    var sc = e.target;
+    if (calUi.view !== 'week' || !sc.classList || !sc.classList.contains('cp-cal-scroll--strip') || !calUi.stripStart) return;
+    if (!sc.clientWidth || $('cpCalBody').clientWidth !== calLastW) return;
+    var dayW = calDayWidth(), idx = sc.scrollLeft / dayW, base = Math.floor(idx + 0.001);
+    calUi.weekLeft = calAddDays(calUi.stripStart, base);
+    calUi.weekFrac = Math.max(0, idx - base);
+    calUi.cursor = calAddDays(calUi.weekLeft, calUi.weekFrac > 0.5 ? 1 : 0);
+    $('cpCalRange').textContent = calRangeTitle();
+    // Near either end: re-centre the strip once the scrolling settles (or
+    // right away if you're about to run out of days).
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7, room = Math.min(base, n - calVisibleDays() - base);
+    if (room >= 14) return;
+    clearTimeout(calRecenterTimer);
+    if (room <= 2) { calRenderCalendar(); return; }
+    calRecenterTimer = setTimeout(function(){ if (calUi.view === 'week' && !calUi.drag) calRenderCalendar(); }, 160);
+  }, true);
+  // The day width follows the calendar's width — and the strip is only
+  // positioned once it's actually on screen (a hidden tab has no width).
+  var calLastW = 0;
+  function calOnBodyResize(){
+    var w = $('cpCalBody').clientWidth;
+    if (!w || w === calLastW) return;
+    calLastW = w;
+    if (calUi.view === 'week' && calWeekScroller()) calRenderCalendar();
+  }
+  if (window.ResizeObserver) new ResizeObserver(function(){ requestAnimationFrame(calOnBodyResize); }).observe($('cpCalBody'));
+  else window.addEventListener('resize', calOnBodyResize);
+
   // ─── Swipe / scroll sideways to change week or month ──────────────────
+  // Month view only — the week view is a free-scrolling strip (above).
   // Trackpads and Shift+wheel scroll sideways; on touch screens, swipe.
   // When the grid is wider than the screen (phones), it scrolls first and
-  // only flips the week once it is already at that edge.
+  // only flips the month once it is already at that edge.
   var CAL_SWIPE_MIN = 60, CAL_WHEEL_MIN = 90;
   function calScroller(){ return $('cpCalBody').querySelector('.cp-cal-scroll'); }
   function calAtEdge(dir){
     var sc = calScroller(); if (!sc) return true;
     return dir > 0 ? sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2 : sc.scrollLeft <= 1;
   }
-  function calCanFlip(){ return calUi.view !== 'agenda' && !calUi.drag && !calUi.dragId && !(isCoachUser && !calState.google.connected && !calState.outlook.connected); }
+  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachUser && !calState.google.connected && !calState.outlook.connected); }
 
   // Trackpad: the grid moves with every sideways scroll event. A flick that
   // goes far enough pages right away and ignores the rest of its coast;
@@ -4074,14 +4162,14 @@
 
   // Left / right arrow keys while the calendar has focus.
   $('cpCalendarCard').addEventListener('keydown', function(e){
-    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !calCanFlip()) return;
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || (calUi.view !== 'week' && !calCanFlip())) return;
     if (e.target.closest('input,textarea,select,[contenteditable]')) return;
     e.preventDefault();
     calAction(e.key === 'ArrowRight' ? 'next' : 'prev');
   });
 
   // Week view: drag a block to move it. Vertical snaps to 15 minutes,
-  // horizontal to whole days within the visible week.
+  // horizontal to whole days.
   $('cpCalBody').addEventListener('pointerdown', function(e){
     var block = calEl(e).closest('.cp-cal-block');
     if (!block || e.button !== 0) return;
@@ -4089,6 +4177,8 @@
     var col = block.parentElement;
     var drag = { id:block.getAttribute('data-cal-event'), x0:e.clientX, y0:e.clientY, w:col.getBoundingClientRect().width,
       col:parseInt(col.getAttribute('data-cal-col'), 10), moved:false, dMin:0, dDay:0 };
+    var strip = block.closest('[data-cal-n]');
+    drag.maxCol = strip ? parseInt(strip.getAttribute('data-cal-n'), 10) - 1 : 6;
     var ev0 = calFindEvent(drag.id);
     var timeEl = block.querySelector('.cp-cal-block-time');
     var short = block.classList.contains('is-short');
@@ -4099,7 +4189,7 @@
       if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
       if (!drag.moved) { drag.moved = true; block.classList.add('is-dragging'); document.body.style.userSelect = 'none'; }
       drag.dMin = Math.round((dy / CAL_ROW) * 4) * 15;
-      drag.dDay = Math.max(-drag.col, Math.min(6 - drag.col, Math.round(dx / drag.w)));
+      drag.dDay = Math.max(-drag.col, Math.min(drag.maxCol - drag.col, Math.round(dx / drag.w)));
       block.style.transform = 'translate(' + (drag.dDay * drag.w) + 'px,' + (drag.dMin / 60 * CAL_ROW) + 'px)';
       if (ev0 && timeEl) {
         var s = calShifted(ev0.start, drag.dDay, drag.dMin);
