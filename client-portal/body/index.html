@@ -64,6 +64,7 @@
       .rt-day-main{min-width:0;}
       .rt-day-label{display:flex;align-items:center;gap:8px;min-width:0;font-family:"Raleway",sans-serif;font-size:17px;font-weight:800;}
       .rt-day-label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .rt-dots{display:flex;gap:3px;flex:none;}
       .rt-day-label i{width:10px;height:10px;border-radius:999px;flex:none;}
       .rt-day-notes{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .rt-day-time{font-size:13px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;}
@@ -112,7 +113,7 @@
             <button type="button" class="rt-btn rt-btn--primary" id="rtSaveImage">Save as image</button>
             <button type="button" class="rt-btn" id="rtRefresh" hidden>Refresh from Google</button>
             <a class="rt-btn" id="rtCalLink" href="../#calendar">Add a workout in Calendar</a>
-            <p class="rt-hint">Workouts come straight from your calendar: any event tagged <strong>Body</strong>, or named like <strong>Push</strong>, <strong>Pull</strong>, <strong>Legs</strong>, <strong>Upper</strong>, <strong>Lower</strong>, <strong>Full body</strong> or <strong>Workout</strong>. Set them to repeat weekly and every week fills itself in. Days with nothing on them show as Rest.</p>
+            <p class="rt-hint">Workouts come straight from your calendar: any event tagged <strong>Body</strong>, or named like <strong>Push</strong>, <strong>Pull</strong>, <strong>Legs</strong>, <strong>Upper</strong>, <strong>Lower</strong>, <strong>Full body</strong>, <strong>Run</strong> or <strong>Workout</strong>. Set them to repeat weekly and every week fills itself in. Days with nothing on them show as Rest.</p>
             <p class="rt-hint" id="rtSynced"></p>
             <p class="rt-status" id="rtStatus" role="status"></p>
           </div>
@@ -154,7 +155,10 @@
       var OTHER_CORES = ['mind','art','soul','career','life'];
       // Titles that start like a training day, or mention one anywhere.
       var WORKOUT_START = /^\s*(push|pull|legs?|upper|lower|full[\s-]?body|arms|chest|shoulders|glutes|back day|run|lift|lifting|cardio|hiit|yoga|spin|swim|gym|workout|training|bjj|crossfit)\b/i;
-      var WORKOUT_ANY = /\b(workout|leg day|push day|pull day|upper body|lower body|full[\s-]?body|gym|lifting|weights)\b/i;
+      // Cardio and activities count anywhere in the title ("Easy run", "Zone 2 bike").
+      var WORKOUT_ANY = /\b(workout|leg day|push day|pull day|upper body|lower body|full[\s-]?body|gym|lift|lifting|weights|run|running|jog|jogging|cardio|hiit|yoga|pilates|spin|swim|swimming|bike|cycling|row|rowing|hike|mobility|crossfit|bjj|boxing)\b/i;
+      // ...but not chores that happen to share a word ("Run errands").
+      var NOT_WORKOUT = /\b(errands?|groceries|to the bank|meeting|call|review|pull request|push notifications?)\b/i;
       var COLORS = [
         [/\bpush\b/i, '#f02348'], [/\bpull\b/i, '#2a9df0'], [/\blegs?\b/i, '#77d770'],
         [/\bupper\b/i, '#aa70d7'], [/\blower\b/i, '#f58b1c'], [/full[\s-]?body/i, '#ffbd59'],
@@ -191,7 +195,9 @@
         var core = coreOf(ev);
         if (core === 'body') return true;
         if (OTHER_CORES.indexOf(core) !== -1) return false;
-        return WORKOUT_START.test(ev.title || '') || WORKOUT_ANY.test(ev.title || '');
+        var t = ev.title || '';
+        if (core !== 'body' && NOT_WORKOUT.test(t)) return false;
+        return WORKOUT_START.test(t) || WORKOUT_ANY.test(t);
       }
       function colorFor(title){
         for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0].test(title)) return COLORS[i][1];
@@ -222,6 +228,7 @@
             label: parts.map(function(p){ return p.label; }).join(' + '),
             notes: todays.length === 1 ? parts[0].notes : '',
             color: colorFor(todays[0].title || ''),
+            colors: todays.map(function(ev){ return colorFor(ev.title || ''); }),
             time: timed ? fmtTime(timed.start) : ''
           };
         });
@@ -237,7 +244,7 @@
           if (!d.rest) count++;
           h += '<div class="rt-day' + (d.rest ? ' is-rest' : '') + (dateKey(d.date) === todayKey ? ' is-today' : '') + '">'
             + '<div><div class="rt-day-dow">' + DOW[i] + '</div><div class="rt-day-date">' + esc(fmtDate(d.date)) + '</div></div>'
-            + '<div class="rt-day-main"><div class="rt-day-label">' + (d.rest ? '' : '<i style="background:' + d.color + '"></i>') + '<span>' + esc(d.label) + '</span></div>'
+            + '<div class="rt-day-main"><div class="rt-day-label">' + (d.rest ? '' : '<b class="rt-dots">' + d.colors.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</b>') + '<span>' + esc(d.label) + '</span></div>'
             + (d.notes ? '<div class="rt-day-notes">' + esc(d.notes) + '</div>' : '') + '</div>'
             + '<div class="rt-day-time">' + esc(d.time) + '</div>'
             + '</div>';
@@ -361,9 +368,10 @@
           if (d.time) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillText(d.time, W - PAD - 16 - timeW, cy); }
           var maxW = W - PAD - 16 - timeW - 16 - x;
           var ly = d.notes ? cy - 9 : cy;
-          if (!d.rest) { ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(x + 5, ly, 5, 0, Math.PI * 2); ctx.fill(); }
+          var dotsW = d.rest ? 0 : d.colors.length * 13 + 5;
+          if (!d.rest) d.colors.forEach(function(c, k){ ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + 5 + k * 13, ly, 5, 0, Math.PI * 2); ctx.fill(); });
           ctx.fillStyle = d.rest ? 'rgba(255,255,255,.45)' : '#fff'; ctx.font = (d.rest ? '700' : '800') + ' 19px ' + raleway;
-          ctx.fillText(fit(ctx, d.label, maxW - (d.rest ? 0 : 18)), d.rest ? x : x + 18, ly);
+          ctx.fillText(fit(ctx, d.label, maxW - dotsW), x + dotsW, ly);
           if (d.notes) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 13px ' + muli; ctx.fillText(fit(ctx, d.notes, maxW), x, cy + 12); }
           y += ROW + GAP;
         });
