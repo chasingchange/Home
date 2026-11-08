@@ -452,7 +452,8 @@
       loadRoster();
     } else {
       state.view = 'client';
-      state.portalTab = 'portal';
+      // ../body/ links here with #calendar so adding a workout is one tap away.
+      state.portalTab = window.location.hash === '#calendar' ? 'calendar' : 'portal';
       ownProfile = profile;
       $('cpNicknameEdit').hidden = false;
       loadClientPortal(user.id, preferredNameOf(profile, user));
@@ -2653,9 +2654,13 @@
     return !!(s.connected && !s.needsReconnect && s.canWrite);
   }
 
+  // Fetched (and saved) from this week's Monday — so the Body page's
+  // training week (./body/) still has the days already gone — through the
+  // next CAL_WINDOW_DAYS days.
   function calWindow(){
-    var start = new Date(); start.setHours(0,0,0,0);
-    var end = new Date(start.getTime() + CAL_WINDOW_DAYS*24*60*60*1000);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var start = new Date(today); start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    var end = new Date(today.getTime() + CAL_WINDOW_DAYS*24*60*60*1000);
     return { start:start, end:end };
   }
 
@@ -3501,6 +3506,7 @@
       : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
     calRenderButtons();
+    $('cpCalRoutineLink').href = './body/' + (isCoachUser && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
     calPaintStatus();
     calRenderCalendar();
   }
