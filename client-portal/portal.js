@@ -452,7 +452,7 @@
       loadRoster();
     } else {
       state.view = 'client';
-      // ../body/ links here with #calendar so "Sync routine" is one tap away.
+      // ../body/ links here with #calendar so adding a workout is one tap away.
       state.portalTab = window.location.hash === '#calendar' ? 'calendar' : 'portal';
       ownProfile = profile;
       $('cpNicknameEdit').hidden = false;
@@ -2654,9 +2654,13 @@
     return !!(s.connected && !s.needsReconnect && s.canWrite);
   }
 
+  // Fetched (and saved) from this week's Monday — so the Body page's
+  // training week (./body/) still has the days already gone — through the
+  // next CAL_WINDOW_DAYS days.
   function calWindow(){
-    var start = new Date(); start.setHours(0,0,0,0);
-    var end = new Date(start.getTime() + CAL_WINDOW_DAYS*24*60*60*1000);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var start = new Date(today); start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    var end = new Date(today.getTime() + CAL_WINDOW_DAYS*24*60*60*1000);
     return { start:start, end:end };
   }
 
@@ -3112,7 +3116,6 @@
     calState.outlook = calBlankState('outlook');
     calState.meta = {};
     calState.ops = [];
-    calState.routine = null;
     calUi.selId = null;
     calUi.cursor = calMidnight(new Date());
     calUi.statusMsg = '';
@@ -3120,11 +3123,9 @@
     var results = await Promise.all([
       sb.from('client_calendar_connections').select('*').eq('client_id', clientId),
       sb.from('client_calendar_event_meta').select('event_id, core, created_by').eq('client_id', clientId),
-      sb.from('client_calendar_pending_ops').select('*').eq('client_id', clientId).order('created_at'),
-      sb.from('client_routines').select('*').eq('client_id', clientId).maybeSingle()
+      sb.from('client_calendar_pending_ops').select('*').eq('client_id', clientId).order('created_at')
     ]);
     if (viewingClientId !== clientId) return;
-    calState.routine = (results[3] && results[3].data) || null;
     (results[1].data || []).forEach(function(m){ calState.meta[m.event_id] = { core:m.core || null, createdBy:m.created_by || null }; });
     calState.ops = (results[2].data || []).map(calMapOp);
     (results[0].data || []).forEach(function(row){
@@ -3505,115 +3506,9 @@
       : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
     calRenderButtons();
-    calRenderRoutineBtn();
+    $('cpCalRoutineLink').href = './body/' + (isCoachUser && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
     calPaintStatus();
     calRenderCalendar();
-  }
-
-  // ─── Weekly routine → repeating calendar events ────────────────────────
-  // The routine lives on the Body page (client-portal/body/, table
-  // client_routines — see scripts/client_routines.sql): days[0..6] =
-  // Monday..Sunday. "Sync routine" writes one weekly repeating event per
-  // training day to the client's calendar, tagged with the Body core, and
-  // remembers the series ids in client_routines.synced so the next sync
-  // replaces them instead of adding duplicates. Client only — it needs a
-  // live token.
-  var CAL_ROUTINE_LABELS = { push:'Push', pull:'Pull', legs:'Legs', upper:'Upper', lower:'Lower', full:'Full body', cardio:'Cardio' };
-
-  function calRoutineDays(){
-    var days = calState.routine && Array.isArray(calState.routine.days) ? calState.routine.days : [];
-    return days.slice(0, 7).map(function(d, i){
-      d = d || {};
-      if (!d.type || d.type === 'rest') return null;
-      var label = d.type === 'custom' ? (String(d.label || '').trim() || 'Workout') : (CAL_ROUTINE_LABELS[d.type] || 'Workout');
-      return {
-        dow: i,
-        title: label + (d.notes ? ' — ' + d.notes : ''),
-        time: /^\d{2}:\d{2}$/.test(d.time || '') ? d.time : '',
-        duration: Math.max(10, Math.min(300, parseInt(d.duration, 10) || 60))
-      };
-    }).filter(Boolean);
-  }
-
-  function calRoutineSyncProvider(){
-    return ['google', 'outlook'].filter(calCanWrite)[0] || null;
-  }
-
-  function calRenderRoutineBtn(){
-    var link = $('cpCalRoutineLink'), btn = $('cpCalRoutineSync');
-    if (!link || !btn) return;
-    link.href = './body/' + (isCoachUser && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
-    var synced = (calState.routine && calState.routine.synced) || {};
-    var hasSynced = Object.keys(synced).some(function(p){ return (synced[p] || []).length; });
-    btn.hidden = isCoachUser || !calState.routine || (!calRoutineDays().length && !hasSynced);
-    btn.disabled = !calRoutineSyncProvider();
-    btn.title = btn.disabled ? 'Connect or reconnect Google / Outlook to sync your routine' : 'Add your weekly routine as repeating events';
-  }
-
-  async function calSyncRoutine(){
-    var provider = calRoutineSyncProvider();
-    if (!provider) { calSetStatus('Connect or reconnect Google / Outlook first to sync your routine.', true); return; }
-    var days = calRoutineDays(), clientId = viewingClientId;
-    var synced = Object.assign({}, (calState.routine && calState.routine.synced) || {});
-    var old = synced[provider] || [];
-    var name = calProviderName(provider);
-    var msg = days.length
-      ? 'Add your routine to ' + name + ' Calendar as ' + days.length + ' weekly repeating event' + (days.length === 1 ? '' : 's') + '?'
-        + (old.length ? ' The routine events from your last sync will be replaced.' : '')
-      : 'Your routine is all rest days. Remove the routine events you synced to ' + name + ' Calendar?';
-    if (!window.confirm(msg)) return;
-
-    var btn = $('cpCalRoutineSync');
-    btn.disabled = true;
-    calSetStatus('Syncing your routine to ' + name + '…');
-    try {
-      for (var k = 0; k < old.length; k++) {
-        await calProviderDelete(provider, old[k]);
-        calDeleteMeta(clientId, old[k]);
-      }
-      synced[provider] = [];
-      var monday = calMidnight(new Date());
-      monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-      for (var j = 0; j < days.length; j++) {
-        var d = days[j], date = calAddDays(monday, d.dow), body, start, end;
-        if (d.time) {
-          var hm = d.time.split(':');
-          start = new Date(date); start.setHours(+hm[0], +hm[1], 0, 0);
-          end = new Date(start.getTime() + d.duration * 60000);
-          body = calTimesBody(provider, start, end, false);
-          if (provider === 'outlook') {
-            // Local time so the series doesn't drift across daylight saving.
-            body.start = { dateTime:calDateKey(start) + 'T' + d.time + ':00', timeZone:calTz() };
-            body.end = { dateTime:calDateKey(end) + 'T' + calHHMM(end.getHours() + end.getMinutes() / 60) + ':00', timeZone:calTz() };
-          }
-        } else {
-          start = date; end = calAddDays(date, 1);
-          body = calTimesBody(provider, start, end, true);
-        }
-        if (provider === 'google') { body.summary = d.title; body.recurrence = calGoogleRecurrence('weekly', ''); }
-        else { body.subject = d.title; body.recurrence = calOutlookRecurrence('weekly', '', start); }
-        var created = calMapProviderEvent(provider, await calApi(provider, 'POST', '', body));
-        synced[provider].push(created.id);
-        calSaveMeta(clientId, created.id, { core:'body', createdBy:'client' });
-      }
-      var { error } = await sb.from('client_routines').update({ synced:synced }).eq('client_id', clientId);
-      if (error) throw error;
-      if (calState.routine) calState.routine.synced = synced;
-      try { await calRefetch(provider); } catch (e) { /* the next load picks them up */ }
-      if (viewingClientId !== clientId) return;
-      calSaveSnapshot(clientId, provider);
-      calRenderCard();
-      calSetStatus(days.length ? 'Routine synced to ' + name + ' — it repeats every week.' : 'Routine events removed from ' + name + '.');
-    } catch (e) {
-      // Keep whatever did get created on record so the next sync can clean it up.
-      if (calState.routine) {
-        calState.routine.synced = synced;
-        sb.from('client_routines').update({ synced:synced }).eq('client_id', clientId);
-      }
-      calSetStatus('Couldn\'t sync your routine: ' + (e.message || 'try again.'), true);
-      if (e.status === 401) calRenderButtons();
-      calRenderRoutineBtn();
-    }
   }
 
   // ─── Calendar edits: move, core, remove, add ───────────────────────────
@@ -3801,7 +3696,6 @@
     else if (a === 'add') { calOpenForm(calUi.cursor < today ? today : calUi.cursor, 9); return; }
     else if (a === 'close') calUi.selId = null;
     else if (a === 'remove') { calRemoveEvent(calUi.selId); return; }
-    else if (a === 'routine') { calSyncRoutine(); return; }
     calRenderCalendar();
   }
 

@@ -6,7 +6,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Body | Client Portal | Chasing Change</title>
-    <meta name="description" content="Your Body core: weekly training routine, workouts, programs and training stats." />
+    <meta name="description" content="Your Body core: your training week from your calendar, workouts, programs and training stats." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700;800&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
@@ -42,7 +42,7 @@
       .rt-seg-btn.is-active{background:#fff;color:#071f35;box-shadow:0 1px 4px rgba(7,31,53,.12);}
       .rt-layout{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;margin-top:22px;align-items:start;}
       .rt-side{display:flex;flex-direction:column;gap:12px;}
-      .rt-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:21px;font-size:14px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:#071f35;background:#fff;}
+      .rt-btn{all:unset;box-sizing:border-box;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:21px;font-size:14px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:#071f35;background:#fff;}
       .rt-btn:hover{border-color:rgba(7,31,53,.35);}
       .rt-btn--primary{background:#071f35;border-color:#071f35;color:#fff;}
       .rt-btn--primary:hover{opacity:.9;}
@@ -62,7 +62,8 @@
       .rt-day-dow{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.1;}
       .rt-day-date{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
       .rt-day-main{min-width:0;}
-      .rt-day-label{display:inline-flex;align-items:center;gap:8px;font-family:"Raleway",sans-serif;font-size:17px;font-weight:800;}
+      .rt-day-label{display:flex;align-items:center;gap:8px;min-width:0;font-family:"Raleway",sans-serif;font-size:17px;font-weight:800;}
+      .rt-day-label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .rt-day-label i{width:10px;height:10px;border-radius:999px;flex:none;}
       .rt-day-notes{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .rt-day-time{font-size:13px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;}
@@ -70,25 +71,9 @@
       .rt-share-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
       .rt-share-foot img{width:18px;height:18px;border-radius:4px;vertical-align:-4px;margin-right:6px;}
 
-      /* Editor */
-      .rt-editor{display:none;margin-top:22px;border-top:1px solid rgba(7,31,53,.08);padding-top:20px;}
-      .rt-editor.is-open{display:block;}
-      .rt-edit-row{display:grid;grid-template-columns:52px 150px minmax(0,1fr) 116px 84px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(7,31,53,.06);}
-      .rt-edit-dow{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
-      .rt-edit-row select,.rt-edit-row input{box-sizing:border-box;width:100%;height:38px;padding:0 10px;border:1px solid rgba(7,31,53,.15);border-radius:10px;font:inherit;font-size:14px;color:#071f35;background:#fff;}
-      .rt-edit-head{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);border-bottom:none;padding-bottom:0;}
-      .rt-editor-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center;}
-      .rt-presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
-      .rt-chip{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;color:rgba(7,31,53,.7);}
-      .rt-chip:hover{border-color:rgba(7,31,53,.4);}
       .rt-gate{margin:0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
 
       @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}.rt-layout{grid-template-columns:1fr;}}
-      @media(max-width:720px){
-        .rt-edit-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);}
-        .rt-edit-row .rt-edit-notes{grid-column:2 / -1;}
-        .rt-edit-head{display:none;}
-      }
       @media(max-width:600px){.cp-dash{padding:0 16px 72px;}.rt-section{padding:18px;}.rt-share{padding:20px 16px 16px;}}
     </style>
   </head>
@@ -100,13 +85,13 @@
         <h1 class="cp-h1">Body</h1>
       </div>
 
-      <!-- WEEKLY ROUTINE -->
+      <!-- TRAINING WEEK (built from the client's calendar) -->
       <section class="rt-section" id="rtSection">
         <div class="rt-head">
           <div>
-            <p class="cp-kicker">Weekly routine</p>
+            <p class="cp-kicker">Training week</p>
             <h2 class="cp-card-title" style="margin-top:6px;">Your training week</h2>
-            <p class="rt-sub" id="rtSub">Repeats every week. Screenshot the card or save it as an image to send to a friend.</p>
+            <p class="rt-sub" id="rtSub">Pulled from your calendar. Screenshot the card or save it as an image to send to a friend.</p>
           </div>
           <div class="rt-seg" id="rtWeekToggle" role="tablist" aria-label="Which week">
             <button type="button" class="rt-seg-btn is-active" data-week="0" role="tab" aria-selected="true">This week</button>
@@ -125,26 +110,11 @@
           </div>
           <div class="rt-side">
             <button type="button" class="rt-btn rt-btn--primary" id="rtSaveImage">Save as image</button>
-            <button type="button" class="rt-btn" id="rtEditToggle">Edit routine</button>
-            <button type="button" class="rt-btn" id="rtIcs">Add to Apple / other calendar (.ics)</button>
-            <p class="rt-hint">To put it on Google or Outlook, open the <a id="rtCalLink" href="../#calendar">portal Calendar tab</a> and tap <strong>Sync routine</strong> — each training day is added as a weekly repeating event. Re-sync any time you change the routine.</p>
+            <button type="button" class="rt-btn" id="rtRefresh" hidden>Refresh from Google</button>
+            <a class="rt-btn" id="rtCalLink" href="../#calendar">Add a workout in Calendar</a>
+            <p class="rt-hint">Workouts come straight from your calendar: any event tagged <strong>Body</strong>, or named like <strong>Push</strong>, <strong>Pull</strong>, <strong>Legs</strong>, <strong>Upper</strong>, <strong>Lower</strong>, <strong>Full body</strong> or <strong>Workout</strong>. Set them to repeat weekly and every week fills itself in. Days with nothing on them show as Rest.</p>
+            <p class="rt-hint" id="rtSynced"></p>
             <p class="rt-status" id="rtStatus" role="status"></p>
-          </div>
-        </div>
-
-        <div class="rt-editor" id="rtEditor">
-          <div class="rt-presets">
-            <span class="cp-kicker" style="margin-right:4px;">Quick fill</span>
-            <button type="button" class="rt-chip" data-preset="ppl">Push / Pull / Legs ×2</button>
-            <button type="button" class="rt-chip" data-preset="ul">Upper / Lower</button>
-            <button type="button" class="rt-chip" data-preset="full">Full body ×3</button>
-            <button type="button" class="rt-chip" data-preset="clear">Clear</button>
-          </div>
-          <div class="rt-edit-row rt-edit-head"><span>Day</span><span>Workout</span><span>Focus / notes</span><span>Time</span><span>Minutes</span></div>
-          <div id="rtEditRows"></div>
-          <div class="rt-editor-actions">
-            <button type="button" class="rt-btn rt-btn--primary" id="rtSave">Save routine</button>
-            <button type="button" class="rt-btn" id="rtCancel">Cancel</button>
           </div>
         </div>
       </section>
@@ -160,97 +130,116 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="../../shared-supabase-config.js"></script>
     <script>
     (function(){
-      // Weekly routine. One row per client in public.client_routines
-      // (scripts/client_routines.sql): days[0..6] = Monday..Sunday. The same
-      // template repeats every week; the portal's Calendar tab can push it to
-      // Google / Outlook as weekly repeating events ("Sync routine").
+      // Training week, built from the client's calendar — nothing to fill in.
+      // Source: the copy of their Google / Outlook events the portal saves in
+      // client_calendar_connections.events (see calSaveSnapshot in
+      // ../portal.js), plus core tags from client_calendar_event_meta. A
+      // workout is any event tagged Body, or one named like a training day
+      // (Push, Pull, Legs, Upper…). Weekly repeating events fill every week.
+      // "Refresh from Google" pulls live events with the same OAuth client
+      // as the portal's Calendar tab and saves a fresh copy.
       var SUPABASE_URL = window.CC_SUPABASE_URL || 'https://datrgkjqwyfcbmtwwifm.supabase.co';
       var SUPABASE_KEY = window.CC_SUPABASE_KEY || 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
       var COACH_EMAIL  = 'tywadebusiness@gmail.com';
+      // Keep in step with CALENDAR_CONFIG in ../portal.js.
+      var GOOGLE_CLIENT_ID = '976458437286-ufpguk5m0aoa3ob8ghjhf1bvqih747h0.apps.googleusercontent.com';
+      var GOOGLE_SCOPE = 'https://www.googleapis.com/auth/calendar.events email';
       var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      var TYPES = [
-        { key:'push',   label:'Push',      color:'#f02348' },
-        { key:'pull',   label:'Pull',      color:'#2a9df0' },
-        { key:'legs',   label:'Legs',      color:'#77d770' },
-        { key:'upper',  label:'Upper',     color:'#aa70d7' },
-        { key:'lower',  label:'Lower',     color:'#f58b1c' },
-        { key:'full',   label:'Full body', color:'#ffbd59' },
-        { key:'cardio', label:'Cardio',    color:'#2ec4b6' },
-        { key:'custom', label:'Custom…',   color:'#e9ecef' },
-        { key:'rest',   label:'Rest',      color:'#9aa3ad' }
-      ];
       var DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-      var ICS_DAYS = ['MO','TU','WE','TH','FR','SA','SU'];
-      var PRESETS = {
-        ppl:  ['push','pull','legs','push','pull','legs','rest'],
-        ul:   ['upper','lower','rest','upper','lower','rest','rest'],
-        full: ['full','rest','full','rest','full','rest','rest'],
-        clear:['rest','rest','rest','rest','rest','rest','rest']
-      };
+      var OTHER_CORES = ['mind','art','soul','career','life'];
+      // Titles that start like a training day, or mention one anywhere.
+      var WORKOUT_START = /^\s*(push|pull|legs?|upper|lower|full[\s-]?body|arms|chest|shoulders|glutes|back day|run|lift|lifting|cardio|hiit|yoga|spin|swim|gym|workout|training|bjj|crossfit)\b/i;
+      var WORKOUT_ANY = /\b(workout|leg day|push day|pull day|upper body|lower body|full[\s-]?body|gym|lifting|weights)\b/i;
+      var COLORS = [
+        [/\bpush\b/i, '#f02348'], [/\bpull\b/i, '#2a9df0'], [/\blegs?\b/i, '#77d770'],
+        [/\bupper\b/i, '#aa70d7'], [/\blower\b/i, '#f58b1c'], [/full[\s-]?body/i, '#ffbd59'],
+        [/\b(cardio|run|hiit|spin|swim|bike|row)\b/i, '#2ec4b6']
+      ];
 
-      var state = { clientId:null, name:'', days:blankDays(), week:0, editing:false };
+      var state = { clientId:null, isCoach:false, name:'', week:0, events:[], meta:{}, rows:[] };
 
       function $(id){ return document.getElementById(id); }
       function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
-      function typeDef(key){ return TYPES.filter(function(t){ return t.key === key; })[0] || TYPES[TYPES.length - 1]; }
-      function blankDay(type){ return { type:type || 'rest', label:'', time:'', duration:60, notes:'' }; }
-      function blankDays(){ return DOW.map(function(){ return blankDay('rest'); }); }
-      function isRest(d){ return !d || d.type === 'rest'; }
-      function dayLabel(d){
-        if (isRest(d)) return 'Rest';
-        if (d.type === 'custom') return (d.label || '').trim() || 'Workout';
-        return typeDef(d.type).label;
-      }
-      function dayColor(d){ return d.type === 'custom' ? '#ffffff' : typeDef(d.type).color; }
-
-      function normalizeDays(raw){
-        var arr = Array.isArray(raw) ? raw : [];
-        return DOW.map(function(_, i){
-          var d = arr[i] || {};
-          var type = TYPES.some(function(t){ return t.key === d.type; }) ? d.type : 'rest';
-          return { type:type, label:String(d.label || ''), time:/^\d{2}:\d{2}$/.test(d.time || '') ? d.time : '', duration:Math.max(10, Math.min(300, parseInt(d.duration, 10) || 60)), notes:String(d.notes || '') };
-        });
-      }
-
-      // Monday of the current week (+ offset weeks), local time.
+      function setStatus(msg, isError){ var el = $('rtStatus'); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
+      function pad(n){ return String(n).padStart(2, '0'); }
+      function dateKey(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+      function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+      function fmtDate(d){ return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }); }
+      function fmtTime(d){ return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' }).replace(':00', ''); }
+      // Monday of this week (+ offset weeks), local time.
       function weekStart(offset){
         var d = new Date(); d.setHours(0,0,0,0);
         d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
         return d;
       }
-      function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
-      function fmtDate(d){ return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }); }
       function fmtRange(start){
         var end = addDays(start, 6);
-        var sameMonth = start.getMonth() === end.getMonth();
-        return fmtDate(start) + ' – ' + (sameMonth ? end.getDate() : fmtDate(end));
-      }
-      function fmtTime(hhmm){
-        if (!hhmm) return '';
-        var p = hhmm.split(':'), d = new Date(); d.setHours(+p[0], +p[1], 0, 0);
-        return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' }).replace(':00', '');
+        return fmtDate(start) + ' – ' + (start.getMonth() === end.getMonth() ? end.getDate() : fmtDate(end));
       }
 
-      function setStatus(msg, isError){ var el = $('rtStatus'); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
+      // ─── Which events are workouts ─────────────────────────────────
+      function coreOf(ev){
+        var m = state.meta[ev.id] || (ev.seriesId && state.meta[ev.seriesId]);
+        return m ? m.core : null;
+      }
+      function isWorkout(ev){
+        var core = coreOf(ev);
+        if (core === 'body') return true;
+        if (OTHER_CORES.indexOf(core) !== -1) return false;
+        return WORKOUT_START.test(ev.title || '') || WORKOUT_ANY.test(ev.title || '');
+      }
+      function colorFor(title){
+        for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0].test(title)) return COLORS[i][1];
+        return '#77d770';
+      }
+      // "Push — Chest & triceps" → label "Push", notes "Chest & triceps".
+      function splitTitle(title){
+        var m = String(title || 'Workout').match(/^(.+?)\s+[—–-]\s+(.+)$/) || String(title || '').match(/^(.+?):\s+(.+)$/);
+        return m ? { label:m[1].trim(), notes:m[2].trim() } : { label:String(title || 'Workout').trim(), notes:'' };
+      }
+      function onDay(ev, day){
+        if (!ev.allDay) return dateKey(ev.start) === dateKey(day);
+        return ev.start <= day && ev.end > day;
+      }
+
+      // One entry per day: { date, rest, label, notes, color, time }.
+      function weekDays(){
+        var start = weekStart(state.week);
+        var workouts = state.events.filter(isWorkout).sort(function(a, b){ return a.start - b.start; });
+        return DOW.map(function(_, i){
+          var date = addDays(start, i);
+          var todays = workouts.filter(function(ev){ return onDay(ev, date); });
+          if (!todays.length) return { date:date, rest:true, label:'Rest', notes:'', color:'', time:'' };
+          var parts = todays.map(function(ev){ return splitTitle(ev.title); });
+          var timed = todays.filter(function(ev){ return !ev.allDay; })[0];
+          return {
+            date: date, rest: false,
+            label: parts.map(function(p){ return p.label; }).join(' + '),
+            notes: todays.length === 1 ? parts[0].notes : '',
+            color: colorFor(todays[0].title || ''),
+            time: timed ? fmtTime(timed.start) : ''
+          };
+        });
+      }
 
       // ─── Share card ────────────────────────────────────────────────
       function renderCard(){
-        var start = weekStart(state.week), today = new Date(); today.setHours(0,0,0,0);
-        $('rtShareKicker').textContent = state.name ? state.name + '\u2019s training week' : 'My training week';
+        var start = weekStart(state.week), todayKey = dateKey(new Date());
+        $('rtShareKicker').textContent = state.name ? state.name + '’s training week' : 'My training week';
         $('rtShareTitle').textContent = (state.week === 0 ? 'This week · ' : 'Next week · ') + fmtRange(start);
-        var h = '', count = 0;
-        state.days.forEach(function(d, i){
-          var date = addDays(start, i), rest = isRest(d);
-          if (!rest) count++;
-          h += '<div class="rt-day' + (rest ? ' is-rest' : '') + (date.getTime() === today.getTime() ? ' is-today' : '') + '">'
-            + '<div><div class="rt-day-dow">' + DOW[i] + '</div><div class="rt-day-date">' + esc(fmtDate(date)) + '</div></div>'
-            + '<div class="rt-day-main"><div class="rt-day-label">' + (rest ? '' : '<i style="background:' + dayColor(d) + '"></i>') + esc(dayLabel(d)) + '</div>'
-            + (d.notes && !rest ? '<div class="rt-day-notes">' + esc(d.notes) + '</div>' : '') + '</div>'
-            + '<div class="rt-day-time">' + (rest ? '' : esc(fmtTime(d.time))) + '</div>'
+        var days = weekDays(), count = 0, h = '';
+        days.forEach(function(d, i){
+          if (!d.rest) count++;
+          h += '<div class="rt-day' + (d.rest ? ' is-rest' : '') + (dateKey(d.date) === todayKey ? ' is-today' : '') + '">'
+            + '<div><div class="rt-day-dow">' + DOW[i] + '</div><div class="rt-day-date">' + esc(fmtDate(d.date)) + '</div></div>'
+            + '<div class="rt-day-main"><div class="rt-day-label">' + (d.rest ? '' : '<i style="background:' + d.color + '"></i>') + '<span>' + esc(d.label) + '</span></div>'
+            + (d.notes ? '<div class="rt-day-notes">' + esc(d.notes) + '</div>' : '') + '</div>'
+            + '<div class="rt-day-time">' + esc(d.time) + '</div>'
             + '</div>';
         });
         $('rtDays').innerHTML = h;
@@ -259,73 +248,66 @@
           var on = +b.getAttribute('data-week') === state.week;
           b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
+        if (!count) setStatus(state.week === 0
+          ? 'No workouts found on your calendar this week — add one in Calendar and tag it Body.'
+          : 'No workouts found for next week yet. Weekly repeating workouts show up here automatically.');
+        else setStatus('');
       }
 
-      // ─── Editor ────────────────────────────────────────────────────
-      function renderEditor(days){
-        var opts = TYPES.map(function(t){ return '<option value="' + t.key + '">' + esc(t.label) + '</option>'; }).join('');
-        var h = '';
-        days.forEach(function(d, i){
-          h += '<div class="rt-edit-row" data-i="' + i + '">'
-            + '<span class="rt-edit-dow">' + DOW[i] + '</span>'
-            + '<select data-f="type" aria-label="' + DOW[i] + ' workout">' + opts + '</select>'
-            + '<input class="rt-edit-notes" data-f="notes" type="text" maxlength="60" placeholder="' + (d.type === 'custom' ? 'Name it, e.g. Arms & abs' : 'e.g. Chest & triceps') + '" aria-label="' + DOW[i] + ' focus or notes">'
-            + '<input data-f="time" type="time" aria-label="' + DOW[i] + ' time">'
-            + '<input data-f="duration" type="number" min="10" max="300" step="5" aria-label="' + DOW[i] + ' minutes">'
-            + '</div>';
-        });
-        $('rtEditRows').innerHTML = h;
-        days.forEach(function(d, i){
-          var row = $('rtEditRows').children[i];
-          row.querySelector('[data-f=type]').value = d.type;
-          // For a custom day the text box is its name; otherwise it's the focus line.
-          row.querySelector('[data-f=notes]').value = d.type === 'custom' ? (d.label || '') : d.notes;
-          row.querySelector('[data-f=time]').value = d.time;
-          row.querySelector('[data-f=duration]').value = d.duration;
-          syncRowState(row);
+      function renderSynced(){
+        var times = state.rows.map(function(r){ return r.synced_at ? new Date(r.synced_at) : null; }).filter(Boolean).sort(function(a, b){ return b - a; });
+        $('rtSynced').textContent = times.length
+          ? 'Calendar last synced ' + times[0].toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) + '.'
+          : '';
+      }
+
+      // ─── Live refresh from Google ──────────────────────────────────
+      var tokenClient = null;
+      function googleToken(){
+        return new Promise(function(resolve, reject){
+          if (!window.google || !google.accounts || !google.accounts.oauth2) { reject(new Error('Google sign-in is still loading — try again in a second.')); return; }
+          if (!tokenClient) tokenClient = google.accounts.oauth2.initTokenClient({ client_id:GOOGLE_CLIENT_ID, scope:GOOGLE_SCOPE, callback:function(){} });
+          tokenClient.callback = function(resp){ resp && resp.access_token ? resolve(resp.access_token) : reject(new Error((resp && resp.error) || 'No access token returned.')); };
+          tokenClient.error_callback = function(err){ reject(err && err.message ? err : new Error('Google sign-in was closed.')); };
+          tokenClient.requestAccessToken({ prompt:'' });
         });
       }
-
-      function syncRowState(row){
-        var type = row.querySelector('[data-f=type]').value, rest = type === 'rest';
-        ['notes','time','duration'].forEach(function(f){ row.querySelector('[data-f=' + f + ']').disabled = rest; });
-        row.querySelector('[data-f=notes]').placeholder = type === 'custom' ? 'Name it, e.g. Arms & abs' : 'e.g. Chest & triceps';
+      function mapGoogle(ev){
+        var allDay = !!(ev.start && ev.start.date && !ev.start.dateTime);
+        return {
+          id:'google:' + ev.id, provider:'google', title:ev.summary || '(No title)',
+          start: allDay ? new Date(ev.start.date + 'T00:00:00') : new Date(ev.start.dateTime),
+          end: allDay ? new Date(ev.end.date + 'T00:00:00') : new Date(ev.end.dateTime),
+          allDay: allDay, joinUrl:'', seriesId: ev.recurringEventId ? 'google:' + ev.recurringEventId : ''
+        };
       }
-
-      function readEditor(){
-        return Array.prototype.map.call($('rtEditRows').children, function(row){
-          var type = row.querySelector('[data-f=type]').value;
-          var text = row.querySelector('[data-f=notes]').value.trim();
-          return {
-            type: type,
-            label: type === 'custom' ? text : '',
-            notes: type === 'custom' || type === 'rest' ? '' : text,
-            time: type === 'rest' ? '' : row.querySelector('[data-f=time]').value,
-            duration: Math.max(10, Math.min(300, parseInt(row.querySelector('[data-f=duration]').value, 10) || 60))
-          };
-        });
-      }
-
-      function setEditing(on){
-        state.editing = on;
-        $('rtEditor').classList.toggle('is-open', on);
-        $('rtEditToggle').textContent = on ? 'Close editor' : 'Edit routine';
-        if (on) renderEditor(state.days);
-      }
-
-      async function save(){
-        var days = normalizeDays(readEditor());
-        $('rtSave').disabled = true; setStatus('Saving…');
-        var { error } = await sb.from('client_routines').upsert(
-          { client_id: state.clientId, days: days, updated_at: new Date().toISOString() },
-          { onConflict: 'client_id' }
-        );
-        $('rtSave').disabled = false;
-        if (error) { setStatus('Couldn\u2019t save: ' + error.message, true); return; }
-        state.days = days;
-        renderCard();
-        setEditing(false);
-        setStatus('Saved. If you synced it to Google or Outlook, re-sync from the Calendar tab.');
+      async function refreshGoogle(){
+        var btn = $('rtRefresh'); btn.disabled = true; setStatus('Loading your Google Calendar…');
+        try {
+          var token = await googleToken();
+          // This Monday through next Sunday, and at least the portal's 14-day window.
+          var from = weekStart(0), to = addDays(weekStart(1), 7), min14 = addDays(new Date(), 14);
+          if (min14 > to) to = min14;
+          var url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+            + '?timeMin=' + encodeURIComponent(from.toISOString()) + '&timeMax=' + encodeURIComponent(to.toISOString())
+            + '&singleEvents=true&orderBy=startTime&maxResults=250';
+          var res = await fetch(url, { headers:{ Authorization:'Bearer ' + token } });
+          if (!res.ok) throw new Error('Google Calendar returned ' + res.status);
+          var items = ((await res.json()).items || []).filter(function(ev){ return ev.status !== 'cancelled'; }).map(mapGoogle);
+          state.events = state.events.filter(function(e){ return e.provider !== 'google'; }).concat(items);
+          // Save a fresh copy so the portal and your coach see it too.
+          var now = new Date().toISOString();
+          await sb.from('client_calendar_connections').update({
+            events: items.map(function(ev){ return { id:ev.id, provider:'google', title:ev.title, start:ev.start.toISOString(), end:ev.end.toISOString(), allDay:ev.allDay, joinUrl:'', seriesId:ev.seriesId }; }),
+            synced_at: now
+          }).eq('client_id', state.clientId).eq('provider', 'google');
+          state.rows.forEach(function(r){ if (r.provider === 'google') r.synced_at = now; });
+          renderCard(); renderSynced();
+          if (!$('rtStatus').textContent) setStatus('Up to date with Google Calendar.');
+        } catch (e) {
+          setStatus('Couldn’t refresh: ' + (e.message || 'try again.'), true);
+        }
+        btn.disabled = false;
       }
 
       // ─── Save as image (drawn on a canvas, no screenshot needed) ───
@@ -350,7 +332,7 @@
         var c = document.createElement('canvas'); c.width = W * S; c.height = H * S;
         var ctx = c.getContext('2d'); ctx.scale(S, S);
         var raleway = '"Raleway", "Muli", system-ui, sans-serif', muli = '"Muli", system-ui, sans-serif';
-        var start = weekStart(state.week), today = new Date(); today.setHours(0,0,0,0);
+        var todayKey = dateKey(new Date());
 
         ctx.fillStyle = '#071f35'; ctx.fillRect(0, 0, W, H);
         var y = PAD;
@@ -363,27 +345,26 @@
         ctx.fillText(fit(ctx, $('rtShareTitle').textContent, W - PAD * 2), PAD, y);
         y += 44 + 14;
 
-        state.days.forEach(function(d, i){
-          var date = addDays(start, i), rest = isRest(d), isToday = date.getTime() === today.getTime();
+        weekDays().forEach(function(d, i){
+          var isToday = dateKey(d.date) === todayKey;
           ctx.fillStyle = isToday ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.06)';
           roundRect(ctx, PAD, y, W - PAD * 2, ROW, 14); ctx.fill();
           if (isToday) { ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1; ctx.stroke(); }
           var cy = y + ROW / 2;
           ctx.textBaseline = 'middle';
           ctx.fillStyle = '#fff'; ctx.font = '800 14px ' + raleway; ctx.fillText(DOW[i].toUpperCase(), PAD + 16, cy - 9);
-          ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '600 12px ' + muli; ctx.fillText(fmtDate(date), PAD + 16, cy + 10);
+          ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '600 12px ' + muli; ctx.fillText(fmtDate(d.date), PAD + 16, cy + 10);
 
-          var x = PAD + 92, timeTxt = rest ? '' : fmtTime(d.time);
+          var x = PAD + 92;
           ctx.font = '700 14px ' + muli;
-          var timeW = timeTxt ? ctx.measureText(timeTxt).width : 0;
-          if (timeTxt) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillText(timeTxt, W - PAD - 16 - timeW, cy); }
+          var timeW = d.time ? ctx.measureText(d.time).width : 0;
+          if (d.time) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillText(d.time, W - PAD - 16 - timeW, cy); }
           var maxW = W - PAD - 16 - timeW - 16 - x;
-          var hasNotes = !rest && d.notes;
-          var ly = hasNotes ? cy - 9 : cy;
-          if (!rest) { ctx.fillStyle = dayColor(d); ctx.beginPath(); ctx.arc(x + 5, ly, 5, 0, Math.PI * 2); ctx.fill(); }
-          ctx.fillStyle = rest ? 'rgba(255,255,255,.45)' : '#fff'; ctx.font = (rest ? '700' : '800') + ' 19px ' + raleway;
-          ctx.fillText(fit(ctx, dayLabel(d), maxW - (rest ? 0 : 18)), rest ? x : x + 18, ly);
-          if (hasNotes) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 13px ' + muli; ctx.fillText(fit(ctx, d.notes, maxW), x, cy + 12); }
+          var ly = d.notes ? cy - 9 : cy;
+          if (!d.rest) { ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(x + 5, ly, 5, 0, Math.PI * 2); ctx.fill(); }
+          ctx.fillStyle = d.rest ? 'rgba(255,255,255,.45)' : '#fff'; ctx.font = (d.rest ? '700' : '800') + ' 19px ' + raleway;
+          ctx.fillText(fit(ctx, d.label, maxW - (d.rest ? 0 : 18)), d.rest ? x : x + 18, ly);
+          if (d.notes) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 13px ' + muli; ctx.fillText(fit(ctx, d.notes, maxW), x, cy + 12); }
           y += ROW + GAP;
         });
 
@@ -399,10 +380,10 @@
       }
 
       async function saveImage(){
-        var btn = $('rtSaveImage'); btn.disabled = true; setStatus('');
+        var btn = $('rtSaveImage'); btn.disabled = true;
         try {
           var blob = await drawImage();
-          var name = 'training-week-' + weekStart(state.week).toISOString().slice(0, 10) + '.png';
+          var name = 'training-week-' + dateKey(weekStart(state.week)) + '.png';
           var file = typeof File === 'function' ? new File([blob], name, { type:'image/png' }) : null;
           if (file && navigator.canShare && navigator.canShare({ files:[file] })) {
             try { await navigator.share({ files:[file], title:'My training week' }); btn.disabled = false; return; }
@@ -413,40 +394,9 @@
           setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
           setStatus('Image saved.');
         } catch (e) {
-          setStatus('Couldn\u2019t make the image — a screenshot of the card works too.', true);
+          setStatus('Couldn’t make the image — a screenshot of the card works too.', true);
         }
         btn.disabled = false;
-      }
-
-      // ─── .ics export: one weekly repeating event per training day ──
-      function icsEscape(s){ return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
-      function icsDate(d){ return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
-      function downloadIcs(){
-        var start = weekStart(state.week), stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-        var lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Chasing Change//Weekly Routine//EN','CALSCALE:GREGORIAN'];
-        var n = 0;
-        state.days.forEach(function(d, i){
-          if (isRest(d)) return;
-          n++;
-          var date = addDays(start, i), title = dayLabel(d) + (d.notes ? ' — ' + d.notes : '');
-          lines.push('BEGIN:VEVENT', 'UID:cc-routine-' + (state.clientId || 'me') + '-' + ICS_DAYS[i] + '@chasingchange', 'DTSTAMP:' + stamp);
-          if (d.time) {
-            var t = d.time.replace(':', '') + '00';
-            var end = new Date(date); var p = d.time.split(':'); end.setHours(+p[0], +p[1] + d.duration, 0, 0);
-            lines.push('DTSTART:' + icsDate(date) + 'T' + t,
-                       'DTEND:' + icsDate(end) + 'T' + String(end.getHours()).padStart(2, '0') + String(end.getMinutes()).padStart(2, '0') + '00');
-          } else {
-            lines.push('DTSTART;VALUE=DATE:' + icsDate(date), 'DTEND;VALUE=DATE:' + icsDate(addDays(date, 1)));
-          }
-          lines.push('RRULE:FREQ=WEEKLY;BYDAY=' + ICS_DAYS[i], 'SUMMARY:' + icsEscape(title), 'CATEGORIES:Body', 'END:VEVENT');
-        });
-        lines.push('END:VCALENDAR');
-        if (!n) { setStatus('Add at least one training day first.', true); return; }
-        var blob = new Blob([lines.join('\r\n')], { type:'text/calendar' });
-        var url = URL.createObjectURL(blob), a = document.createElement('a');
-        a.href = url; a.download = 'training-routine.ics'; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
-        setStatus('Calendar file downloaded — open it to add your routine as weekly repeating events.');
       }
 
       // ─── Wiring ────────────────────────────────────────────────────
@@ -454,55 +404,54 @@
         var b = e.target.closest('[data-week]'); if (!b) return;
         state.week = +b.getAttribute('data-week'); renderCard();
       });
-      $('rtEditToggle').addEventListener('click', function(){ setEditing(!state.editing); });
-      $('rtCancel').addEventListener('click', function(){ setEditing(false); });
-      $('rtSave').addEventListener('click', save);
       $('rtSaveImage').addEventListener('click', saveImage);
-      $('rtIcs').addEventListener('click', downloadIcs);
-      $('rtEditRows').addEventListener('change', function(e){
-        var row = e.target.closest('.rt-edit-row'); if (row && e.target.getAttribute('data-f') === 'type') syncRowState(row);
-      });
-      document.querySelector('.rt-presets').addEventListener('click', function(e){
-        var b = e.target.closest('[data-preset]'); if (!b) return;
-        var cur = readEditor();
-        renderEditor(PRESETS[b.getAttribute('data-preset')].map(function(type, i){
-          var d = blankDay(type); if (type !== 'rest') { d.time = cur[i].time; d.duration = cur[i].duration; } return d;
-        }));
-      });
+      $('rtRefresh').addEventListener('click', refreshGoogle);
+
+      function gate(html){
+        $('rtGate').hidden = false; $('rtGate').innerHTML = html;
+        $('rtWeekToggle').hidden = true; $('rtLayout').hidden = true;
+      }
 
       async function init(){
         var { data } = await sb.auth.getSession();
         var user = data && data.session && data.session.user;
-        if (!user) {
-          $('rtGate').hidden = false;
-          $('rtGate').innerHTML = '<a href="../" style="color:#071f35;font-weight:800;">Sign in to the client portal</a> to see and edit your weekly routine.';
-          $('rtWeekToggle').hidden = true;
-          return;
-        }
+        if (!user) { gate('<a href="../" style="color:#071f35;font-weight:800;">Sign in to the client portal</a> to see your training week.'); return; }
         var { data: profile } = await sb.from('profiles').select('id, role, full_name, preferred_name').eq('id', user.id).maybeSingle();
-        var isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+        state.isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
         var param = new URLSearchParams(location.search).get('client');
-        state.clientId = isCoach && param ? param : user.id;
-        if (isCoach && param) {
+        if (state.isCoach && !param) { gate('Open a client’s Body page from their portal to see their training week.'); return; }
+        state.clientId = state.isCoach ? param : user.id;
+        if (state.isCoach) {
           var { data: cp } = await sb.from('profiles').select('full_name, preferred_name').eq('id', param).maybeSingle();
           profile = cp || {};
-          $('rtSub').textContent = 'This client\u2019s routine. It repeats every week — edits here show on their Body page.';
-        } else if (isCoach) {
-          $('rtGate').hidden = false;
-          $('rtGate').textContent = 'Open a client\u2019s Body page from their portal to see their routine.';
-          $('rtWeekToggle').hidden = true;
-          return;
+          $('rtSub').textContent = 'Pulled from this client’s calendar, as of their last sync.';
+          $('rtCalLink').hidden = true;
         }
         state.name = String((profile && (profile.preferred_name || profile.full_name)) || '').split(' ')[0];
 
-        var { data: row, error } = await sb.from('client_routines').select('days').eq('client_id', state.clientId).maybeSingle();
+        var results = await Promise.all([
+          sb.from('client_calendar_connections').select('provider, connected, events, synced_at').eq('client_id', state.clientId),
+          sb.from('client_calendar_event_meta').select('event_id, core').eq('client_id', state.clientId)
+        ]);
+        state.rows = (results[0].data || []).filter(function(r){ return r.connected; });
+        (results[1].data || []).forEach(function(m){ state.meta[m.event_id] = { core:m.core || null }; });
+        if (!state.rows.length) {
+          gate(state.isCoach
+            ? 'This client hasn’t connected a calendar yet. Their training week builds itself from it once they do.'
+            : 'Your training week builds itself from your calendar. <a href="../#calendar" style="color:#071f35;font-weight:800;">Connect Google or Outlook in the Calendar tab</a>, add your workouts (Push, Pull, Legs…) as weekly repeating events, and they’ll show up here.');
+          return;
+        }
+        state.rows.forEach(function(r){
+          (r.events || []).forEach(function(ev){
+            state.events.push({ id:ev.id, provider:ev.provider || r.provider, title:ev.title || '', start:new Date(ev.start), end:new Date(ev.end), allDay:!!ev.allDay, seriesId:ev.seriesId || '' });
+          });
+        });
+        $('rtRefresh').hidden = state.isCoach || !state.rows.some(function(r){ return r.provider === 'google'; });
         $('rtLayout').hidden = false;
-        if (error) setStatus('Couldn\u2019t load your routine: ' + error.message, true);
-        state.days = normalizeDays(row && row.days);
         // On Sunday the week that matters is the one starting tomorrow.
         state.week = new Date().getDay() === 0 ? 1 : 0;
         renderCard();
-        if (!row && !error) { setEditing(true); setStatus('Set your routine below — pick a quick fill or choose each day.'); }
+        renderSynced();
       }
       init();
     })();
