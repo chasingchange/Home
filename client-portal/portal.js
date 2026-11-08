@@ -3261,7 +3261,28 @@
     return (e.start <= d0 && e.end > d0) || calSameDay(e.start, day);
   }
 
-  function calCoreDef(e){ return e.core ? CORE_DEFS.filter(function(c){ return c.key === e.core; })[0] || null : null; }
+  // Suggested core from an event's title, used until someone picks one.
+  // First match wins, so the more specific phrases sit above the broad ones
+  // ("Run errands" is Life, not Body; "Coaching call" is Career).
+  var CAL_CORE_RULES = [
+    [/\b(errands?|groceries|grocery|laundry|clean(ing)?|chores?|dentist|doctor|haircut|appointment|bills?|banking|taxes|moving)\b/i, 'life'],
+    [/\b(family|kids?|school (run|pickup|drop[\s-]?off)|pick ?up|date night|birthday|anniversary|wedding|party|friends?|mom|dad|parents|holiday|vacation|trip|flight|travel|dinner with|brunch)\b/i, 'life'],
+    [/\b(church|mass|worship|pray(er|ing)?|bible|devotion(al)?|sabbath|volunteer(ing)?|gratitude|retreat|service at)\b/i, 'soul'],
+    [/\b(work ?out|gym|lift(ing)?|weights|training|push|pull|legs?|upper( body)?|lower( body)?|full[\s-]?body|arms|chest|glutes|back day|run(ning)?|jog|cardio|hiit|yoga|pilates|spin|swim(ming)?|bike|cycling|row(ing)?|hike|walk|stretch(ing)?|mobility|physio|sauna|crossfit|bjj|boxing|tennis|golf|soccer|basketball|meal prep)\b/i, 'body'],
+    [/\b(paint(ing)?|draw(ing)?|sketch(ing)?|music|guitar|piano|drums|sing(ing)?|songwriting|photo(graphy|shoot)?|film(ing)?|video edit(ing)?|design|studio|creative|dance|danc(e|ing) class|pottery|craft|write|writing|poetry|novel)\b/i, 'art'],
+    [/\b(meditat(e|ion)|journal(ing)?|read(ing)?|study|studying|learn(ing)?|course|class|lecture|therapy|therapist|counsel(l)?ing|reflect(ion)?|podcast|book club|language|mindful(ness)?|breathwork)\b/i, 'mind'],
+    [/\b(meeting|call|client|work|office|standup|stand-up|1:1|one[\s-]on[\s-]one|sync|interview|review|presentation|pitch|sales|deadline|project|email|admin|focus time|deep work|shift|conference|networking|coaching|team|board|demo|launch)\b/i, 'career']
+  ];
+  function calSuggestCore(title){
+    title = String(title || '');
+    for (var i = 0; i < CAL_CORE_RULES.length; i++) if (CAL_CORE_RULES[i][0].test(title)) return CAL_CORE_RULES[i][1];
+    return null;
+  }
+
+  // The event's core, or the one suggested from its title when nobody has
+  // picked one ('none' means someone chose None on purpose).
+  function calCoreKey(e){ return e.core || e.suggestedCore || null; }
+  function calCoreDef(e){ var k = calCoreKey(e); return k ? CORE_DEFS.filter(function(c){ return c.key === k; })[0] || null : null; }
   function calCoreColor(e){ var c = calCoreDef(e); return c ? c.color : CAL_NO_CORE; }
   function calTint(e, a){
     var c = calCoreDef(e);
@@ -3280,14 +3301,15 @@
   function calEvents(){
     var evs = calState.google.events.concat(calState.outlook.events).map(function(e){
       var m = calState.meta[e.id] || (e.seriesId && calState.meta[e.seriesId]) || {};
-      return Object.assign({}, e, { core:m.core || null, createdBy:m.createdBy || null });
+      return Object.assign({}, e, { core:m.core === 'none' ? null : (m.core || null), suggestedCore:m.core ? null : calSuggestCore(e.title), createdBy:m.createdBy || null });
     });
     if (isCoachUser) {
       calState.ops.forEach(function(op){
         var p = op.payload;
         if (op.op === 'create') {
           evs.push({ id:op.key, provider:op.provider, title:p.title || 'New event', start:new Date(p.start), end:new Date(p.end),
-            allDay:false, joinUrl:calSafeUrl(p.joinUrl), core:p.core || null, createdBy:'coach', pendingOp:op });
+            allDay:false, joinUrl:calSafeUrl(p.joinUrl), core:p.core === 'none' ? null : (p.core || null),
+            suggestedCore:p.core ? null : calSuggestCore(p.title), createdBy:'coach', pendingOp:op });
         } else if (op.op === 'delete') {
           evs = evs.filter(function(e){ return e.id !== op.eventId; });
         } else if (op.op === 'move') {
@@ -3436,9 +3458,10 @@
     return '<div class="cp-cal-agenda">' + (h || '<p class="cp-cal-empty" style="padding:22px 0 10px;">Nothing in the next ' + CAL_WINDOW_DAYS + ' days.</p>') + '</div>';
   }
 
-  function calCoreChipsHtml(cur, attr){
+  function calCoreChipsHtml(cur, attr, suggested){
     return [{ key:'', label:'None', color:CAL_NO_CORE }].concat(CORE_DEFS).map(function(c){
-      return '<button type="button" class="cp-core-chip' + ((cur || '') === c.key ? ' is-active' : '') + '" ' + attr + '="' + c.key + '">'
+      var on = (cur || '') === c.key;
+      return '<button type="button" class="cp-core-chip' + (on ? (suggested ? ' is-suggested' : ' is-active') : '') + '" ' + attr + '="' + c.key + '">'
         + '<span class="cp-cal-dot" style="background:' + c.color + '"></span>' + esc(c.label) + '</button>';
     }).join('');
   }
@@ -3472,7 +3495,8 @@
       + '<button type="button" class="cp-cal-pop-close" data-cal-action="close" aria-label="Close">✕</button></div>'
       + '<h4 class="cp-cal-pop-title">' + esc(e.title) + '</h4>'
       + '<p class="cp-cal-pop-when">' + esc(when) + '</p>'
-      + '<p class="cp-cal-pop-label">Core</p><div class="cp-cal-chip-row">' + calCoreChipsHtml(e.core, 'data-cal-setcore') + '</div>'
+      + '<p class="cp-cal-pop-label">Core' + (!e.core && e.suggestedCore ? ' <span class="cp-cal-suggested">Suggested</span>' : '') + '</p>'
+      + '<div class="cp-cal-chip-row">' + calCoreChipsHtml(calCoreKey(e), 'data-cal-setcore', !e.core && !!e.suggestedCore) + '</div>'
       + (note ? '<p class="cp-cal-pop-note">' + esc(note) + '</p>' : '')
       + (calRemovable(e) ? '<div><button type="button" class="cp-cal-pop-remove" data-cal-action="remove">Remove event</button></div>' : '')
       + (join ? '<div><a class="cp-cta-primary" href="' + esc(join) + '" target="_blank" rel="noopener">Join call</a></div>' : '');
@@ -3483,7 +3507,6 @@
     if (!calUi.cursor) calUi.cursor = calMidnight(new Date());
     var view = calUi.view, today = calMidnight(new Date());
     document.querySelectorAll('[data-cal-view]').forEach(function(b){ b.classList.toggle('is-active', b.getAttribute('data-cal-view') === view); });
-    $('cpCalNav').hidden = view === 'agenda';
     $('cpCalRange').textContent = calRangeTitle();
     $('cpCalLegend').innerHTML = CORE_DEFS.map(function(c){ return '<span><span class="cp-cal-dot" style="background:' + c.color + '"></span>' + esc(c.label) + '</span>'; }).join('');
     $('cpCalWindowNote').textContent = 'Synced through ' + calAddDays(today, CAL_WINDOW_DAYS - 1).toLocaleDateString(undefined, { month:'short', day:'numeric' });
@@ -3603,7 +3626,9 @@
         + '<span class="cp-cal-dot" style="background:' + CAL_PROVIDER_COLORS[p] + '"></span>'
         + esc(calProviderName(p) + (calState[p].email ? ' · ' + calState[p].email : '')) + '</button>';
     }).join('');
-    $('cpCalFormCores').innerHTML = calCoreChipsHtml(f.core, 'data-cal-formcore');
+    var suggested = !f.coreTouched && !!f.core;
+    $('cpCalFormCores').innerHTML = calCoreChipsHtml(f.core, 'data-cal-formcore', suggested);
+    $('cpCalFormCoreHint').hidden = !suggested;
   }
 
   function calOpenForm(day, hour){
@@ -3615,7 +3640,7 @@
     }
     var preferred = providers.filter(function(p){ return isCoachUser || calCanWrite(p); })[0] || providers[0];
     var h = Math.min(Math.max(hour == null ? 9 : hour, 0), 23);
-    calUi.form = { provider:preferred, core:null, saving:false };
+    calUi.form = { provider:preferred, core:null, coreTouched:false, saving:false };
     $('cpCalFormHeading').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
     $('cpCalFormSub').textContent = isCoachUser
       ? 'Goes onto the calendar ' + name + ' has connected. It shows as pending here until it syncs.'
@@ -3685,6 +3710,14 @@
     }
   }
 
+  // Slides the new week / month in from the side it came from.
+  function calSlide(dir){
+    var b = $('cpCalBody');
+    b.classList.remove('is-slide-next', 'is-slide-prev');
+    void b.offsetWidth;
+    b.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
+  }
+
   function calAction(a){
     var today = calMidnight(new Date());
     if (a === 'today') { calUi.cursor = today; calUi.selId = null; }
@@ -3692,6 +3725,7 @@
       var dir = a === 'next' ? 1 : -1, c = new Date(calUi.cursor);
       if (calUi.view === 'month') c.setMonth(c.getMonth() + dir, 1); else c.setDate(c.getDate() + dir * 7);
       calUi.cursor = c; calUi.selId = null;
+      calRenderCalendar(); calSlide(dir); return;
     }
     else if (a === 'add') { calOpenForm(calUi.cursor < today ? today : calUi.cursor, 9); return; }
     else if (a === 'close') calUi.selId = null;
@@ -3703,7 +3737,7 @@
     var t;
     if ((t = e.target.closest('[data-cal-view]'))) { calUi.view = t.getAttribute('data-cal-view'); calUi.selId = null; calRenderCalendar(); return; }
     if ((t = e.target.closest('[data-cal-action]'))) { calAction(t.getAttribute('data-cal-action')); return; }
-    if ((t = e.target.closest('[data-cal-setcore]'))) { calSetCore(calUi.selId, t.getAttribute('data-cal-setcore') || null); return; }
+    if ((t = e.target.closest('[data-cal-setcore]'))) { calSetCore(calUi.selId, t.getAttribute('data-cal-setcore') || 'none'); return; }
     if ((t = e.target.closest('[data-cal-openday]'))) {
       calUi.view = 'week'; calUi.cursor = parseLocalDate(t.getAttribute('data-cal-openday')); calUi.selId = null;
       calRenderCalendar(); return;
@@ -3730,6 +3764,64 @@
   });
 
   function calEl(e){ return e.target.nodeType === 1 ? e.target : e.target.parentElement; }
+
+  // ─── Swipe / scroll sideways to change week or month ──────────────────
+  // Trackpads and Shift+wheel scroll sideways; on touch screens, swipe.
+  // When the grid is wider than the screen (phones), it scrolls first and
+  // only flips the week once it is already at that edge.
+  var CAL_SWIPE_MIN = 60, CAL_WHEEL_MIN = 90;
+  function calScroller(){ return $('cpCalBody').querySelector('.cp-cal-scroll'); }
+  function calAtEdge(dir){
+    var sc = calScroller(); if (!sc) return true;
+    return dir > 0 ? sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2 : sc.scrollLeft <= 1;
+  }
+  function calCanFlip(){ return calUi.view !== 'agenda' && !calUi.drag && !calUi.dragId; }
+
+  var calWheel = { acc:0, lockUntil:0, timer:null };
+  $('cpCalBody').addEventListener('wheel', function(e){
+    if (!calCanFlip() || e.ctrlKey) return;
+    var dx = e.deltaX || (e.shiftKey ? e.deltaY : 0);
+    if (!dx || Math.abs(dx) < Math.abs(e.shiftKey ? 0 : e.deltaY)) return;
+    var dir = dx > 0 ? 1 : -1;
+    if (!calAtEdge(dir)) { calWheel.acc = 0; return; }
+    e.preventDefault();   // also stops the browser's swipe-to-go-back
+    // A trackpad flick keeps sending events as it coasts; one flick, one page.
+    clearTimeout(calWheel.timer);
+    calWheel.timer = setTimeout(function(){ calWheel.acc = 0; calWheel.lockUntil = 0; }, 180);
+    if (Date.now() < calWheel.lockUntil) return;
+    if ((calWheel.acc > 0) !== (dx > 0)) calWheel.acc = 0;
+    calWheel.acc += dx;
+    if (Math.abs(calWheel.acc) >= CAL_WHEEL_MIN) {
+      calWheel.acc = 0;
+      calWheel.lockUntil = Date.now() + 100000;   // until the flick settles
+      calAction(dir > 0 ? 'next' : 'prev');
+    }
+  }, { passive:false });
+
+  var calTouch = null;
+  $('cpCalBody').addEventListener('touchstart', function(e){
+    if (!calCanFlip() || e.touches.length !== 1 || calEl(e).closest('.cp-cal-block,.cp-cal-chip')) { calTouch = null; return; }
+    var t = e.touches[0];
+    calTouch = { x:t.clientX, y:t.clientY, t:Date.now(), leftEdge:calAtEdge(-1), rightEdge:calAtEdge(1) };
+  }, { passive:true });
+  $('cpCalBody').addEventListener('touchend', function(e){
+    var s = calTouch; calTouch = null;
+    if (!s || !calCanFlip()) return;
+    var t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (Math.abs(dx) < CAL_SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - s.t > 800) return;
+    var dir = dx < 0 ? 1 : -1;   // swipe left = forward in time
+    if (!(dir > 0 ? s.rightEdge : s.leftEdge)) return;
+    calUi.justDragged = Date.now();   // don't open "Add event" from the swipe
+    calAction(dir > 0 ? 'next' : 'prev');
+  }, { passive:true });
+
+  // Left / right arrow keys while the calendar has focus.
+  $('cpCalendarCard').addEventListener('keydown', function(e){
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !calCanFlip()) return;
+    if (e.target.closest('input,textarea,select,[contenteditable]')) return;
+    e.preventDefault();
+    calAction(e.key === 'ArrowRight' ? 'next' : 'prev');
+  });
 
   // Week view: drag a block to move it. Vertical snaps to 15 minutes,
   // horizontal to whole days within the visible week.
@@ -3805,7 +3897,12 @@
     var t = e.target.closest('[data-cal-formprovider]');
     if (t) { calUi.form.provider = t.getAttribute('data-cal-formprovider'); calRenderFormChips(); return; }
     t = e.target.closest('[data-cal-formcore]');
-    if (t) { calUi.form.core = t.getAttribute('data-cal-formcore') || null; calRenderFormChips(); }
+    if (t) { calUi.form.core = t.getAttribute('data-cal-formcore') || 'none'; calUi.form.coreTouched = true; calRenderFormChips(); }
+  });
+  $('cpCalFormTitle').addEventListener('input', function(){
+    var f = calUi.form; if (!f || f.coreTouched) return;
+    var next = calSuggestCore(this.value);
+    if (next !== f.core) { f.core = next; calRenderFormChips(); }
   });
   $('cpCalFormSave').addEventListener('click', calSaveForm);
   $('cpCalFormRepeat').addEventListener('change', function(){ $('cpCalFormUntilField').hidden = !this.value; });

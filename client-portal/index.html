@@ -491,9 +491,14 @@
       .cp-cal-toolbar-left,.cp-cal-toolbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
       .cp-cal-today{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:18px;font-size:13px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:rgba(7,31,53,.75);}
       .cp-cal-today:hover{border-color:rgba(7,31,53,.4);}
-      .cp-cal-nav{display:flex;gap:2px;}
-      .cp-cal-nav-btn{all:unset;cursor:pointer;width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(7,31,53,.6);}
-      .cp-cal-nav-btn:hover{background:rgba(7,31,53,.06);}
+      #cpCalBody{overscroll-behavior-x:contain;outline:none;}
+      #cpCalBody.is-slide-next{animation:cpCalSlideNext .26s ease-out;}
+      #cpCalBody.is-slide-prev{animation:cpCalSlidePrev .26s ease-out;}
+      @keyframes cpCalSlideNext{from{transform:translateX(36px);opacity:.35;}to{transform:none;opacity:1;}}
+      @keyframes cpCalSlidePrev{from{transform:translateX(-36px);opacity:.35;}to{transform:none;opacity:1;}}
+      @media (prefers-reduced-motion:reduce){#cpCalBody.is-slide-next,#cpCalBody.is-slide-prev{animation:none;}}
+      .cp-cal-suggested{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(42,157,240,.12);color:#1a6fa8;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:none;vertical-align:1px;}
+      .cp-core-chip.is-suggested{border:1.5px dashed #071f35;}
       .cp-cal-range{margin:0 0 0 4px;text-transform:none;letter-spacing:normal;font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:700;font-size:18px;white-space:nowrap;line-height:1.2;}
       .cp-cal-views{display:flex;padding:3px;border-radius:12px;background:rgba(7,31,53,.06);}
       .cp-cal-view-btn{all:unset;cursor:pointer;padding:7px 14px;border-radius:9px;color:rgba(7,31,53,.55);font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;}
@@ -1074,10 +1079,6 @@
             <div class="cp-cal-toolbar">
               <div class="cp-cal-toolbar-left">
                 <button type="button" class="cp-cal-today" data-cal-action="today">Today</button>
-                <div class="cp-cal-nav" id="cpCalNav">
-                  <button type="button" class="cp-cal-nav-btn" data-cal-action="prev" aria-label="Previous">&lsaquo;</button>
-                  <button type="button" class="cp-cal-nav-btn" data-cal-action="next" aria-label="Next">&rsaquo;</button>
-                </div>
                 <h3 class="cp-cal-range" id="cpCalRange"></h3>
               </div>
               <div class="cp-cal-toolbar-right">
@@ -1091,10 +1092,10 @@
               </div>
             </div>
             <p class="cp-cal-status" id="cpCalStatus" hidden></p>
-            <div id="cpCalBody"></div>
+            <div id="cpCalBody" tabindex="-1"></div>
             <div class="cp-cal-footer">
               <span class="cp-cal-legend" id="cpCalLegend"></span>
-              <span class="cp-cal-footer-hint">Drag events to move them</span>
+              <span class="cp-cal-footer-hint">Swipe or scroll sideways to change dates · Drag events to move them</span>
               <span class="cp-cal-footer-window" id="cpCalWindowNote"></span>
             </div>
             <div class="cp-cal-pop" id="cpCalPop" hidden></div>
@@ -1139,7 +1140,7 @@
               <div class="cp-cal-chip-row" id="cpCalFormProviders"></div>
             </div>
             <div class="cp-goal-form-field">
-              <label>Core</label>
+              <label>Core <span class="cp-cal-suggested" id="cpCalFormCoreHint" hidden>Suggested from the title</span></label>
               <div class="cp-cal-chip-row" id="cpCalFormCores"></div>
             </div>
             <div class="cp-goal-form-field">
