@@ -17,13 +17,17 @@
 
   // Calendar connect (Google Calendar / Outlook). Fill in real OAuth client
   // IDs before this goes live — setup steps for both providers are in
-  // scripts/client_calendar_connections.sql. Both flows run entirely in the
-  // browser: no client secret, no token ever touches Supabase.
+  // scripts/client_calendar_connections.sql. Outlook runs entirely in the
+  // browser (MSAL keeps it signed in). Google stays connected through the
+  // google-calendar-token Edge Function, which holds the refresh token
+  // server-side — see scripts/client_google_tokens.sql. Without that
+  // function deployed, Google falls back to browser-only sign-in.
   var CALENDAR_CONFIG = {
     googleClientId:    '976458437286-ufpguk5m0aoa3ob8ghjhf1bvqih747h0.apps.googleusercontent.com',
     // calendar.events = read + write events (add / move / remove from the
     // Calendar tab); email = show "Google · you@gmail.com" on the button.
     googleScope:       'https://www.googleapis.com/auth/calendar.events email',
+    googleTokenFunction: 'google-calendar-token',
     microsoftClientId: 'YOUR_MICROSOFT_ENTRA_APPLICATION_CLIENT_ID',
     microsoftScopes:   ['Calendars.ReadWrite']
   };
@@ -829,6 +833,7 @@
 
   // ─── Sign out (the button lives in the global nav, top-right) ─────────
   window.ccSignOut = async function(){
+    calForgetGoogleToken();
     await sb.auth.signOut();
     location.reload();
   };
@@ -859,6 +864,7 @@
   });
 
   $('cpBiometricUseEmail').addEventListener('click', async function(){
+    calForgetGoogleToken();
     await sb.auth.signOut();
     location.reload();
   });
@@ -2643,7 +2649,7 @@
 
   function calBlankState(provider){
     var s = { connected:false, needsReconnect:false, canWrite:false, email:'', events:[], busy:false, syncedAt:null };
-    if (provider === 'google') s.token = null; else s.account = null;
+    if (provider === 'google') { s.token = null; s.tokenExp = 0; } else s.account = null;
     return s;
   }
 
@@ -2700,7 +2706,8 @@
 
   // Resolves with the whole token response so the caller can check which
   // scopes the client actually granted (they can untick calendar access).
-  function calRequestGoogleToken(silent){
+  // Only used when the token server isn't deployed (see calGoogleServerCall).
+  function calRequestGoogleToken(prompt){
     return new Promise(function(resolve, reject){
       var client = calGoogleTokenClient();
       if (!client) { reject(new Error('Google Identity Services not loaded yet.')); return; }
@@ -2709,8 +2716,127 @@
         else reject(new Error((resp && resp.error) || 'No access token returned.'));
       };
       client.error_callback = function(err){ reject(err || new Error('Google sign-in failed.')); };
-      client.requestAccessToken(silent ? { prompt:'' } : { prompt:'consent' });
+      var opts = { prompt: prompt };
+      if (calState.google.email) opts.login_hint = calState.google.email;
+      client.requestAccessToken(opts);
     });
+  }
+
+  // ─── Staying connected ────────────────────────────────────────────────
+  // Google's browser sign-in only ever hands out a one-hour access token.
+  // To keep the calendar connected across visits, the portal asks Google
+  // for a one-time code instead and the google-calendar-token Edge Function
+  // trades it for a refresh token it keeps server-side. After that, a fresh
+  // access token is one quiet request away — no popup, no "Reconnect".
+  //
+  // The current access token is also kept in this browser (until it
+  // expires) so a reload doesn't even need that request. If the function
+  // isn't deployed yet, this cache is what keeps reloads within the hour
+  // from asking to reconnect.
+  var calGoogleServer = null;   // null = unknown, true = deployed, false = not
+
+  function calGoogleCacheKey(){ return 'cc_gcal_token_' + (currentUser && currentUser.id || ''); }
+  function calRememberGoogleToken(token, expiresIn){
+    calState.google.token = token;
+    calState.google.tokenExp = Date.now() + (Number(expiresIn) || 3600) * 1000;
+    try { localStorage.setItem(calGoogleCacheKey(), JSON.stringify({ t:token, e:calState.google.tokenExp, m:calState.google.email || '' })); } catch (e) { /* storage off */ }
+  }
+  function calForgetGoogleToken(){
+    try {
+      Object.keys(localStorage).forEach(function(k){ if (k.indexOf('cc_gcal_token_') === 0) localStorage.removeItem(k); });
+    } catch (e) { /* storage off */ }
+  }
+  function calCachedGoogleToken(){
+    try {
+      var c = JSON.parse(localStorage.getItem(calGoogleCacheKey()) || 'null');
+      if (c && c.t && c.e - Date.now() > 2 * 60 * 1000) return c;
+    } catch (e) { /* storage off */ }
+    return null;
+  }
+
+  // Resolves with the function's JSON, or null when the function isn't
+  // reachable (not deployed / offline) — the caller falls back.
+  async function calGoogleServerCall(body){
+    if (calGoogleServer === false || !CALENDAR_CONFIG.googleTokenFunction) return null;
+    try {
+      var r = await sb.functions.invoke(CALENDAR_CONFIG.googleTokenFunction, { body: body });
+      if (r.error || !r.data) {
+        // 404 = never deployed; stop asking this visit. Anything else may be
+        // a blip, so leave it unknown and try again later.
+        var st = r.error && r.error.context && r.error.context.status;
+        if (st === 404 || (r.error && r.error.name === 'FunctionsFetchError' && calGoogleServer === null)) calGoogleServer = false;
+        return null;
+      }
+      calGoogleServer = true;
+      return r.data;
+    } catch (e) { return null; }
+  }
+
+  // A usable Google access token, refreshed quietly when it's about to
+  // expire. Throws (status 401) when only a click on Connect can fix it.
+  var calGoogleRefreshing = null;
+  async function calGoogleAccessToken(force){
+    var s = calState.google;
+    if (!force && s.token && s.tokenExp - Date.now() > 60 * 1000) return s.token;
+    if (!calGoogleRefreshing) {
+      calGoogleRefreshing = (async function(){
+        var d = await calGoogleServerCall({ action:'token' });
+        if (d && d.access_token) {
+          if (d.email) calState.google.email = d.email;
+          calRememberGoogleToken(d.access_token, d.expires_in);
+          return d.access_token;
+        }
+        return null;
+      })().finally(function(){ calGoogleRefreshing = null; });
+    }
+    var token = await calGoogleRefreshing;
+    if (!token) throw calReconnectError('google');
+    return token;
+  }
+
+  // Google's popup code flow: one approval, then the server keeps it alive.
+  function calRequestGoogleCode(){
+    return new Promise(function(resolve, reject){
+      if (!window.google || !google.accounts || !google.accounts.oauth2) { reject(new Error('Google Identity Services not loaded yet.')); return; }
+      var cfg = {
+        client_id: CALENDAR_CONFIG.googleClientId,
+        scope: CALENDAR_CONFIG.googleScope,
+        ux_mode: 'popup',
+        callback: function(resp){
+          if (resp && resp.code) resolve(resp);
+          else reject(new Error((resp && (resp.error_description || resp.error)) || 'No code returned.'));
+        },
+        error_callback: function(err){ reject(new Error((err && err.message) || 'Google sign-in was closed.')); }
+      };
+      if (calState.google.email) cfg.login_hint = calState.google.email;
+      google.accounts.oauth2.initCodeClient(cfg).requestCode();
+    });
+  }
+
+  // Coming back to the portal: pick Google back up without a click.
+  async function calResumeGoogle(clientId){
+    var cached = calCachedGoogleToken();
+    if (cached) {
+      calState.google.token = cached.t;
+      calState.google.tokenExp = cached.e;
+      if (cached.m && !calState.google.email) calState.google.email = cached.m;
+    }
+    try {
+      var token = await calGoogleAccessToken();
+      if (viewingClientId !== clientId) return;
+      calState.google.events = await calFetchGoogleEvents(token);
+      calState.google.needsReconnect = false;
+      calState.google.canWrite = true;
+      await calApplyPendingOps(clientId, 'google');
+      if (viewingClientId === clientId) { calRenderCard(); calSaveSnapshot(clientId, 'google'); }
+    } catch (e) {
+      // A stale cached token (revoked, say): drop it and try the server once.
+      if (cached && e && e.status === 401 && calState.google.token === cached.t) {
+        calState.google.token = null; calForgetGoogleToken();
+        return calResumeGoogle(clientId);
+      }
+      /* leave needsReconnect true — the button reads "Reconnect Google" */
+    }
   }
 
   function calMapGoogleEvent(ev){
@@ -2736,6 +2862,7 @@
       + '&timeMax=' + encodeURIComponent(win.end.toISOString())
       + '&singleEvents=true&orderBy=startTime&maxResults=250';
     var res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    if (res.status === 401) throw calReconnectError('google');
     if (!res.ok) throw new Error(await calGoogleErrorText(res));
     var data = await res.json();
     return (data.items || []).filter(function(ev){ return ev.status !== 'cancelled'; }).map(calMapGoogleEvent);
@@ -2770,23 +2897,44 @@
     calSetStatus('');
     calState.google.busy = true; calRenderCard();
     try {
-      var resp = await calRequestGoogleToken(false);
-      var token = resp.access_token;
-      // Google's consent screen has a checkbox per scope, and the calendar
-      // one is easy to leave unticked. Without it there are no events to
-      // read, so stop here rather than show a connected, empty calendar.
-      if (!google.accounts.oauth2.hasGrantedAllScopes(resp, CAL_GOOGLE_WRITE_SCOPE)) {
-        google.accounts.oauth2.revoke(token, function(){});
-        throw new Error('calendar access wasn\'t allowed. Click Connect Google again and tick the box that lets this site see and edit your calendar events.');
+      var token, expiresIn, email = '';
+      // With the token server deployed (calGoogleServer is checked on page
+      // load), ask Google for a code it can turn into a lasting connection.
+      if (calGoogleServer !== false) {
+        var resp = await calRequestGoogleCode();
+        var d = await calGoogleServerCall({ action:'exchange', code: resp.code });
+        if (d && d.access_token) {
+          token = d.access_token; expiresIn = d.expires_in; email = d.email || '';
+        } else if (d && d.error) {
+          if (d.error === 'calendar_scope_missing') throw new Error('calendar access wasn\'t allowed. Click Connect Google again and tick the box that lets this site see and edit your calendar events.');
+          if (d.error === 'no_refresh_token') throw new Error('Google needs you to approve once more so it stays connected. Click Connect Google again.');
+          throw new Error(d.error);
+        }
+        // d === null: the function isn't deployed — fall through to the
+        // browser-only sign-in on the next click.
+        if (!token) throw new Error('click Connect Google once more to finish.');
+      } else {
+        // Browser-only fallback. A first connect shows the full approval
+        // screen; a reconnect only needs Google to confirm the account.
+        var tr = await calRequestGoogleToken(calState.google.connected ? '' : 'consent');
+        // Google's consent screen has a checkbox per scope, and the calendar
+        // one is easy to leave unticked. Without it there are no events to
+        // read, so stop here rather than show a connected, empty calendar.
+        if (!google.accounts.oauth2.hasGrantedAllScopes(tr, CAL_GOOGLE_WRITE_SCOPE)) {
+          google.accounts.oauth2.revoke(tr.access_token, function(){});
+          throw new Error('calendar access wasn\'t allowed. Click Connect Google again and tick the box that lets this site see and edit your calendar events.');
+        }
+        token = tr.access_token; expiresIn = tr.expires_in;
+        var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
+        var info = infoRes.ok ? await infoRes.json() : {};
+        email = info.email || '';
       }
+      calState.google.email = email || calState.google.email;
+      calRememberGoogleToken(token, expiresIn);
       calState.google.events = await calFetchGoogleEvents(token);
-      calState.google.token = token;
       calState.google.connected = true;
       calState.google.needsReconnect = false;
       calState.google.canWrite = true;
-      var infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:'Bearer '+token } });
-      var info = infoRes.ok ? await infoRes.json() : {};
-      calState.google.email = info.email || '';
       if (viewingClientId === clientId) {
         await calPersistConnection(clientId, 'google', true, calState.google.email);
         await calApplyPendingOps(clientId, 'google');
@@ -2804,6 +2952,8 @@
     if (calState.google.token && window.google && google.accounts && google.accounts.oauth2) {
       google.accounts.oauth2.revoke(calState.google.token, function(){});
     }
+    calForgetGoogleToken();
+    calGoogleServerCall({ action:'disconnect' });
     calState.google = calBlankState('google');
     if (clientId) { await calPersistConnection(clientId, 'google', false, ''); await calSaveSnapshot(clientId, 'google'); }
     if (viewingClientId === clientId) calRenderCard();
@@ -2925,12 +3075,11 @@
     return e;
   }
 
-  async function calApi(provider, method, rawId, body){
+  async function calApi(provider, method, rawId, body, retried){
     var url, headers = { 'Content-Type':'application/json' };
     if (provider === 'google') {
-      if (!calState.google.token) throw calReconnectError('google');
       url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events' + (rawId ? '/' + encodeURIComponent(rawId) : '');
-      headers.Authorization = 'Bearer ' + calState.google.token;
+      headers.Authorization = 'Bearer ' + await calGoogleAccessToken(retried);
     } else {
       var token;
       try { token = await calOutlookToken(); } catch (e) { throw calReconnectError('outlook'); }
@@ -2939,6 +3088,8 @@
       headers.Prefer = 'outlook.timezone="UTC"';
     }
     var res = await fetch(url, { method:method, headers:headers, body: body ? JSON.stringify(body) : undefined });
+    // Google: the token may have been cut short — get a fresh one, once.
+    if (res.status === 401 && provider === 'google' && !retried) return calApi(provider, method, rawId, body, true);
     if (res.status === 401) throw calReconnectError(provider);
     if (!res.ok) {
       var err = new Error(calProviderName(provider) + ' Calendar API error (' + res.status + ')');
@@ -3014,7 +3165,7 @@
   // occurrence, so re-read the window to pick them all up.
   async function calRefetch(provider){
     calState[provider].events = provider === 'google'
-      ? await calFetchGoogleEvents(calState.google.token)
+      ? await calFetchGoogleEvents(await calGoogleAccessToken())
       : await calFetchOutlookEvents(await calOutlookToken());
   }
 
@@ -3118,6 +3269,7 @@
     calState.ops = [];
     calUi.selId = null;
     calUi.cursor = calMidnight(new Date());
+    calUi.weekLeft = null;
     calUi.statusMsg = '';
 
     var results = await Promise.all([
@@ -3143,15 +3295,12 @@
     calRenderCard();
     if (isCoachUser) return;
 
-    // We used to auto-attempt a "silent" Google token request here so
-    // returning clients wouldn't have to click "Connect" every visit. GIS's
-    // silent prompt is documented as best-effort only — when there's no
-    // usable session (third-party cookies blocked, token expired, etc.) it
-    // can fall back to opening a real, visible sign-in popup on its own,
-    // with no click from the client. That reads as "Google keeps opening by
-    // itself." There's no safe way to guarantee it stays silent, so we no
-    // longer call it automatically — the client sees "Reconnect Google" and
-    // any popup only happens from their own click on calConnectGoogle().
+    // Google: no popup here, ever (GIS's "silent" popup could open a real
+    // sign-in window by itself). Instead use the token this browser still
+    // has, or ask the google-calendar-token function for a fresh one. Only
+    // if both come up empty does the button read "Reconnect Google".
+    if (calState.google.connected) calResumeGoogle(clientId);
+    else if (calGoogleServer === null) calGoogleServerCall({ action:'token' });   // is the token server deployed?
     if (calState.outlook.connected) {
       var client = calGetMsal();
       if (client) {
@@ -3294,7 +3443,7 @@
     return '--core:' + calCoreColor(e) + ';--tint:' + calTint(e, .26) + ';--tint-soft:' + calTint(e, .1) + ';--tint-chip:' + calTint(e, .24) + ';';
   }
 
-  var calUi = { view:'week', cursor:null, selId:null, drag:null, dragId:null, justDragged:0, form:null, statusMsg:'', statusErr:false };
+  var calUi = { view:'week', cursor:null, weekLeft:null, weekFrac:0, stripStart:null, selId:null, drag:null, dragId:null, justDragged:0, form:null, statusMsg:'', statusErr:false };
 
   // Every event to show: the provider events plus their core / creator, and
   // for the coach, their queued edits layered on top.
@@ -3327,7 +3476,8 @@
     var c = calUi.cursor;
     if (calUi.view === 'agenda') return 'Next ' + CAL_WINDOW_DAYS + ' days';
     if (calUi.view === 'month') return c.toLocaleDateString(undefined, { month:'long', year:'numeric' });
-    var ws = startOfWeek(c), we = calAddDays(ws, 6);
+    var ws = calUi.weekLeft ? calAddDays(calUi.weekLeft, calUi.weekFrac > 0.5 ? 1 : 0) : startOfWeek(c);
+    var we = calAddDays(ws, (calUi.weekLeft ? calVisibleDays() : 7) - 1);
     var m1 = ws.toLocaleDateString(undefined, { month:'short' }), m2 = we.toLocaleDateString(undefined, { month:'short' });
     return m1 + ' ' + ws.getDate() + ' – ' + (m1 === m2 ? '' : m2 + ' ') + we.getDate() + ', ' + we.getFullYear();
   }
@@ -3377,15 +3527,41 @@
       + '</button>';
   }
 
-  function calRenderWeek(evs){
-    var now = new Date(), today = calMidnight(now), ws = startOfWeek(calUi.cursor);
-    var days = []; for (var i = 0; i < 7; i++) days.push(calAddDays(ws, i));
+  // ─── Week view: one long strip of days you scroll through freely ──────
+  // The strip runs CAL_STRIP_WEEKS either side of where you are, a week's
+  // worth of days fills the screen, and the grid scrolls natively (so
+  // trackpad / touch momentum feels like any other scroll). When you get
+  // near either end the strip is re-centred under you without moving.
+  var CAL_STRIP_WEEKS = 12, CAL_GUTTER = 64, CAL_DAY_MIN = 96;
+  function calDayDiff(a, b){ return Math.round((calMidnight(a) - calMidnight(b)) / 86400000); }
+  function calDayWidth(){
+    var w = ($('cpCalBody').clientWidth || 760) - CAL_GUTTER;
+    return Math.max(CAL_DAY_MIN, w / 7);
+  }
+  function calVisibleDays(){ return Math.max(1, Math.round((($('cpCalBody').clientWidth || 760) - CAL_GUTTER) / calDayWidth())); }
+  // Leftmost day to show for a given date: its whole week when a week
+  // fits on screen, otherwise the day itself.
+  function calWeekLeftFor(d){ return calVisibleDays() >= 7 ? startOfWeek(d) : calMidnight(d); }
+  function calStripStart(){ return calAddDays(startOfWeek(calUi.weekLeft), -CAL_STRIP_WEEKS * 7); }
 
-    var head = '<div class="cp-cal-week-row cp-cal-week-row--head"><div></div>';
+  function calRenderWeek(evs){
+    // Something moved the cursor off screen (Today, a month-view day, a new
+    // event far away): jump the strip there.
+    if (calUi.weekLeft) {
+      var off = calDayDiff(calUi.cursor, calUi.weekLeft);
+      if (off < 0 || off >= calVisibleDays() + (calUi.weekFrac ? 1 : 0)) calUi.weekLeft = null;
+    }
+    if (!calUi.weekLeft) { calUi.weekLeft = calWeekLeftFor(calUi.cursor); calUi.weekFrac = 0; }
+    var now = new Date(), today = calMidnight(now), ws = calStripStart();
+    calUi.stripStart = ws;
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7, dayW = calDayWidth();
+    var days = []; for (var i = 0; i < n; i++) days.push(calAddDays(ws, i));
+
+    var head = '<div class="cp-cal-week-row cp-cal-week-row--head"><div class="cp-cal-stick"></div>';
     var allDay = '', anyAllDay = false, cols = '';
     days.forEach(function(day, i){
       var key = calDateKey(day), isToday = calSameDay(day, today), past = day < today;
-      head += '<div class="cp-cal-dayhead' + (past ? ' is-past' : '') + '"><span class="cp-cal-dow">' + CAL_DOW[i] + '</span>'
+      head += '<div class="cp-cal-dayhead' + (past ? ' is-past' : '') + '"><span class="cp-cal-dow">' + CAL_DOW[i % 7] + '</span>'
         + '<span class="cp-cal-daynum' + (isToday ? ' is-today' : '') + '">' + day.getDate() + '</span></div>';
 
       var dayAll = evs.filter(function(e){ return e.allDay && calOnDay(e, day); });
@@ -3403,14 +3579,14 @@
     });
     head += '</div>';
 
-    var gutter = '<div class="cp-cal-gutter">';
+    var gutter = '<div class="cp-cal-gutter cp-cal-stick">';
     for (var h = CAL_HOUR_START; h < CAL_HOUR_END; h++) {
       gutter += '<div class="cp-cal-hour"><span>' + (h === CAL_HOUR_START ? '' : (h % 12 || 12) + (h < 12 ? ' AM' : ' PM')) + '</span></div>';
     }
     gutter += '</div>';
 
-    return '<div class="cp-cal-scroll"><div class="cp-cal-week">' + head
-      + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label">All day</div>' + allDay + '</div>' : '')
+    return '<div class="cp-cal-scroll cp-cal-scroll--strip"><div class="cp-cal-week cp-cal-week--strip" style="--cal-n:' + n + ';--cal-day:' + dayW + 'px;width:' + (CAL_GUTTER + n * dayW) + 'px" data-cal-n="' + n + '">' + head
+      + (anyAllDay ? '<div class="cp-cal-week-row cp-cal-week-row--allday"><div class="cp-cal-allday-label cp-cal-stick">All day</div>' + allDay + '</div>' : '')
       + '<div class="cp-cal-week-body"><div class="cp-cal-week-row">' + gutter + cols + '</div></div></div></div>';
   }
 
@@ -3517,7 +3693,9 @@
     if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
       body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
     }
-    $('cpCalBody').innerHTML = body;
+    $('cpCalBody').innerHTML = body;   // also drops any paging ghost
+    if (calPager) calPager.ghostDir = 0;
+    if (view === 'week') calWeekRestoreScroll();
     calRenderPop(evs);
   }
 
@@ -3710,22 +3888,101 @@
     }
   }
 
-  // Slides the new week / month in from the side it came from.
-  function calSlide(dir){
+  // ─── Paging: the grid follows your finger / trackpad, then snaps ──────
+  // While a sideways gesture is under way, the next (or previous) week /
+  // month is drawn right beside the current one, so it slides in with the
+  // gesture instead of popping in after it. Letting go past the threshold
+  // (or flicking) finishes the slide; short of it, the grid springs back.
+  var CAL_PAGE_MS = 280;
+  var calPager = { offset:0, ghostDir:0, busy:false };
+
+  function calReducedMotion(){
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+  function calStepCursor(dir){
+    var c = new Date(calUi.cursor);
+    if (calUi.view === 'month') c.setMonth(c.getMonth() + dir, 1); else c.setDate(c.getDate() + dir * 7);
+    return c;
+  }
+  // The grid for another week / month, without touching what's on screen.
+  function calRangeHtml(cursor){
+    var keepCursor = calUi.cursor, keepSel = calUi.selId;
+    calUi.cursor = cursor; calUi.selId = null;
+    try { return calUi.view === 'month' ? calRenderMonth(calEvents()) : calRenderWeek(calEvents()); }
+    finally { calUi.cursor = keepCursor; calUi.selId = keepSel; }
+  }
+  function calPagerWidth(){ return $('cpCalBody').clientWidth || 600; }
+  function calSetOffset(px, ms){
     var b = $('cpCalBody');
-    b.classList.remove('is-slide-next', 'is-slide-prev');
-    void b.offsetWidth;
-    b.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
+    b.style.transition = ms ? 'transform ' + ms + 'ms cubic-bezier(.22,.8,.3,1)' : 'none';
+    b.style.transform = px ? 'translate3d(' + px + 'px,0,0)' : '';
+    calPager.offset = px;
+  }
+  // The neighbouring range, parked just off the edge it slides in from.
+  function calEnsureGhost(dir){
+    if (calPager.ghostDir === dir && $('cpCalBody').querySelector('.cp-cal-ghost')) return;
+    calRemoveGhost();
+    var g = document.createElement('div');
+    g.className = 'cp-cal-ghost';
+    g.setAttribute('aria-hidden', 'true');
+    g.style.left = dir > 0 ? '100%' : '-100%';
+    g.innerHTML = calRangeHtml(calStepCursor(dir));
+    $('cpCalBody').appendChild(g);
+    // Going back on a phone, the earlier week comes in showing its end.
+    if (dir < 0) { var sc = g.querySelector('.cp-cal-scroll'); if (sc) sc.scrollLeft = sc.scrollWidth; }
+    calPager.ghostDir = dir;
+  }
+  function calRemoveGhost(){
+    $('cpCalBody').querySelectorAll('.cp-cal-ghost').forEach(function(g){ g.remove(); });
+    calPager.ghostDir = 0;
+  }
+  // Follow the gesture. px > 0 drags the grid right (towards the past).
+  function calDragTo(px){
+    if (calPager.busy) return;
+    var w = calPagerWidth();
+    px = Math.max(-w, Math.min(w, px));
+    if (px) calEnsureGhost(px < 0 ? 1 : -1);
+    calSetOffset(px, 0);
+  }
+  // Finish the gesture: dir 1 / -1 pages forward / back, 0 springs back.
+  function calSettle(dir){
+    if (calPager.busy) return;
+    if (!dir) {
+      if (!calPager.offset) { calRemoveGhost(); return; }
+      calPager.busy = true;
+      calSetOffset(0, 220);
+      setTimeout(function(){ calRemoveGhost(); calSetOffset(0, 0); calPager.busy = false; }, 230);
+      return;
+    }
+    if (calReducedMotion()) { calSetOffset(0, 0); calRemoveGhost(); calGoPage(dir); return; }
+    calEnsureGhost(dir);
+    var w = calPagerWidth();
+    var ms = Math.max(160, Math.round(CAL_PAGE_MS * (1 - Math.min(1, Math.abs(calPager.offset) / w))));
+    calPager.busy = true;
+    calSetOffset(-dir * w, ms);
+    setTimeout(function(){
+      // The ghost is now exactly where the real grid will be: swap them.
+      calSetOffset(0, 0);
+      calGoPage(dir);
+      calPager.busy = false;
+    }, ms + 20);
+  }
+  function calGoPage(dir){
+    calUi.cursor = calStepCursor(dir); calUi.selId = null;
+    calRenderCalendar();
+    if (dir < 0) { var sc = calScroller(); if (sc) sc.scrollLeft = sc.scrollWidth; }
   }
 
   function calAction(a){
     var today = calMidnight(new Date());
-    if (a === 'today') { calUi.cursor = today; calUi.selId = null; }
+    if (a === 'today') {
+      calUi.cursor = today; calUi.selId = null;
+      if (calUi.view === 'week' && calWeekScrollTo(calWeekLeftFor(today), true)) { calRenderPop(calEvents()); return; }
+    }
     else if (a === 'prev' || a === 'next') {
-      var dir = a === 'next' ? 1 : -1, c = new Date(calUi.cursor);
-      if (calUi.view === 'month') c.setMonth(c.getMonth() + dir, 1); else c.setDate(c.getDate() + dir * 7);
-      calUi.cursor = c; calUi.selId = null;
-      calRenderCalendar(); calSlide(dir); return;
+      if (calUi.view === 'agenda') return;
+      if (calUi.view === 'week') { calWeekStep(a === 'next' ? 1 : -1); return; }
+      calSettle(a === 'next' ? 1 : -1); return;
     }
     else if (a === 'add') { calOpenForm(calUi.cursor < today ? today : calUi.cursor, 9); return; }
     else if (a === 'close') calUi.selId = null;
@@ -3765,66 +4022,154 @@
 
   function calEl(e){ return e.target.nodeType === 1 ? e.target : e.target.parentElement; }
 
+  // ─── Week strip: keep track of where you've scrolled ──────────────────
+  function calWeekScroller(){ return $('cpCalBody').querySelector('.cp-cal-scroll--strip'); }
+  function calWeekRestoreScroll(){
+    var sc = calWeekScroller(); if (!sc || !calUi.stripStart) return;
+    sc.scrollLeft = (calDayDiff(calUi.weekLeft, calUi.stripStart) + (calUi.weekFrac || 0)) * calDayWidth();
+    $('cpCalRange').textContent = calRangeTitle();
+  }
+  // Scroll the strip so `day` is the leftmost column. False if it's
+  // outside the strip (the caller re-renders instead).
+  function calWeekScrollTo(day, smooth){
+    var sc = calWeekScroller(); if (!sc || !calUi.stripStart) return false;
+    var idx = calDayDiff(day, calUi.stripStart);
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7;
+    if (idx < 0 || idx > n - calVisibleDays()) return false;
+    sc.scrollTo({ left: idx * calDayWidth(), behavior: smooth && !calReducedMotion() ? 'smooth' : 'auto' });
+    return true;
+  }
+  // Arrow keys / prev-next: glide a screenful (a week on desktop).
+  function calWeekStep(dir){
+    var target = calAddDays(calUi.weekLeft, (calUi.weekFrac > 0.5 ? 1 : 0) + dir * calVisibleDays());
+    if (calVisibleDays() >= 7) target = startOfWeek(calAddDays(target, 3));
+    calUi.selId = null; calRenderPop(calEvents());
+    if (!calWeekScrollTo(target, true)) { calUi.cursor = target; calUi.weekLeft = null; calRenderCalendar(); }
+  }
+  var calRecenterTimer = null;
+  $('cpCalBody').addEventListener('scroll', function(e){
+    var sc = e.target;
+    if (calUi.view !== 'week' || !sc.classList || !sc.classList.contains('cp-cal-scroll--strip') || !calUi.stripStart) return;
+    if (!sc.clientWidth || $('cpCalBody').clientWidth !== calLastW) return;
+    var dayW = calDayWidth(), idx = sc.scrollLeft / dayW, base = Math.floor(idx + 0.001);
+    calUi.weekLeft = calAddDays(calUi.stripStart, base);
+    calUi.weekFrac = Math.max(0, idx - base);
+    calUi.cursor = calAddDays(calUi.weekLeft, calUi.weekFrac > 0.5 ? 1 : 0);
+    $('cpCalRange').textContent = calRangeTitle();
+    // Near either end: re-centre the strip once the scrolling settles (or
+    // right away if you're about to run out of days).
+    var n = (CAL_STRIP_WEEKS * 2 + 1) * 7, room = Math.min(base, n - calVisibleDays() - base);
+    if (room >= 14) return;
+    clearTimeout(calRecenterTimer);
+    if (room <= 2) { calRenderCalendar(); return; }
+    calRecenterTimer = setTimeout(function(){ if (calUi.view === 'week' && !calUi.drag) calRenderCalendar(); }, 160);
+  }, true);
+  // The day width follows the calendar's width — and the strip is only
+  // positioned once it's actually on screen (a hidden tab has no width).
+  var calLastW = 0;
+  function calOnBodyResize(){
+    var w = $('cpCalBody').clientWidth;
+    if (!w || w === calLastW) return;
+    calLastW = w;
+    if (calUi.view === 'week' && calWeekScroller()) calRenderCalendar();
+  }
+  if (window.ResizeObserver) new ResizeObserver(function(){ requestAnimationFrame(calOnBodyResize); }).observe($('cpCalBody'));
+  else window.addEventListener('resize', calOnBodyResize);
+
   // ─── Swipe / scroll sideways to change week or month ──────────────────
+  // Month view only — the week view is a free-scrolling strip (above).
   // Trackpads and Shift+wheel scroll sideways; on touch screens, swipe.
   // When the grid is wider than the screen (phones), it scrolls first and
-  // only flips the week once it is already at that edge.
+  // only flips the month once it is already at that edge.
   var CAL_SWIPE_MIN = 60, CAL_WHEEL_MIN = 90;
   function calScroller(){ return $('cpCalBody').querySelector('.cp-cal-scroll'); }
   function calAtEdge(dir){
     var sc = calScroller(); if (!sc) return true;
     return dir > 0 ? sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2 : sc.scrollLeft <= 1;
   }
-  function calCanFlip(){ return calUi.view !== 'agenda' && !calUi.drag && !calUi.dragId; }
+  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachUser && !calState.google.connected && !calState.outlook.connected); }
 
+  // Trackpad: the grid moves with every sideways scroll event. A flick that
+  // goes far enough pages right away and ignores the rest of its coast;
+  // otherwise it settles once the scrolling stops.
   var calWheel = { acc:0, lockUntil:0, timer:null };
   $('cpCalBody').addEventListener('wheel', function(e){
     if (!calCanFlip() || e.ctrlKey) return;
     var dx = e.deltaX || (e.shiftKey ? e.deltaY : 0);
     if (!dx || Math.abs(dx) < Math.abs(e.shiftKey ? 0 : e.deltaY)) return;
+    if (e.deltaMode === 1) dx *= 16;          // Firefox scrolls by lines
     var dir = dx > 0 ? 1 : -1;
-    if (!calAtEdge(dir)) { calWheel.acc = 0; return; }
+    if (!calWheel.acc && !calPager.busy && Date.now() >= calWheel.lockUntil && !calAtEdge(dir)) return;   // let the grid scroll first
     e.preventDefault();   // also stops the browser's swipe-to-go-back
-    // A trackpad flick keeps sending events as it coasts; one flick, one page.
     clearTimeout(calWheel.timer);
-    calWheel.timer = setTimeout(function(){ calWheel.acc = 0; calWheel.lockUntil = 0; }, 180);
-    if (Date.now() < calWheel.lockUntil) return;
-    if ((calWheel.acc > 0) !== (dx > 0)) calWheel.acc = 0;
+    calWheel.timer = setTimeout(function(){
+      var acc = calWheel.acc;
+      calWheel.acc = 0; calWheel.lockUntil = 0;
+      if (acc) calSettle(Math.abs(acc) >= CAL_WHEEL_MIN ? (acc > 0 ? 1 : -1) : 0);
+    }, 150);
+    if (Date.now() < calWheel.lockUntil || calPager.busy) return;
     calWheel.acc += dx;
-    if (Math.abs(calWheel.acc) >= CAL_WHEEL_MIN) {
+    if (Math.abs(calWheel.acc) >= calPagerWidth() * 0.4) {
+      var d = calWheel.acc > 0 ? 1 : -1;
       calWheel.acc = 0;
-      calWheel.lockUntil = Date.now() + 100000;   // until the flick settles
-      calAction(dir > 0 ? 'next' : 'prev');
+      calWheel.lockUntil = Infinity;          // until this flick's coast stops
+      calSettle(d);
+      return;
     }
+    calDragTo(-calWheel.acc);
   }, { passive:false });
 
+  // Touch: once a swipe reads as sideways, the grid tracks the finger.
   var calTouch = null;
   $('cpCalBody').addEventListener('touchstart', function(e){
-    if (!calCanFlip() || e.touches.length !== 1 || calEl(e).closest('.cp-cal-block,.cp-cal-chip')) { calTouch = null; return; }
-    var t = e.touches[0];
-    calTouch = { x:t.clientX, y:t.clientY, t:Date.now(), leftEdge:calAtEdge(-1), rightEdge:calAtEdge(1) };
+    if (!calCanFlip() || calPager.busy || e.touches.length !== 1 || calEl(e).closest('.cp-cal-block,.cp-cal-chip')) { calTouch = null; return; }
+    var t = e.touches[0], now = Date.now();
+    calTouch = { x:t.clientX, y:t.clientY, lastX:t.clientX, lastT:now, vx:0, mode:null, leftEdge:calAtEdge(-1), rightEdge:calAtEdge(1) };
   }, { passive:true });
-  $('cpCalBody').addEventListener('touchend', function(e){
+  $('cpCalBody').addEventListener('touchmove', function(e){
+    var s = calTouch; if (!s) return;
+    if (e.touches.length !== 1) { calTouch = null; if (s.mode === 'page') calSettle(0); return; }
+    var t = e.touches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (!s.mode) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      var dir = dx < 0 ? 1 : -1;   // swipe left = forward in time
+      s.mode = Math.abs(dx) > Math.abs(dy) && (dir > 0 ? s.rightEdge : s.leftEdge) ? 'page' : 'none';
+    }
+    if (s.mode !== 'page') return;
+    e.preventDefault();
+    var now = Date.now();
+    if (now > s.lastT) { s.vx = (t.clientX - s.lastX) / (now - s.lastT); s.lastX = t.clientX; s.lastT = now; }
+    // Only page towards a side the grid can't scroll to itself.
+    if (!s.leftEdge) dx = Math.min(dx, 0);
+    if (!s.rightEdge) dx = Math.max(dx, 0);
+    calDragTo(dx);
+  }, { passive:false });
+  function calTouchEnd(cancelled){
     var s = calTouch; calTouch = null;
-    if (!s || !calCanFlip()) return;
-    var t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
-    if (Math.abs(dx) < CAL_SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - s.t > 800) return;
-    var dir = dx < 0 ? 1 : -1;   // swipe left = forward in time
-    if (!(dir > 0 ? s.rightEdge : s.leftEdge)) return;
+    if (!s || s.mode !== 'page') return;
     calUi.justDragged = Date.now();   // don't open "Add event" from the swipe
-    calAction(dir > 0 ? 'next' : 'prev');
-  }, { passive:true });
+    var off = calPager.offset, dir = 0;
+    if (!cancelled && off) {
+      var want = off < 0 ? 1 : -1;
+      var flick = Date.now() - s.lastT < 120 && Math.abs(s.vx) > 0.35;
+      if (flick) dir = (s.vx < 0 ? 1 : -1) === want ? want : 0;   // a flick back cancels
+      else if (Math.abs(off) >= Math.max(CAL_SWIPE_MIN, calPagerWidth() * 0.22)) dir = want;
+    }
+    calSettle(dir);
+  }
+  $('cpCalBody').addEventListener('touchend', function(){ calTouchEnd(false); }, { passive:true });
+  $('cpCalBody').addEventListener('touchcancel', function(){ calTouchEnd(true); }, { passive:true });
 
   // Left / right arrow keys while the calendar has focus.
   $('cpCalendarCard').addEventListener('keydown', function(e){
-    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !calCanFlip()) return;
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || (calUi.view !== 'week' && !calCanFlip())) return;
     if (e.target.closest('input,textarea,select,[contenteditable]')) return;
     e.preventDefault();
     calAction(e.key === 'ArrowRight' ? 'next' : 'prev');
   });
 
   // Week view: drag a block to move it. Vertical snaps to 15 minutes,
-  // horizontal to whole days within the visible week.
+  // horizontal to whole days.
   $('cpCalBody').addEventListener('pointerdown', function(e){
     var block = calEl(e).closest('.cp-cal-block');
     if (!block || e.button !== 0) return;
@@ -3832,6 +4177,8 @@
     var col = block.parentElement;
     var drag = { id:block.getAttribute('data-cal-event'), x0:e.clientX, y0:e.clientY, w:col.getBoundingClientRect().width,
       col:parseInt(col.getAttribute('data-cal-col'), 10), moved:false, dMin:0, dDay:0 };
+    var strip = block.closest('[data-cal-n]');
+    drag.maxCol = strip ? parseInt(strip.getAttribute('data-cal-n'), 10) - 1 : 6;
     var ev0 = calFindEvent(drag.id);
     var timeEl = block.querySelector('.cp-cal-block-time');
     var short = block.classList.contains('is-short');
@@ -3842,7 +4189,7 @@
       if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
       if (!drag.moved) { drag.moved = true; block.classList.add('is-dragging'); document.body.style.userSelect = 'none'; }
       drag.dMin = Math.round((dy / CAL_ROW) * 4) * 15;
-      drag.dDay = Math.max(-drag.col, Math.min(6 - drag.col, Math.round(dx / drag.w)));
+      drag.dDay = Math.max(-drag.col, Math.min(drag.maxCol - drag.col, Math.round(dx / drag.w)));
       block.style.transform = 'translate(' + (drag.dDay * drag.w) + 'px,' + (drag.dMin / 60 * CAL_ROW) + 'px)';
       if (ev0 && timeEl) {
         var s = calShifted(ev0.start, drag.dDay, drag.dMin);
