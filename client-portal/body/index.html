@@ -121,7 +121,7 @@
             <p class="rt-share-kicker" id="rtShareKicker">My training week</p>
             <h3 class="rt-share-title" id="rtShareTitle"></h3>
             <div class="rt-days" id="rtDays"></div>
-            <div class="rt-share-foot"><span><img src="/Logo.png" alt="" />Chasing Change</span><span id="rtShareCount"></span></div>
+            <div class="rt-share-foot"><span><img src="../../Logo.png" alt="" />Chasing Change</span><span id="rtShareCount"></span></div>
           </div>
           <div class="rt-side">
             <button type="button" class="rt-btn rt-btn--primary" id="rtSaveImage">Save as image</button>
@@ -339,7 +339,7 @@
         return text + '…';
       }
       function loadLogo(){
-        return new Promise(function(res){ var img = new Image(); img.onload = function(){ res(img); }; img.onerror = function(){ res(null); }; img.src = '/Logo.png'; });
+        return new Promise(function(res){ var img = new Image(); img.onload = function(){ res(img); }; img.onerror = function(){ res(null); }; img.src = '../../Logo.png'; });
       }
 
       async function drawImage(){
