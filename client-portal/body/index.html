@@ -6,10 +6,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Body | Client Portal | Chasing Change</title>
-    <meta name="description" content="Your Body core: workouts, programs and training stats." />
+    <meta name="description" content="Your Body core: weekly training routine, workouts, programs and training stats." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700;800&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../../shared.css" />
     <script src="../../shared-global-nav.js" defer></script>
     <script src="../../shared-global-footer.js" defer></script>
@@ -32,17 +32,122 @@
       .cp-body-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
       .cp-cta-row{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;}
       .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;}
-      @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}}
-      @media(max-width:600px){.cp-dash{padding:0 16px 72px;}}
+
+      /* ─── Weekly routine ─────────────────────────────────────────── */
+      .rt-section{margin-bottom:20px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;}
+      .rt-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+      .rt-sub{margin:6px 0 0;font-size:14px;color:rgba(7,31,53,.55);}
+      .rt-seg{display:inline-flex;background:#f1f1f4;border-radius:999px;padding:4px;}
+      .rt-seg-btn{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;color:rgba(7,31,53,.55);}
+      .rt-seg-btn.is-active{background:#fff;color:#071f35;box-shadow:0 1px 4px rgba(7,31,53,.12);}
+      .rt-layout{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;margin-top:22px;align-items:start;}
+      .rt-side{display:flex;flex-direction:column;gap:12px;}
+      .rt-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:21px;font-size:14px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:#071f35;background:#fff;}
+      .rt-btn:hover{border-color:rgba(7,31,53,.35);}
+      .rt-btn--primary{background:#071f35;border-color:#071f35;color:#fff;}
+      .rt-btn--primary:hover{opacity:.9;}
+      .rt-btn[disabled]{opacity:.5;cursor:default;}
+      .rt-hint{margin:0;font-size:13px;line-height:1.55;color:rgba(7,31,53,.55);}
+      .rt-hint a{color:#071f35;font-weight:700;}
+      .rt-status{margin:0;font-size:13px;font-weight:700;color:#2b8a3e;min-height:18px;}
+      .rt-status.is-error{color:#c92a2a;}
+
+      /* The share card — built to look good as a phone screenshot. */
+      .rt-share{background:#071f35;color:#fff;border-radius:22px;padding:24px 22px 18px;box-shadow:0 18px 40px rgba(7,31,53,.18);}
+      .rt-share-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);margin:0;}
+      .rt-share-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;letter-spacing:-.01em;margin:6px 0 16px;}
+      .rt-days{display:flex;flex-direction:column;gap:8px;}
+      .rt-day{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.06);}
+      .rt-day.is-today{background:rgba(255,255,255,.13);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);}
+      .rt-day-dow{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.1;}
+      .rt-day-date{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
+      .rt-day-main{min-width:0;}
+      .rt-day-label{display:inline-flex;align-items:center;gap:8px;font-family:"Raleway",sans-serif;font-size:17px;font-weight:800;}
+      .rt-day-label i{width:10px;height:10px;border-radius:999px;flex:none;}
+      .rt-day-notes{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .rt-day-time{font-size:13px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;}
+      .rt-day.is-rest .rt-day-label{color:rgba(255,255,255,.45);font-weight:700;}
+      .rt-share-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+      .rt-share-foot img{width:18px;height:18px;border-radius:4px;vertical-align:-4px;margin-right:6px;}
+
+      /* Editor */
+      .rt-editor{display:none;margin-top:22px;border-top:1px solid rgba(7,31,53,.08);padding-top:20px;}
+      .rt-editor.is-open{display:block;}
+      .rt-edit-row{display:grid;grid-template-columns:52px 150px minmax(0,1fr) 116px 84px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(7,31,53,.06);}
+      .rt-edit-dow{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+      .rt-edit-row select,.rt-edit-row input{box-sizing:border-box;width:100%;height:38px;padding:0 10px;border:1px solid rgba(7,31,53,.15);border-radius:10px;font:inherit;font-size:14px;color:#071f35;background:#fff;}
+      .rt-edit-head{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);border-bottom:none;padding-bottom:0;}
+      .rt-editor-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center;}
+      .rt-presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+      .rt-chip{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:12px;font-weight:800;color:rgba(7,31,53,.7);}
+      .rt-chip:hover{border-color:rgba(7,31,53,.4);}
+      .rt-gate{margin:0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
+
+      @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}.rt-layout{grid-template-columns:1fr;}}
+      @media(max-width:720px){
+        .rt-edit-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);}
+        .rt-edit-row .rt-edit-notes{grid-column:2 / -1;}
+        .rt-edit-head{display:none;}
+      }
+      @media(max-width:600px){.cp-dash{padding:0 16px 72px;}.rt-section{padding:18px;}.rt-share{padding:20px 16px 16px;}}
     </style>
   </head>
   <body class="cc-page">
     <main class="cp-dash">
       <div class="cp-dash-head">
-        <a class="cp-back" href="../">← Client Portal</a>
+        <a class="cp-back" id="cpBackLink" href="../">← Client Portal</a>
         <div class="cp-core-kicker"><span class="cp-dot"></span><p class="cp-kicker">The Six Cores</p></div>
         <h1 class="cp-h1">Body</h1>
       </div>
+
+      <!-- WEEKLY ROUTINE -->
+      <section class="rt-section" id="rtSection">
+        <div class="rt-head">
+          <div>
+            <p class="cp-kicker">Weekly routine</p>
+            <h2 class="cp-card-title" style="margin-top:6px;">Your training week</h2>
+            <p class="rt-sub" id="rtSub">Repeats every week. Screenshot the card or save it as an image to send to a friend.</p>
+          </div>
+          <div class="rt-seg" id="rtWeekToggle" role="tablist" aria-label="Which week">
+            <button type="button" class="rt-seg-btn is-active" data-week="0" role="tab" aria-selected="true">This week</button>
+            <button type="button" class="rt-seg-btn" data-week="1" role="tab" aria-selected="false">Next week</button>
+          </div>
+        </div>
+
+        <p class="rt-gate" id="rtGate" hidden></p>
+
+        <div class="rt-layout" id="rtLayout" hidden>
+          <div class="rt-share" id="rtShareCard">
+            <p class="rt-share-kicker" id="rtShareKicker">My training week</p>
+            <h3 class="rt-share-title" id="rtShareTitle"></h3>
+            <div class="rt-days" id="rtDays"></div>
+            <div class="rt-share-foot"><span><img src="/Logo.png" alt="" />Chasing Change</span><span id="rtShareCount"></span></div>
+          </div>
+          <div class="rt-side">
+            <button type="button" class="rt-btn rt-btn--primary" id="rtSaveImage">Save as image</button>
+            <button type="button" class="rt-btn" id="rtEditToggle">Edit routine</button>
+            <button type="button" class="rt-btn" id="rtIcs">Add to Apple / other calendar (.ics)</button>
+            <p class="rt-hint">To put it on Google or Outlook, open the <a id="rtCalLink" href="../#calendar">portal Calendar tab</a> and tap <strong>Sync routine</strong> — each training day is added as a weekly repeating event. Re-sync any time you change the routine.</p>
+            <p class="rt-status" id="rtStatus" role="status"></p>
+          </div>
+        </div>
+
+        <div class="rt-editor" id="rtEditor">
+          <div class="rt-presets">
+            <span class="cp-kicker" style="margin-right:4px;">Quick fill</span>
+            <button type="button" class="rt-chip" data-preset="ppl">Push / Pull / Legs ×2</button>
+            <button type="button" class="rt-chip" data-preset="ul">Upper / Lower</button>
+            <button type="button" class="rt-chip" data-preset="full">Full body ×3</button>
+            <button type="button" class="rt-chip" data-preset="clear">Clear</button>
+          </div>
+          <div class="rt-edit-row rt-edit-head"><span>Day</span><span>Workout</span><span>Focus / notes</span><span>Time</span><span>Minutes</span></div>
+          <div id="rtEditRows"></div>
+          <div class="rt-editor-actions">
+            <button type="button" class="rt-btn rt-btn--primary" id="rtSave">Save routine</button>
+            <button type="button" class="rt-btn" id="rtCancel">Cancel</button>
+          </div>
+        </div>
+      </section>
 
       <div class="cp-card-grid">
         <a class="cp-card cp-card--wide cp-trainerize-card" id="cpTrainerizeCard" href="https://chasingchange.trainerize.com/app/overview" target="_blank" rel="noopener">
@@ -53,5 +158,354 @@
         </a>
       </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../../shared-supabase-config.js"></script>
+    <script>
+    (function(){
+      // Weekly routine. One row per client in public.client_routines
+      // (scripts/client_routines.sql): days[0..6] = Monday..Sunday. The same
+      // template repeats every week; the portal's Calendar tab can push it to
+      // Google / Outlook as weekly repeating events ("Sync routine").
+      var SUPABASE_URL = window.CC_SUPABASE_URL || 'https://datrgkjqwyfcbmtwwifm.supabase.co';
+      var SUPABASE_KEY = window.CC_SUPABASE_KEY || 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
+      var COACH_EMAIL  = 'tywadebusiness@gmail.com';
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      var TYPES = [
+        { key:'push',   label:'Push',      color:'#f02348' },
+        { key:'pull',   label:'Pull',      color:'#2a9df0' },
+        { key:'legs',   label:'Legs',      color:'#77d770' },
+        { key:'upper',  label:'Upper',     color:'#aa70d7' },
+        { key:'lower',  label:'Lower',     color:'#f58b1c' },
+        { key:'full',   label:'Full body', color:'#ffbd59' },
+        { key:'cardio', label:'Cardio',    color:'#2ec4b6' },
+        { key:'custom', label:'Custom…',   color:'#e9ecef' },
+        { key:'rest',   label:'Rest',      color:'#9aa3ad' }
+      ];
+      var DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      var ICS_DAYS = ['MO','TU','WE','TH','FR','SA','SU'];
+      var PRESETS = {
+        ppl:  ['push','pull','legs','push','pull','legs','rest'],
+        ul:   ['upper','lower','rest','upper','lower','rest','rest'],
+        full: ['full','rest','full','rest','full','rest','rest'],
+        clear:['rest','rest','rest','rest','rest','rest','rest']
+      };
+
+      var state = { clientId:null, name:'', days:blankDays(), week:0, editing:false };
+
+      function $(id){ return document.getElementById(id); }
+      function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+      function typeDef(key){ return TYPES.filter(function(t){ return t.key === key; })[0] || TYPES[TYPES.length - 1]; }
+      function blankDay(type){ return { type:type || 'rest', label:'', time:'', duration:60, notes:'' }; }
+      function blankDays(){ return DOW.map(function(){ return blankDay('rest'); }); }
+      function isRest(d){ return !d || d.type === 'rest'; }
+      function dayLabel(d){
+        if (isRest(d)) return 'Rest';
+        if (d.type === 'custom') return (d.label || '').trim() || 'Workout';
+        return typeDef(d.type).label;
+      }
+      function dayColor(d){ return d.type === 'custom' ? '#ffffff' : typeDef(d.type).color; }
+
+      function normalizeDays(raw){
+        var arr = Array.isArray(raw) ? raw : [];
+        return DOW.map(function(_, i){
+          var d = arr[i] || {};
+          var type = TYPES.some(function(t){ return t.key === d.type; }) ? d.type : 'rest';
+          return { type:type, label:String(d.label || ''), time:/^\d{2}:\d{2}$/.test(d.time || '') ? d.time : '', duration:Math.max(10, Math.min(300, parseInt(d.duration, 10) || 60)), notes:String(d.notes || '') };
+        });
+      }
+
+      // Monday of the current week (+ offset weeks), local time.
+      function weekStart(offset){
+        var d = new Date(); d.setHours(0,0,0,0);
+        d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+        return d;
+      }
+      function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+      function fmtDate(d){ return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }); }
+      function fmtRange(start){
+        var end = addDays(start, 6);
+        var sameMonth = start.getMonth() === end.getMonth();
+        return fmtDate(start) + ' – ' + (sameMonth ? end.getDate() : fmtDate(end));
+      }
+      function fmtTime(hhmm){
+        if (!hhmm) return '';
+        var p = hhmm.split(':'), d = new Date(); d.setHours(+p[0], +p[1], 0, 0);
+        return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' }).replace(':00', '');
+      }
+
+      function setStatus(msg, isError){ var el = $('rtStatus'); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
+
+      // ─── Share card ────────────────────────────────────────────────
+      function renderCard(){
+        var start = weekStart(state.week), today = new Date(); today.setHours(0,0,0,0);
+        $('rtShareKicker').textContent = state.name ? state.name + '\u2019s training week' : 'My training week';
+        $('rtShareTitle').textContent = (state.week === 0 ? 'This week · ' : 'Next week · ') + fmtRange(start);
+        var h = '', count = 0;
+        state.days.forEach(function(d, i){
+          var date = addDays(start, i), rest = isRest(d);
+          if (!rest) count++;
+          h += '<div class="rt-day' + (rest ? ' is-rest' : '') + (date.getTime() === today.getTime() ? ' is-today' : '') + '">'
+            + '<div><div class="rt-day-dow">' + DOW[i] + '</div><div class="rt-day-date">' + esc(fmtDate(date)) + '</div></div>'
+            + '<div class="rt-day-main"><div class="rt-day-label">' + (rest ? '' : '<i style="background:' + dayColor(d) + '"></i>') + esc(dayLabel(d)) + '</div>'
+            + (d.notes && !rest ? '<div class="rt-day-notes">' + esc(d.notes) + '</div>' : '') + '</div>'
+            + '<div class="rt-day-time">' + (rest ? '' : esc(fmtTime(d.time))) + '</div>'
+            + '</div>';
+        });
+        $('rtDays').innerHTML = h;
+        $('rtShareCount').textContent = count + (count === 1 ? ' session' : ' sessions');
+        document.querySelectorAll('#rtWeekToggle [data-week]').forEach(function(b){
+          var on = +b.getAttribute('data-week') === state.week;
+          b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+      }
+
+      // ─── Editor ────────────────────────────────────────────────────
+      function renderEditor(days){
+        var opts = TYPES.map(function(t){ return '<option value="' + t.key + '">' + esc(t.label) + '</option>'; }).join('');
+        var h = '';
+        days.forEach(function(d, i){
+          h += '<div class="rt-edit-row" data-i="' + i + '">'
+            + '<span class="rt-edit-dow">' + DOW[i] + '</span>'
+            + '<select data-f="type" aria-label="' + DOW[i] + ' workout">' + opts + '</select>'
+            + '<input class="rt-edit-notes" data-f="notes" type="text" maxlength="60" placeholder="' + (d.type === 'custom' ? 'Name it, e.g. Arms & abs' : 'e.g. Chest & triceps') + '" aria-label="' + DOW[i] + ' focus or notes">'
+            + '<input data-f="time" type="time" aria-label="' + DOW[i] + ' time">'
+            + '<input data-f="duration" type="number" min="10" max="300" step="5" aria-label="' + DOW[i] + ' minutes">'
+            + '</div>';
+        });
+        $('rtEditRows').innerHTML = h;
+        days.forEach(function(d, i){
+          var row = $('rtEditRows').children[i];
+          row.querySelector('[data-f=type]').value = d.type;
+          // For a custom day the text box is its name; otherwise it's the focus line.
+          row.querySelector('[data-f=notes]').value = d.type === 'custom' ? (d.label || '') : d.notes;
+          row.querySelector('[data-f=time]').value = d.time;
+          row.querySelector('[data-f=duration]').value = d.duration;
+          syncRowState(row);
+        });
+      }
+
+      function syncRowState(row){
+        var type = row.querySelector('[data-f=type]').value, rest = type === 'rest';
+        ['notes','time','duration'].forEach(function(f){ row.querySelector('[data-f=' + f + ']').disabled = rest; });
+        row.querySelector('[data-f=notes]').placeholder = type === 'custom' ? 'Name it, e.g. Arms & abs' : 'e.g. Chest & triceps';
+      }
+
+      function readEditor(){
+        return Array.prototype.map.call($('rtEditRows').children, function(row){
+          var type = row.querySelector('[data-f=type]').value;
+          var text = row.querySelector('[data-f=notes]').value.trim();
+          return {
+            type: type,
+            label: type === 'custom' ? text : '',
+            notes: type === 'custom' || type === 'rest' ? '' : text,
+            time: type === 'rest' ? '' : row.querySelector('[data-f=time]').value,
+            duration: Math.max(10, Math.min(300, parseInt(row.querySelector('[data-f=duration]').value, 10) || 60))
+          };
+        });
+      }
+
+      function setEditing(on){
+        state.editing = on;
+        $('rtEditor').classList.toggle('is-open', on);
+        $('rtEditToggle').textContent = on ? 'Close editor' : 'Edit routine';
+        if (on) renderEditor(state.days);
+      }
+
+      async function save(){
+        var days = normalizeDays(readEditor());
+        $('rtSave').disabled = true; setStatus('Saving…');
+        var { error } = await sb.from('client_routines').upsert(
+          { client_id: state.clientId, days: days, updated_at: new Date().toISOString() },
+          { onConflict: 'client_id' }
+        );
+        $('rtSave').disabled = false;
+        if (error) { setStatus('Couldn\u2019t save: ' + error.message, true); return; }
+        state.days = days;
+        renderCard();
+        setEditing(false);
+        setStatus('Saved. If you synced it to Google or Outlook, re-sync from the Calendar tab.');
+      }
+
+      // ─── Save as image (drawn on a canvas, no screenshot needed) ───
+      function roundRect(ctx, x, y, w, h, r){
+        ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+      }
+      function fit(ctx, text, max){
+        if (ctx.measureText(text).width <= max) return text;
+        while (text.length > 1 && ctx.measureText(text + '…').width > max) text = text.slice(0, -1);
+        return text + '…';
+      }
+      function loadLogo(){
+        return new Promise(function(res){ var img = new Image(); img.onload = function(){ res(img); }; img.onerror = function(){ res(null); }; img.src = '/Logo.png'; });
+      }
+
+      async function drawImage(){
+        try { await document.fonts.ready; } catch (e) {}
+        var logo = await loadLogo();
+        var S = 2, W = 540, PAD = 28, ROW = 64, GAP = 10;
+        var H = PAD + 18 + 44 + 18 + 7 * ROW + 6 * GAP + 22 + 24 + PAD;
+        var c = document.createElement('canvas'); c.width = W * S; c.height = H * S;
+        var ctx = c.getContext('2d'); ctx.scale(S, S);
+        var raleway = '"Raleway", "Muli", system-ui, sans-serif', muli = '"Muli", system-ui, sans-serif';
+        var start = weekStart(state.week), today = new Date(); today.setHours(0,0,0,0);
+
+        ctx.fillStyle = '#071f35'; ctx.fillRect(0, 0, W, H);
+        var y = PAD;
+        ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '800 12px ' + raleway; ctx.textBaseline = 'top';
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
+        ctx.fillText(($('rtShareKicker').textContent || '').toUpperCase(), PAD, y);
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        y += 22;
+        ctx.fillStyle = '#fff'; ctx.font = '800 30px ' + raleway;
+        ctx.fillText(fit(ctx, $('rtShareTitle').textContent, W - PAD * 2), PAD, y);
+        y += 44 + 14;
+
+        state.days.forEach(function(d, i){
+          var date = addDays(start, i), rest = isRest(d), isToday = date.getTime() === today.getTime();
+          ctx.fillStyle = isToday ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.06)';
+          roundRect(ctx, PAD, y, W - PAD * 2, ROW, 14); ctx.fill();
+          if (isToday) { ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1; ctx.stroke(); }
+          var cy = y + ROW / 2;
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#fff'; ctx.font = '800 14px ' + raleway; ctx.fillText(DOW[i].toUpperCase(), PAD + 16, cy - 9);
+          ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '600 12px ' + muli; ctx.fillText(fmtDate(date), PAD + 16, cy + 10);
+
+          var x = PAD + 92, timeTxt = rest ? '' : fmtTime(d.time);
+          ctx.font = '700 14px ' + muli;
+          var timeW = timeTxt ? ctx.measureText(timeTxt).width : 0;
+          if (timeTxt) { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillText(timeTxt, W - PAD - 16 - timeW, cy); }
+          var maxW = W - PAD - 16 - timeW - 16 - x;
+          var hasNotes = !rest && d.notes;
+          var ly = hasNotes ? cy - 9 : cy;
+          if (!rest) { ctx.fillStyle = dayColor(d); ctx.beginPath(); ctx.arc(x + 5, ly, 5, 0, Math.PI * 2); ctx.fill(); }
+          ctx.fillStyle = rest ? 'rgba(255,255,255,.45)' : '#fff'; ctx.font = (rest ? '700' : '800') + ' 19px ' + raleway;
+          ctx.fillText(fit(ctx, dayLabel(d), maxW - (rest ? 0 : 18)), rest ? x : x + 18, ly);
+          if (hasNotes) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 13px ' + muli; ctx.fillText(fit(ctx, d.notes, maxW), x, cy + 12); }
+          y += ROW + GAP;
+        });
+
+        y += 12;
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '800 11px ' + muli;
+        var fx = PAD;
+        if (logo) { ctx.save(); roundRect(ctx, PAD, y, 20, 20, 4); ctx.clip(); ctx.drawImage(logo, PAD, y, 20, 20); ctx.restore(); fx += 28; }
+        ctx.fillText('CHASING CHANGE', fx, y + 10);
+        var cnt = $('rtShareCount').textContent.toUpperCase();
+        ctx.fillText(cnt, W - PAD - ctx.measureText(cnt).width, y + 10);
+        return new Promise(function(res){ c.toBlob(res, 'image/png'); });
+      }
+
+      async function saveImage(){
+        var btn = $('rtSaveImage'); btn.disabled = true; setStatus('');
+        try {
+          var blob = await drawImage();
+          var name = 'training-week-' + weekStart(state.week).toISOString().slice(0, 10) + '.png';
+          var file = typeof File === 'function' ? new File([blob], name, { type:'image/png' }) : null;
+          if (file && navigator.canShare && navigator.canShare({ files:[file] })) {
+            try { await navigator.share({ files:[file], title:'My training week' }); btn.disabled = false; return; }
+            catch (e) { if (e && e.name === 'AbortError') { btn.disabled = false; return; } }
+          }
+          var url = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+          setStatus('Image saved.');
+        } catch (e) {
+          setStatus('Couldn\u2019t make the image — a screenshot of the card works too.', true);
+        }
+        btn.disabled = false;
+      }
+
+      // ─── .ics export: one weekly repeating event per training day ──
+      function icsEscape(s){ return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+      function icsDate(d){ return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+      function downloadIcs(){
+        var start = weekStart(state.week), stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+        var lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Chasing Change//Weekly Routine//EN','CALSCALE:GREGORIAN'];
+        var n = 0;
+        state.days.forEach(function(d, i){
+          if (isRest(d)) return;
+          n++;
+          var date = addDays(start, i), title = dayLabel(d) + (d.notes ? ' — ' + d.notes : '');
+          lines.push('BEGIN:VEVENT', 'UID:cc-routine-' + (state.clientId || 'me') + '-' + ICS_DAYS[i] + '@chasingchange', 'DTSTAMP:' + stamp);
+          if (d.time) {
+            var t = d.time.replace(':', '') + '00';
+            var end = new Date(date); var p = d.time.split(':'); end.setHours(+p[0], +p[1] + d.duration, 0, 0);
+            lines.push('DTSTART:' + icsDate(date) + 'T' + t,
+                       'DTEND:' + icsDate(end) + 'T' + String(end.getHours()).padStart(2, '0') + String(end.getMinutes()).padStart(2, '0') + '00');
+          } else {
+            lines.push('DTSTART;VALUE=DATE:' + icsDate(date), 'DTEND;VALUE=DATE:' + icsDate(addDays(date, 1)));
+          }
+          lines.push('RRULE:FREQ=WEEKLY;BYDAY=' + ICS_DAYS[i], 'SUMMARY:' + icsEscape(title), 'CATEGORIES:Body', 'END:VEVENT');
+        });
+        lines.push('END:VCALENDAR');
+        if (!n) { setStatus('Add at least one training day first.', true); return; }
+        var blob = new Blob([lines.join('\r\n')], { type:'text/calendar' });
+        var url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = 'training-routine.ics'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+        setStatus('Calendar file downloaded — open it to add your routine as weekly repeating events.');
+      }
+
+      // ─── Wiring ────────────────────────────────────────────────────
+      $('rtWeekToggle').addEventListener('click', function(e){
+        var b = e.target.closest('[data-week]'); if (!b) return;
+        state.week = +b.getAttribute('data-week'); renderCard();
+      });
+      $('rtEditToggle').addEventListener('click', function(){ setEditing(!state.editing); });
+      $('rtCancel').addEventListener('click', function(){ setEditing(false); });
+      $('rtSave').addEventListener('click', save);
+      $('rtSaveImage').addEventListener('click', saveImage);
+      $('rtIcs').addEventListener('click', downloadIcs);
+      $('rtEditRows').addEventListener('change', function(e){
+        var row = e.target.closest('.rt-edit-row'); if (row && e.target.getAttribute('data-f') === 'type') syncRowState(row);
+      });
+      document.querySelector('.rt-presets').addEventListener('click', function(e){
+        var b = e.target.closest('[data-preset]'); if (!b) return;
+        var cur = readEditor();
+        renderEditor(PRESETS[b.getAttribute('data-preset')].map(function(type, i){
+          var d = blankDay(type); if (type !== 'rest') { d.time = cur[i].time; d.duration = cur[i].duration; } return d;
+        }));
+      });
+
+      async function init(){
+        var { data } = await sb.auth.getSession();
+        var user = data && data.session && data.session.user;
+        if (!user) {
+          $('rtGate').hidden = false;
+          $('rtGate').innerHTML = '<a href="../" style="color:#071f35;font-weight:800;">Sign in to the client portal</a> to see and edit your weekly routine.';
+          $('rtWeekToggle').hidden = true;
+          return;
+        }
+        var { data: profile } = await sb.from('profiles').select('id, role, full_name, preferred_name').eq('id', user.id).maybeSingle();
+        var isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+        var param = new URLSearchParams(location.search).get('client');
+        state.clientId = isCoach && param ? param : user.id;
+        if (isCoach && param) {
+          var { data: cp } = await sb.from('profiles').select('full_name, preferred_name').eq('id', param).maybeSingle();
+          profile = cp || {};
+          $('rtSub').textContent = 'This client\u2019s routine. It repeats every week — edits here show on their Body page.';
+        } else if (isCoach) {
+          $('rtGate').hidden = false;
+          $('rtGate').textContent = 'Open a client\u2019s Body page from their portal to see their routine.';
+          $('rtWeekToggle').hidden = true;
+          return;
+        }
+        state.name = String((profile && (profile.preferred_name || profile.full_name)) || '').split(' ')[0];
+
+        var { data: row, error } = await sb.from('client_routines').select('days').eq('client_id', state.clientId).maybeSingle();
+        $('rtLayout').hidden = false;
+        if (error) setStatus('Couldn\u2019t load your routine: ' + error.message, true);
+        state.days = normalizeDays(row && row.days);
+        // On Sunday the week that matters is the one starting tomorrow.
+        state.week = new Date().getDay() === 0 ? 1 : 0;
+        renderCard();
+        if (!row && !error) { setEditing(true); setStatus('Set your routine below — pick a quick fill or choose each day.'); }
+      }
+      init();
+    })();
+    </script>
   </body>
 </html>
