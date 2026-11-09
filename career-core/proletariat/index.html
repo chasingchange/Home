@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/Logo.png" />
+  <link rel="apple-touch-icon" href="/Logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Proletariat (Career Search) | Chasing Change</title>
+  <meta name="description" content="A simple guide to the career search from Chasing Change: how long each stage takes, how many applications it takes, when to follow up, and when to move on." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brandDark: '#071f35', brandBg: '#f5f5f7', brandAccent: '#cceaff' },
+          fontFamily: {
+            title: ['"Museo Moderno"', 'sans-serif'],
+            heading: ['Raleway', 'sans-serif'],
+            body: ['Muli', 'Mulish', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Muli:wght@400;600;700&family=Museo+Moderno:wght@600;700;800&family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    body { background: #f5f5f7; color: #071f35; }
+    .pr-wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    .pr-page h1 { font-family: "Museo Moderno", "Raleway", sans-serif; font-size: 40px; line-height: 1.15; margin: 0 0 14px; color: #071f35; }
+    .pr-page h2 { font-family: "Raleway", sans-serif; font-size: 24px; font-weight: 700; margin: 48px 0 12px; color: #071f35; }
+    .pr-page h3 { font-family: "Raleway", sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 6px; color: #0d3a5f; }
+    .pr-page p { font-family: "Muli", sans-serif; font-size: 17px; line-height: 1.7; margin: 0 0 14px; }
+    .pr-page ul, .pr-page ol { font-family: "Muli", sans-serif; font-size: 17px; line-height: 1.7; padding-left: 22px; margin: 0 0 16px; }
+    .pr-page li { margin-bottom: 6px; }
+    .pr-page a { color: #1f5c92; text-decoration: underline; text-underline-offset: 3px; }
+    .pr-page .muted { color: #3d5670; font-size: 14px; }
+    .pr-table { width: 100%; border-collapse: collapse; background: #fff; font-family: "Muli", sans-serif; font-size: 15px; margin: 12px 0 20px; }
+    .pr-table th, .pr-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #dfe6ee; vertical-align: top; }
+    .pr-table th { background: #e9f5ff; color: #0d3a5f; font-weight: 700; }
+    .pr-table td.k { font-weight: 700; white-space: nowrap; }
+    .pr-note { background: #e9f5ff; border-left: 4px solid #4f8fc7; padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-family: "Muli", sans-serif; font-size: 15px; }
+
+    .pr-calc { background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(7, 31, 53, 0.08); padding: 20px 22px; margin: 16px 0; }
+    .pr-calc .pr-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0 16px; }
+    .pr-calc label { display: block; font-family: "Muli", sans-serif; font-size: 13px; color: #3d5670; margin-bottom: 4px; }
+    .pr-calc input {
+      width: 100%; padding: 8px 10px; border: 1px solid #c4d3e0; border-radius: 10px;
+      font-family: "Muli", sans-serif; font-size: 16px; background: #f9fbfd; color: #071f35;
+    }
+    .pr-calc input:focus { outline: 3px solid rgba(204, 234, 255, 0.9); border-color: #4f8fc7; }
+
+    .pr-compare { width: 100%; border-collapse: collapse; font-family: "Muli", sans-serif; font-size: 15px; }
+    .pr-compare th, .pr-compare td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e6edf4; }
+    .pr-compare th { color: #0d3a5f; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+    .pr-compare td.v { font-family: "Raleway", sans-serif; font-weight: 800; color: #0d3a5f; font-size: 17px; }
+    .pr-compare td.pub { color: #3d5670; }
+    .pr-compare tr:last-child td { border-bottom: none; }
+
+    @media (max-width: 560px) {
+      .pr-calc .pr-fields { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="../../shared.css" />
+  <script src="../../shared-global-nav.js" defer></script>
+  <script src="../../shared-global-footer.js" defer></script>
+</head>
+
+<body class="antialiased">
+  <main class="pr-page pr-wrap pt-14 pb-20">
+
+    <p class="text-xs font-bold tracking-widest uppercase text-[#1f5c92]">Career Navigator</p>
+    <h1>The Proletariat</h1>
+    <p>A simple guide to the career search: how long it takes, how many applications it takes, when to follow up, and when to let go.</p>
+    <p>Most of what makes a search feel broken is silence. Most of that silence is normal. This page gives you rough numbers so you can plan instead of reading every quiet inbox as a verdict.</p>
+
+    <h2>How long it takes</h2>
+    <table class="pr-table">
+      <thead><tr><th>Stage</th><th>Usual wait</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Apply to first reply</td><td>1–2 weeks (sometimes 3–4 at large companies)</td></tr>
+        <tr><td class="k">Recruiter screen to next step</td><td>3–7 days</td></tr>
+        <tr><td class="k">Interview to decision</td><td>5–10 days</td></tr>
+        <tr><td class="k">Final round to offer</td><td>1–2 weeks</td></tr>
+        <tr><td class="k">One role, start to finish</td><td>3–6 weeks</td></tr>
+        <tr><td class="k">Whole search, first application to accepted offer</td><td>About 3–6 months</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">Ranges come from job-search data and vendor benchmarks. They vary by field, seniority and company size.</p>
+
+    <h2>How many applications it takes</h2>
+    <p>Your offer rate is your interview rate times your interview-to-offer rate. Fill in your own counts for each approach below. The published figures sit beside your results where they exist, so you can compare.</p>
+
+    <div class="pr-calc" data-approach="cold">
+      <h3>Cold, mass-applied</h3>
+      <div class="pr-fields">
+        <div><label for="cold-apps">Applications sent</label><input id="cold-apps" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="cold-ints">Interviews</label><input id="cold-ints" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="cold-offers">Offers</label><input id="cold-offers" type="number" min="0" inputmode="numeric" /></div>
+      </div>
+      <table class="pr-compare">
+        <thead><tr><th>Metric</th><th>You</th><th>Published</th></tr></thead>
+        <tbody>
+          <tr><td>Interview rate</td><td class="v" data-out="int">—</td><td class="pub">About 2–3%</td></tr>
+          <tr><td>Interview-to-offer rate</td><td class="v" data-out="off">—</td><td class="pub">Not published</td></tr>
+          <tr><td>Applications per offer</td><td class="v" data-out="apo">—</td><td class="pub">About 100–200+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pr-calc" data-approach="targeted">
+      <h3>Targeted and tailored</h3>
+      <div class="pr-fields">
+        <div><label for="tgt-apps">Applications sent</label><input id="tgt-apps" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="tgt-ints">Interviews</label><input id="tgt-ints" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="tgt-offers">Offers</label><input id="tgt-offers" type="number" min="0" inputmode="numeric" /></div>
+      </div>
+      <table class="pr-compare">
+        <thead><tr><th>Metric</th><th>You</th><th>Published</th></tr></thead>
+        <tbody>
+          <tr><td>Interview rate</td><td class="v" data-out="int">—</td><td class="pub">No benchmark yet</td></tr>
+          <tr><td>Interview-to-offer rate</td><td class="v" data-out="off">—</td><td class="pub">No benchmark yet</td></tr>
+          <tr><td>Applications per offer</td><td class="v" data-out="apo">—</td><td class="pub">No benchmark yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pr-calc" data-approach="referral">
+      <h3>Referral or warm intro</h3>
+      <div class="pr-fields">
+        <div><label for="ref-apps">Referrals or intros</label><input id="ref-apps" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="ref-ints">Interviews</label><input id="ref-ints" type="number" min="0" inputmode="numeric" /></div>
+        <div><label for="ref-offers">Offers</label><input id="ref-offers" type="number" min="0" inputmode="numeric" /></div>
+      </div>
+      <table class="pr-compare">
+        <thead><tr><th>Metric</th><th>You</th><th>Published</th></tr></thead>
+        <tbody>
+          <tr><td>Interview rate</td><td class="v" data-out="int">—</td><td class="pub">About 40%</td></tr>
+          <tr><td>Interview-to-offer rate</td><td class="v" data-out="off">—</td><td class="pub">Not published</td></tr>
+          <tr><td>Referrals per offer</td><td class="v" data-out="apo">—</td><td class="pub">Not published</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="muted">Enter at least 30 applications in a bucket before trusting its numbers. Smaller counts swing a lot. Rates show as "—" until you enter both an application count and the next count.</p>
+
+    <div class="pr-note">
+      <strong>Spray-and-pray doesn't work well.</strong> Applications per hire have roughly tripled since 2021, and the odds of getting an interview have fallen by about half over five years. More volume mostly adds silence. Tailored applications and referrals move the numbers far more than sending more.
+    </div>
+
+    <h2>How to follow up</h2>
+    <ol>
+      <li><strong>Day 0:</strong> Apply. If the posting says no follow-ups, don't follow up.</li>
+      <li><strong>Day 6–9:</strong> Send one short follow-up to the recruiter. Add one new proof point.</li>
+      <li><strong>Day 14:</strong> No reply usually means no. Move on.</li>
+      <li><strong>After an interview:</strong> Send a thank-you within 24 hours. If the interviewer gave no timeline, check in 5–7 business days later.</li>
+      <li><strong>Stop at two:</strong> Two follow-ups total is the limit for any one application.</li>
+    </ol>
+
+    <h2>Simple weekly plan</h2>
+    <table class="pr-table">
+      <thead><tr><th>When</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Weeks 1–2</td><td>Build a list of about 20 target roles. Make 2–3 tailored resume versions. Start reaching out to warm contacts.</td></tr>
+        <tr><td class="k">Weeks 3–8</td><td>Apply 5–10 times a week. Follow up on day 6–9. Close out silence at day 14. Keep a weekly tally.</td></tr>
+        <tr><td class="k">Month 2</td><td>Fill in the calculators above. Adjust your targeting if your interview rate is low.</td></tr>
+        <tr><td class="k">Months 3–6</td><td>The usual window for a first offer. Plan your money around this range.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>When to let it go</h2>
+    <ul>
+      <li><strong>No reply after 14 days:</strong> Treat it as a no.</li>
+      <li><strong>Silence for 3 weeks after an interview:</strong> Send one short closing note, then stop chasing.</li>
+      <li><strong>An offer deadline you can't meet:</strong> Ask once, in writing, for more time.</li>
+    </ul>
+
+    <h2>Sources</h2>
+    <ul>
+      <li>Huntr Q1 2026 Job Search Trends, median time to a first offer (via <a href="https://airesume.guru/blog/job-search-statistics-2026">AIResume.guru</a>)</li>
+      <li>Ashby hiring-time medians, April 2026 (via <a href="https://copilotinterview.com/blog/job-interview-statistics-2026">Copilot Interview</a>)</li>
+      <li>Response timing, 1,000+ job seekers (via <a href="https://careery.pro/blog/how-to-follow-up-on-job-application">Careery</a>)</li>
+      <li>Application and referral conversion data (via <a href="https://blog.theinterviewguys.com/?p=2969">The Interview Guys</a> and <a href="https://dearhiringmanager.io/job-search-statistics">Dear Hiring Manager</a>)</li>
+    </ul>
+    <p class="muted">Many figures come from vendor blogs and self-reported data. Check the original before quoting a number.</p>
+
+    <p class="text-center mt-12 font-bold" style="font-family: Raleway, sans-serif;">Ready to Start Your Race?</p>
+  </main>
+
+  <script>
+    (function () {
+      function fmtPct(n) { return (n * 100).toFixed(1) + "%"; }
+      function fmtNum(n) { return n.toFixed(1); }
+
+      document.querySelectorAll(".pr-calc").forEach(function (card) {
+        var apps = card.querySelector('input[id$="-apps"]');
+        var ints = card.querySelector('input[id$="-ints"]');
+        var offers = card.querySelector('input[id$="-offers"]');
+        var outInt = card.querySelector('[data-out="int"]');
+        var outOff = card.querySelector('[data-out="off"]');
+        var outApo = card.querySelector('[data-out="apo"]');
+
+        function update() {
+          var a = parseFloat(apps.value);
+          var i = parseFloat(ints.value);
+          var o = parseFloat(offers.value);
+
+          outInt.textContent = (a > 0 && !isNaN(i)) ? fmtPct(i / a) : "—";
+          outOff.textContent = (i > 0 && !isNaN(o)) ? fmtPct(o / i) : "—";
+          outApo.textContent = (o > 0 && a > 0) ? fmtNum(a / o) : "—";
+        }
+
+        [apps, ints, offers].forEach(function (el) { el.addEventListener("input", update); });
+        update();
+      });
+    })();
+  </script>
+</body>
+</html>
