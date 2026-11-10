@@ -72,6 +72,7 @@
     { title: "Gagging the Critic", core: "Mind", url: `${root}gagging-the-critic/` },
     { title: "I AM Worksheet", core: "Mind", url: `${root}i-am-worksheet/` },
     { title: "5 Ps Career Fit Calculator", core: "Career", url: `${root}career-core/` },
+    { title: "The Proletariat (Career Search)", core: "Career", url: `${root}career-core/proletariat/` },
     { title: "Founder’s Calendar", core: "Life", section: "Environment", url: `${root}founders-calendar/` },
     { title: "The Companion Chart", core: "Life", section: "Relationships", url: `${root}companion-chart/` },
   ];
