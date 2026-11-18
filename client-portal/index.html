@@ -1203,6 +1203,11 @@
             <div class="cp-goal-form-handle"></div>
             <p class="cp-goal-form-title" id="cpHwFormHeading">New assignment</p>
             <p class="cp-goal-form-subtitle">Write the instructions the way you'd explain it on a call — links are clickable for the client.</p>
+            <div class="cp-goal-form-field" id="cpHwLibWrap">
+              <label for="cpHwLibPick">From the assignment library</label>
+              <select id="cpHwLibPick" class="cp-goal-form-input"><option value="">Loading library…</option></select>
+              <p class="cp-goal-form-hint" style="margin-top:6px;">Picking one fills in the form below — tweak it for this client before saving. <a href="../assignment-library/" id="cpHwLibLink" style="font-weight:700;text-decoration:underline;">Open full library</a></p>
+            </div>
             <div class="cp-goal-form-field">
               <label for="cpHwTitle">Title</label>
               <input type="text" id="cpHwTitle" class="cp-goal-form-input" placeholder="e.g. Write your I AM statements" maxlength="140" />
@@ -1216,6 +1221,7 @@
               <div><label for="cpHwDue">Due date</label><input type="date" id="cpHwDue" class="cp-goal-form-input" /></div>
             </div>
             <label class="cp-check-line" id="cpHwAllWrap"><input type="checkbox" id="cpHwAllClients" /> Assign to every client on the roster</label>
+            <label class="cp-check-line" id="cpHwSaveLibWrap"><input type="checkbox" id="cpHwSaveLib" /> Also save to the assignment library</label>
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" data-close-modal="cpHwFormOverlay">Cancel</button>
               <button type="button" class="cp-goal-form-save" id="cpHwFormSave">Save assignment</button>
@@ -1283,7 +1289,10 @@
           <div class="cp-card cp-roster-card">
             <div class="cp-card-head" style="align-items:center;">
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
-              <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a class="cp-btn-sm" href="../assignment-library/" style="text-decoration:none;">Assignment library</a>
+                <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
+              </div>
             </div>
             <div class="cp-roster-list" id="cpRosterList"></div>
           </div>
