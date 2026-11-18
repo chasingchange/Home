@@ -156,6 +156,18 @@ function codeFrom(raw: string): { core_key: string; week: number } | null {
   return m && week != null ? { core_key: LETTER_CORE[m[1].toUpperCase()] ?? "", week } : null;
 }
 
+// Notion titles often lead with the code ("B.1 Journal", "[B.1] Journal",
+// "B.1 - Journal"). The library shows the code on its own, so split it off.
+const TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]\s*(\d{1,2})\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
+
+function splitTitleCode(raw: string): { title: string; code: { core_key: string; week: number } | null } {
+  const title = String(raw ?? "").trim();
+  const m = title.match(TITLE_CODE_RE);
+  const rest = m ? title.slice(m[0].length).trim() : "";
+  if (!m || !rest) return { title, code: null };
+  return { title: rest, code: { core_key: LETTER_CORE[m[1].toUpperCase()], week: Number(m[2]) } };
+}
+
 function codeFor(coreKey: string, week: number | null): string {
   if (week == null) return "";
   return (CORES[coreKey]?.[0] ?? "W") + "." + week;
@@ -266,9 +278,10 @@ function tidy(lines: string[]): string {
 async function rowFromPage(page: Json) {
   const props = page.properties ?? {};
   const titleProp = Object.values(props).find((p: Json) => p?.type === "title");
-  const title = propText(titleProp).trim();
+  const split = splitTitleCode(propText(titleProp));
+  const title = split.title;
   const coreLabel = propText(findProp(props, ["core", "cores", "core key"]));
-  const code = codeFrom(propText(findProp(props, ["code", "assignment code"])));
+  const code = codeFrom(propText(findProp(props, ["code", "assignment code"]))) ?? split.code;
   const week = weekFrom(propText(findProp(props, ["week", "wk", "week #", "week number"])));
   const category = propText(findProp(props, ["category", "type", "section", "group"])).trim();
   const tagsProp = findProp(props, ["tags", "tag", "labels"]);
@@ -334,9 +347,13 @@ function propsFor(row: Json, schema: Json): Json {
   const props: Json = {};
   const entries = Object.entries(schema.properties ?? {}) as [string, Json][];
   const titleName = entries.find(([, p]) => p.type === "title")?.[0] ?? "Name";
-  props[titleName] = { title: chunks(row.title || "Untitled assignment") };
-
   const named = (names: string[]) => entries.find(([k]) => names.includes(k.trim().toLowerCase()));
+  // No Code column in Notion → keep the code in the page title there, as the
+  // database had it, so pushing doesn't strip "B.1" off Notion pages.
+  const titleCode = named(["code", "assignment code"]) ? "" : codeFor(row.core_key, row.week);
+  const bareTitle = splitTitleCode(row.title || "").title || "Untitled assignment";
+  props[titleName] = { title: chunks(titleCode ? titleCode + " " + bareTitle : bareTitle) };
+
   const setText = (entry: [string, Json] | undefined, value: string, list?: string[]) => {
     if (!entry) return;
     const [name, def] = entry;
