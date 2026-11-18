@@ -91,6 +91,16 @@
     if (week == null) return null;
     return { core_key: CORE_BY_LETTER[m[1].toUpperCase()] || '', week: week };
   }
+  // "B.1 Journal" / "[B.1] Journal" / "B.1 - Journal" → { title:'Journal', code:{…} }.
+  // The code is shown on its own, so it shouldn't repeat in the title.
+  var TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]\s*(\d{1,2})\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
+  function splitTitleCode(raw){
+    var title = String(raw || '').trim();
+    var m = title.match(TITLE_CODE_RE);
+    var rest = m ? title.slice(m[0].length).trim() : '';
+    if (!m || !rest) return { title: title, code: null };
+    return { title: rest, code: parseCode(m[1] + '.' + m[2]) };
+  }
   // Body text → { relevance, outcome, instructions, … }. Text before any
   // section heading counts as To Do.
   function splitSections(text){
@@ -993,7 +1003,9 @@
   function rowFromRecord(rec, fallbackTitleKey){
     var title = pick(rec, ['title','name','assignment','assignment name','homework']) || (fallbackTitleKey ? String(rec[fallbackTitleKey] || '').trim() : '');
     if (!title) return null;
-    var code = parseCode(pick(rec, ['code','assignment code','id code']));
+    var split = splitTitleCode(title);
+    title = split.title;
+    var code = parseCode(pick(rec, ['code','assignment code','id code'])) || split.code;
     var core = coreFromLabel(pick(rec, ['core','cores','core key','core_key'])) || (code ? code.core_key : '');
     var week = weekNum(pick(rec, ['week','wk','week #','week number']));
     var out = {
@@ -1051,7 +1063,8 @@
     var pid = (base.match(/\s([0-9a-f]{32})$/i) || [])[1] || '';
     if (!title) title = base.replace(/\s[0-9a-f]{32}$/i, '').trim();
     if (!title) return null;
-    var row = { title: title, relevance: '', outcome: '', implementation: '', alternative: '', examples: '', core_key: '', week: null, category: '', tags: [], default_due_days: null, instructions: '', notion_page_id: pid.toLowerCase() };
+    var split = splitTitleCode(title);
+    var row = { title: split.title, relevance: '', outcome: '', implementation: '', alternative: '', examples: '', core_key: split.code ? split.code.core_key : '', week: split.code ? split.code.week : null, category: '', tags: [], default_due_days: null, instructions: '', notion_page_id: pid.toLowerCase() };
     // Notion writes "Property: value" lines right under the title.
     while (i < lines.length && !lines[i].trim()) i++;
     while (i < lines.length) {
@@ -1079,11 +1092,12 @@
     var list = Array.isArray(data) ? data : (data.assignments || data.items || []);
     return list.map(function(r){
       if (!r || !r.title) return null;
-      var pc = parseCode(r.code);
+      var split = splitTitleCode(r.title);
+      var pc = parseCode(r.code) || split.code;
       var core = CORE_BY_KEY[r.core_key] ? r.core_key : coreFromLabel(r.core);
       var wk = weekNum(r.week);
       return {
-        title: String(r.title).trim(), core_key: core || (pc ? pc.core_key : ''),
+        title: split.title, core_key: core || (pc ? pc.core_key : ''),
         week: wk != null ? wk : (pc ? pc.week : null),
         category: String(r.category || ''), tags: parseTags(r.tags), default_due_days: dueNum(r.default_due_days),
         instructions: String(r.instructions || ''), relevance: String(r.relevance || ''), outcome: String(r.outcome || ''),
