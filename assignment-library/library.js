@@ -2,7 +2,7 @@
 //
 // Data: public.assignment_library + client_assignments.library_id
 // (scripts/assignment_library.sql). Assigning copies a template into each
-// client's client_assignments, which is what their portal Homework tab reads.
+// client's client_assignments, which is what their portal To Do's tab reads.
 // Notion live sync goes through the notion-assignments Edge Function
 // (supabase/functions/notion-assignments); file import/export runs here in
 // the browser (JSZip handles Notion's Markdown & CSV export).
@@ -12,6 +12,7 @@
   var COACH_EMAIL = 'tywadebusiness@gmail.com';
   var NOTION_FN = 'notion-assignments';
   var DB_KEY = 'ccAssignLibNotionDb';
+  var WEEK_KEY = 'ccAssignLibWeek';
 
   var CORE_DEFS = [
     { key:'body',   label:'Body',   color:'#77d770' },
@@ -21,8 +22,28 @@
     { key:'career', label:'Career', color:'#f02348' },
     { key:'life',   label:'Life',   color:'#f58b1c' }
   ];
-  var CORE_BY_KEY = {};
-  CORE_DEFS.forEach(function(c){ CORE_BY_KEY[c.key] = c; });
+  var CORE_BY_KEY = {}, CORE_BY_LETTER = {};
+  CORE_DEFS.forEach(function(c){ CORE_BY_KEY[c.key] = c; CORE_BY_LETTER[c.label[0]] = c.key; });
+
+  // Editor sections, in order. `instructions` (TO DO) is the original column,
+  // so homework sent before sections existed still reads fine.
+  var SECTIONS = [
+    { key:'relevance',      label:'Relevance',      hint:'Why this matters for the client.' },
+    { key:'outcome',        label:'Outcome',        hint:'What they walk away with.' },
+    { key:'instructions',   label:'To Do',          hint:'The steps. [ ] makes a checkbox.', main:true },
+    { key:'implementation', label:'Implementation', hint:'How they put it to use.' },
+    { key:'alternative',    label:'Alternative',    hint:'Another way to do it.' },
+    { key:'examples',       label:'Examples',       hint:'Examples, links, references.' }
+  ];
+  var SECTION_KEYS = SECTIONS.map(function(x){ return x.key; });
+  var SECTION_ALIASES = {
+    'relevance':'relevance', 'outcome':'outcome', 'outcomes':'outcome',
+    'to do':'instructions', 'todo':'instructions', 'to-do':'instructions', 'instructions':'instructions', 'steps':'instructions',
+    'implementation':'implementation', 'alternative':'alternative', 'alternatives':'alternative',
+    'example':'examples', 'examples':'examples'
+  };
+  // "RELEVANCE | text", "## Relevance", "**To Do:**", "EXAMPLES |" …
+  var SECTION_RE = /^\s*(?:#{1,3}\s*)?\**\s*(relevance|outcomes?|to[ -]?do|instructions|steps|implementation|alternatives?|examples?)\s*\**\s*(?:[|:]\s*(.*))?$/i;
 
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   var $ = function(id){ return document.getElementById(id); };
@@ -36,6 +57,7 @@
   var assignIds = [];        // library ids in the assign modal
   var importRows = [];       // parsed rows in the import preview
   var presetClientId = new URLSearchParams(location.search).get('client');
+  var weekFilter = '';       // '' = all weeks, 'none' = no week, else '1', '2', …
 
   // ─── helpers ────────────────────────────────────────────────────────────
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -48,6 +70,60 @@
     if (Array.isArray(v)) return v.map(function(t){ return String(t).trim(); }).filter(Boolean);
     return String(v || '').split(/[,;]/).map(function(t){ return t.trim(); }).filter(Boolean);
   }
+  // Week: accepts 3, "3", "Week 3", "W3", "wk 3".
+  function weekNum(v){
+    var m = String(v == null ? '' : v).trim().match(/^(?:w(?:ee)?k?\.?\s*)?(\d{1,2})$/i);
+    var n = m ? Number(m[1]) : 0;
+    return n >= 1 && n <= 99 ? n : null;
+  }
+  // Code: core letter + "." + week, e.g. B.1 = Body, Week 1.
+  function codeFor(coreKey, week){
+    if (week == null || week === '') return '';
+    var c = CORE_BY_KEY[coreKey];
+    return (c ? c.label[0] : 'W') + '.' + week;
+  }
+  function itemCode(i){ return codeFor(i.core_key, i.week); }
+  // "B.1" / "b 1" / "B1" → { core_key:'body', week:1 }
+  function parseCode(v){
+    var m = String(v || '').trim().match(/^([A-Za-z])\s*[.\-]?\s*(\d{1,2})$/);
+    if (!m) return null;
+    var week = weekNum(m[2]);
+    if (week == null) return null;
+    return { core_key: CORE_BY_LETTER[m[1].toUpperCase()] || '', week: week };
+  }
+  // Body text → { relevance, outcome, instructions, … }. Text before any
+  // section heading counts as To Do.
+  function splitSections(text){
+    var out = {}; SECTION_KEYS.forEach(function(k){ out[k] = []; });
+    var cur = 'instructions';
+    String(text || '').split(/\r?\n/).forEach(function(line){
+      var m = line.match(SECTION_RE);
+      if (m) { cur = SECTION_ALIASES[m[1].toLowerCase().replace(/\s+/g, ' ')] || SECTION_ALIASES[m[1].toLowerCase()]; if (m[2] && m[2].trim()) out[cur].push(m[2].trim()); return; }
+      out[cur].push(line);
+    });
+    var res = {};
+    SECTION_KEYS.forEach(function(k){
+      var lines = out[k];
+      var ind = lines.filter(function(l){ return l.trim(); }).reduce(function(mn, l){ return Math.min(mn, l.match(/^ */)[0].length); }, 99);
+      if (ind === 99) ind = 0;
+      res[k] = lines.map(function(l){ return l.slice(ind); }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    });
+    return res;
+  }
+  function hasSections(r){ return SECTION_KEYS.some(function(k){ return k !== 'instructions' && String(r[k] || '').trim(); }); }
+  // What the client sees: filled sections under UPPERCASE labels (plain text).
+  function clientText(r){
+    if (!hasSections(r)) return String(r.instructions || '').trim();
+    return SECTIONS.filter(function(x){ return String(r[x.key] || '').trim(); })
+      .map(function(x){ return x.label.toUpperCase() + '\n' + String(r[x.key]).trim(); }).join('\n\n');
+  }
+  // Markdown / Notion body: "## Relevance" headings.
+  function mdBody(r){
+    if (!hasSections(r)) return String(r.instructions || '').trim();
+    return SECTIONS.filter(function(x){ return String(r[x.key] || '').trim(); })
+      .map(function(x){ return '## ' + x.label + '\n' + String(r[x.key]).trim(); }).join('\n\n');
+  }
+  function sectionFields(r){ var o = {}; SECTION_KEYS.forEach(function(k){ o[k] = String(r[k] || ''); }); return o; }
   function dueNum(v){ var s = String(v == null ? '' : v).trim(); return /^\d+$/.test(s) ? Math.min(365, Number(s)) : null; }
   function notionId(raw){ var m = String(raw || '').replace(/-/g, '').match(/[0-9a-f]{32}/i); return m ? m[0].toLowerCase() : ''; }
   function safeName(s){ return String(s || 'assignment').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ').trim().slice(0, 80) || 'assignment'; }
@@ -152,15 +228,48 @@
     $('alCatList').innerHTML = cats.map(function(c){ return '<option value="'+esc(c)+'">'; }).join('');
   }
 
+  function renderWeeks(){
+    var showArchived = $('alShowArchived').checked;
+    var pool = items.filter(function(i){ return !!i.archived_at === showArchived; });
+    var counts = {}, none = 0, max = 0;
+    pool.forEach(function(i){
+      if (i.week == null) { none++; return; }
+      counts[i.week] = (counts[i.week] || 0) + 1;
+      if (i.week > max) max = i.week;
+    });
+    // Show every week from 1 up to the highest used, so gaps are visible.
+    var weeks = [];
+    for (var w = 1; w <= max; w++) weeks.push(w);
+    if (weekFilter && weekFilter !== 'none' && weeks.indexOf(Number(weekFilter)) === -1) weekFilter = '';
+    if (weekFilter === 'none' && !none) weekFilter = '';
+    var pill = function(val, label, n){
+      return '<button type="button" class="al-week'+(weekFilter === val ? ' is-active' : '')+'" data-week="'+val+'" aria-pressed="'+(weekFilter === val)+'">'
+        + label + (n != null ? '<span class="al-week-n">'+n+'</span>' : '') + '</button>';
+    };
+    $('alWeeks').innerHTML = '<span class="al-weeks-label">Week</span>'
+      + pill('', 'All', pool.length)
+      + weeks.map(function(w){ return pill(String(w), 'Week ' + w, counts[w] || 0); }).join('')
+      + (none ? pill('none', 'No week', none) : '');
+    $('alWeeks').hidden = !max;
+  }
+
+  $('alWeeks').addEventListener('click', function(e){
+    var b = e.target.closest('[data-week]'); if (!b) return;
+    weekFilter = b.getAttribute('data-week');
+    lsSet(WEEK_KEY, weekFilter);
+    renderWeeks(); renderList();
+  });
+
   function visibleItems(){
     var q = norm($('alSearch').value), core = $('alCoreFilter').value, cat = $('alCatFilter').value;
     var showArchived = $('alShowArchived').checked;
     var list = items.filter(function(i){
       if (!!i.archived_at !== showArchived) return false;
+      if (weekFilter === 'none' ? i.week != null : (weekFilter && String(i.week) !== weekFilter)) return false;
       if (core === 'none' ? i.core_key : (core && i.core_key !== core)) return false;
       if (cat && i.category !== cat) return false;
       if (q) {
-        var hay = norm([i.title, i.instructions, i.category, (i.tags || []).join(' ')].join(' '));
+        var hay = norm([itemCode(i), i.title, i.category, (i.tags || []).join(' ')].concat(SECTION_KEYS.map(function(k){ return i[k]; })).join(' '));
         if (q.split(' ').some(function(w){ return hay.indexOf(w) === -1; })) return false;
       }
       return true;
@@ -171,6 +280,10 @@
       if (sort === 'updated') return String(b.updated_at).localeCompare(String(a.updated_at));
       if (sort === 'used') return useCount(b.id) - useCount(a.id) || a.title.localeCompare(b.title);
       if (sort === 'core') return coreIdx(a.core_key) - coreIdx(b.core_key) || a.title.localeCompare(b.title);
+      if (sort === 'code') {
+        var wa = a.week == null ? 999 : a.week, wb = b.week == null ? 999 : b.week;
+        return wa - wb || coreIdx(a.core_key) - coreIdx(b.core_key) || a.title.localeCompare(b.title);
+      }
       return a.title.localeCompare(b.title);
     });
     return list;
@@ -186,14 +299,15 @@
     if (!items.length) {
       $('alList').innerHTML = '<div class="al-empty"><strong>Your library is empty</strong>Create your first assignment, or use Import to pull everything in from Notion.</div>';
     } else if (!list.length) {
-      $('alList').innerHTML = '<div class="al-empty"><strong>No matches</strong>Try a different search or filter.</div>';
+      $('alList').innerHTML = '<div class="al-empty"><strong>No matches</strong>'+(weekFilter ? 'Nothing in ' + (weekFilter === 'none' ? '“No week”' : 'Week ' + esc(weekFilter)) + ' matches — try another week or filter.' : 'Try a different search or filter.')+'</div>';
     } else {
       $('alList').innerHTML = list.map(function(i){
         var n = useCount(i.id);
-        var snippet = String(i.instructions || '').replace(/\s+/g, ' ').slice(0, 160);
+        var snippet = String(i.outcome || i.relevance || i.instructions || '').replace(/\s+/g, ' ').slice(0, 160);
         var sub = [i.category, snippet].filter(Boolean).join(' · ');
         return '<div class="al-row'+(selected[i.id] ? ' is-selected' : '')+(i.archived_at ? ' is-archived' : '')+'" data-id="'+i.id+'">'
           + '<input type="checkbox" data-sel="'+i.id+'"'+(selected[i.id] ? ' checked' : '')+' aria-label="Select '+esc(i.title)+'" />'
+          + '<div class="al-col-code">'+(itemCode(i) ? '<span class="al-code">'+esc(itemCode(i))+'</span>' : '<span class="al-code al-code--none">—</span>')+'</div>'
           + '<div style="min-width:0;"><p class="al-row-title">'+esc(i.title)
           + (i.source === 'notion' || i.notion_page_id ? '<span class="al-src">NOTION</span>' : '') + '</p>'
           + (sub ? '<p class="al-row-sub">'+esc(sub)+'</p>' : '')
@@ -229,11 +343,13 @@
     $('alBulkArchive').textContent = allArchived ? 'Restore' : 'Archive';
   }
 
-  function renderAll(){ renderFilters(); renderStats(); renderList(); }
+  function renderAll(){ renderFilters(); renderStats(); renderWeeks(); renderList(); }
 
-  ['alSearch','alCoreFilter','alCatFilter','alSort','alShowArchived'].forEach(function(id){
+  ['alSearch','alCoreFilter','alCatFilter','alSort'].forEach(function(id){
     $(id).addEventListener(id === 'alSearch' ? 'input' : 'change', renderList);
   });
+  $('alShowArchived').addEventListener('change', function(){ renderWeeks(); renderList(); });
+  weekFilter = lsGet(WEEK_KEY);
 
   $('alSelectAll').addEventListener('change', function(){
     var on = this.checked;
@@ -280,16 +396,38 @@
   // ─── editor ─────────────────────────────────────────────────────────────
   $('alEdCore').innerHTML = '<option value="">— none —</option>' + CORE_DEFS.map(function(c){ return '<option value="'+c.key+'">'+c.label+'</option>'; }).join('');
 
+  $('alEdSections').innerHTML = SECTIONS.map(function(x){
+    var id = x.key === 'instructions' ? 'alEdInstructions' : 'alEd_' + x.key;
+    return '<section class="al-ed-section'+(x.main ? ' al-ed-section--main' : '')+'">'
+      + '<h3 class="al-ed-section-h"><label for="'+id+'">'+esc(x.label)+'</label><small>'+esc(x.hint)+'</small></h3>'
+      + '<textarea class="al-input" id="'+id+'" data-section="'+x.key+'"></textarea></section>';
+  }).join('');
+  function secEl(k){ return $(k === 'instructions' ? 'alEdInstructions' : 'alEd_' + k); }
+  // Pasting a whole "RELEVANCE | … TO DO | …" block into any section
+  // spreads it across the right boxes.
+  $('alEdSections').addEventListener('paste', function(e){
+    var ta = e.target.closest('[data-section]'); if (!ta) return;
+    var text = (e.clipboardData || window.clipboardData).getData('text');
+    var hits = String(text).split(/\r?\n/).filter(function(l){ return SECTION_RE.test(l); }).length;
+    if (hits < 2) return;
+    e.preventDefault();
+    var parts = splitSections(text);
+    SECTION_KEYS.forEach(function(k){ if (parts[k]) secEl(k).value = parts[k]; });
+    toast('Split the pasted text into sections.');
+  });
+
   function openEditor(item, draft){
     editingId = item ? item.id : null;
     var src = item || draft || {};
     $('alEdHeading').textContent = item ? 'Edit assignment' : 'New assignment';
     $('alEdTitle').value = src.title || '';
     $('alEdCore').value = src.core_key || '';
+    $('alEdWeek').value = src.week == null ? '' : src.week;
+    renderEdCode();
     $('alEdCategory').value = src.category || '';
     $('alEdDue').value = src.default_due_days == null ? '' : src.default_due_days;
     $('alEdTags').value = (src.tags || []).join(', ');
-    $('alEdInstructions').value = src.instructions || '';
+    SECTION_KEYS.forEach(function(k){ secEl(k).value = src[k] || ''; });
     $('alEdDelete').hidden = $('alEdArchive').hidden = $('alEdDuplicate').hidden = !item;
     $('alEdArchive').textContent = item && item.archived_at ? 'Restore' : 'Archive';
     var meta = [];
@@ -310,16 +448,27 @@
     return {
       title: $('alEdTitle').value.trim(),
       core_key: $('alEdCore').value,
+      week: weekNum($('alEdWeek').value),
       category: $('alEdCategory').value.trim(),
       default_due_days: dueNum($('alEdDue').value),
       tags: parseTags($('alEdTags').value),
-      instructions: $('alEdInstructions').value.replace(/\s+$/, '')
+      instructions: $('alEdInstructions').value.replace(/\s+$/, ''),
+      relevance: secEl('relevance').value.replace(/\s+$/, ''),
+      outcome: secEl('outcome').value.replace(/\s+$/, ''),
+      implementation: secEl('implementation').value.replace(/\s+$/, ''),
+      alternative: secEl('alternative').value.replace(/\s+$/, ''),
+      examples: secEl('examples').value.replace(/\s+$/, '')
     };
   }
 
   async function saveEditor(){
     var f = editorFields();
     if (!f.title) { $('alEdTitle').focus(); note('alEdNote', 'Give it a title.', true); return null; }
+    // Before the section columns exist (SQL not re-run), keep the old shape.
+    if (!items.some(function(i){ return 'relevance' in i; }) && hasSections(f)) {
+      note('alEdNote', 'Run the latest scripts/assignment_library.sql to save sections — or leave only To Do filled.', true); return null;
+    }
+    if (!items.some(function(i){ return 'relevance' in i; })) SECTION_KEYS.forEach(function(k){ if (k !== 'instructions') delete f[k]; });
     note('alEdNote', 'Saving…');
     var res = editingId
       ? await sb.from('assignment_library').update(f).eq('id', editingId).select().single()
@@ -332,7 +481,18 @@
     return row;
   }
 
-  $('alNewBtn').addEventListener('click', function(){ openEditor(null); });
+  function renderEdCode(){
+    var code = codeFor($('alEdCore').value, weekNum($('alEdWeek').value));
+    $('alEdCode').textContent = code;
+    $('alEdCode').hidden = !code;
+  }
+  $('alEdCore').addEventListener('change', renderEdCode);
+  $('alEdWeek').addEventListener('input', renderEdCode);
+
+  // New assignments start in the week you're looking at.
+  $('alNewBtn').addEventListener('click', function(){
+    openEditor(null, weekFilter && weekFilter !== 'none' ? { week: Number(weekFilter) } : null);
+  });
   $('alEdSave').addEventListener('click', async function(){
     var row = await saveEditor(); if (!row) return;
     closeModal('alEditor'); toast('Saved “' + row.title + '”.');
@@ -406,7 +566,7 @@
     if (presetClientId) assignClientSel[presetClientId] = true;
     var titles = assignIds.map(function(id){ return byId(id).title; });
     $('alAsWhat').textContent = assignIds.length === 1
-      ? '“' + titles[0] + '” goes into each client\'s Homework tab as a new assignment.'
+      ? '“' + titles[0] + '” goes into each client\'s To Do\'s tab as a new assignment.'
       : plural(assignIds.length, 'assignment') + ': ' + titles.slice(0, 4).join(', ') + (titles.length > 4 ? ' and ' + (titles.length - 4) + ' more' : '') + '.';
     $('alAsSearch').value = '';
     $('alAsFrom').value = todayKey();
@@ -446,7 +606,7 @@
         var t = byId(lid);
         if (skip && openFor(lid, cid)) { skipped++; return; }
         var due = mode === 'date' ? fixed : mode === 'default' && t.default_due_days != null ? addDaysKey(from, t.default_due_days) : null;
-        rows.push({ client_id: cid, library_id: lid, title: t.title, instructions: t.instructions || '', core_key: t.core_key || '', due_date: due, status: 'assigned' });
+        rows.push({ client_id: cid, library_id: lid, title: (itemCode(t) ? itemCode(t) + ' · ' : '') + t.title, instructions: clientText(t), core_key: t.core_key || '', due_date: due, status: 'assigned' });
       });
     });
     return { rows: rows, skipped: skipped };
@@ -456,7 +616,7 @@
     var p = plannedRows();
     var nClients = Object.keys(assignClientSel).filter(function(id){ return assignClientSel[id]; }).length;
     $('alAsSummary').innerHTML = nClients
-      ? 'Creates <b>' + plural(p.rows.length, 'homework item') + '</b> across ' + plural(nClients, 'client') + (p.skipped ? ' · skips ' + p.skipped + ' already open' : '') + '.'
+      ? 'Creates <b>' + plural(p.rows.length, 'to-do') + '</b> across ' + plural(nClients, 'client') + (p.skipped ? ' · skips ' + p.skipped + ' already open' : '') + '.'
       : 'Pick at least one client.';
     $('alAsGo').disabled = !p.rows.length;
   }
@@ -496,7 +656,7 @@
     closeModal('alAssign');
     selected = {};
     renderAll();
-    toast('Assigned ' + plural(p.rows.length, 'homework item') + '. Clients see them in their Homework tab now.');
+    toast('Assigned ' + plural(p.rows.length, 'to-do') + '. Clients see them in their To Do\'s tab now.');
   });
 
   // ─── export ─────────────────────────────────────────────────────────────
@@ -510,20 +670,22 @@
   function csvCell(v){ v = String(v == null ? '' : v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
 
   function toCsv(rows){
-    var head = ['Title','Core','Category','Tags','Due in days','Instructions'];
+    var head = ['Title','Code','Week','Core','Category','Tags','Due in days'].concat(SECTIONS.map(function(x){ return x.label; }));
     var lines = [head.join(',')].concat(rows.map(function(i){
-      return [i.title, (CORE_BY_KEY[i.core_key] || {}).label || '', i.category, (i.tags || []).join(', '), i.default_due_days == null ? '' : i.default_due_days, i.instructions].map(csvCell).join(',');
+      return [i.title, itemCode(i), i.week == null ? '' : i.week, (CORE_BY_KEY[i.core_key] || {}).label || '', i.category, (i.tags || []).join(', '), i.default_due_days == null ? '' : i.default_due_days].concat(SECTION_KEYS.map(function(k){ return i[k] || ''; })).map(csvCell).join(',');
     }));
     return '﻿' + lines.join('\r\n');
   }
 
   function toMarkdown(i){
     var props = [];
+    if (itemCode(i)) props.push('Code: ' + itemCode(i));
+    if (i.week != null) props.push('Week: ' + i.week);
     if (CORE_BY_KEY[i.core_key]) props.push('Core: ' + CORE_BY_KEY[i.core_key].label);
     if (i.category) props.push('Category: ' + i.category);
     if ((i.tags || []).length) props.push('Tags: ' + i.tags.join(', '));
     if (i.default_due_days != null) props.push('Due in days: ' + i.default_due_days);
-    return '# ' + i.title + '\n\n' + (props.length ? props.join('\n') + '\n\n' : '') + (i.instructions || '') + '\n';
+    return '# ' + i.title + '\n\n' + (props.length ? props.join('\n') + '\n\n' : '') + mdBody(i) + '\n';
   }
 
   async function runExport(kind, rows){
@@ -532,7 +694,7 @@
     var stamp = todayKey();
     if (kind === 'csv') download('assignment-library-' + stamp + '.csv', new Blob([toCsv(rows)], { type: 'text/csv;charset=utf-8' }));
     if (kind === 'json') {
-      var clean = rows.map(function(i){ return { title: i.title, instructions: i.instructions, core_key: i.core_key, category: i.category, tags: i.tags, default_due_days: i.default_due_days, notion_page_id: i.notion_page_id, notion_url: i.notion_url }; });
+      var clean = rows.map(function(i){ return { title: i.title, code: itemCode(i), week: i.week, relevance: i.relevance || '', outcome: i.outcome || '', instructions: i.instructions, implementation: i.implementation || '', alternative: i.alternative || '', examples: i.examples || '', core_key: i.core_key, category: i.category, tags: i.tags, default_due_days: i.default_due_days, notion_page_id: i.notion_page_id, notion_url: i.notion_url }; });
       download('assignment-library-' + stamp + '.json', new Blob([JSON.stringify({ type: 'cc-assignment-library', version: 1, exported_at: new Date().toISOString(), assignments: clean }, null, 2)], { type: 'application/json' }));
     }
     if (kind === 'md') {
@@ -651,6 +813,7 @@
 
   // ─── import (files) ─────────────────────────────────────────────────────
   function openImport(tab){
+    if (tab === 'upload' || tab === 'text' || tab === 'url') { switchImportSrc(tab); tab = 'file'; }
     switchImportTab(tab || 'notion');
     $('alNotionDb').value = $('alNotionDb').value || lsGet(DB_KEY);
     note('alNotionNote', ''); note('alImNote', '');
@@ -666,8 +829,141 @@
     b.addEventListener('click', function(){ switchImportTab(b.getAttribute('data-im-tab')); });
   });
 
+  function switchImportSrc(src){
+    document.querySelectorAll('[data-im-src]').forEach(function(b){ b.classList.toggle('is-active', b.getAttribute('data-im-src') === src); });
+    document.querySelectorAll('[data-im-src-pane]').forEach(function(p){ p.hidden = p.getAttribute('data-im-src-pane') !== src; });
+    note('alImNote', '');
+    var focus = { text: 'alPasteText', url: 'alUrlInput' }[src];
+    if (focus) setTimeout(function(){ $(focus).focus(); }, 30);
+  }
+  document.querySelectorAll('[data-im-src]').forEach(function(b){
+    b.addEventListener('click', function(){ switchImportSrc(b.getAttribute('data-im-src')); });
+  });
+
+  // Free text → parsed groups. Detects JSON, spreadsheet rows (tab
+  // separated), CSV with a header row, or one/many "# Title" markdown blocks.
+  function rowsFromText(text, nameHint){
+    text = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    var t = text.trim();
+    if (!t) return [];
+    if (/^[\[{]/.test(t)) { try { return [{ kind: 'json', name: nameHint, rows: rowsFromJson(t) }]; } catch (e) {} }
+    var first = t.split('\n')[0];
+    var headerish = /(^|[\t,])\s*"?(title|name|assignment|homework)"?\s*($|[\t,])/i;
+    if (first.indexOf('\t') !== -1 && headerish.test(first)) return [{ kind: 'csv', name: nameHint, rows: rowsFromCsv(t, '\t') }];
+    if (first.indexOf(',') !== -1 && headerish.test(first) && t.split('\n').length > 1) return [{ kind: 'csv', name: nameHint, rows: rowsFromCsv(t) }];
+    // Markdown: split on top-level "# " headings — one assignment each.
+    var blocks = [], cur = [];
+    t.split('\n').forEach(function(line){
+      if (/^#\s+\S/.test(line) && cur.some(function(l){ return l.trim(); })) { blocks.push(cur.join('\n')); cur = []; }
+      cur.push(line);
+    });
+    blocks.push(cur.join('\n'));
+    return blocks.map(function(b){
+      b = b.trim();
+      // No "# Title": the first line is the title, unless it's already a section.
+      if (!/^#\s/.test(b)) {
+        var lines = b.split('\n');
+        if (SECTION_RE.test(lines[0])) {
+          var guess = String(nameHint || '').replace(/\.[a-z]+$/i, '').trim() || 'Untitled assignment';
+          b = '# ' + guess + '\n\n' + b;
+        } else b = '# ' + lines[0].replace(/^[#*\s]+|[*\s]+$/g, '') + '\n' + lines.slice(1).join('\n');
+      }
+      var r = rowFromMarkdown(b, nameHint);
+      return r ? { kind: 'md', name: nameHint, rows: [r] } : null;
+    }).filter(Boolean);
+  }
+
+  function showParsed(groups, emptyMsg){
+    var rows = mergeParsed(groups);
+    importRows = rows.map(function(r){ return Object.assign(r, { include: true, match: existingMatch(r) }); });
+    note('alImNote', rows.length ? '' : (emptyMsg || 'No assignments found.'), !rows.length);
+    renderImportPreview();
+  }
+
+  $('alPasteGo').addEventListener('click', function(){
+    var text = $('alPasteText').value;
+    if (!text.trim()) { note('alImNote', 'Paste something first.', true); $('alPasteText').focus(); return; }
+    showParsed(rowsFromText(text, 'Pasted text'), 'Couldn’t find an assignment in that text.');
+  });
+
+  // Google Docs / Sheets share links → their plain-text / CSV export.
+  function exportUrl(u){
+    var m;
+    if ((m = u.match(/docs\.google\.com\/document\/d\/([\w-]+)/))) return 'https://docs.google.com/document/d/' + m[1] + '/export?format=txt';
+    if ((m = u.match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/)) && !/\/pub\b|output=csv/.test(u)) {
+      var gid = (u.match(/[#&?]gid=(\d+)/) || [])[1];
+      return 'https://docs.google.com/spreadsheets/d/' + m[1] + '/export?format=csv' + (gid ? '&gid=' + gid : '');
+    }
+    if ((m = u.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/blob\/(.+)$/))) return 'https://raw.githubusercontent.com/' + m[1] + '/' + m[2];
+    return u;
+  }
+
+  function htmlToText(html){
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script,style,nav,header,footer,noscript,svg').forEach(function(n){ n.remove(); });
+    var root = doc.querySelector('article') || doc.querySelector('main') || doc.body;
+    var out = [];
+    (function walk(n){
+      n.childNodes.forEach(function(c){
+        if (c.nodeType === 3) { if (c.textContent.trim()) out.push(c.textContent.replace(/\s+/g, ' ')); return; }
+        if (c.nodeType !== 1) return;
+        var tag = c.tagName;
+        if (/^H[1-3]$/.test(tag)) { out.push('\n' + '#'.repeat(Number(tag[1])) + ' ' + c.textContent.trim() + '\n'); return; }
+        if (tag === 'LI') { out.push('\n- '); walk(c); return; }
+        if (tag === 'A' && c.href && /^https?:/.test(c.href) && c.textContent.trim() !== c.href) { out.push(c.textContent.trim() + ' (' + c.href + ')'); return; }
+        if (tag === 'BR') { out.push('\n'); return; }
+        var block = /^(P|DIV|SECTION|UL|OL|TR|BLOCKQUOTE|PRE|TABLE)$/.test(tag);
+        if (block) out.push('\n');
+        walk(c);
+        if (block) out.push('\n');
+      });
+    })(root);
+    var text = out.join('').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    var title = (doc.querySelector('h1') || {}).textContent || doc.title || '';
+    if (!/^#\s/.test(text) && title.trim()) text = '# ' + title.trim() + '\n\n' + text;
+    return text;
+  }
+
+  async function fetchText(url){
+    try {
+      var res = await fetch(url, { redirect: 'follow' });
+      if (res.ok) return { text: await res.text(), type: res.headers.get('content-type') || '' };
+    } catch (e) { /* CORS — fall back to the edge function */ }
+    var r = await callNotion({ action: 'fetch_url', url: url });
+    if (r.error) throw new Error(r.notDeployed ? 'This site blocks direct downloads. Deploy the notion-assignments function to import from any link.' : r.error);
+    return { text: r.text || '', type: r.content_type || '' };
+  }
+
+  $('alUrlGo').addEventListener('click', async function(){
+    var raw = $('alUrlInput').value.trim();
+    if (!/^https?:\/\//i.test(raw)) { note('alImNote', 'Paste a full link starting with https://', true); $('alUrlInput').focus(); return; }
+    var btn = this; busy(btn, true, 'Fetching…'); note('alImNote', 'Fetching…');
+    try {
+      if (/(^|\.)notion\.(so|site)\//i.test(raw.replace(/^https?:\/\//, '')) && notionId(raw)) {
+        var n = await callNotion({ action: 'notion_url', url: raw });
+        if (n.error) throw new Error(n.error);
+        showParsed([{ kind: 'notion', name: raw, rows: n.rows || [] }], 'That Notion page had nothing to import.');
+        if (n.more) note('alImNote', 'Showing the first 100 rows — use Notion sync for the whole database.');
+        return;
+      }
+      var url = exportUrl(raw);
+      var got = await fetchText(url);
+      var name = decodeURIComponent(url.split('?')[0].split('/').pop() || 'link');
+      var text = got.text;
+      if (/html/i.test(got.type) || /^\s*<(!doctype|html)/i.test(text)) text = htmlToText(text);
+      else if (/csv/i.test(got.type) || /\.csv$/i.test(name)) { showParsed([{ kind: 'csv', name: name, rows: rowsFromCsv(text) }], 'No rows found in that sheet.'); return; }
+      showParsed(rowsFromText(text, name), 'Couldn’t find an assignment at that link.');
+    } catch (e) {
+      note('alImNote', e.message, true);
+    } finally {
+      busy(btn, false, 'Fetch');
+    }
+  });
+  $('alUrlInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('alUrlGo').click(); } });
+
   // RFC 4180 CSV → array of arrays.
-  function parseCsv(text){
+  function parseCsv(text, delim){
+    delim = delim || ',';
     text = text.replace(/^﻿/, '');
     var rows = [], row = [], cell = '', q = false;
     for (var i = 0; i < text.length; i++) {
@@ -676,7 +972,7 @@
         if (ch === '"') { if (text[i+1] === '"') { cell += '"'; i++; } else q = false; }
         else cell += ch;
       } else if (ch === '"') q = true;
-      else if (ch === ',') { row.push(cell); cell = ''; }
+      else if (ch === delim) { row.push(cell); cell = ''; }
       else if (ch === '\n' || ch === '\r') {
         if (ch === '\r' && text[i+1] === '\n') i++;
         row.push(cell); cell = '';
@@ -697,19 +993,31 @@
   function rowFromRecord(rec, fallbackTitleKey){
     var title = pick(rec, ['title','name','assignment','assignment name','homework']) || (fallbackTitleKey ? String(rec[fallbackTitleKey] || '').trim() : '');
     if (!title) return null;
-    return {
+    var code = parseCode(pick(rec, ['code','assignment code','id code']));
+    var core = coreFromLabel(pick(rec, ['core','cores','core key','core_key'])) || (code ? code.core_key : '');
+    var week = weekNum(pick(rec, ['week','wk','week #','week number']));
+    var out = {
       title: title,
-      core_key: coreFromLabel(pick(rec, ['core','cores','core key','core_key'])),
+      week: week != null ? week : (code ? code.week : null),
+      core_key: core,
       category: pick(rec, ['category','type','section','group']),
       tags: parseTags(pick(rec, ['tags','tag','labels'])),
       default_due_days: dueNum(pick(rec, ['due in days','due days','default due days','default_due_days','days to complete'])),
-      instructions: cleanMd(pick(rec, ['instructions','description','details','body','content'])),
+      instructions: cleanMd(pick(rec, ['to do','todo','to-do','instructions','steps','description','details','body','content'])),
+      relevance: cleanMd(pick(rec, ['relevance'])),
+      outcome: cleanMd(pick(rec, ['outcome','outcomes'])),
+      implementation: cleanMd(pick(rec, ['implementation'])),
+      alternative: cleanMd(pick(rec, ['alternative','alternatives'])),
+      examples: cleanMd(pick(rec, ['examples','example'])),
       notion_page_id: ''
     };
+    // A single body column that itself holds "RELEVANCE | …" sections.
+    if (!hasSections(out) && SECTION_RE.test(out.instructions.split('\n')[0] || '')) Object.assign(out, splitSections(out.instructions));
+    return out;
   }
 
-  function rowsFromCsv(text){
-    var grid = parseCsv(text);
+  function rowsFromCsv(text, delim){
+    var grid = parseCsv(text, delim);
     if (grid.length < 2) return [];
     var head = grid[0];
     return grid.slice(1).map(function(cells){
@@ -731,7 +1039,7 @@
       .replace(/\n{3,}/g, '\n\n').trim();
   }
 
-  var MD_PROPS = { 'core':'core', 'cores':'core', 'category':'category', 'type':'category', 'section':'category', 'tags':'tags', 'tag':'tags', 'due in days':'due', 'due days':'due', 'default due days':'due', 'days to complete':'due' };
+  var MD_PROPS = { 'code':'code', 'week':'week', 'core':'core', 'cores':'core', 'category':'category', 'type':'category', 'section':'category', 'tags':'tags', 'tag':'tags', 'due in days':'due', 'due days':'due', 'default due days':'due', 'days to complete':'due' };
 
   function rowFromMarkdown(text, filename){
     var lines = text.replace(/^﻿/, '').split(/\r?\n/);
@@ -743,23 +1051,26 @@
     var pid = (base.match(/\s([0-9a-f]{32})$/i) || [])[1] || '';
     if (!title) title = base.replace(/\s[0-9a-f]{32}$/i, '').trim();
     if (!title) return null;
-    var row = { title: title, core_key: '', category: '', tags: [], default_due_days: null, instructions: '', notion_page_id: pid.toLowerCase() };
+    var row = { title: title, relevance: '', outcome: '', implementation: '', alternative: '', examples: '', core_key: '', week: null, category: '', tags: [], default_due_days: null, instructions: '', notion_page_id: pid.toLowerCase() };
     // Notion writes "Property: value" lines right under the title.
     while (i < lines.length && !lines[i].trim()) i++;
     while (i < lines.length) {
+      if (SECTION_RE.test(lines[i])) break;
       var m = lines[i].match(/^([A-Za-z][\w ]{0,30}):\s*(.*)$/);
       if (!m || !MD_PROPS[norm(m[1])]) {
         if (m && lines[i].length < 80 && /^[A-Z]/.test(m[1])) { i++; continue; } // unknown property (Created, Status…)
         break;
       }
       var key = MD_PROPS[norm(m[1])], v = m[2].trim();
-      if (key === 'core') row.core_key = coreFromLabel(v);
+      if (key === 'core') row.core_key = coreFromLabel(v) || row.core_key;
+      if (key === 'week') row.week = weekNum(v);
+      if (key === 'code') { var pc = parseCode(v); if (pc) { if (!row.core_key) row.core_key = pc.core_key; if (row.week == null) row.week = pc.week; } }
       if (key === 'category') row.category = v;
       if (key === 'tags') row.tags = parseTags(v);
       if (key === 'due') row.default_due_days = dueNum(v);
       i++;
     }
-    row.instructions = cleanMd(lines.slice(i).join('\n'));
+    Object.assign(row, splitSections(cleanMd(lines.slice(i).join('\n'))));
     return row;
   }
 
@@ -768,10 +1079,15 @@
     var list = Array.isArray(data) ? data : (data.assignments || data.items || []);
     return list.map(function(r){
       if (!r || !r.title) return null;
+      var pc = parseCode(r.code);
+      var core = CORE_BY_KEY[r.core_key] ? r.core_key : coreFromLabel(r.core);
+      var wk = weekNum(r.week);
       return {
-        title: String(r.title).trim(), core_key: CORE_BY_KEY[r.core_key] ? r.core_key : coreFromLabel(r.core),
+        title: String(r.title).trim(), core_key: core || (pc ? pc.core_key : ''),
+        week: wk != null ? wk : (pc ? pc.week : null),
         category: String(r.category || ''), tags: parseTags(r.tags), default_due_days: dueNum(r.default_due_days),
-        instructions: String(r.instructions || ''), notion_page_id: notionId(r.notion_page_id), notion_url: r.notion_url || ''
+        instructions: String(r.instructions || ''), relevance: String(r.relevance || ''), outcome: String(r.outcome || ''),
+        implementation: String(r.implementation || ''), alternative: String(r.alternative || ''), examples: String(r.examples || ''), notion_page_id: notionId(r.notion_page_id), notion_url: r.notion_url || ''
       };
     }).filter(Boolean);
   }
@@ -791,9 +1107,11 @@
         }
       } else if (lower.endsWith('.csv')) {
         out.push({ kind: 'csv', name: name, rows: rowsFromCsv(await getText()) });
-      } else if (/\.(md|markdown)$/.test(lower) || (lower.endsWith('.txt'))) {
+      } else if (/\.(md|markdown)$/.test(lower)) {
         var r = rowFromMarkdown(await getText(), name);
         if (r) out.push({ kind: 'md', name: name, rows: [r] });
+      } else if (lower.endsWith('.txt')) {
+        rowsFromText(await getText(), name.split('/').pop()).forEach(function(g){ out.push(g); });
       } else if (lower.endsWith('.json')) {
         out.push({ kind: 'json', name: name, rows: rowsFromJson(await getText()) });
       }
@@ -814,10 +1132,11 @@
         var k = norm(r.title);
         var cur = byKey[k];
         if (!cur) { byKey[k] = Object.assign({}, r); order.push(k); return; }
-        ['core_key','category','instructions','notion_page_id','notion_url'].forEach(function(f){ if (!cur[f] && r[f]) cur[f] = r[f]; });
-        if (g.kind === 'md' && r.instructions) cur.instructions = r.instructions;
+        ['core_key','category','notion_page_id','notion_url'].concat(SECTION_KEYS).forEach(function(f){ if (!cur[f] && r[f]) cur[f] = r[f]; });
+        if (g.kind === 'md' && (r.instructions || hasSections(r))) SECTION_KEYS.forEach(function(k){ if (r[k]) cur[k] = r[k]; });
         if (!(cur.tags || []).length && (r.tags || []).length) cur.tags = r.tags;
         if (cur.default_due_days == null && r.default_due_days != null) cur.default_due_days = r.default_due_days;
+        if (cur.week == null && r.week != null) cur.week = r.week;
       });
     });
     return order.map(function(k){ return byKey[k]; });
@@ -837,10 +1156,10 @@
     $('alImCount').textContent = plural(importRows.length, 'assignment') + ' found' + (dupes ? ' · ' + dupes + ' already in the library' : '') + '.';
     $('alImRows').innerHTML = importRows.map(function(r, idx){
       return '<tr><td><input type="checkbox" data-im-row="'+idx+'"'+(r.include ? ' checked' : '')+' style="accent-color:#071f35;" aria-label="Include '+esc(r.title)+'" /></td>'
-        + '<td><b>'+esc(r.title)+'</b></td>'
+        + '<td><b>'+(codeFor(r.core_key, r.week) ? esc(codeFor(r.core_key, r.week)) + ' · ' : '')+esc(r.title)+'</b></td>'
         + '<td>'+esc((CORE_BY_KEY[r.core_key] || {}).label || '—')+'</td>'
         + '<td>'+esc((r.tags || []).join(', '))+'</td>'
-        + '<td class="al-snip">'+esc(String(r.instructions || '').replace(/\s+/g, ' ').slice(0, 120))+'</td>'
+        + '<td class="al-snip">'+esc(String(r.outcome || r.instructions || '').replace(/\s+/g, ' ').slice(0, 120))+'</td>'
         + '<td>'+(r.match ? '<span class="al-badge al-badge--upd">Exists</span>' : '<span class="al-badge al-badge--new">New</span>')+'</td></tr>';
     }).join('');
     $('alImAll').checked = importRows.every(function(r){ return r.include; });
@@ -880,7 +1199,7 @@
     var mode = $('alImDupe').value;
     var inserts = [], updates = [], skipped = 0;
     importRows.filter(function(r){ return r.include; }).forEach(function(r){
-      var f = { title: r.title, instructions: r.instructions || '', core_key: r.core_key || '', category: r.category || '', tags: r.tags || [], default_due_days: r.default_due_days };
+      var f = Object.assign(sectionFields(r), { title: r.title, week: r.week == null ? null : r.week, core_key: r.core_key || '', category: r.category || '', tags: r.tags || [], default_due_days: r.default_due_days });
       if (r.match && mode === 'skip') { skipped++; return; }
       if (r.match && mode === 'update') { updates.push({ id: r.match.id, fields: f, pid: r.notion_page_id }); return; }
       var pid = r.notion_page_id && !items.some(function(i){ return i.notion_page_id === r.notion_page_id; }) ? r.notion_page_id : null;

@@ -104,29 +104,21 @@
       .cp-habit-group-head b{font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
       .cp-habit-group-head span{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
       .cp-habit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
-      .cp-habit-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-top:4px solid var(--core,rgba(7,31,53,.2));border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;}
-      .cp-habit-card--edit{gap:12px;}
-      .cp-habit-card-tools{display:flex;gap:2px;flex-shrink:0;margin:-6px -8px 0 0;}
-      .cp-habit-tool{all:unset;box-sizing:border-box;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(7,31,53,.4);}
-      .cp-habit-tool:hover{background:rgba(7,31,53,.06);color:#071f35;}
-      .cp-habit-tool:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
-      .cp-habit-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-      .cp-habit-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;margin:0;line-height:1.3;}
-      .cp-habit-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-      .cp-habit-day{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;}
-      .cp-habit-day-name{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
-      .cp-habit-day-dot{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(7,31,53,.16);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;transition:background .15s,border-color .15s;}
-      .cp-habit-day:hover .cp-habit-day-dot{border-color:rgba(7,31,53,.4);}
-      .cp-habit-day:hover,.cp-habit-day:active,.cp-habit-day:focus{background:transparent;box-shadow:none;transform:none;filter:none;}
-      .cp-habit-day:focus-visible .cp-habit-day-dot{outline:2px solid #071f35;outline-offset:2px;}
-      .cp-habit-day.is-done .cp-habit-day-dot{background:#77d770;border-color:#77d770;}
-      .cp-habit-day.is-today .cp-habit-day-name{color:#071f35;}
-      .cp-habit-day.is-today .cp-habit-day-dot{box-shadow:0 0 0 3px rgba(7,31,53,.1);}
-      .cp-habit-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-      .cp-habit-rate{font-size:12.5px;font-weight:700;color:rgba(7,31,53,.5);}
-      .cp-habit-bar{flex:1;max-width:140px;height:6px;border-radius:99px;background:rgba(7,31,53,.08);overflow:hidden;}
-      .cp-habit-bar span{display:block;height:100%;background:#77d770;border-radius:99px;}
-      @media(max-width:420px){.cp-habit-grid{grid-template-columns:1fr;}.cp-habit-day-dot{width:30px;height:30px;}}
+      .cp-habit-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+      .cp-habit-card{all:unset;box-sizing:border-box;position:relative;cursor:pointer;background:#fff;border:1px solid rgba(7,31,53,.08);border-radius:16px;padding:18px 18px 18px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:104px;box-shadow:0 1px 2px rgba(7,31,53,.04);transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;overflow:hidden;}
+      .cp-habit-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--core,rgba(7,31,53,.2));}
+      .cp-habit-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(7,31,53,.09);border-color:rgba(7,31,53,.14);}
+      .cp-habit-card:active{transform:translateY(0);box-shadow:0 2px 8px rgba(7,31,53,.08);}
+      .cp-habit-card:focus-visible{outline:2px solid #071f35;outline-offset:2px;}
+      .cp-habit-card--edit{cursor:default;gap:12px;transform:none !important;box-shadow:0 10px 28px rgba(7,31,53,.09);border-color:rgba(7,31,53,.16);}
+      .cp-habit-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;margin:0;line-height:1.35;color:#071f35;overflow-wrap:anywhere;}
+      .cp-habit-core{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;height:24px;padding:0 10px 0 8px;border-radius:999px;background:color-mix(in srgb, var(--core,#071f35) 14%, #fff);font-size:12px;font-weight:700;color:#071f35;}
+      .cp-habit-core i{width:8px;height:8px;border-radius:50%;background:var(--core,rgba(7,31,53,.3));}
+      .cp-habit-form-actions--split{justify-content:space-between;}
+      .cp-habit-remove{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:#c01a38;padding:10px 6px;border-radius:8px;}
+      .cp-habit-remove:hover{text-decoration:underline;}
+      .cp-habit-remove:focus-visible,.cp-habit-add-cancel:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
+      @media(max-width:420px){.cp-habit-grid{grid-template-columns:1fr;}}
 
       /* Goal add form — fixed overlay on #cpGoalFormOverlay itself */
       #cpGoalFormOverlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
@@ -944,7 +936,7 @@
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
           <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="homework">Homework<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="homework">To Do's<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="habits">Habits</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
@@ -985,11 +977,11 @@
             </div>
             <div class="cp-card" id="cpHomeworkCard" data-goto-tab="homework">
               <div class="cp-card-head">
-                <div><p class="cp-kicker">Homework</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
+                <div><p class="cp-kicker">To Do's</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
                 <span class="cp-meta" id="cpHwCardMeta"></span>
               </div>
               <div class="cp-note-list" id="cpHwCardList"></div>
-              <div class="cp-cta-row"><span class="cp-cta-primary">Open homework</span></div>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open To Do's</span></div>
             </div>
             <div class="cp-card" id="cpPreCallCard" data-goto-tab="checkins">
               <p class="cp-kicker">Weekly Check-in</p>
@@ -1093,7 +1085,7 @@
         <!-- HOMEWORK TAB -->
         <div class="cp-goals-view" id="cpHomeworkView" hidden>
           <div class="cp-goals-header">
-            <div><h2 class="cp-goals-title">Homework</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
+            <div><h2 class="cp-goals-title">To Do's</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
             <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
           </div>
           <div id="cpHwGroups"></div>
@@ -1312,7 +1304,7 @@
           <aside class="cp-coach-aside">
             <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
             <div class="cp-card cp-roster-card">
-              <p class="cp-kicker">Homework</p>
+              <p class="cp-kicker">To Do's</p>
               <h3 class="cp-card-title">To review</h3>
               <p class="cp-body-text" id="cpHwQueueSummary"></p>
               <div class="cp-flag-list" id="cpHwQueueList"></div>
