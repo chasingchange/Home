@@ -58,8 +58,8 @@
       .al-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);cursor:pointer;user-select:none;}
       .al-check input{width:17px;height:17px;accent-color:#071f35;margin:0;}
 
-      .al-list-head{display:grid;grid-template-columns:28px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);border-bottom:1px solid rgba(7,31,53,.06);}
-      .al-row{display:grid;grid-template-columns:28px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
+      .al-list-head{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);border-bottom:1px solid rgba(7,31,53,.06);}
+      .al-row{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
       .al-row:last-child{border-bottom:0;}
       .al-row:hover{background:rgba(7,31,53,.025);}
       .al-row.is-selected{background:rgba(42,157,240,.07);}
@@ -69,6 +69,27 @@
       .al-row-sub{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
       .al-row-meta{font-size:13px;color:rgba(7,31,53,.6);}
       .al-row-actions{display:flex;justify-content:flex-end;}
+      .al-code{font-family:"Raleway",sans-serif;font-weight:800;font-size:13px;letter-spacing:.02em;color:#071f35;font-variant-numeric:tabular-nums;}
+      .al-code--none{color:rgba(7,31,53,.3);font-weight:700;}
+      .al-weeks{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(7,31,53,.08);overflow-x:auto;scrollbar-width:thin;}
+      .al-weeks-label{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);margin-right:4px;flex:none;}
+      .al-week{all:unset;box-sizing:border-box;flex:none;cursor:pointer;height:32px;min-width:40px;padding:0 12px;border-radius:999px;border:1px solid rgba(7,31,53,.14);background:#fff;font-size:13px;font-weight:700;color:rgba(7,31,53,.7);display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background-color .12s,color .12s,border-color .12s;}
+      .al-week:hover{border-color:rgba(7,31,53,.35);color:#071f35;}
+      .al-week:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
+      .al-week.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .al-week-n{font-size:11px;font-weight:700;opacity:.55;}
+      .al-code-preview{display:inline-block;margin-left:6px;font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;padding:2px 8px;border-radius:6px;background:rgba(7,31,53,.06);vertical-align:1px;}
+      .al-ed-section{border-top:1px solid rgba(7,31,53,.08);padding-top:14px;margin:0 0 14px;}
+      .al-ed-section-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 8px;font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#071f35;}
+      .al-ed-section-h small{font-family:"Muli","Mulish",system-ui,sans-serif;font-size:12.5px;font-weight:400;letter-spacing:0;text-transform:none;color:rgba(7,31,53,.5);}
+      .al-ed-section textarea.al-input{min-height:84px;}
+      .al-ed-section--main textarea.al-input{min-height:180px;}
+      .al-sources{margin-bottom:14px;}
+      .al-sources .al-tab{padding:6px 14px;font-size:13px;}
+      textarea.al-input.al-paste{min-height:180px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;}
+      .al-row-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+      .al-row-inline .al-input{flex:1 1 260px;width:auto;}
+      .al-grid4{display:grid;grid-template-columns:1.2fr .8fr 1.2fr 1fr;gap:12px;}
       .al-chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(7,31,53,.06);color:#071f35;white-space:nowrap;}
       .al-chip-dot{width:8px;height:8px;border-radius:50%;flex:none;}
       .al-tag{display:inline-block;font-size:11px;font-weight:700;color:rgba(7,31,53,.55);background:rgba(7,31,53,.05);border-radius:6px;padding:2px 7px;margin:4px 4px 0 0;}
@@ -151,10 +172,13 @@
         .al-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
         .al-list-head{display:none;}
         .al-row{grid-template-columns:24px minmax(0,1fr) auto;row-gap:6px;}
-        .al-row .al-col-core{grid-column:2;grid-row:2;}
+        .al-row .al-col-code{grid-column:2;grid-row:1;}
+        .al-row > div:nth-child(3){grid-column:2;grid-row:2;}
+        .al-row .al-col-core{grid-column:2;grid-row:3;}
         .al-row .al-col-used{display:none;}
-        .al-row .al-row-actions{grid-column:3;grid-row:1 / span 2;}
+        .al-row .al-row-actions{grid-column:3;grid-row:1 / span 3;}
         .al-grid3,.al-grid2{grid-template-columns:1fr;}
+        .al-grid4{grid-template-columns:1fr 1fr;}
         .al-sheet{padding:22px 18px 18px;border-radius:18px;}
         .al-modal{padding:10px;align-items:flex-end;}
         .al-preview td.al-snip{display:none;}
@@ -180,14 +204,16 @@
           <div>
             <p class="al-kicker">Coach · Master database</p>
             <h1 class="al-h1">Assignment Library</h1>
-            <p class="al-lede">Every assignment you hand out, in one place. Write new ones, pull them in from Notion, and send them to any client's Homework tab in a couple of clicks.</p>
+            <p class="al-lede">Every assignment you hand out, in one place. Write new ones, pull them in from Notion, and send them to any client's To Do's tab in a couple of clicks.</p>
           </div>
           <div class="al-head-actions">
             <div class="al-menu">
               <button type="button" class="al-btn" id="alImportBtn" aria-haspopup="true" aria-expanded="false">Import ▾</button>
               <div class="al-menu-pop" id="alImportMenu" hidden>
                 <button type="button" data-open-import="notion">Sync from Notion<small>Pull every row of a Notion database</small></button>
-                <button type="button" data-open-import="file">Upload files<small>Notion export (.zip, .csv, .md) or JSON</small></button>
+                <button type="button" data-open-import="upload">Upload files<small>Notion export (.zip, .csv, .md) or JSON</small></button>
+                <button type="button" data-open-import="text">Paste text<small>Markdown, spreadsheet rows, CSV or JSON</small></button>
+                <button type="button" data-open-import="url">From URL<small>Notion, Google Docs / Sheets, any public file</small></button>
               </div>
             </div>
             <div class="al-menu">
@@ -216,6 +242,7 @@
             <select class="al-select" id="alCoreFilter" aria-label="Filter by core"></select>
             <select class="al-select" id="alCatFilter" aria-label="Filter by category"></select>
             <select class="al-select" id="alSort" aria-label="Sort">
+              <option value="code">By code (week, core)</option>
               <option value="title">A → Z</option>
               <option value="updated">Recently edited</option>
               <option value="used">Most assigned</option>
@@ -223,9 +250,10 @@
             </select>
             <label class="al-check"><input type="checkbox" id="alShowArchived" /> Archived</label>
           </div>
+          <div class="al-weeks" id="alWeeks" role="group" aria-label="Choose a week"></div>
           <div class="al-list-head">
             <input type="checkbox" id="alSelectAll" aria-label="Select all shown" style="width:17px;height:17px;accent-color:#071f35;margin:0;" />
-            <span>Assignment</span><span>Core</span><span>Assigned</span><span></span>
+            <span>Code</span><span>Assignment</span><span>Core</span><span>Assigned</span><span></span>
           </div>
           <div id="alList"></div>
         </div>
@@ -255,8 +283,9 @@
           <label for="alEdTitle">Title</label>
           <input type="text" class="al-input" id="alEdTitle" maxlength="140" placeholder="e.g. Write your I AM statements" />
         </div>
-        <div class="al-grid3">
+        <div class="al-grid4">
           <div class="al-field"><label for="alEdCore">Core</label><select class="al-input" id="alEdCore"></select></div>
+          <div class="al-field"><label for="alEdWeek">Week <span class="al-code-preview" id="alEdCode" hidden></span></label><input type="number" class="al-input" id="alEdWeek" min="1" max="99" placeholder="—" /></div>
           <div class="al-field"><label for="alEdCategory">Category</label><input type="text" class="al-input" id="alEdCategory" list="alCatList" placeholder="e.g. Onboarding" maxlength="60" /></div>
           <div class="al-field"><label for="alEdDue">Due after (days)</label><input type="number" class="al-input" id="alEdDue" min="0" max="365" placeholder="—" /></div>
         </div>
@@ -264,11 +293,8 @@
           <label for="alEdTags">Tags</label>
           <input type="text" class="al-input" id="alEdTags" placeholder="Comma separated, e.g. journaling, week 1" />
         </div>
-        <div class="al-field">
-          <label for="alEdInstructions">Instructions</label>
-          <textarea class="al-input" id="alEdInstructions" placeholder="What to do, how to do it, and what to turn in. Links are clickable for the client."></textarea>
-          <p class="al-hint">Plain text. Lines starting with <b>#</b>, <b>-</b>, <b>1.</b> or <b>[ ]</b> become headings, bullets, numbered steps and checkboxes when pushed to Notion.</p>
-        </div>
+        <div id="alEdSections"></div>
+        <p class="al-hint" style="margin-top:-6px;">Plain text. Lines starting with <b>#</b>, <b>-</b>, <b>1.</b> or <b>[ ]</b> become headings, bullets, numbered steps and checkboxes. Links are clickable for the client. Only the sections you fill in are sent.</p>
         <div class="al-sheet-foot">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" class="al-btn al-btn--danger al-btn-sm" id="alEdDelete">Delete</button>
@@ -330,7 +356,7 @@
         <h2 class="al-sheet-title" id="alImHeading">Bring assignments in</h2>
         <div class="al-tabs" role="tablist">
           <button type="button" class="al-tab is-active" data-im-tab="notion" role="tab">Notion sync</button>
-          <button type="button" class="al-tab" data-im-tab="file" role="tab">Upload files</button>
+          <button type="button" class="al-tab" data-im-tab="file" role="tab">File, text or URL</button>
         </div>
 
         <div data-im-pane="notion">
@@ -366,12 +392,36 @@
         </div>
 
         <div data-im-pane="file" hidden>
-          <p class="al-sheet-sub">In Notion, open the database → ••• → <b>Export</b> → <b>Markdown &amp; CSV</b> (include subpages), then drop the .zip here. Loose .csv / .md files and this library's JSON backup work too.</p>
-          <label class="al-drop" id="alDrop" for="alFileInput">
-            <strong>Drop files here or click to choose</strong>
-            <span>.zip · .csv · .md · .json — several at once is fine</span>
-          </label>
-          <input type="file" id="alFileInput" multiple accept=".zip,.csv,.md,.markdown,.txt,.json" hidden />
+          <div class="al-tabs al-sources" role="tablist" aria-label="Import from">
+            <button type="button" class="al-tab is-active" data-im-src="upload" role="tab">Upload file</button>
+            <button type="button" class="al-tab" data-im-src="text" role="tab">Paste text</button>
+            <button type="button" class="al-tab" data-im-src="url" role="tab">From URL</button>
+          </div>
+
+          <div data-im-src-pane="upload">
+            <p class="al-sheet-sub">In Notion, open the database → ••• → <b>Export</b> → <b>Markdown &amp; CSV</b> (include subpages), then drop the .zip here. Loose .csv / .md / .txt files and this library's JSON backup work too.</p>
+            <label class="al-drop" id="alDrop" for="alFileInput">
+              <strong>Drop files here or click to choose</strong>
+              <span>.zip · .csv · .md · .txt · .json — several at once is fine</span>
+            </label>
+            <input type="file" id="alFileInput" multiple accept=".zip,.csv,.md,.markdown,.txt,.json" hidden />
+          </div>
+
+          <div data-im-src-pane="text" hidden>
+            <p class="al-sheet-sub">Paste one or many assignments. Start each with a <b># Title</b> line, then <b>Code: B.1</b> (or <b>Core:</b> / <b>Week:</b>) and the sections — <b>RELEVANCE |</b>, <b>OUTCOME |</b>, <b>TO DO |</b>, <b>IMPLEMENTATION |</b>, <b>ALTERNATIVE |</b>, <b>EXAMPLES |</b> (or <b>## Relevance</b> headings). Rows copied from a spreadsheet with a header row, CSV and JSON work too.</p>
+            <textarea class="al-input al-paste" id="alPasteText" spellcheck="false" placeholder="# Vision board&#10;Code: L.1&#10;RELEVANCE | Why it matters…&#10;OUTCOME | What they'll have…&#10;TO DO |&#10;  [ ] Step one&#10;  [ ] Step two&#10;IMPLEMENTATION | How to use it…&#10;ALTERNATIVE | Another way…&#10;EXAMPLES | Links…"></textarea>
+            <div class="al-row-inline" style="margin-top:10px;justify-content:flex-end;">
+              <button type="button" class="al-btn" id="alPasteGo">Read text</button>
+            </div>
+          </div>
+
+          <div data-im-src-pane="url" hidden>
+            <p class="al-sheet-sub">Paste a link: a Notion page or database (shared with your integration), a Google Doc or Sheet shared as “anyone with the link”, or any public .csv / .md / .txt / .json file or web page.</p>
+            <div class="al-row-inline">
+              <input type="url" class="al-input" id="alUrlInput" placeholder="https://…" aria-label="Link to import" />
+              <button type="button" class="al-btn" id="alUrlGo">Fetch</button>
+            </div>
+          </div>
           <div id="alImPreviewWrap" hidden>
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;">
               <p class="al-note" id="alImCount" style="margin:0;"></p>

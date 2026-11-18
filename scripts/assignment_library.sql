@@ -63,3 +63,37 @@ alter table public.client_assignments
 
 create index if not exists client_assignments_library_id_idx
   on public.client_assignments (library_id);
+
+-- Week + code (e.g. B.1 = Body, Week 1). `week` is set by the coach; `code` is
+-- built from the core's first letter and the week, so it can never drift.
+-- Never write `code` directly — it is a generated column.
+alter table public.assignment_library
+  add column if not exists week int check (week is null or (week between 1 and 99));
+
+alter table public.assignment_library
+  add column if not exists code text generated always as (
+    case
+      when week is null then ''
+      when core_key = '' then 'W.' || week::text
+      else upper(left(core_key, 1)) || '.' || week::text
+    end
+  ) stored;
+
+create index if not exists assignment_library_week_idx
+  on public.assignment_library (week, core_key);
+
+-- Editor sections. Each assignment is written as:
+--   RELEVANCE       -> relevance       why this matters for the client
+--   OUTCOME         -> outcome         what they walk away with
+--   TO DO           -> instructions    the steps (existing column)
+--   IMPLEMENTATION  -> implementation  how to put it into practice
+--   ALTERNATIVE     -> alternative     another way to do it
+--   EXAMPLES        -> examples        examples / links
+-- When assigned, the filled-in sections are combined, in that order and under
+-- those headings, into the client's homework instructions. Notion / Markdown
+-- keep them as "## Relevance", "## To Do", … headings in the page body.
+alter table public.assignment_library add column if not exists relevance      text not null default '';
+alter table public.assignment_library add column if not exists outcome        text not null default '';
+alter table public.assignment_library add column if not exists implementation text not null default '';
+alter table public.assignment_library add column if not exists alternative    text not null default '';
+alter table public.assignment_library add column if not exists examples       text not null default '';

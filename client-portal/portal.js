@@ -1545,29 +1545,20 @@
     }
   });
 
-  // Sidebar habits are checked off for today; the Habits tab shows the week.
+  // Sidebar: the client's habits and the core each one builds. No tracking.
   function renderHabits(){
-    var today = dayKey(new Date());
     var h='';
-    portalData.habits.forEach(function(hb,i){
-      var done = habitDoneOn(hb.label, today);
-      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(done?' is-done':'')+'" data-idx="'+i+'">'+(done?'✓':'')+'</button>'+(hb.coreKey?'<span class="cp-dot" style="background:'+coreColor(hb.coreKey)+'"></span>':'')+'<span class="cp-task-label'+(done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
+    portalData.habits.forEach(function(hb){
+      h+='<div class="cp-task-row"><span class="cp-dot" style="background:'+(hb.coreKey?coreColor(hb.coreKey):'rgba(7,31,53,.2)')+'"></span><span class="cp-task-label">'+esc(hb.label)+'</span></div>';
     });
     $('cpHabitList').innerHTML = h;
   }
-
-  $('cpHabitList').addEventListener('click', function(e){
-    var btn = e.target.closest('.cp-task-check'); if (!btn || !portalData) return;
-    e.stopPropagation();
-    toggleHabitDay(parseInt(btn.getAttribute('data-idx'),10), dayKey(new Date()));
-  });
 
   // ─── Habits tab ────────────────────────────────────────────────────────
   // History lives in client_habit_logs (scripts/client_habit_logs.sql): one
   // row per habit label per day it was done. portalData.habitLogs mirrors it
   // as { label: { 'YYYY-MM-DD': true } }.
   var HABIT_LOG_DAYS = 120;
-  var HABIT_RATE_DAYS = 30;
 
   function dayKey(d){
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -1578,17 +1569,6 @@
     var logs = {};
     rows.forEach(function(r){ (logs[r.habit_label] = logs[r.habit_label] || {})[r.day] = true; });
     return logs;
-  }
-
-  function habitDoneOn(label, key){
-    var l = portalData.habitLogs && portalData.habitLogs[label];
-    return !!(l && l[key]);
-  }
-
-  function habitRate(label){
-    var done = 0, d = new Date();
-    for (var i = 0; i < HABIT_RATE_DAYS; i++) { if (habitDoneOn(label, dayKey(d))) done++; d = addDays(d, -1); }
-    return Math.round(done / HABIT_RATE_DAYS * 100);
   }
 
   // Each habit belongs to one of the six cores (client_habits.core_key; ''
@@ -1611,10 +1591,8 @@
   function renderHabitsTab(){
     if (!portalData) return;
     var habits = portalData.habits;
-    var today = new Date(), todayKey = dayKey(today);
-    var doneToday = habits.filter(function(hb){ return habitDoneOn(hb.label, todayKey); }).length;
     $('cpHabitsSummary').textContent = habits.length
-      ? doneToday + ' of ' + habits.length + ' done today'
+      ? habits.length + (habits.length === 1 ? ' habit' : ' habits') + ' · tap one to edit'
       : '';
 
     function card(hb, idx){
@@ -1624,26 +1602,15 @@
         return '<form class="cp-habit-card cp-habit-card--edit" data-habit-edit-form="'+idx+'" style="--core:'+color+'">'
           + '<input type="text" class="cp-goal-form-input" name="label" value="'+esc(hb.label)+'" maxlength="120" aria-label="Habit" required />'
           + '<div class="cp-goal-core-grid">'+habitCorePicker('cpHabitEditCore', hb.coreKey)+'</div>'
-          + '<div class="cp-habit-form-actions"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
-          + '<button type="submit" class="cp-goals-add-btn">Save</button></div></form>';
+          + '<div class="cp-habit-form-actions'+(isCoachUser ? ' cp-habit-form-actions--split' : '')+'">'
+          + (isCoachUser ? '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>' : '')
+          + '<span style="display:flex;gap:10px;align-items:center;"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
+          + '<button type="submit" class="cp-goals-add-btn">Save</button></span></div></form>';
       }
-      var rate = habitRate(hb.label);
-      var week = '';
-      for (var i = 6; i >= 0; i--) {
-        var d = addDays(today, -i), key = dayKey(d), done = habitDoneOn(hb.label, key);
-        var name = i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday:'short' });
-        week += '<button type="button" class="cp-habit-day'+(done?' is-done':'')+(i===0?' is-today':'')+'" data-habit-idx="'+idx+'" data-habit-day="'+key+'" aria-pressed="'+done+'" aria-label="'+esc(hb.label)+', '+esc(d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'">'
-          + '<span class="cp-habit-day-name">'+esc(name)+'</span><span class="cp-habit-day-dot">'+(done?'✓':'')+'</span></button>';
-      }
-      return '<div class="cp-habit-card" style="--core:'+color+'">'
-        + '<div class="cp-habit-card-head"><p class="cp-habit-card-title">'+esc(hb.label)+'</p>'
-        + '<div class="cp-habit-card-tools">'
-        + '<button type="button" class="cp-habit-tool" data-habit-edit="'+idx+'" title="Edit habit" aria-label="Edit '+esc(hb.label)+'">✎</button>'
-        + (isCoachUser ? '<button type="button" class="cp-habit-tool" data-habit-del="'+idx+'" title="Remove habit" aria-label="Remove '+esc(hb.label)+'">✕</button>' : '')
-        + '</div></div>'
-        + '<div class="cp-habit-week">'+week+'</div>'
-        + '<div class="cp-habit-card-foot"><span class="cp-habit-rate">'+rate+'% of the last '+HABIT_RATE_DAYS+' days</span>'
-        + '<span class="cp-habit-bar"><span style="width:'+rate+'%"></span></span></div></div>';
+      return '<button type="button" class="cp-habit-card" data-habit-edit="'+idx+'" style="--core:'+color+'" aria-label="Edit habit: '+esc(hb.label)+'">'
+        + '<p class="cp-habit-card-title">'+esc(hb.label)+'</p>'
+        + '<span class="cp-habit-core"><i></i>'+esc(def ? def.label : 'No core')+'</span>'
+        + '</button>';
     }
 
     var groups = CORE_DEFS.concat([{ key:'', label:'No core', color:'rgba(7,31,53,.3)' }]);
@@ -1664,23 +1631,6 @@
     if (editInput && document.activeElement !== editInput) { editInput.focus(); editInput.setSelectionRange(editInput.value.length, editInput.value.length); }
   }
 
-  async function toggleHabitDay(idx, key){
-    var habit = portalData.habits[idx]; if (!habit) return;
-    var clientId = portalData.clientId, label = habit.label;
-    var logs = portalData.habitLogs[label] = portalData.habitLogs[label] || {};
-    var nowDone = !logs[key];
-    if (nowDone) logs[key] = true; else delete logs[key];
-    renderHabits(); renderHabitsTab();
-    var res = nowDone
-      ? await sb.from('client_habit_logs').upsert({ client_id: clientId, habit_label: label, day: key }, { onConflict:'client_id,habit_label,day', ignoreDuplicates:true })
-      : await sb.from('client_habit_logs').delete().eq('client_id', clientId).eq('habit_label', label).eq('day', key);
-    if (res.error) {
-      console.error('habit log save failed', res.error);
-      if (nowDone) delete logs[key]; else logs[key] = true;
-      if (portalData.clientId === clientId) { renderHabits(); renderHabitsTab(); }
-    }
-  }
-
   // History is keyed by label, so renaming a habit moves its log rows along.
   async function renameHabitLogs(clientId, oldLabel, newLabel){
     if (!oldLabel || oldLabel === newLabel) return { error: null };
@@ -1694,8 +1644,6 @@
 
   $('cpHabitsGrid').addEventListener('click', async function(e){
     if (!portalData) return;
-    var day = e.target.closest('[data-habit-day]');
-    if (day) { toggleHabitDay(parseInt(day.getAttribute('data-habit-idx'),10), day.getAttribute('data-habit-day')); return; }
     var edit = e.target.closest('[data-habit-edit]');
     if (edit) {
       var hb = portalData.habits[parseInt(edit.getAttribute('data-habit-edit'),10)];
@@ -1704,8 +1652,9 @@
     }
     if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; renderHabitsTab(); return; }
     var del = e.target.closest('[data-habit-del]'); if (!del) return;
+    habitsUi.editing = null;
     var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
-    if (!confirm('Remove "' + habit.label + '"? Its check-in history is kept.')) return;
+    if (!confirm('Remove "' + habit.label + '"?')) { habitsUi.editing = habit.id; renderHabitsTab(); return; }
     var { error } = await sb.from('client_habits').delete().eq('id', habit.id);
     if (error) { alert('Could not remove habit: ' + error.message); return; }
     portalData.habits = portalData.habits.filter(function(h){ return h.id !== habit.id; });
@@ -2010,7 +1959,7 @@
     ];
     var h = '';
     if (!list.length) {
-      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No assignments yet — create one with “New assignment”.' : 'No homework yet. Your coach will add assignments here.') + '</div>';
+      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No assignments yet — create one with “New assignment”.' : 'Nothing to do yet. Your coach will add assignments here.') + '</div>';
     }
     groups.forEach(function(g){
       if (!g.items.length) return;
@@ -2074,7 +2023,7 @@
     var prevNote = $('cpHwNote') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwNote').value : null;
     var prevFeedback = $('cpHwFeedback') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwFeedback').value : null;
 
-    var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">Homework</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
+    var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">To Do\'s</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
       + '<button type="button" class="cp-sheet-close" data-close-hw-sheet aria-label="Close">×</button></div>';
     h += '<div class="cp-hw-meta">'+statusPill(def.label, def.color)+dueChip(a)+coreChip(a.coreKey)
       + (a.submittedAt ? '<span class="cp-due-chip">Submitted '+esc(shortDate(new Date(a.submittedAt)))+'</span>' : '')
@@ -2231,10 +2180,25 @@
   var hwLibrary = null;
   var hwLibraryId = null;
 
+  // Library sections → the plain text the client reads (same as
+  // assignment-library/library.js clientText).
+  var LIB_SECTIONS = [['relevance','RELEVANCE'],['outcome','OUTCOME'],['instructions','TO DO'],['implementation','IMPLEMENTATION'],['alternative','ALTERNATIVE'],['examples','EXAMPLES']];
+  function libClientText(t){
+    var filled = LIB_SECTIONS.filter(function(x){ return String(t[x[0]] || '').trim(); });
+    if (!filled.length) return '';
+    if (filled.length === 1 && filled[0][0] === 'instructions') return String(t.instructions).trim();
+    return filled.map(function(x){ return x[1] + '\n' + String(t[x[0]]).trim(); }).join('\n\n');
+  }
+  function libCode(t){
+    if (t.week == null) return '';
+    var c = CORE_DEFS.filter(function(d){ return d.key === t.core_key; })[0];
+    return (c ? c.label[0] : 'W') + '.' + t.week;
+  }
+
   async function loadHwLibrary(){
     var sel = $('cpHwLibPick');
     if (hwLibrary === null) {
-      var r = await sb.from('assignment_library').select('id, title, instructions, core_key, category, default_due_days').is('archived_at', null).order('title');
+      var r = await sb.from('assignment_library').select('*').is('archived_at', null).order('title');
       if (r.error) { $('cpHwLibWrap').hidden = true; $('cpHwSaveLibWrap').hidden = true; hwLibrary = []; return; }
       hwLibrary = r.data || [];
     }
@@ -2243,7 +2207,7 @@
       var group = hwLibrary.filter(function(t){ return (t.core_key || '') === c.key; });
       if (!group.length) return;
       h += '<optgroup label="'+esc(c.label)+'">' + group.map(function(t){
-        return '<option value="'+t.id+'">'+esc(t.title)+(t.category ? ' · '+esc(t.category) : '')+'</option>';
+        return '<option value="'+t.id+'">'+(libCode(t) ? esc(libCode(t)) + ' · ' : '')+esc(t.title)+(t.category ? ' · '+esc(t.category) : '')+'</option>';
       }).join('') + '</optgroup>';
     });
     sel.innerHTML = h;
@@ -2255,8 +2219,8 @@
     hwLibraryId = t ? t.id : null;
     $('cpHwSaveLibWrap').hidden = !!t;
     if (!t) return;
-    $('cpHwTitle').value = t.title;
-    $('cpHwInstructions').value = t.instructions || '';
+    $('cpHwTitle').value = (libCode(t) ? libCode(t) + ' · ' : '') + t.title;
+    $('cpHwInstructions').value = libClientText(t);
     $('cpHwCore').value = t.core_key || '';
     if (t.default_due_days != null) $('cpHwDue').value = dayKey(addDays(new Date(), t.default_due_days));
   });
