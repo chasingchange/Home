@@ -524,7 +524,7 @@
       offboarding: results[8].data || {},
       nonNegotiables: (results[9].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
       preCallSubmissions: (results[10].data || []).map(mapPreCall),
-      habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, done:h.done }; }),
+      habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, origLabel:h.label, coreKey:h.core_key||'', done:h.done }; }),
       goals: (results[12].data || []).map(mapGoal),
       assignments: (results[13].data || []).map(mapAssignment),
       eduQuestions: (results[14].data || []).map(curMap),
@@ -1551,7 +1551,7 @@
     var h='';
     portalData.habits.forEach(function(hb,i){
       var done = habitDoneOn(hb.label, today);
-      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(done?' is-done':'')+'" data-idx="'+i+'">'+(done?'✓':'')+'</button><span class="cp-task-label'+(done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
+      h+='<div class="cp-task-row"><button type="button" class="cp-task-check'+(done?' is-done':'')+'" data-idx="'+i+'">'+(done?'✓':'')+'</button>'+(hb.coreKey?'<span class="cp-dot" style="background:'+coreColor(hb.coreKey)+'"></span>':'')+'<span class="cp-task-label'+(done?' is-done':'')+'">'+esc(hb.label)+'</span></div>';
     });
     $('cpHabitList').innerHTML = h;
   }
@@ -1585,20 +1585,27 @@
     return !!(l && l[key]);
   }
 
-  // Consecutive days done, counting back from today — or from yesterday when
-  // today isn't checked yet, so a streak doesn't read 0 first thing in the morning.
-  function habitStreak(label){
-    var d = new Date();
-    if (!habitDoneOn(label, dayKey(d))) d = addDays(d, -1);
-    var n = 0;
-    while (habitDoneOn(label, dayKey(d))) { n++; d = addDays(d, -1); }
-    return n;
-  }
-
   function habitRate(label){
     var done = 0, d = new Date();
     for (var i = 0; i < HABIT_RATE_DAYS; i++) { if (habitDoneOn(label, dayKey(d))) done++; d = addDays(d, -1); }
     return Math.round(done / HABIT_RATE_DAYS * 100);
+  }
+
+  // Each habit belongs to one of the six cores (client_habits.core_key; ''
+  // means no core yet). The tab groups habit cards by core, in core order.
+  var habitsUi = { editing: null };   // id of the habit whose card is in edit mode
+
+  function habitCoreDef(key){
+    return CORE_DEFS.filter(function(c){ return c.key === key; })[0] || null;
+  }
+
+  // Pill-style core picker shared by the add form and the inline edit form.
+  function habitCorePicker(name, selected){
+    return CORE_DEFS.map(function(c){
+      var id = name + '_' + c.key;
+      return '<input type="radio" name="'+name+'" id="'+id+'" value="'+c.key+'" class="cp-goal-core-opt"'+(selected === c.key ? ' checked' : '')+'>'
+        + '<label for="'+id+'" style="--core:'+c.color+'"><span class="cp-dot"></span>'+c.label+'</label>';
+    }).join('');
   }
 
   function renderHabitsTab(){
@@ -1610,9 +1617,17 @@
       ? doneToday + ' of ' + habits.length + ' done today'
       : '';
 
-    var h = '';
-    habits.forEach(function(hb, idx){
-      var streak = habitStreak(hb.label), rate = habitRate(hb.label);
+    function card(hb, idx){
+      var def = habitCoreDef(hb.coreKey);
+      var color = def ? def.color : 'rgba(7,31,53,.2)';
+      if (habitsUi.editing === hb.id) {
+        return '<form class="cp-habit-card cp-habit-card--edit" data-habit-edit-form="'+idx+'" style="--core:'+color+'">'
+          + '<input type="text" class="cp-goal-form-input" name="label" value="'+esc(hb.label)+'" maxlength="120" aria-label="Habit" required />'
+          + '<div class="cp-goal-core-grid">'+habitCorePicker('cpHabitEditCore', hb.coreKey)+'</div>'
+          + '<div class="cp-habit-form-actions"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
+          + '<button type="submit" class="cp-goals-add-btn">Save</button></div></form>';
+      }
+      var rate = habitRate(hb.label);
       var week = '';
       for (var i = 6; i >= 0; i--) {
         var d = addDays(today, -i), key = dayKey(d), done = habitDoneOn(hb.label, key);
@@ -1620,16 +1635,33 @@
         week += '<button type="button" class="cp-habit-day'+(done?' is-done':'')+(i===0?' is-today':'')+'" data-habit-idx="'+idx+'" data-habit-day="'+key+'" aria-pressed="'+done+'" aria-label="'+esc(hb.label)+', '+esc(d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'">'
           + '<span class="cp-habit-day-name">'+esc(name)+'</span><span class="cp-habit-day-dot">'+(done?'✓':'')+'</span></button>';
       }
-      h += '<div class="cp-habit-card">'
+      return '<div class="cp-habit-card" style="--core:'+color+'">'
         + '<div class="cp-habit-card-head"><p class="cp-habit-card-title">'+esc(hb.label)+'</p>'
-        + '<span class="cp-habit-streak'+(streak>=3?' is-hot':'')+'">'+(streak>=3?'🔥 ':'')+streak+'-day streak</span></div>'
+        + '<div class="cp-habit-card-tools">'
+        + '<button type="button" class="cp-habit-tool" data-habit-edit="'+idx+'" title="Edit habit" aria-label="Edit '+esc(hb.label)+'">✎</button>'
+        + (isCoachUser ? '<button type="button" class="cp-habit-tool" data-habit-del="'+idx+'" title="Remove habit" aria-label="Remove '+esc(hb.label)+'">✕</button>' : '')
+        + '</div></div>'
         + '<div class="cp-habit-week">'+week+'</div>'
         + '<div class="cp-habit-card-foot"><span class="cp-habit-rate">'+rate+'% of the last '+HABIT_RATE_DAYS+' days</span>'
-        + '<span class="cp-habit-bar"><span style="width:'+rate+'%"></span></span>'
-        + (isCoachUser ? '<button type="button" class="cp-goal-delete-btn" data-habit-del="'+idx+'" title="Remove habit" aria-label="Remove habit">✕</button>' : '')
-        + '</div></div>';
+        + '<span class="cp-habit-bar"><span style="width:'+rate+'%"></span></span></div></div>';
+    }
+
+    var groups = CORE_DEFS.concat([{ key:'', label:'No core', color:'rgba(7,31,53,.3)' }]);
+    var h = '';
+    groups.forEach(function(c){
+      var cards = '', n = 0;
+      habits.forEach(function(hb, idx){
+        var key = habitCoreDef(hb.coreKey) ? hb.coreKey : '';
+        if (key !== c.key) return;
+        cards += card(hb, idx); n++;
+      });
+      if (!n) return;
+      h += '<section class="cp-habit-group"><div class="cp-habit-group-head"><i style="background:'+c.color+'"></i><b>'+esc(c.label)+'</b><span>'+n+'</span></div>'
+        + '<div class="cp-habit-grid">'+cards+'</div></section>';
     });
-    $('cpHabitsGrid').innerHTML = h || '<div class="cp-goal-empty" style="grid-column:1/-1;">No habits yet — add one to start a streak.</div>';
+    $('cpHabitsGrid').innerHTML = h || '<div class="cp-goal-empty">No habits yet — add one and pick the core it builds.</div>';
+    var editInput = $('cpHabitsGrid').querySelector('[data-habit-edit-form] input[name=label]');
+    if (editInput && document.activeElement !== editInput) { editInput.focus(); editInput.setSelectionRange(editInput.value.length, editInput.value.length); }
   }
 
   async function toggleHabitDay(idx, key){
@@ -1649,10 +1681,28 @@
     }
   }
 
+  // History is keyed by label, so renaming a habit moves its log rows along.
+  async function renameHabitLogs(clientId, oldLabel, newLabel){
+    if (!oldLabel || oldLabel === newLabel) return { error: null };
+    return sb.from('client_habit_logs').update({ habit_label: newLabel }).eq('client_id', clientId).eq('habit_label', oldLabel);
+  }
+
+  function habitLabelTaken(label, exceptId){
+    var l = label.toLowerCase();
+    return portalData.habits.some(function(h){ return h.id !== exceptId && h.label.toLowerCase() === l; });
+  }
+
   $('cpHabitsGrid').addEventListener('click', async function(e){
     if (!portalData) return;
     var day = e.target.closest('[data-habit-day]');
     if (day) { toggleHabitDay(parseInt(day.getAttribute('data-habit-idx'),10), day.getAttribute('data-habit-day')); return; }
+    var edit = e.target.closest('[data-habit-edit]');
+    if (edit) {
+      var hb = portalData.habits[parseInt(edit.getAttribute('data-habit-edit'),10)];
+      if (hb) { habitsUi.editing = hb.id; renderHabitsTab(); }
+      return;
+    }
+    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; renderHabitsTab(); return; }
     var del = e.target.closest('[data-habit-del]'); if (!del) return;
     var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
     if (!confirm('Remove "' + habit.label + '"? Its check-in history is kept.')) return;
@@ -1662,10 +1712,38 @@
     renderCoreList(); renderHabitsTab();
   });
 
+  $('cpHabitsGrid').addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; renderHabitsTab(); }
+  });
+
+  $('cpHabitsGrid').addEventListener('submit', async function(e){
+    var form = e.target.closest('[data-habit-edit-form]'); if (!form || !portalData) return;
+    e.preventDefault();
+    var habit = portalData.habits[parseInt(form.getAttribute('data-habit-edit-form'),10)]; if (!habit) return;
+    var label = form.elements.label.value.trim(); if (!label) return;
+    var coreEl = form.querySelector('input[type=radio]:checked');
+    var coreKey = coreEl ? coreEl.value : '';
+    if (habitLabelTaken(label, habit.id)) { alert('You already have that habit.'); return; }
+    var clientId = portalData.clientId, oldLabel = habit.label;
+    var saveBtn = form.querySelector('[type=submit]'); saveBtn.disabled = true;
+    var res = await sb.from('client_habits').update({ label: label, core_key: coreKey }).eq('id', habit.id);
+    if (!res.error) res = await renameHabitLogs(clientId, oldLabel, label);
+    if (res.error) { saveBtn.disabled = false; alert('Could not save habit: ' + res.error.message); return; }
+    if (portalData.clientId !== clientId) return;
+    if (oldLabel !== label) {
+      portalData.habitLogs[label] = portalData.habitLogs[oldLabel] || {};
+      delete portalData.habitLogs[oldLabel];
+    }
+    habit.label = label; habit.origLabel = label; habit.coreKey = coreKey;
+    habitsUi.editing = null;
+    renderCoreList(); renderHabitsTab();
+  });
+
   function showHabitAddForm(show){
     $('cpHabitAddForm').hidden = !show;
     $('cpHabitAddBtn').hidden = show;
     $('cpHabitAddInput').value = '';
+    $('cpHabitAddCores').innerHTML = habitCorePicker('cpHabitAddCore', '');
     if (show) $('cpHabitAddInput').focus();
   }
   $('cpHabitAddBtn').addEventListener('click', function(){ showHabitAddForm(true); });
@@ -1674,14 +1752,16 @@
     e.preventDefault();
     if (!portalData) return;
     var label = $('cpHabitAddInput').value.trim(); if (!label) return;
-    if (portalData.habits.some(function(h){ return h.label.toLowerCase() === label.toLowerCase(); })) { alert('You already have that habit.'); return; }
+    var coreEl = $('cpHabitAddCores').querySelector('input[type=radio]:checked');
+    if (!coreEl) { alert('Pick the core this habit builds.'); return; }
+    if (habitLabelTaken(label, null)) { alert('You already have that habit.'); return; }
     var clientId = portalData.clientId;
     var { data, error } = await sb.from('client_habits')
-      .insert({ client_id: clientId, label: label, done: false, position: portalData.habits.length })
+      .insert({ client_id: clientId, label: label, core_key: coreEl.value, done: false, position: portalData.habits.length })
       .select().single();
     if (error) { alert('Could not add habit: ' + error.message); return; }
     if (portalData.clientId !== clientId) return;
-    portalData.habits.push({ id:data.id, label:data.label, done:data.done });
+    portalData.habits.push({ id:data.id, label:data.label, origLabel:data.label, coreKey:data.core_key||'', done:data.done });
     showHabitAddForm(false);
     renderCoreList(); renderHabitsTab();
   });
@@ -4863,7 +4943,8 @@
       { key:'meta', placeholder:'When', type:'text' }
     ] },
     cpEditHabitList:    { items: [], fields: [
-      { key:'label', placeholder:'Habit', type:'text' }
+      { key:'label', placeholder:'Habit', type:'text' },
+      { key:'coreKey', type:'select', options: [{value:'',label:'— Core —'}].concat(CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; })) }
     ] },
     cpEditGoalList:     { items: [], fields: [
       { key:'title', placeholder:'Goal title', type:'text' },
@@ -4918,7 +4999,7 @@
   $('cpEditMetricAdd').addEventListener('click', function(){ editSections.cpEditMetricList.items.push({label:'',value:''}); renderListEditor('cpEditMetricList'); });
   $('cpEditResourceAdd').addEventListener('click', function(){ editSections.cpEditResourceList.items.push({label:'',color:'#2a9df0'}); renderListEditor('cpEditResourceList'); });
   $('cpEditWinAdd').addEventListener('click', function(){ editSections.cpEditWinList.items.push({label:'',meta:'',color:'#77d770'}); renderListEditor('cpEditWinList'); });
-  $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',done:false}); renderListEditor('cpEditHabitList'); });
+  $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',coreKey:'',done:false}); renderListEditor('cpEditHabitList'); });
   $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
 
   // Coach sees what the dates work out to; the client only sees route + week.
@@ -5073,7 +5154,7 @@
       return { client_id: clientId, label: t.label.trim(), status: t.status || 'active', claimed_at: t.claimedAt || null, position:i };
     });
     var habitRows = editState.habits.filter(function(h){ return (h.label||'').trim(); }).map(function(h,i){
-      return { client_id: clientId, label: h.label.trim(), done: !!h.done, position:i };
+      return { client_id: clientId, label: h.label.trim(), core_key: h.coreKey||'', done: !!h.done, position:i };
     });
 
     var goalRows = editSections.cpEditGoalList.items.filter(function(g){ return (g.title||'').trim(); }).map(function(g){
@@ -5098,6 +5179,13 @@
     ]);
 
     var saveError = results.map(function(r){ return r && r.error; }).filter(Boolean)[0];
+    // Habits renamed here keep their check-in history (logs are keyed by label).
+    if (!saveError) {
+      var renames = editState.habits.filter(function(h){ return h.origLabel && (h.label||'').trim() && h.origLabel !== h.label.trim(); });
+      for (var ri = 0; ri < renames.length && !saveError; ri++) {
+        saveError = (await renameHabitLogs(clientId, renames[ri].origLabel, renames[ri].label.trim())).error;
+      }
+    }
     setLoading($('cpEditSave'), false, 'Save');
     if (saveError) {
       console.error('Failed to save portal edits:', saveError);

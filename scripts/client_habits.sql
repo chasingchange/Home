@@ -14,6 +14,10 @@ create table if not exists public.client_habits (
   position   int not null default 0
 );
 
+-- Which of the six cores the habit builds ('' = not assigned yet). Safe to
+-- re-run on an existing table.
+alter table public.client_habits add column if not exists core_key text not null default '';
+
 alter table public.client_habits enable row level security;
 
 drop policy if exists "own or coach can select" on public.client_habits;

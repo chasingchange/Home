@@ -94,15 +94,24 @@
       .cp-goal-empty{background:#fff;border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:36px 24px;text-align:center;color:rgba(7,31,53,.45);font-size:15px;margin-bottom:36px;}
 
       /* ── Habits tab ──────────────────────────────────────────── */
-      .cp-habit-add-row{display:flex;gap:10px;align-items:center;margin:-8px 0 20px;}
-      .cp-habit-add-row .cp-goal-form-input{flex:1;}
+      .cp-habit-add-row{display:flex;flex-direction:column;gap:12px;margin:-8px 0 24px;padding:18px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;}
+      .cp-habit-form-label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.5);margin:0;}
+      .cp-habit-form-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;}
       .cp-habit-add-cancel{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);padding:10px 6px;}
-      .cp-habit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:36px;}
-      .cp-habit-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;}
+      .cp-habit-group{margin-bottom:28px;}
+      .cp-habit-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;}
+      .cp-habit-group-head i{width:10px;height:10px;border-radius:999px;}
+      .cp-habit-group-head b{font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
+      .cp-habit-group-head span{font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
+      .cp-habit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+      .cp-habit-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-top:4px solid var(--core,rgba(7,31,53,.2));border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;}
+      .cp-habit-card--edit{gap:12px;}
+      .cp-habit-card-tools{display:flex;gap:2px;flex-shrink:0;margin:-6px -8px 0 0;}
+      .cp-habit-tool{all:unset;box-sizing:border-box;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(7,31,53,.4);}
+      .cp-habit-tool:hover{background:rgba(7,31,53,.06);color:#071f35;}
+      .cp-habit-tool:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
       .cp-habit-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
       .cp-habit-card-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:16px;margin:0;line-height:1.3;}
-      .cp-habit-streak{flex-shrink:0;padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:800;color:rgba(7,31,53,.6);white-space:nowrap;}
-      .cp-habit-streak.is-hot{background:rgba(255,189,89,.22);color:#9a5b00;}
       .cp-habit-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
       .cp-habit-day{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;}
       .cp-habit-day-name{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.4);}
@@ -1070,9 +1079,13 @@
             <button type="button" class="cp-goals-add-btn" id="cpHabitAddBtn">+ Add habit</button>
           </div>
           <form class="cp-habit-add-row" id="cpHabitAddForm" hidden>
-            <input type="text" class="cp-goal-form-input" id="cpHabitAddInput" placeholder="e.g. 10 minutes of reading" maxlength="120" />
-            <button type="submit" class="cp-goals-add-btn">Add</button>
-            <button type="button" class="cp-habit-add-cancel" id="cpHabitAddCancel">Cancel</button>
+            <input type="text" class="cp-goal-form-input" id="cpHabitAddInput" placeholder="e.g. 10 minutes of reading" maxlength="120" aria-label="New habit" />
+            <p class="cp-habit-form-label">Which core does it build?</p>
+            <div class="cp-goal-core-grid" id="cpHabitAddCores"></div>
+            <div class="cp-habit-form-actions">
+              <button type="button" class="cp-habit-add-cancel" id="cpHabitAddCancel">Cancel</button>
+              <button type="submit" class="cp-goals-add-btn">Add habit</button>
+            </div>
           </form>
           <div class="cp-habit-grid" id="cpHabitsGrid"></div>
         </div>
