@@ -25,6 +25,12 @@ drop policy if exists "own or coach can insert" on public.client_habit_logs;
 create policy "own or coach can insert" on public.client_habit_logs for insert
   with check (client_id = auth.uid() or public.is_coach(auth.uid()));
 
+-- Renaming a habit moves its history to the new label (renameHabitLogs()).
+drop policy if exists "own or coach can update" on public.client_habit_logs;
+create policy "own or coach can update" on public.client_habit_logs for update
+  using (client_id = auth.uid() or public.is_coach(auth.uid()))
+  with check (client_id = auth.uid() or public.is_coach(auth.uid()));
+
 drop policy if exists "own or coach can delete" on public.client_habit_logs;
 create policy "own or coach can delete" on public.client_habit_logs for delete
   using (client_id = auth.uid() or public.is_coach(auth.uid()));
