@@ -56,6 +56,12 @@
       #aboutInPageNav::-webkit-scrollbar {
         display: none;
       }
+      /* Sit beneath the fixed mobile site bar. */
+      @media (max-width: 640px) {
+        #aboutInPageNav {
+          top: calc(3.25rem + env(safe-area-inset-top, 0px));
+        }
+      }
       #aboutInPageNav .inner {
         max-width: 1120px;
         margin: 0 auto;

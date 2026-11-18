@@ -20,20 +20,19 @@
   nav.innerHTML = `
     <div class="cc-global-nav-backdrop" id="ccGlobalNavBackdrop" aria-hidden="true"></div>
     <div class="cc-global-nav-mobile-bar">
+      <a href="${root}" class="cc-global-nav-brand" aria-label="Chasing Change home">Chasing Change</a>
       <a href="${root}client-portal/" class="cc-global-nav-auth" id="ccGlobalNavAuth">Sign in</a>
       <button
         id="ccGlobalNavToggle"
         type="button"
         class="cc-global-nav-toggle"
         aria-expanded="false"
-        aria-controls="ccGlobalNav"
+        aria-controls="ccGlobalNavPanel"
         aria-label="Open navigation menu"
       >
         <span class="cc-global-nav-toggle-box" aria-hidden="true">
-          <span class="cc-global-nav-toggle-antler cc-global-nav-toggle-antler--left"></span>
-          <span class="cc-global-nav-toggle-antler cc-global-nav-toggle-antler--right"></span>
-          <span class="cc-global-nav-toggle-tine cc-global-nav-toggle-tine--left"></span>
-          <span class="cc-global-nav-toggle-tine cc-global-nav-toggle-tine--right"></span>
+          <span class="cc-global-nav-toggle-line cc-global-nav-toggle-line--top"></span>
+          <span class="cc-global-nav-toggle-line cc-global-nav-toggle-line--bottom"></span>
         </span>
       </button>
     </div>
@@ -46,7 +45,7 @@
         <a href="https://chasingchange.beehiiv.com/" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Science of Chasing Change</a>
         <a href="https://tally.so/r/w5JXKE" class="cc-global-nav-link" target="_blank" rel="noopener noreferrer">Apply for Coaching</a>
         <a href="${root}contact/" class="cc-global-nav-link">Contact</a>
-        <span class="cc-global-nav-separator" aria-hidden="true">|</span>
+        <span class="cc-global-nav-separator" aria-hidden="true"><span class="cc-global-nav-separator-bar">|</span><span class="cc-global-nav-separator-label">Explore</span></span>
         <button type="button" data-core="Body" class="cc-global-nav-core">Body</button>
         <button type="button" data-core="Art" class="cc-global-nav-core">Art</button>
         <button type="button" data-core="Mind" class="cc-global-nav-core">Mind</button>
@@ -55,6 +54,12 @@
         <button type="button" data-core="Life" class="cc-global-nav-core">Life</button>
       </nav>
       <section id="ccGlobalMegaMenu" class="cc-global-mega cc-is-hidden" aria-live="polite">
+        <div class="cc-global-mega-head">
+          <button type="button" class="cc-global-mega-back" id="ccGlobalMegaBack">
+            <span class="cc-global-mega-back-chevron" aria-hidden="true"></span>Back
+          </button>
+          <p class="cc-global-mega-title" id="ccGlobalMegaTitle"></p>
+        </div>
         <div id="ccGlobalMegaItems" class="cc-global-mega-items"></div>
       </section>
     </div>
@@ -82,8 +87,10 @@
   const mobileToggle = nav.querySelector("#ccGlobalNavToggle");
   const coreMegaMenu = nav.querySelector("#ccGlobalMegaMenu");
   const coreMegaMenuItems = nav.querySelector("#ccGlobalMegaItems");
+  const coreMegaTitle = nav.querySelector("#ccGlobalMegaTitle");
+  const coreMegaBack = nav.querySelector("#ccGlobalMegaBack");
   const MOBILE_BREAKPOINT = 640;
-  const MOBILE_CLOSE_DURATION_MS = 360;
+  const MOBILE_CLOSE_DURATION_MS = 420;
   let mobileCloseTimer = null;
   let bodyScrollY = 0;
 
@@ -109,6 +116,11 @@
   }
 
   setActivePrimaryLink();
+
+  // Stagger index for the mobile sheet's cascading entrance.
+  Array.from(coreTopBar.children).forEach((item, index) => {
+    item.style.setProperty("--cc-i", String(index));
+  });
 
   // Sign in / Sign out, pinned top-right on every page. Supabase keeps the
   // session in localStorage (sb-<project>-auth-token), so the nav can tell
@@ -202,6 +214,7 @@
     unlockBodyScroll();
     mobileCloseTimer = window.setTimeout(() => {
       setMobileMenuState(false);
+      hideMega();
     }, MOBILE_CLOSE_DURATION_MS);
   }
 
@@ -221,6 +234,12 @@
       btn.classList.toggle("is-active", active);
       btn.setAttribute("aria-expanded", active ? "true" : "false");
     });
+  }
+
+  function hideMega() {
+    coreMegaMenu.classList.add("cc-is-hidden");
+    nav.classList.remove("cc-mobile-sub-open");
+    setActiveCoreTab(null);
   }
 
   function renderCoreMegaMenu(activeCore) {
@@ -255,15 +274,34 @@
         .join("");
     }
 
+    if (coreMegaTitle) coreMegaTitle.textContent = activeCore;
+    coreMegaMenuItems.querySelectorAll(".cc-global-mega-item, .cc-global-mega-section-title").forEach((item, index) => {
+      item.style.setProperty("--cc-i", String(index));
+    });
     coreMegaMenu.classList.remove("cc-is-hidden");
+    if (isMobileViewport()) {
+      // Force a reflow so the slide-in transition runs from off-screen.
+      void coreMegaMenu.offsetWidth;
+      nav.classList.add("cc-mobile-sub-open");
+      coreMegaMenu.scrollTop = 0;
+      coreMegaBack?.focus({ preventScroll: true });
+    }
   }
+
+  coreMegaBack?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const returnTo = coreTopBar.querySelector('button[data-core][aria-expanded="true"]');
+    nav.classList.remove("cc-mobile-sub-open");
+    window.setTimeout(() => {
+      if (!nav.classList.contains("cc-mobile-sub-open")) hideMega();
+    }, 380);
+    returnTo?.focus({ preventScroll: true });
+  });
 
   coreTopBar.addEventListener("click", (event) => {
     const link = event.target.closest("a.cc-global-nav-link");
     if (link && isMobileViewport()) {
       closeMobileMenu();
-      coreMegaMenu.classList.add("cc-is-hidden");
-      setActiveCoreTab(null);
       return;
     }
 
@@ -271,9 +309,8 @@
     if (!tab) return;
 
     const isActive = tab.getAttribute("aria-expanded") === "true";
-    if (isActive) {
-      coreMegaMenu.classList.add("cc-is-hidden");
-      setActiveCoreTab(null);
+    if (isActive && !isMobileViewport()) {
+      hideMega();
       return;
     }
 
@@ -284,28 +321,45 @@
   document.addEventListener("click", (event) => {
     const clickedInsideNav = nav.contains(event.target);
     if (!clickedInsideNav) {
-      coreMegaMenu.classList.add("cc-is-hidden");
-      setActiveCoreTab(null);
-      closeMobileMenu();
+      if (isMobileViewport()) {
+        closeMobileMenu();
+      } else {
+        hideMega();
+      }
     }
   });
 
   mobileBackdrop?.addEventListener("click", () => {
     closeMobileMenu();
-    coreMegaMenu.classList.add("cc-is-hidden");
-    setActiveCoreTab(null);
+  });
+
+  coreMegaMenu.addEventListener("click", (event) => {
+    if (event.target.closest("a.cc-global-mega-item") && isMobileViewport()) {
+      closeMobileMenu();
+    }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    coreMegaMenu.classList.add("cc-is-hidden");
-    setActiveCoreTab(null);
-    closeMobileMenu();
+    if (isMobileViewport() && nav.classList.contains("cc-mobile-sub-open")) {
+      coreMegaBack?.click();
+      return;
+    }
+    if (isMobileViewport() && nav.classList.contains("cc-mobile-nav-open")) {
+      closeMobileMenu();
+      mobileToggle?.focus({ preventScroll: true });
+      return;
+    }
+    hideMega();
   });
 
   window.addEventListener("resize", () => {
     if (!isMobileViewport()) {
-      setMobileMenuState(false);
+      if (nav.classList.contains("cc-mobile-nav-open")) {
+        setMobileMenuState(false);
+        hideMega();
+      }
+      nav.classList.remove("cc-mobile-sub-open");
       return;
     }
 
