@@ -11,6 +11,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700;800&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../../shared.css" />
+    <script>
+      // ?embed=1 = shown inside the core pop-up on the portal: no site nav,
+      // footer or back link (see openCorePopup in ../portal.js).
+      if (/[?&]embed=1(&|$)/.test(location.search) && window.self !== window.top) document.documentElement.classList.add('cp-embed');
+    </script>
     <script src="../../shared-global-nav.js" defer></script>
     <script src="../../shared-global-footer.js" defer></script>
     <style>
@@ -74,6 +79,11 @@
 
       .rt-gate{margin:0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
 
+      .cp-embed .cc-global-nav-wrap,.cp-embed .cc-global-footer,.cp-embed .cp-back{display:none !important;}
+      .cp-embed body.cc-page{background:#eaeaee;}
+      .cp-embed .cp-dash{padding-bottom:32px;}
+      .cp-embed .cp-dash-head{padding:22px 0 24px;}
+      .cp-embed .cp-core-kicker{margin-top:0;}
       @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}.rt-layout{grid-template-columns:1fr;}}
       @media(max-width:600px){.cp-dash{padding:0 16px 72px;}.rt-section{padding:18px;}.rt-share{padding:20px 16px 16px;}}
     </style>
@@ -133,6 +143,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="../../shared-supabase-config.js"></script>
+    <script>
+    // In the pop-up, links back into the portal (e.g. "../#calendar") are handed
+    // to the portal page instead of loading the whole portal inside the frame.
+    if (document.documentElement.classList.contains('cp-embed')) {
+      document.addEventListener('click', function(e){
+        var a = e.target.closest && e.target.closest('a[href]');
+        if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+        var url = new URL(a.getAttribute('href'), location.href);
+        e.preventDefault();
+        if (url.origin !== location.origin) { window.top.location.href = url.href; return; }
+        window.parent.postMessage({ type: 'cp-core-nav', href: url.pathname + url.search + url.hash }, location.origin);
+      });
+      // Escape closes the pop-up even when focus is inside the frame.
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') window.parent.postMessage({ type: 'cp-core-close' }, location.origin);
+      });
+    }
+    </script>
     <script>
     (function(){
       // Training week, built from the client's calendar — nothing to fill in.

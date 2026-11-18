@@ -1473,9 +1473,77 @@
     $('cpCoreList').hidden = hasHabits;
     $('cpHabitList').hidden = !hasHabits;
     if (hasHabits) { renderHabits(); return; }
-    var h=''; portalData.cores.forEach(function(c){ h+='<a class="cp-core-row cp-core-link" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
+    var h=''; portalData.cores.forEach(function(c){ h+='<a class="cp-core-row cp-core-link" data-core="'+esc(c.key)+'" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
     $('cpCoreList').innerHTML=h;
   }
+
+  // ─── Core pop-up ───────────────────────────────────────────────────────
+  // Clicking a core opens it over the portal instead of leaving the page.
+  // Cores with a page load it in a frame (?embed=1 hides the site nav and
+  // footer); the rest show "Coming soon". Ctrl/Cmd/middle-click still opens
+  // the full page in a new tab.
+  var CORE_PAGES = { body: true };
+  var corePopReturnFocus = null;
+
+  function openCorePopup(key, trigger){
+    var def = CORE_DEFS.filter(function(c){ return c.key === key; })[0];
+    if (!def || !portalData) return;
+    var hasPage = !!CORE_PAGES[key];
+    var overlay = $('cpCorePopOverlay');
+    corePopReturnFocus = trigger || null;
+    overlay.classList.toggle('cp-core-pop--soon', !hasPage);
+    $('cpCorePopTitle').textContent = def.label;
+    $('cpCorePopDot').style.background = def.color;
+    $('cpCorePopSoonDot').style.background = def.color;
+    $('cpCorePopOpen').hidden = !hasPage;
+    $('cpCorePopFrame').hidden = !hasPage;
+    $('cpCorePopSoon').hidden = hasPage;
+    if (hasPage) {
+      var href = coreHref(key, portalData.clientId);
+      $('cpCorePopOpen').href = href;
+      $('cpCorePopFrame').title = def.label;
+      $('cpCorePopFrame').src = href + '&embed=1';
+    } else {
+      $('cpCorePopSoonText').textContent = 'Your ' + def.label + ' page is on its way. Check back soon.';
+    }
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('cpCorePopClose').focus();
+  }
+
+  function closeCorePopup(){
+    var overlay = $('cpCorePopOverlay');
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+    $('cpCorePopFrame').src = 'about:blank';
+    if (corePopReturnFocus && document.contains(corePopReturnFocus)) corePopReturnFocus.focus();
+    corePopReturnFocus = null;
+  }
+
+  $('cpCoreList').addEventListener('click', function(e){
+    var a = e.target.closest('a[data-core]');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    openCorePopup(a.getAttribute('data-core'), a);
+  });
+  $('cpCorePopOverlay').addEventListener('click', function(e){
+    if (e.target.closest('[data-core-pop-close]')) closeCorePopup();
+  });
+  window.addEventListener('message', function(e){
+    if (e.origin !== window.location.origin || !e.data) return;
+    if (e.data.type === 'cp-core-close') { closeCorePopup(); return; }
+    if (e.data.type !== 'cp-core-nav' || typeof e.data.href !== 'string') return;
+    closeCorePopup();
+    var url = new URL(e.data.href, window.location.href);
+    if (url.origin === window.location.origin && url.pathname === window.location.pathname) {
+      // A link back into the portal, e.g. "Add a workout in Calendar".
+      setPortalTab(url.hash === '#calendar' ? 'calendar' : 'portal');
+      window.scrollTo(0, 0);
+    } else {
+      window.location.href = url.href;
+    }
+  });
 
   // Sidebar habits are checked off for today; the Habits tab shows the week.
   function renderHabits(){
@@ -4691,6 +4759,7 @@
 
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape') return;
+    if(!$('cpCorePopOverlay').hidden) { closeCorePopup(); return; }
     if(!$('cpSheetOverlay').hidden) closeSheet();
     if(!$('cpEditOverlay').hidden) closeEditPortal();
     if(!$('cpQeOverlay').hidden) { closeQuickEdit(); return; }
