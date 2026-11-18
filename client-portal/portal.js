@@ -987,10 +987,10 @@
     return (a.targetDate || '9999') < (b.targetDate || '9999') ? -1 : (a.targetDate || '9999') > (b.targetDate || '9999') ? 1 : 0;
   }
 
-  function goalMsStats(list){
-    var t = 0, d = 0;
-    list.forEach(function(g){ t += g.milestones.length; d += g.milestones.filter(function(m){ return m.done; }).length; });
-    return { total:t, done:d, pct: t ? Math.round(d / t * 100) : 0 };
+  // Goal completion: how many of these goals are achieved.
+  function goalDoneStats(list){
+    var d = list.filter(function(g){ return g.status === 'achieved'; }).length;
+    return { total:list.length, done:d, pct: list.length ? Math.round(d / list.length * 100) : 0 };
   }
 
   function goalMatches(g, useStatus){
@@ -1018,8 +1018,8 @@
     // Six Cores rail: "All cores" plus one cell per core
     $('cpGoalsRail').innerHTML = [{ key:null, label:'All cores', color:'#071f35' }].concat(CORE_DEFS).map(function(c){
       var list = goals.filter(function(g){ return !c.key || g.coreKey === c.key; });
-      var p = goalMsStats(list);
-      var sub = !list.length ? 'No goals' : p.total ? p.pct + '% done' : 'No milestones';
+      var p = goalDoneStats(list);
+      var sub = !list.length ? 'No goals' : p.done + ' of ' + p.total + ' achieved';
       return '<button type="button" class="cp-gl-cell'+(goalsUi.core === c.key ? ' is-active' : '')+'" data-goal-core="'+(c.key || '')+'" aria-pressed="'+(goalsUi.core === c.key)+'">'
         + '<span class="cp-gl-cell-name"><i style="background:'+c.color+'"></i>'+esc(c.label)+'</span>'
         + '<span class="cp-gl-cell-num"><b>'+list.length+'</b><span>'+sub+'</span></span>'
@@ -1090,9 +1090,9 @@
     var who = viewingClientName || 'the client';
     var ms = g.milestones.length
       ? g.milestones.map(function(m, j){
-          return '<button type="button" class="cp-gl-ms'+(m.done ? ' is-done' : '')+'" data-goal-ms="'+j+'" aria-pressed="'+!!m.done+'">'
-            + '<span class="cp-gl-ms-box">'+(m.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '')+'</span>'
-            + '<span class="cp-gl-ms-label">'+esc(m.label)+'</span></button>';
+          return '<div class="cp-gl-ms'+(m.done ? ' is-done' : '')+'">'
+            + '<button type="button" class="cp-gl-ms-box" data-goal-ms="'+j+'" role="checkbox" aria-checked="'+!!m.done+'" aria-label="'+esc(m.label)+'">'+(m.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '')+'</button>'
+            + '<span class="cp-gl-ms-label">'+esc(m.label)+'</span></div>';
         }).join('')
       : '<p class="cp-gl-ms-empty">No milestones yet — use Edit to break this into steps.</p>';
     var note = isCoachUser
@@ -1267,7 +1267,7 @@
     var h = '';
     CORE_DEFS.forEach(function(c){
       h += '<input type="radio" name="cpGoalCore" id="cpGoalCore_'+c.key+'" value="'+c.key+'" class="cp-goal-core-opt">';
-      h += '<label for="cpGoalCore_'+c.key+'" style="color:'+c.color+'"><span class="cp-dot" style="background:'+c.color+'"></span>'+c.label+'</label>';
+      h += '<label for="cpGoalCore_'+c.key+'"><span class="cp-dot" style="background:'+c.color+'"></span>'+c.label+'</label>';
     });
     $('cpGoalCoreGrid').innerHTML = h;
   }
@@ -1305,7 +1305,7 @@
   function openGoalForm(goal){
     goalEditingId = goal ? goal.id : null;
     buildGoalCoreGrid();
-    $('cpGoalFormHeading').textContent = goal ? 'Edit goal' : 'Set a SMART Goal';
+    $('cpGoalFormHeading').textContent = goal ? 'Edit goal' : 'New goal';
     $('cpGoalTitle').value = goal ? goal.title : '';
     $('cpGoalDesc').value = goal ? goal.description : '';
     $('cpGoalDate').value = goal ? goal.targetDate : '';
