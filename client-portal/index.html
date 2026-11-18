@@ -160,6 +160,29 @@
       .cp-modal-overlay[hidden]{display:none !important;}
       @media(min-width:721px){ .cp-modal-overlay,#cpGoalFormOverlay{align-items:center;} .cp-modal-overlay .cp-goal-form-sheet,#cpGoalFormOverlay .cp-goal-form-sheet{border-radius:24px;padding-bottom:28px;} }
       select.cp-goal-form-input{padding:0 10px;}
+      /* ── Core pop-up (Six Cores rail) ───── */
+      .cp-modal-overlay.cp-core-pop{z-index:10050;}
+      .cp-core-pop .cp-core-pop-sheet{position:relative;z-index:1;width:100%;max-width:1040px;height:88vh;height:88dvh;background:#eaeaee;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(7,31,53,.3);animation:cpCorePopIn .22s ease-out;}
+      .cp-core-pop-head{flex:none;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 22px;background:#fff;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cp-core-pop-head .cp-dot{width:10px;height:10px;}
+      .cp-core-pop-title{flex:1;margin:0;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;color:#071f35;}
+      .cp-core-pop-open{font-size:13px;font-weight:700;color:rgba(7,31,53,.55);text-decoration:none;padding:8px 10px;border-radius:99px;}
+      .cp-core-pop-open:hover{color:#071f35;background:rgba(7,31,53,.06);}
+      .cp-core-pop-frame{flex:1;width:100%;border:0;display:block;background:#eaeaee;}
+      .cp-core-pop-soon{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;background:#fff;}
+      .cp-core-pop-soon .cp-dot{width:14px;height:14px;}
+      .cp-core-pop-soon h3{font-family:"Raleway",sans-serif;font-weight:800;font-size:clamp(26px,5vw,36px);letter-spacing:-.02em;color:#071f35;margin:16px 0 0;}
+      .cp-core-pop-soon p{margin:10px 0 0;max-width:340px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.6);}
+      .cp-core-pop--soon .cp-core-pop-sheet{max-width:460px;height:auto;min-height:320px;}
+      @keyframes cpCorePopIn{from{opacity:0;transform:translateY(16px) scale(.98);}to{opacity:1;transform:none;}}
+      @keyframes cpCorePopUp{from{transform:translateY(100%);}to{transform:none;}}
+      @media(max-width:720px){
+        .cp-core-pop .cp-core-pop-sheet{max-width:none;height:calc(100vh - 12px);height:calc(100dvh - 12px);border-radius:20px 20px 0 0;animation:cpCorePopUp .26s cubic-bezier(.2,.8,.2,1);}
+        .cp-core-pop--soon .cp-core-pop-sheet{height:auto;min-height:0;padding-bottom:env(safe-area-inset-bottom);}
+        .cp-core-pop-head{padding:10px 8px 10px 18px;}
+        .cp-core-pop-open{display:none;}
+      }
+      @media(prefers-reduced-motion:reduce){.cp-core-pop .cp-core-pop-sheet{animation:none;}}
       /* ── Coach quick edit: floating button + live popup ───── */
       .cp-qe-fab{all:unset;box-sizing:border-box;position:fixed;right:22px;bottom:22px;z-index:240;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 22px;border-radius:24px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 10px 28px rgba(7,31,53,.28);}
       .cp-qe-fab[hidden]{display:none;}
@@ -1522,6 +1545,24 @@
         <div style="display:flex;gap:10px;">
           <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;height:44px;">Cancel</button>
           <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 28px;height:44px;">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-modal-overlay cp-core-pop" id="cpCorePopOverlay" hidden>
+      <div class="cp-goal-form-backdrop" data-core-pop-close></div>
+      <div class="cp-core-pop-sheet" role="dialog" aria-modal="true" aria-labelledby="cpCorePopTitle">
+        <div class="cp-core-pop-head">
+          <span class="cp-dot" id="cpCorePopDot"></span>
+          <p class="cp-core-pop-title" id="cpCorePopTitle"></p>
+          <a class="cp-core-pop-open" id="cpCorePopOpen" href="#" target="_blank" rel="noopener">Open full page ↗</a>
+          <button type="button" class="cp-qe-close" id="cpCorePopClose" data-core-pop-close aria-label="Close">✕</button>
+        </div>
+        <iframe class="cp-core-pop-frame" id="cpCorePopFrame" title="Core page" hidden></iframe>
+        <div class="cp-core-pop-soon" id="cpCorePopSoon" hidden>
+          <span class="cp-dot" id="cpCorePopSoonDot"></span>
+          <h3>Coming soon</h3>
+          <p id="cpCorePopSoonText"></p>
         </div>
       </div>
     </div>
