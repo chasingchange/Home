@@ -4,7 +4,8 @@
 -- → renderGoalsTab): every goal can now be broken into milestones the client
 -- ticks off, and carry a note from the coach.
 --
---   milestones  — ordered steps, as [{ "label": "Run 3 miles", "done": true }, …]
+--   milestones  — ordered steps, as [{ "label": "Run 3 miles", "done": true, "date": "2026-12-15" }, …]
+--                 ("date" is optional; no migration needed, it lives in the jsonb)
 --   coach_note  — written by the coach, read-only for the client
 --
 -- Access is unchanged: the client_goals RLS policies already let the client

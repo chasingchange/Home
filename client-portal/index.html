@@ -75,7 +75,7 @@
       .cp-goals-view{width:100%;}
       .cp-goals-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
       .cp-goals-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;margin:0;}
-      .cp-goals-add-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:24px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:700;font-size:13px;transition:opacity .15s;}
+      .cp-goals-add-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;height:36px;box-sizing:border-box;padding:0 18px;border-radius:980px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;transition:background-color .2s;}
       .cp-goals-add-btn:hover{opacity:.85;}
       .cp-goals-section-label{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.4);margin:0 0 12px;}
       .cp-goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:36px;}
@@ -125,29 +125,36 @@
       .cp-goal-form-backdrop{position:absolute;inset:0;background:rgba(7,31,53,.45);backdrop-filter:blur(2px);}
       .cp-goal-form-sheet{position:relative;width:100%;max-width:520px;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 44px;z-index:1;max-height:90vh;overflow-y:auto;}
       .cp-goal-form-handle{width:36px;height:4px;border-radius:99px;background:rgba(7,31,53,.15);margin:0 auto 20px;}
-      .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;margin:0 0 4px;}
+      .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;color:#071f35;margin:0 0 22px;}
       .cp-goal-form-subtitle{font-size:13px;color:rgba(7,31,53,.5);margin:0 0 20px;line-height:1.5;}
-      .cp-goal-smart-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:18px;}
-      .cp-goal-smart-pill{padding:5px 0;border-radius:8px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
-      .cp-goal-smart-pill span{display:block;font-size:9px;font-weight:600;letter-spacing:.03em;opacity:.75;text-transform:none;margin-top:1px;}
-      .cp-goal-form-field{margin-bottom:14px;}
-      .cp-goal-form-field label{display:block;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
-      .cp-goal-form-hint{font-size:12px;color:rgba(7,31,53,.45);margin:3px 0 6px;line-height:1.4;}
-      .cp-goal-form-input{width:100%;box-sizing:border-box;height:46px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:0 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;color:#071f35;outline:none;}
-      .cp-goal-form-input:focus{border-color:rgba(7,31,53,.4);}
+      .cp-goal-smart-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0 0 24px;}
+      .cp-goal-smart-pill{padding:8px 0 7px;border-radius:12px;text-align:center;font-family:"Raleway",sans-serif;font-size:15px;font-weight:800;color:var(--smart);background:color-mix(in srgb,var(--smart) 11%,#fff);}
+      .cp-goal-smart-pill span{display:block;font-family:"Muli","Mulish",sans-serif;font-size:10px;font-weight:700;letter-spacing:.01em;margin-top:1px;opacity:.85;}
+      .cp-smart-tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:4px;border-radius:6px;vertical-align:1px;font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;color:var(--smart);background:color-mix(in srgb,var(--smart) 12%,#fff);}
+      .cp-smart-tag + .cp-smart-tag{margin-left:3px;}
+      .cp-goal-form-field{margin-bottom:20px;}
+      .cp-goal-form-field label{display:block;font-family:"Raleway",sans-serif;font-size:15px;font-weight:700;color:#071f35;margin-bottom:8px;letter-spacing:-.005em;}
+      .cp-goal-form-optional{font-family:"Muli","Mulish",sans-serif;font-size:13px;font-weight:600;color:rgba(7,31,53,.45);margin-left:4px;}
+      .cp-goal-form-hint{font-size:13px;color:rgba(7,31,53,.6);margin:-4px 0 8px;line-height:1.45;}
+      .cp-goal-form-input{width:100%;box-sizing:border-box;height:46px;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fff;padding:0 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;color:#071f35;outline:none;}
+      .cp-goal-form-input:focus{border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,.18);}
       .cp-goal-form-input--ta{height:80px;padding:12px 14px;resize:none;}
-      .cp-goal-core-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+      .cp-goal-core-grid{display:flex;flex-wrap:wrap;gap:8px;}
       .cp-goal-core-opt{display:none;}
-      .cp-goal-core-opt + label{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(7,31,53,.15);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-      .cp-goal-core-opt:checked + label{border-color:currentColor;background:rgba(7,31,53,.05);}
+      .cp-goal-core-opt + label{margin:0;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:980px;background:color-mix(in srgb,var(--core) 12%,#fff);color:color-mix(in srgb,var(--core) 70%,#071f35);font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background-color .2s,color .2s;}
+      .cp-goal-core-opt + label:hover{background:color-mix(in srgb,var(--core) 20%,#fff);}
+      .cp-goal-core-opt + label .cp-dot{background:var(--core);}
+      .cp-goal-core-opt:checked + label{background:var(--core);color:#fff;}
+      .cp-goal-core-opt:checked + label .cp-dot{background:#fff;}
       .cp-goal-form-actions{display:flex;gap:10px;margin-top:20px;}
-      .cp-goal-form-cancel{all:unset;cursor:pointer;flex:1;height:46px;border-radius:23px;border:1px solid rgba(7,31,53,.15);font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;}
-      .cp-goal-form-save{all:unset;cursor:pointer;flex:2;height:46px;border-radius:23px;background:#071f35;color:#fff;font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;transition:opacity .15s;}
-      .cp-goal-form-save:hover{opacity:.88;}
+      .cp-goal-form-cancel{all:unset;cursor:pointer;flex:1;height:46px;border-radius:980px;background:rgba(7,31,53,.06);color:#071f35;font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;text-align:center;display:flex;align-items:center;justify-content:center;transition:background-color .2s;}
+      .cp-goal-form-cancel:hover{background:rgba(7,31,53,.1);}
+      .cp-goal-form-save{all:unset;cursor:pointer;flex:2;height:46px;border-radius:980px;background:#071f35;color:#fff;font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;text-align:center;display:flex;align-items:center;justify-content:center;transition:background-color .2s;}
+      .cp-goal-form-save:hover{background:#1c3a57;}
       /* goal card actions */
       .cp-goal-card-actions{display:flex;align-items:center;gap:8px;}
-      .cp-goal-delete-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.3);padding:5px 10px;border-radius:99px;border:1px solid transparent;transition:all .15s;}
-      .cp-goal-delete-btn:hover{color:#f02348;border-color:rgba(240,35,72,.3);}
+      .cp-goal-delete-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:980px;background:rgba(7,31,53,.06);font-size:12px;font-weight:700;color:rgba(7,31,53,.5);transition:background-color .2s,color .2s;}
+      .cp-goal-delete-btn:hover{color:#c01a38;background:rgba(240,35,72,.1);}
       /* ── Shared modal overlay (assignment / education forms) ───── */
       .cp-modal-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:flex-end;justify-content:center;}
       .cp-modal-overlay[hidden]{display:none !important;}
@@ -207,11 +214,12 @@
       .cp-panel{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:24px;}
       .cp-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--pill);background:color-mix(in srgb,var(--pill) 12%,transparent);white-space:nowrap;}
       .cp-status-pill::before{content:"";width:6px;height:6px;border-radius:999px;background:var(--pill);}
-      .cp-btn-sm{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 16px;border-radius:19px;font-size:13px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:rgba(7,31,53,.75);background:#fff;transition:border-color .15s,opacity .15s;}
-      .cp-btn-sm:hover{border-color:rgba(7,31,53,.4);}
-      .cp-btn-sm--primary{background:#071f35;border-color:#071f35;color:#fff;}
-      .cp-btn-sm--primary:hover{opacity:.88;}
-      .cp-btn-sm--danger{color:#c01a38;border-color:rgba(240,35,72,.25);}
+      .cp-btn-sm{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 18px;border-radius:980px;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;border:0;color:#071f35;background:rgba(7,31,53,.06);transition:background-color .2s,opacity .2s;}
+      .cp-btn-sm:hover{background:rgba(7,31,53,.1);}
+      .cp-btn-sm--primary{background:#071f35;color:#fff;}
+      .cp-btn-sm--primary:hover{background:#1c3a57;}
+      .cp-btn-sm--danger{color:#c01a38;background:rgba(240,35,72,.08);}
+      .cp-btn-sm--danger:hover{background:rgba(240,35,72,.14);}
       .cp-btn-sm:disabled{opacity:.5;cursor:not-allowed;}
       .cp-btn-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;}
       .cp-textarea{width:100%;box-sizing:border-box;min-height:110px;border-radius:12px;border:1px solid rgba(7,31,53,.18);background:#fff;padding:12px 14px;font-family:"Muli","Mulish",sans-serif;font-size:15px;line-height:1.55;color:#071f35;outline:none;resize:vertical;}
@@ -284,10 +292,12 @@
       .cp-link-btn:hover{color:rgba(7,31,53,.8);}
       .cp-link-btn--danger:hover{color:#c01a38;}
       /* goals: status */
-      .cp-goal-status-select{height:32px;border-radius:99px;border:1px solid rgba(7,31,53,.15);background:#fff;padding:0 10px;font-family:"Muli","Mulish",sans-serif;font-size:12px;font-weight:700;color:#071f35;}
+      select.cp-goal-status-select{-webkit-appearance:none;appearance:none;box-sizing:border-box;height:34px;border-radius:980px;border:0;background:rgba(7,31,53,.06) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23071f35' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 13px center;padding:0 32px 0 15px;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;color:#071f35;cursor:pointer;box-shadow:none;transition:background-color .2s;}
+      select.cp-goal-status-select:hover{background-color:rgba(7,31,53,.1);}
+      select.cp-goal-status-select:focus{outline:none;box-shadow:0 0 0 3px rgba(0,113,227,.25);}
       .cp-goal-card-foot{flex-wrap:wrap;}
-      .cp-goal-edit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);padding:5px 10px;border-radius:99px;border:1px solid rgba(7,31,53,.12);}
-      .cp-goal-edit-btn:hover{border-color:rgba(7,31,53,.4);color:#071f35;}
+      .cp-goal-edit-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:980px;background:rgba(7,31,53,.06);font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;color:#071f35;transition:background-color .2s;}
+      .cp-goal-edit-btn:hover{background:rgba(7,31,53,.1);}
       /* goals: overview card (Six Cores rail / deadline timeline) */
       .cp-gl-overview{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;overflow:hidden;margin-bottom:20px;}
       .cp-gl-overview-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 22px 0;}
@@ -324,9 +334,10 @@
       /* goals: filters + core sections */
       .cp-gl-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
       .cp-gl-chips{display:flex;gap:8px;flex-wrap:wrap;}
-      .cp-gl-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);background:#fff;color:#071f35;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;}
+      .cp-gl-chip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:980px;background:rgba(7,31,53,.06);color:#071f35;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;transition:background-color .2s,color .2s;}
+      .cp-gl-chip:hover{background:rgba(7,31,53,.1);}
       .cp-gl-chip span{font-family:"Muli","Mulish",sans-serif;font-size:11px;font-weight:700;opacity:.6;}
-      .cp-gl-chip.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-gl-chip.is-active{background:#071f35;color:#fff;}
       .cp-gl-chip--core i{width:8px;height:8px;border-radius:999px;}
       .cp-gl-sections{display:flex;flex-direction:column;gap:20px;}
       .cp-gl-section{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;overflow:hidden;}
@@ -354,8 +365,10 @@
       .cp-gl-detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;padding:0 22px 22px;}
       .cp-gl-kicker{margin:0 0 6px;font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,31,53,.4);}
       .cp-gl-fulldesc{margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.7);}
-      .cp-gl-ms{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);}
-      .cp-gl-ms-box{width:18px;height:18px;border-radius:6px;border:1px solid rgba(7,31,53,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+      .cp-gl-ms{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-gl-ms-box{all:unset;box-sizing:border-box;cursor:pointer;width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(7,31,53,.28);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;transition:border-color .15s,background-color .15s;}
+      .cp-gl-ms-box:hover{border-color:#071f35;}
+      .cp-gl-ms-box:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(0,113,227,.3);}
       .cp-gl-ms-label{flex:1;font-size:15px;line-height:1.5;color:rgba(7,31,53,.8);}
       .cp-gl-ms.is-done .cp-gl-ms-box{background:#071f35;border-color:#071f35;}
       .cp-gl-ms.is-done .cp-gl-ms-label{color:rgba(7,31,53,.4);text-decoration:line-through;}
@@ -373,12 +386,16 @@
       .cp-gl-by{margin-left:auto;font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
       .cp-gl-form-ms .cp-gl-form-ms-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(7,31,53,.08);}
       .cp-gl-form-ms-item b{width:22px;height:22px;border-radius:99px;background:rgba(7,31,53,.06);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-      .cp-gl-form-ms-item span{flex:1;font-size:14px;}
+      .cp-gl-form-ms-item span{flex:1;min-width:0;font-size:14px;}
+      input.cp-gl-form-ms-date{flex:none;width:136px;height:32px;box-sizing:border-box;padding:0 10px;border-radius:980px;border:0;background:rgba(7,31,53,.06);font-family:"Muli","Mulish",sans-serif;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);cursor:pointer;}
+      input.cp-gl-form-ms-date.has-value{color:#071f35;}
+      input.cp-gl-form-ms-date:focus{outline:none;box-shadow:0 0 0 3px rgba(0,113,227,.25);}
+      .cp-gl-ms-date{flex:none;font-size:12px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-gl-form-ms-item button{all:unset;cursor:pointer;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.4);}
       .cp-gl-form-ms-item button:hover{background:rgba(240,35,72,.1);color:#c01a38;}
       .cp-gl-form-ms-add{display:flex;gap:8px;margin-top:8px;}
       .cp-gl-form-ms-add .cp-goal-form-input{height:42px;flex:1;}
-      .cp-gl-form-ms-add .cp-btn-sm{height:42px;border:1px solid rgba(7,31,53,.15);}
+      .cp-gl-form-ms-add .cp-btn-sm{height:42px;}
       .cp-gl-form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
       @media(max-width:900px){ .cp-gl-rail{grid-template-columns:repeat(4,minmax(0,1fr));} }
       @media(max-width:720px){
@@ -1188,32 +1205,31 @@
           <div class="cp-goal-form-backdrop" id="cpGoalFormBackdrop"></div>
           <div class="cp-goal-form-sheet">
             <div class="cp-goal-form-handle"></div>
-            <p class="cp-goal-form-title" id="cpGoalFormHeading">Set a SMART Goal</p>
-            <p class="cp-goal-form-subtitle">Great goals are Specific, Measurable, Achievable, Relevant, and Time-bound.</p>
+            <p class="cp-goal-form-title" id="cpGoalFormHeading">New goal</p>
             <div class="cp-goal-smart-row">
-              <div class="cp-goal-smart-pill" style="background:rgba(119,215,112,.15);color:#3d8c39;">S<span>Specific</span></div>
-              <div class="cp-goal-smart-pill" style="background:rgba(42,157,240,.15);color:#1a6fa8;">M<span>Measurable</span></div>
-              <div class="cp-goal-smart-pill" style="background:rgba(255,189,89,.15);color:#a07820;">A<span>Achievable</span></div>
-              <div class="cp-goal-smart-pill" style="background:rgba(170,112,215,.15);color:#6a3fa0;">R<span>Relevant</span></div>
-              <div class="cp-goal-smart-pill" style="background:rgba(240,35,72,.12);color:#a01428;">T<span>Time-bound</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#3d8c39">S<span>Specific</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#1a6fa8">M<span>Measurable</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#a07820">A<span>Achievable</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#6a3fa0">R<span>Relevant</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#a01428">T<span>Time-bound</span></div>
             </div>
             <div class="cp-goal-form-field">
-              <label>What exactly do you want to achieve? (Specific)</label>
+              <label for="cpGoalTitle">What do you want to achieve? <span class="cp-smart-tag" style="--smart:#3d8c39">S</span></label>
               <p class="cp-goal-form-hint">Name a clear, concrete outcome — not "get fit" but "run a 5K in under 30 min."</p>
               <input type="text" id="cpGoalTitle" class="cp-goal-form-input" placeholder="e.g. Run a 5K in under 30 minutes" maxlength="120" />
             </div>
             <div class="cp-goal-form-field">
-              <label>How will you measure success? (Measurable + Achievable)</label>
-              <p class="cp-goal-form-hint">What number, milestone, or action proves you hit it? Is it actually within reach?</p>
-              <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="e.g. Track weekly mileage. Start at 3 miles, add 0.5/week. I'm currently running 2 miles comfortably." maxlength="400"></textarea>
+              <label for="cpGoalDesc">How will you measure it? <span class="cp-smart-tag" style="--smart:#1a6fa8">M</span><span class="cp-smart-tag" style="--smart:#a07820">A</span></label>
+              <p class="cp-goal-form-hint">What number or action proves you hit it? Is it actually within reach?</p>
+              <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="e.g. Track weekly mileage, adding half a mile each week." maxlength="400"></textarea>
             </div>
             <div class="cp-goal-form-field">
-              <label>Which core does this live in? (Relevant)</label>
+              <label>Which core does this live in? <span class="cp-smart-tag" style="--smart:#6a3fa0">R</span></label>
               <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
             </div>
             <div class="cp-goal-form-field">
-              <label for="cpGoalMsInput">Milestones</label>
-              <p class="cp-goal-form-hint">Break it into steps you can tick off along the way.</p>
+              <label for="cpGoalMsInput">Milestones <span class="cp-goal-form-optional">Optional</span></label>
+              <p class="cp-goal-form-hint">Break it into steps you can tick off. Each one can have its own date.</p>
               <div class="cp-gl-form-ms" id="cpGoalMsList"></div>
               <div class="cp-gl-form-ms-add">
                 <input type="text" id="cpGoalMsInput" class="cp-goal-form-input" placeholder="Add a step…" maxlength="140" />
@@ -1222,7 +1238,7 @@
             </div>
             <div class="cp-gl-form-row">
               <div class="cp-goal-form-field">
-                <label for="cpGoalDate">Deadline (Time-bound)</label>
+                <label for="cpGoalDate">Deadline <span class="cp-smart-tag" style="--smart:#a01428">T</span></label>
                 <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
               </div>
               <div class="cp-goal-form-field">
