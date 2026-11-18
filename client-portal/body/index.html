@@ -45,7 +45,7 @@
       .rt-seg{display:inline-flex;background:#f1f1f4;border-radius:999px;padding:4px;}
       .rt-seg-btn{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;color:rgba(7,31,53,.55);}
       .rt-seg-btn.is-active{background:#fff;color:#071f35;box-shadow:0 1px 4px rgba(7,31,53,.12);}
-      .rt-layout{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;margin-top:22px;align-items:start;}
+      .rt-layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:24px;margin-top:22px;align-items:start;}
       .rt-side{display:flex;flex-direction:column;gap:12px;}
       .rt-btn{all:unset;box-sizing:border-box;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:21px;font-size:14px;font-weight:700;border:1px solid rgba(7,31,53,.15);color:#071f35;background:#fff;}
       .rt-btn:hover{border-color:rgba(7,31,53,.35);}
@@ -58,21 +58,24 @@
       .rt-status.is-error{color:#c92a2a;}
 
       /* The share card — built to look good as a phone screenshot. */
-      .rt-share{background:#071f35;color:#fff;border-radius:22px;padding:24px 22px 18px;box-shadow:0 18px 40px rgba(7,31,53,.18);}
+      .rt-share{background:#071f35;color:#fff;border-radius:22px;padding:30px 28px 22px;box-shadow:0 18px 40px rgba(7,31,53,.18);}
       .rt-share-kicker{font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);margin:0;}
-      .rt-share-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;letter-spacing:-.01em;margin:6px 0 16px;}
-      .rt-days{display:flex;flex-direction:column;gap:8px;}
-      .rt-day{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.06);}
+      .rt-share-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,34px);letter-spacing:-.01em;margin:6px 0 20px;}
+      .rt-days{display:flex;flex-direction:column;gap:10px;}
+      .rt-day{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:16px;padding:16px 20px;min-height:66px;box-sizing:border-box;border-radius:16px;background:rgba(255,255,255,.06);}
+      .rt-sessions{display:flex;flex-direction:column;gap:10px;min-width:0;}
+      .rt-session{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;}
+      .rt-session + .rt-session{padding-top:10px;border-top:1px solid rgba(255,255,255,.1);}
       .rt-day.is-today{background:rgba(255,255,255,.13);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);}
-      .rt-day-dow{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.1;}
-      .rt-day-date{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
+      .rt-day-dow{font-family:"Raleway",sans-serif;font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.1;}
+      .rt-day-date{font-size:13px;color:rgba(255,255,255,.5);margin-top:2px;}
       .rt-day-main{min-width:0;}
-      .rt-day-label{display:flex;align-items:center;gap:8px;min-width:0;font-family:"Raleway",sans-serif;font-size:17px;font-weight:800;}
+      .rt-day-label{display:flex;align-items:center;gap:10px;min-width:0;font-family:"Raleway",sans-serif;font-size:20px;font-weight:800;}
       .rt-day-label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .rt-dots{display:flex;gap:3px;flex:none;}
-      .rt-day-label i{width:10px;height:10px;border-radius:999px;flex:none;}
-      .rt-day-notes{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-      .rt-day-time{font-size:13px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;}
+      .rt-day-label i{width:12px;height:12px;border-radius:999px;flex:none;}
+      .rt-day-notes{font-size:14px;line-height:1.45;color:rgba(255,255,255,.6);margin-top:4px;}
+      .rt-day-time{font-size:14px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;}
       .rt-day.is-rest .rt-day-label{color:rgba(255,255,255,.45);font-weight:700;}
       .rt-share-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
       .rt-share-foot img{width:18px;height:18px;border-radius:4px;vertical-align:-4px;margin-right:6px;}
@@ -85,7 +88,7 @@
       .cp-embed .cp-dash-head{padding:22px 0 24px;}
       .cp-embed .cp-core-kicker{margin-top:0;}
       @media(max-width:900px){.cp-card-grid{grid-template-columns:1fr;}.rt-layout{grid-template-columns:1fr;}}
-      @media(max-width:600px){.cp-dash{padding:0 16px 72px;}.rt-section{padding:18px;}.rt-share{padding:20px 16px 16px;}}
+      @media(max-width:600px){.cp-dash{padding:0 16px 72px;}.rt-section{padding:18px;}.rt-share{padding:22px 14px 16px;}.rt-day{grid-template-columns:48px minmax(0,1fr);gap:12px;padding:13px 14px;}.rt-day-label{font-size:17px;}.rt-session{grid-template-columns:minmax(0,1fr);gap:2px;}.rt-day-time{font-size:13px;}}
     </style>
   </head>
   <body class="cc-page">
@@ -123,7 +126,7 @@
             <button type="button" class="rt-btn rt-btn--primary" id="rtSaveImage">Save as image</button>
             <button type="button" class="rt-btn" id="rtRefresh" hidden>Refresh from Google</button>
             <a class="rt-btn" id="rtCalLink" href="../#calendar">Add a workout in Calendar</a>
-            <p class="rt-hint">Workouts come straight from your calendar: any event tagged <strong>Body</strong>, or named like <strong>Push</strong>, <strong>Pull</strong>, <strong>Legs</strong>, <strong>Upper</strong>, <strong>Lower</strong>, <strong>Full body</strong>, <strong>Run</strong> or <strong>Workout</strong>. Set them to repeat weekly and every week fills itself in. Days with nothing on them show as Rest.</p>
+            <p class="rt-hint">Workouts come straight from your calendar: any event tagged <strong>Body</strong>, or with training in the name — lifting (<strong>Push</strong>, <strong>Legs</strong>, <strong>Upper</strong>, <strong>Deadlifts</strong>, <strong>Gym</strong>…) or cardio (<strong>Run</strong>, <strong>Bike ride</strong>, <strong>Spin</strong>, <strong>Swim</strong>, <strong>Zone 2</strong>, <strong>Hike</strong>…). Set them to repeat weekly and every week fills itself in. Days with nothing on them show as Rest.</p>
             <p class="rt-hint" id="rtSynced"></p>
             <p class="rt-status" id="rtStatus" role="status"></p>
           </div>
@@ -181,16 +184,23 @@
 
       var DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
       var OTHER_CORES = ['mind','art','soul','career','life'];
-      // Titles that start like a training day, or mention one anywhere.
-      var WORKOUT_START = /^\s*(push|pull|legs?|upper|lower|full[\s-]?body|arms|chest|shoulders|glutes|back day|run|lift|lifting|cardio|hiit|yoga|spin|swim|gym|workout|training|bjj|crossfit)\b/i;
-      // Cardio and activities count anywhere in the title ("Easy run", "Zone 2 bike").
-      var WORKOUT_ANY = /\b(workout|leg day|push day|pull day|upper body|lower body|full[\s-]?body|gym|lift|lifting|weights|run|running|jog|jogging|cardio|hiit|yoga|pilates|spin|swim|swimming|bike|cycling|row|rowing|hike|mobility|crossfit|bjj|boxing)\b/i;
-      // ...but not chores that happen to share a word ("Run errands").
-      var NOT_WORKOUT = /\b(errands?|groceries|to the bank|meeting|call|review|pull request|push notifications?)\b/i;
+      // Training language, kept in step with the Body rule in CAL_CORE_RULES
+      // (../portal.js). A title counts as a workout when it mentions any of it.
+      // Cardio: runs, rides, swims, machines, classes, sports.
+      var CARDIO = 'cardio|hiit|tabata|intervals?|sprints?|tempo|zone ?[1-5]|z[1-5]|run|runs|running|jog|jogging|[0-9]+ ?(k|km|mi|miles?)|half[\\s-]?marathon|marathon|triathlon|duathlon|treadmill|elliptical|stair ?master|stair ?climber|stepper|bike|bikes|biking|bike ride|cycle|cycles|cycling|spin|spinning|peloton|ride|rides|riding|mtb|gravel|row|rowing|rower|erg|swim|swims|swimming|laps|hike|hikes|hiking|walk|walks|walking|ruck|rucking|jump ?rope|skipping|stairs workout|conditioning|metcon|wod|bootcamp|boot camp|f45|orangetheory|otf|barry\'?s|zumba|dance class|boxing|kickboxing|muay thai|mma|bjj|jiu[\\s-]?jitsu|judo|karate|taekwondo|wrestling|martial arts|climb|climbing|bouldering|ski|skiing|snowboard(ing)?|surf|surfing|kayak(ing)?|paddle(board(ing)?)?|tennis|pickleball|padel|squash|racquetball|basketball|soccer|futsal|volleyball|hockey|rugby|lacrosse';
+      // Lifting: splits, lifts, equipment, styles.
+      var LIFTING = 'work ?out|workouts|exercise|gym|lift|lifts|lifting|weights?|weight ?training|strength|resistance|powerlifting|weightlifting|olympic lifting|bodybuilding|hypertrophy|squats?|deadlifts?|rdls?|bench|bench press|overhead press|ohp|press day|snatch|clean (and|&) jerk|lunges?|pull[\\s-]?ups?|chin[\\s-]?ups?|push[\\s-]?ups?|dips|kettlebells?|kb|dumbbells?|db|barbell|cable|circuit|crossfit|leg day|push day|pull day|arm day|chest day|back day|shoulder day|glute day|upper body|lower body|full[\\s-]?body|total body|core workout|abs|yoga|pilates|barre|solidcore|mobility|stretch|stretching|personal training|pt session|training session|trainer';
+      var WORKOUT_ANY = new RegExp('\\b(' + CARDIO + '|' + LIFTING + ')\\b', 'i');
+      // Split-day names only count at the start ("Push", "Legs + core").
+      var WORKOUT_START = /^\s*(push|pull|legs?|upper|lower|arms|chest|back|shoulders|glutes|core|posterior|anterior|training)\b/i;
+      // Same words, different meaning: never a workout.
+      var NOT_WORKOUT = /\b(run(ning)? errands?|errands?|groceries|to the bank|dry run|run[\s-]?through|walk[\s-]?through|test run|run (the|a) (meeting|call|report|numbers)|(car|train|bus|uber|lyft|taxi) ride|ride (to|from|home|share)|rideshare|pull request|push notifications?|push to (prod|production|main|master|git|staging)|stretch goal|weigh[\s-]?in)\b/i;
+      var CARDIO_RE = new RegExp('\\b(' + CARDIO + ')\\b', 'i');
       var COLORS = [
         [/\bpush\b/i, '#f02348'], [/\bpull\b/i, '#2a9df0'], [/\blegs?\b/i, '#77d770'],
-        [/\bupper\b/i, '#aa70d7'], [/\blower\b/i, '#f58b1c'], [/full[\s-]?body/i, '#ffbd59'],
-        [/\b(cardio|run|hiit|spin|swim|bike|row)\b/i, '#2ec4b6']
+        [/\bupper\b/i, '#aa70d7'], [/\blower\b/i, '#f58b1c'], [/(full|total)[\s-]?body/i, '#ffbd59'],
+        [/\b(yoga|pilates|barre|mobility|stretch(ing)?)\b/i, '#c3a6ff'],
+        [CARDIO_RE, '#2ec4b6']
       ];
 
       var state = { clientId:null, isCoach:false, name:'', week:0, events:[], meta:{}, rows:[] };
@@ -224,7 +234,7 @@
         if (core === 'body') return true;
         if (OTHER_CORES.indexOf(core) !== -1) return false;
         var t = ev.title || '';
-        if (core !== 'body' && NOT_WORKOUT.test(t)) return false;
+        if (NOT_WORKOUT.test(t)) return false;
         return WORKOUT_START.test(t) || WORKOUT_ANY.test(t);
       }
       function colorFor(title){
@@ -253,6 +263,10 @@
           var timed = todays.filter(function(ev){ return !ev.allDay; })[0];
           return {
             date: date, rest: false,
+            sessions: todays.map(function(ev){
+              var p = splitTitle(ev.title);
+              return { label:p.label, notes:p.notes, color:colorFor(ev.title || ''), time: ev.allDay ? 'All day' : fmtTime(ev.start) + ' – ' + fmtTime(ev.end) };
+            }),
             label: parts.map(function(p){ return p.label; }).join(' + '),
             notes: todays.length === 1 ? parts[0].notes : '',
             color: colorFor(todays[0].title || ''),
@@ -269,12 +283,17 @@
         $('rtShareTitle').textContent = (state.week === 0 ? 'This week · ' : 'Next week · ') + fmtRange(start);
         var days = weekDays(), count = 0, h = '';
         days.forEach(function(d, i){
-          if (!d.rest) count++;
+          if (!d.rest) count += d.sessions.length;
+          var body = d.rest
+            ? '<div class="rt-session"><div class="rt-day-main"><div class="rt-day-label"><span>Rest</span></div></div><div class="rt-day-time"></div></div>'
+            : d.sessions.map(function(se){
+                return '<div class="rt-session"><div class="rt-day-main"><div class="rt-day-label"><b class="rt-dots"><i style="background:' + se.color + '"></i></b><span>' + esc(se.label) + '</span></div>'
+                  + (se.notes ? '<div class="rt-day-notes">' + esc(se.notes) + '</div>' : '') + '</div>'
+                  + '<div class="rt-day-time">' + esc(se.time) + '</div></div>';
+              }).join('');
           h += '<div class="rt-day' + (d.rest ? ' is-rest' : '') + (dateKey(d.date) === todayKey ? ' is-today' : '') + '">'
             + '<div><div class="rt-day-dow">' + DOW[i] + '</div><div class="rt-day-date">' + esc(fmtDate(d.date)) + '</div></div>'
-            + '<div class="rt-day-main"><div class="rt-day-label">' + (d.rest ? '' : '<b class="rt-dots">' + d.colors.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</b>') + '<span>' + esc(d.label) + '</span></div>'
-            + (d.notes ? '<div class="rt-day-notes">' + esc(d.notes) + '</div>' : '') + '</div>'
-            + '<div class="rt-day-time">' + esc(d.time) + '</div>'
+            + '<div class="rt-sessions">' + body + '</div>'
             + '</div>';
         });
         $('rtDays').innerHTML = h;

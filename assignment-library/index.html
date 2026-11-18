@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="../Logo.png" />
+    <link rel="apple-touch-icon" href="../Logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Assignment Library | Chasing Change</title>
+    <meta name="description" content="Coach-only master database of client assignments." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
+    <script src="../shared-global-nav.js" defer></script>
+    <script src="../shared-global-footer.js" defer></script>
+    <style>
+      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+      [hidden]{display:none !important;}
+      .al-wrap{width:min(100%,1120px);margin:0 auto;padding:24px 24px 140px;box-sizing:border-box;}
+      .al-kicker{font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .al-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;font-size:clamp(30px,5vw,44px);margin:12px 0 0;line-height:1.06;}
+      .al-lede{margin:12px 0 0;font-size:16px;line-height:1.6;color:rgba(7,31,53,.6);max-width:640px;}
+      .al-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:28px;}
+      .al-head-actions{display:flex;gap:8px;flex-wrap:wrap;}
+      .al-back{display:inline-block;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);text-decoration:none;margin-bottom:14px;}
+      .al-back:hover{color:#071f35;}
+
+      .al-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 18px;border-radius:980px;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;color:#071f35;background:rgba(7,31,53,.07);transition:background-color .15s,opacity .15s;white-space:nowrap;}
+      .al-btn:hover{background:rgba(7,31,53,.12);}
+      .al-btn:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
+      .al-btn--primary{background:#071f35;color:#fff;}
+      .al-btn--primary:hover{background:#071f35;opacity:.88;}
+      .al-btn--danger{color:#c01a38;background:rgba(240,35,72,.08);}
+      .al-btn--danger:hover{background:rgba(240,35,72,.14);}
+      .al-btn--ghost{background:transparent;}
+      .al-btn:disabled{opacity:.45;cursor:not-allowed;}
+      .al-btn-sm{height:30px;padding:0 12px;font-size:13px;}
+
+      .al-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;}
+      .al-gate{max-width:440px;margin:60px auto;padding:32px;text-align:center;}
+      .al-gate h2{font-family:"Raleway",sans-serif;font-weight:800;font-size:24px;margin:0 0 10px;}
+      .al-gate p{color:rgba(7,31,53,.6);line-height:1.6;margin:0 0 20px;}
+
+      .al-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px;}
+      .al-stat{padding:16px 18px;}
+      .al-stat-num{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;margin:4px 0 0;}
+      .al-stat-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+
+      .al-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .al-search{flex:1 1 220px;min-width:0;width:100%;height:40px;border-radius:12px;border:1px solid rgba(7,31,53,.16);padding:0 14px;font:inherit;font-size:15px;color:#071f35;background:#fff;outline:none;box-sizing:border-box;}
+      .al-search:focus,.al-input:focus,.al-select:focus{border-color:rgba(7,31,53,.4);}
+      .al-select{height:40px;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fff;padding:0 10px;font:inherit;font-size:14px;color:#071f35;max-width:100%;}
+      /* shared.css makes every input/select full-width; undo that here. */
+      .cc-page input[type=checkbox],.cc-page input[type=radio]{width:auto;padding:0;flex:none;}
+      .al-select{width:auto;}
+      .al-toolbar .al-search{width:auto;}
+      .al-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);cursor:pointer;user-select:none;}
+      .al-check input{width:17px;height:17px;accent-color:#071f35;margin:0;}
+
+      .al-list-head{display:grid;grid-template-columns:28px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);border-bottom:1px solid rgba(7,31,53,.06);}
+      .al-row{display:grid;grid-template-columns:28px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
+      .al-row:last-child{border-bottom:0;}
+      .al-row:hover{background:rgba(7,31,53,.025);}
+      .al-row.is-selected{background:rgba(42,157,240,.07);}
+      .al-row.is-archived .al-row-title{color:rgba(7,31,53,.45);}
+      .al-row input[type=checkbox]{width:17px;height:17px;accent-color:#071f35;margin:0;cursor:pointer;}
+      .al-row-title{font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .al-row-sub{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .al-row-meta{font-size:13px;color:rgba(7,31,53,.6);}
+      .al-row-actions{display:flex;justify-content:flex-end;}
+      .al-chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(7,31,53,.06);color:#071f35;white-space:nowrap;}
+      .al-chip-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+      .al-tag{display:inline-block;font-size:11px;font-weight:700;color:rgba(7,31,53,.55);background:rgba(7,31,53,.05);border-radius:6px;padding:2px 7px;margin:4px 4px 0 0;}
+      .al-src{font-size:11px;font-weight:700;color:rgba(7,31,53,.4);margin-left:6px;}
+      .al-empty{padding:48px 20px;text-align:center;color:rgba(7,31,53,.55);line-height:1.6;}
+      .al-empty strong{display:block;font-family:"Raleway",sans-serif;font-size:18px;color:#071f35;margin-bottom:6px;}
+
+      .al-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:200;width:max-content;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;background:#071f35;color:#fff;padding:10px 12px 10px 18px;border-radius:20px;box-shadow:0 12px 40px rgba(7,31,53,.3);max-width:calc(100% - 32px);box-sizing:border-box;}
+      .al-bulk-count{font-weight:700;font-size:14px;margin-right:6px;}
+      .al-bulk .al-btn{border:0;background:rgba(255,255,255,.12);color:#fff;height:34px;padding:0 14px;font-size:13px;}
+      .al-bulk .al-btn:hover{background:rgba(255,255,255,.2);}
+      .al-bulk .al-btn--primary{background:#fff;color:#071f35;}
+      .al-bulk .al-btn--danger{background:rgba(240,35,72,.25);}
+
+      /* modals */
+      .al-modal{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}
+      .al-modal-backdrop{position:absolute;inset:0;background:rgba(7,31,53,.45);backdrop-filter:blur(2px);}
+      .al-sheet{position:relative;width:100%;max-width:640px;max-height:calc(100vh - 40px);overflow-y:auto;background:#fff;border-radius:22px;padding:26px 26px 22px;box-sizing:border-box;}
+      .al-sheet--wide{max-width:860px;}
+      .al-sheet-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;margin:4px 0 6px;}
+      .al-sheet-sub{margin:0 0 20px;font-size:14px;line-height:1.55;color:rgba(7,31,53,.55);}
+      .al-x{all:unset;cursor:pointer;position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(7,31,53,.55);}
+      .al-x:hover{background:rgba(7,31,53,.06);}
+      .al-field{margin-bottom:16px;}
+      .al-field > label,.al-label{display:block;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;margin-bottom:7px;}
+      .al-hint{font-size:12.5px;color:rgba(7,31,53,.5);margin:6px 0 0;line-height:1.5;}
+      .al-input{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fff;padding:0 14px;font:inherit;font-size:15px;color:#071f35;outline:none;}
+      textarea.al-input{height:auto;min-height:220px;padding:12px 14px;line-height:1.55;resize:vertical;}
+      .al-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+      .al-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+      .al-sheet-foot{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:22px;padding-top:16px;border-top:1px solid rgba(7,31,53,.08);}
+      .al-sheet-foot-right{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
+      .al-note{font-size:13px;color:rgba(7,31,53,.55);}
+      .al-note.is-error{color:#c01a38;}
+      .al-meta-line{font-size:13px;color:rgba(7,31,53,.55);margin:-8px 0 18px;}
+      .al-meta-line a{color:#2a9df0;font-weight:700;}
+
+      .al-pick-list{border:1px solid rgba(7,31,53,.12);border-radius:14px;max-height:280px;overflow-y:auto;}
+      .al-pick{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;font-size:14px;}
+      .al-pick:last-child{border-bottom:0;}
+      .al-pick:hover{background:rgba(7,31,53,.03);}
+      .al-pick input{width:17px;height:17px;accent-color:#071f35;margin:0;flex:none;}
+      .al-pick-name{flex:1;min-width:0;font-weight:600;}
+      .al-pick-meta{font-size:12px;color:rgba(7,31,53,.45);}
+      .al-radio-row{display:flex;flex-direction:column;gap:10px;}
+      .al-radio-row label{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;font-size:14px;cursor:pointer;}
+      .al-radio-row input{accent-color:#071f35;}
+      .al-summary-box{background:rgba(7,31,53,.04);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;}
+
+      .al-drop{display:block;box-sizing:border-box;width:100%;border:2px dashed rgba(7,31,53,.2);border-radius:16px;padding:30px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background-color .15s;}
+      .al-drop:hover,.al-drop.is-over{border-color:#2a9df0;background:rgba(42,157,240,.05);}
+      .al-drop strong{display:block;font-family:"Raleway",sans-serif;font-size:16px;margin-bottom:6px;}
+      .al-drop strong,.al-drop span{pointer-events:none;}
+      .al-drop span{display:block;font-size:13px;color:rgba(7,31,53,.55);line-height:1.5;}
+      .al-preview{width:100%;border-collapse:collapse;font-size:13px;}
+      .al-preview th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(7,31,53,.45);padding:8px;border-bottom:1px solid rgba(7,31,53,.1);position:sticky;top:0;background:#fff;}
+      .al-preview td{padding:8px;border-bottom:1px solid rgba(7,31,53,.06);vertical-align:top;}
+      .al-preview td.al-snip{color:rgba(7,31,53,.55);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .al-preview-wrap{max-height:340px;overflow:auto;border:1px solid rgba(7,31,53,.1);border-radius:12px;margin-top:14px;}
+      .al-badge{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap;}
+      .al-badge--new{background:rgba(61,155,55,.12);color:#2b7a26;}
+      .al-badge--upd{background:rgba(42,157,240,.12);color:#1a6fa8;}
+      .al-tabs{display:flex;gap:6px;margin-bottom:18px;background:rgba(7,31,53,.05);padding:4px;border-radius:12px;width:max-content;max-width:100%;}
+      .al-tab{all:unset;cursor:pointer;padding:8px 16px;border-radius:9px;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;color:rgba(7,31,53,.55);}
+      .al-tab.is-active{background:#fff;color:#071f35;box-shadow:0 1px 4px rgba(7,31,53,.1);}
+      .al-steps{margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.7;color:rgba(7,31,53,.7);}
+      .al-steps code{background:rgba(7,31,53,.06);padding:1px 6px;border-radius:5px;font-size:12.5px;}
+      .al-progress{height:6px;border-radius:3px;background:rgba(7,31,53,.08);overflow:hidden;margin-top:12px;}
+      .al-progress span{display:block;height:100%;background:#2a9df0;width:0;transition:width .2s;}
+      .al-menu{position:relative;}
+      .al-menu-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#fff;border:1px solid rgba(7,31,53,.12);border-radius:14px;box-shadow:0 12px 30px rgba(7,31,53,.15);padding:6px;min-width:230px;}
+      .al-menu-pop button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:10px 12px;border-radius:9px;font-size:14px;}
+      .al-menu-pop button:hover{background:rgba(7,31,53,.05);}
+      .al-menu-pop small{display:block;color:rgba(7,31,53,.45);font-size:12px;margin-top:2px;}
+      .al-toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:400;background:#071f35;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(7,31,53,.25);max-width:calc(100% - 32px);box-sizing:border-box;}
+      .al-toast.is-error{background:#c01a38;}
+
+      @media (max-width:760px){
+        .al-wrap{padding:16px 16px 160px;}
+        .al-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+        .al-list-head{display:none;}
+        .al-row{grid-template-columns:24px minmax(0,1fr) auto;row-gap:6px;}
+        .al-row .al-col-core{grid-column:2;grid-row:2;}
+        .al-row .al-col-used{display:none;}
+        .al-row .al-row-actions{grid-column:3;grid-row:1 / span 2;}
+        .al-grid3,.al-grid2{grid-template-columns:1fr;}
+        .al-sheet{padding:22px 18px 18px;border-radius:18px;}
+        .al-modal{padding:10px;align-items:flex-end;}
+        .al-preview td.al-snip{display:none;}
+        .al-head-actions{width:100%;}
+      }
+    </style>
+  </head>
+  <body class="cc-page">
+    <main class="al-wrap">
+      <a class="al-back" href="../client-portal/">← Coach dashboard</a>
+
+      <!-- Signed-out / not-coach gate -->
+      <section class="al-card al-gate" id="alGate" hidden>
+        <h2 id="alGateTitle">Sign in to continue</h2>
+        <p id="alGateBody">The assignment library is for the coach. Sign in through the client portal, then come back here.</p>
+        <a class="al-btn al-btn--primary" href="../client-portal/">Go to sign in</a>
+      </section>
+
+      <p class="al-empty" id="alLoading">Loading library…</p>
+
+      <section id="alApp" hidden>
+        <header class="al-head">
+          <div>
+            <p class="al-kicker">Coach · Master database</p>
+            <h1 class="al-h1">Assignment Library</h1>
+            <p class="al-lede">Every assignment you hand out, in one place. Write new ones, pull them in from Notion, and send them to any client's Homework tab in a couple of clicks.</p>
+          </div>
+          <div class="al-head-actions">
+            <div class="al-menu">
+              <button type="button" class="al-btn" id="alImportBtn" aria-haspopup="true" aria-expanded="false">Import ▾</button>
+              <div class="al-menu-pop" id="alImportMenu" hidden>
+                <button type="button" data-open-import="notion">Sync from Notion<small>Pull every row of a Notion database</small></button>
+                <button type="button" data-open-import="file">Upload files<small>Notion export (.zip, .csv, .md) or JSON</small></button>
+              </div>
+            </div>
+            <div class="al-menu">
+              <button type="button" class="al-btn" id="alExportBtn" aria-haspopup="true" aria-expanded="false">Export ▾</button>
+              <div class="al-menu-pop" id="alExportMenu" hidden>
+                <button type="button" data-export="notion">Push to Notion<small>Create / update pages in your database</small></button>
+                <button type="button" data-export="csv">Download CSV<small>Import straight into a Notion database</small></button>
+                <button type="button" data-export="md">Download Markdown (.zip)<small>One page per assignment</small></button>
+                <button type="button" data-export="json">Download JSON backup<small>Re-importable here</small></button>
+              </div>
+            </div>
+            <button type="button" class="al-btn al-btn--primary" id="alNewBtn">+ New assignment</button>
+          </div>
+        </header>
+
+        <div class="al-stats">
+          <div class="al-card al-stat"><p class="al-stat-label">In library</p><p class="al-stat-num" id="alStatTotal">0</p></div>
+          <div class="al-card al-stat"><p class="al-stat-label">From Notion</p><p class="al-stat-num" id="alStatNotion">0</p></div>
+          <div class="al-card al-stat"><p class="al-stat-label">Times assigned</p><p class="al-stat-num" id="alStatAssigned">0</p></div>
+          <div class="al-card al-stat"><p class="al-stat-label">Active clients</p><p class="al-stat-num" id="alStatClients">0</p></div>
+        </div>
+
+        <div class="al-card">
+          <div class="al-toolbar">
+            <input type="search" class="al-search" id="alSearch" placeholder="Search titles, instructions, tags…" aria-label="Search assignments" />
+            <select class="al-select" id="alCoreFilter" aria-label="Filter by core"></select>
+            <select class="al-select" id="alCatFilter" aria-label="Filter by category"></select>
+            <select class="al-select" id="alSort" aria-label="Sort">
+              <option value="title">A → Z</option>
+              <option value="updated">Recently edited</option>
+              <option value="used">Most assigned</option>
+              <option value="core">By core</option>
+            </select>
+            <label class="al-check"><input type="checkbox" id="alShowArchived" /> Archived</label>
+          </div>
+          <div class="al-list-head">
+            <input type="checkbox" id="alSelectAll" aria-label="Select all shown" style="width:17px;height:17px;accent-color:#071f35;margin:0;" />
+            <span>Assignment</span><span>Core</span><span>Assigned</span><span></span>
+          </div>
+          <div id="alList"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bulk action bar -->
+    <div class="al-bulk" id="alBulk" hidden>
+      <span class="al-bulk-count" id="alBulkCount">0 selected</span>
+      <button type="button" class="al-btn al-btn--primary" id="alBulkAssign">Assign to clients</button>
+      <button type="button" class="al-btn" id="alBulkExport">Export</button>
+      <button type="button" class="al-btn" id="alBulkPush">Push to Notion</button>
+      <button type="button" class="al-btn" id="alBulkArchive">Archive</button>
+      <button type="button" class="al-btn al-btn--danger" id="alBulkDelete">Delete</button>
+      <button type="button" class="al-btn al-btn--ghost" id="alBulkClear" aria-label="Clear selection">✕</button>
+    </div>
+
+    <!-- Editor -->
+    <div class="al-modal" id="alEditor" hidden role="dialog" aria-modal="true" aria-labelledby="alEdHeading">
+      <div class="al-modal-backdrop" data-close="alEditor"></div>
+      <div class="al-sheet">
+        <button type="button" class="al-x" data-close="alEditor" aria-label="Close">✕</button>
+        <p class="al-kicker">Assignment library</p>
+        <h2 class="al-sheet-title" id="alEdHeading">New assignment</h2>
+        <p class="al-meta-line" id="alEdMeta"></p>
+        <div class="al-field">
+          <label for="alEdTitle">Title</label>
+          <input type="text" class="al-input" id="alEdTitle" maxlength="140" placeholder="e.g. Write your I AM statements" />
+        </div>
+        <div class="al-grid3">
+          <div class="al-field"><label for="alEdCore">Core</label><select class="al-input" id="alEdCore"></select></div>
+          <div class="al-field"><label for="alEdCategory">Category</label><input type="text" class="al-input" id="alEdCategory" list="alCatList" placeholder="e.g. Onboarding" maxlength="60" /></div>
+          <div class="al-field"><label for="alEdDue">Due after (days)</label><input type="number" class="al-input" id="alEdDue" min="0" max="365" placeholder="—" /></div>
+        </div>
+        <div class="al-field">
+          <label for="alEdTags">Tags</label>
+          <input type="text" class="al-input" id="alEdTags" placeholder="Comma separated, e.g. journaling, week 1" />
+        </div>
+        <div class="al-field">
+          <label for="alEdInstructions">Instructions</label>
+          <textarea class="al-input" id="alEdInstructions" placeholder="What to do, how to do it, and what to turn in. Links are clickable for the client."></textarea>
+          <p class="al-hint">Plain text. Lines starting with <b>#</b>, <b>-</b>, <b>1.</b> or <b>[ ]</b> become headings, bullets, numbered steps and checkboxes when pushed to Notion.</p>
+        </div>
+        <div class="al-sheet-foot">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="al-btn al-btn--danger al-btn-sm" id="alEdDelete">Delete</button>
+            <button type="button" class="al-btn al-btn-sm" id="alEdArchive">Archive</button>
+            <button type="button" class="al-btn al-btn-sm" id="alEdDuplicate">Duplicate</button>
+          </div>
+          <div class="al-sheet-foot-right">
+            <span class="al-note" id="alEdNote"></span>
+            <button type="button" class="al-btn" id="alEdSaveAssign">Save &amp; assign</button>
+            <button type="button" class="al-btn al-btn--primary" id="alEdSave">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <datalist id="alCatList"></datalist>
+
+    <!-- Assign -->
+    <div class="al-modal" id="alAssign" hidden role="dialog" aria-modal="true" aria-labelledby="alAsHeading">
+      <div class="al-modal-backdrop" data-close="alAssign"></div>
+      <div class="al-sheet">
+        <button type="button" class="al-x" data-close="alAssign" aria-label="Close">✕</button>
+        <p class="al-kicker">Assign</p>
+        <h2 class="al-sheet-title" id="alAsHeading">Send to clients</h2>
+        <p class="al-sheet-sub" id="alAsWhat"></p>
+        <div class="al-field">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+            <span class="al-label" style="margin:0;">Clients</span>
+            <label class="al-check"><input type="checkbox" id="alAsAll" /> Select all</label>
+          </div>
+          <input type="search" class="al-search" id="alAsSearch" placeholder="Find a client…" style="width:100%;margin-bottom:8px;" aria-label="Find a client" />
+          <div class="al-pick-list" id="alAsClients"></div>
+        </div>
+        <div class="al-field">
+          <span class="al-label">Due date</span>
+          <div class="al-radio-row">
+            <label><input type="radio" name="alAsDue" value="default" checked /> Use each assignment's "due after" days, counted from <input type="date" class="al-select" id="alAsFrom" style="height:32px;" aria-label="Count from date" /></label>
+            <label><input type="radio" name="alAsDue" value="date" /> Same date for all: <input type="date" class="al-select" id="alAsDate" style="height:32px;" aria-label="Due date" /></label>
+            <label><input type="radio" name="alAsDue" value="none" /> No due date</label>
+          </div>
+        </div>
+        <label class="al-check" style="margin-bottom:14px;"><input type="checkbox" id="alAsSkip" checked /> Skip clients who already have it open</label>
+        <div class="al-summary-box" id="alAsSummary"></div>
+        <div class="al-sheet-foot">
+          <span class="al-note" id="alAsNote"></span>
+          <div class="al-sheet-foot-right">
+            <button type="button" class="al-btn" data-close="alAssign">Cancel</button>
+            <button type="button" class="al-btn al-btn--primary" id="alAsGo">Assign</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import -->
+    <div class="al-modal" id="alImport" hidden role="dialog" aria-modal="true" aria-labelledby="alImHeading">
+      <div class="al-modal-backdrop" data-close="alImport"></div>
+      <div class="al-sheet al-sheet--wide">
+        <button type="button" class="al-x" data-close="alImport" aria-label="Close">✕</button>
+        <p class="al-kicker">Import</p>
+        <h2 class="al-sheet-title" id="alImHeading">Bring assignments in</h2>
+        <div class="al-tabs" role="tablist">
+          <button type="button" class="al-tab is-active" data-im-tab="notion" role="tab">Notion sync</button>
+          <button type="button" class="al-tab" data-im-tab="file" role="tab">Upload files</button>
+        </div>
+
+        <div data-im-pane="notion">
+          <p class="al-sheet-sub">Pulls every row of a Notion database into the library — the title column, <b>Core</b>, <b>Category</b>, <b>Tags</b>, <b>Due in days</b>, and each page's body as the instructions. Re-running updates the rows it pulled before instead of duplicating them.</p>
+          <div id="alNotionSetup" hidden>
+            <div class="al-summary-box" style="margin-bottom:16px;">
+              <strong>One-time setup</strong>
+              <ol class="al-steps" style="margin-top:8px;">
+                <li>In Notion: Settings → Connections → <b>Develop or manage integrations</b> → New integration. Copy its secret.</li>
+                <li>Open your assignments database → ••• → Connections → add that integration.</li>
+                <li>Deploy the sync function: <code>supabase functions deploy notion-assignments</code></li>
+                <li>Save the secret: <code>supabase secrets set NOTION_TOKEN=secret_…</code></li>
+              </ol>
+              <span id="alNotionSetupErr" class="al-note is-error"></span>
+            </div>
+          </div>
+          <div class="al-field">
+            <label for="alNotionDb">Notion database</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <select class="al-input" id="alNotionDbPick" style="flex:1 1 220px;" hidden aria-label="Databases shared with the integration"></select>
+              <input type="text" class="al-input" id="alNotionDb" style="flex:1 1 220px;" placeholder="Paste the database link or ID" />
+              <button type="button" class="al-btn" id="alNotionFind">Find databases</button>
+            </div>
+            <p class="al-hint">Only databases shared with your Notion integration show up.</p>
+          </div>
+          <div class="al-progress" id="alNotionProgress" hidden><span></span></div>
+          <div class="al-sheet-foot">
+            <span class="al-note" id="alNotionNote"></span>
+            <div class="al-sheet-foot-right">
+              <button type="button" class="al-btn al-btn--primary" id="alNotionPull">Pull from Notion</button>
+            </div>
+          </div>
+        </div>
+
+        <div data-im-pane="file" hidden>
+          <p class="al-sheet-sub">In Notion, open the database → ••• → <b>Export</b> → <b>Markdown &amp; CSV</b> (include subpages), then drop the .zip here. Loose .csv / .md files and this library's JSON backup work too.</p>
+          <label class="al-drop" id="alDrop" for="alFileInput">
+            <strong>Drop files here or click to choose</strong>
+            <span>.zip · .csv · .md · .json — several at once is fine</span>
+          </label>
+          <input type="file" id="alFileInput" multiple accept=".zip,.csv,.md,.markdown,.txt,.json" hidden />
+          <div id="alImPreviewWrap" hidden>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;">
+              <p class="al-note" id="alImCount" style="margin:0;"></p>
+              <label class="al-check">When a title already exists:
+                <select class="al-select" id="alImDupe" style="height:32px;">
+                  <option value="update">Update it</option>
+                  <option value="skip">Skip it</option>
+                  <option value="copy">Add a copy</option>
+                </select>
+              </label>
+            </div>
+            <div class="al-preview-wrap">
+              <table class="al-preview">
+                <thead><tr><th><input type="checkbox" id="alImAll" checked aria-label="Select all rows" style="accent-color:#071f35;" /></th><th>Title</th><th>Core</th><th>Tags</th><th>Instructions</th><th></th></tr></thead>
+                <tbody id="alImRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="al-sheet-foot">
+            <span class="al-note" id="alImNote"></span>
+            <div class="al-sheet-foot-right">
+              <button type="button" class="al-btn al-btn--primary" id="alImGo" disabled>Import</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Push to Notion -->
+    <div class="al-modal" id="alPush" hidden role="dialog" aria-modal="true" aria-labelledby="alPuHeading">
+      <div class="al-modal-backdrop" data-close="alPush"></div>
+      <div class="al-sheet">
+        <button type="button" class="al-x" data-close="alPush" aria-label="Close">✕</button>
+        <p class="al-kicker">Export</p>
+        <h2 class="al-sheet-title" id="alPuHeading">Push to Notion</h2>
+        <p class="al-sheet-sub" id="alPuWhat"></p>
+        <div class="al-field">
+          <label for="alPuDb">Notion database</label>
+          <input type="text" class="al-input" id="alPuDb" placeholder="Paste the database link or ID" />
+          <p class="al-hint">Assignments already linked to a Notion page are updated in place; the rest become new pages. Columns named Core, Category, Tags and Due in days are filled when they exist.</p>
+        </div>
+        <div class="al-progress" id="alPuProgress" hidden><span></span></div>
+        <div class="al-sheet-foot">
+          <span class="al-note" id="alPuNote"></span>
+          <div class="al-sheet-foot-right">
+            <button type="button" class="al-btn" data-close="alPush">Cancel</button>
+            <button type="button" class="al-btn al-btn--primary" id="alPuGo">Push</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../shared-supabase-config.js"></script>
+    <script src="library.js"></script>
+  </body>
+</html>

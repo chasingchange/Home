@@ -2146,8 +2146,49 @@
     $('cpHwCore').innerHTML = h;
   })();
 
+  // Assignment library (scripts/assignment_library.sql): templates the coach
+  // can drop into this form. Loaded lazily the first time the form opens.
+  var hwLibrary = null;
+  var hwLibraryId = null;
+
+  async function loadHwLibrary(){
+    var sel = $('cpHwLibPick');
+    if (hwLibrary === null) {
+      var r = await sb.from('assignment_library').select('id, title, instructions, core_key, category, default_due_days').is('archived_at', null).order('title');
+      if (r.error) { $('cpHwLibWrap').hidden = true; $('cpHwSaveLibWrap').hidden = true; hwLibrary = []; return; }
+      hwLibrary = r.data || [];
+    }
+    var h = '<option value="">' + (hwLibrary.length ? '— Start from scratch —' : 'Library is empty — write one below') + '</option>';
+    CORE_DEFS.concat([{ key:'', label:'No core' }]).forEach(function(c){
+      var group = hwLibrary.filter(function(t){ return (t.core_key || '') === c.key; });
+      if (!group.length) return;
+      h += '<optgroup label="'+esc(c.label)+'">' + group.map(function(t){
+        return '<option value="'+t.id+'">'+esc(t.title)+(t.category ? ' · '+esc(t.category) : '')+'</option>';
+      }).join('') + '</optgroup>';
+    });
+    sel.innerHTML = h;
+    sel.value = '';
+  }
+
+  $('cpHwLibPick').addEventListener('change', function(){
+    var t = (hwLibrary || []).filter(function(x){ return x.id === this.value; }, this)[0];
+    hwLibraryId = t ? t.id : null;
+    $('cpHwSaveLibWrap').hidden = !!t;
+    if (!t) return;
+    $('cpHwTitle').value = t.title;
+    $('cpHwInstructions').value = t.instructions || '';
+    $('cpHwCore').value = t.core_key || '';
+    if (t.default_due_days != null) $('cpHwDue').value = dayKey(addDays(new Date(), t.default_due_days));
+  });
+
   function openHwForm(a){
     hwEditingId = a ? a.id : null;
+    hwLibraryId = null;
+    $('cpHwLibWrap').hidden = !!a;
+    $('cpHwSaveLibWrap').hidden = !!a;
+    $('cpHwSaveLib').checked = false;
+    $('cpHwLibLink').href = '../assignment-library/' + (viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
+    if (!a) loadHwLibrary();
     $('cpHwFormHeading').textContent = a ? 'Edit assignment' : 'New assignment';
     $('cpHwTitle').value = a ? a.title : '';
     $('cpHwInstructions').value = a ? a.instructions : '';
@@ -2178,9 +2219,18 @@
     if (hwEditingId) {
       res = await sb.from('client_assignments').update(fields).eq('id', hwEditingId).select();
     } else {
+      var libId = hwLibraryId;
+      if (!libId && $('cpHwSaveLib').checked) {
+        var lib = await sb.from('assignment_library').insert({ title: fields.title, instructions: fields.instructions, core_key: fields.core_key, source: 'manual' }).select('id, title, instructions, core_key, category, default_due_days').single();
+        if (lib.error) { setLoading($('cpHwFormSave'), false, 'Save assignment'); alert('Could not save to the library: ' + lib.error.message); return; }
+        libId = lib.data.id;
+        if (hwLibrary) hwLibrary.push(lib.data);
+      }
       var ids = $('cpHwAllClients').checked ? rosterClientIds() : [clientId];
       res = await sb.from('client_assignments').insert(ids.map(function(id){
-        return Object.assign({ client_id: id, status: 'assigned' }, fields);
+        var row = Object.assign({ client_id: id, status: 'assigned' }, fields);
+        if (libId) row.library_id = libId;
+        return row;
       })).select();
     }
     setLoading($('cpHwFormSave'), false, 'Save assignment');
@@ -3495,9 +3545,13 @@
   // ("Run errands" is Life, not Body; "Coaching call" is Career).
   var CAL_CORE_RULES = [
     [/\b(errands?|groceries|grocery|laundry|clean(ing)?|chores?|dentist|doctor|haircut|appointment|bills?|banking|taxes|moving)\b/i, 'life'],
+    // Training words used in a non-training sense, caught before the Body rule.
+    [/\b(school (run|pickup|drop[\s-]?off)|(car|train|bus|uber|lyft|taxi) ride|ride (to|from|home|share)|rideshare)\b/i, 'life'],
+    [/\b(dry run|test run|run[\s-]?through|walk[\s-]?through|pull request|push to (prod|production|main|staging)|stretch goal)\b/i, 'career'],
+    // Body before the social rule, so "Bike ride with the kids" is still a workout.
+    [/\b(work ?outs?|exercise|gym|lift(s|ing)?|weights?|strength|powerlifting|weightlifting|squats?|deadlifts?|bench press|kettlebells?|dumbbells?|barbell|circuit|crossfit|metcon|wod|bootcamp|f45|orangetheory|training|push|pull|legs?|upper( body)?|lower( body)?|full[\s-]?body|arms|chest|glutes|back day|leg day|abs|run(s|ning)?|jog(ging)?|sprints?|intervals?|zone ?2|5k|10k|marathon|triathlon|treadmill|elliptical|stair ?master|cardio|hiit|yoga|pilates|barre|spin(ning)?|peloton|swim(s|ming)?|bike|bikes|biking|bike ride|cycle|cycling|ride|riding|row(ing)?|erg|hike|hiking|walk(ing)?|ruck(ing)?|jump ?rope|stretch(ing)?|mobility|physio|sauna|boxing|kickboxing|muay thai|mma|bjj|jiu[\s-]?jitsu|martial arts|climb(ing)?|bouldering|ski(ing)?|surf(ing)?|tennis|pickleball|padel|golf|soccer|basketball|volleyball|hockey|meal prep)\b/i, 'body'],
     [/\b(family|kids?|school (run|pickup|drop[\s-]?off)|pick ?up|date night|birthday|anniversary|wedding|party|friends?|mom|dad|parents|holiday|vacation|trip|flight|travel|dinner with|brunch)\b/i, 'life'],
     [/\b(church|mass|worship|pray(er|ing)?|bible|devotion(al)?|sabbath|volunteer(ing)?|gratitude|retreat|service at)\b/i, 'soul'],
-    [/\b(work ?out|gym|lift(ing)?|weights|training|push|pull|legs?|upper( body)?|lower( body)?|full[\s-]?body|arms|chest|glutes|back day|run(ning)?|jog|cardio|hiit|yoga|pilates|spin|swim(ming)?|bike|cycling|row(ing)?|hike|walk|stretch(ing)?|mobility|physio|sauna|crossfit|bjj|boxing|tennis|golf|soccer|basketball|meal prep)\b/i, 'body'],
     [/\b(paint(ing)?|draw(ing)?|sketch(ing)?|music|guitar|piano|drums|sing(ing)?|songwriting|photo(graphy|shoot)?|film(ing)?|video edit(ing)?|design|studio|creative|dance|danc(e|ing) class|pottery|craft|write|writing|poetry|novel)\b/i, 'art'],
     [/\b(meditat(e|ion)|journal(ing)?|read(ing)?|study|studying|learn(ing)?|course|class|lecture|therapy|therapist|counsel(l)?ing|reflect(ion)?|podcast|book club|language|mindful(ness)?|breathwork)\b/i, 'mind'],
     [/\b(meeting|call|client|work|office|standup|stand-up|1:1|one[\s-]on[\s-]one|sync|interview|review|presentation|pitch|sales|deadline|project|email|admin|focus time|deep work|shift|conference|networking|coaching|team|board|demo|launch)\b/i, 'career']
