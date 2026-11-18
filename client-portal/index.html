@@ -127,6 +127,11 @@
       .cp-goal-form-handle{width:36px;height:4px;border-radius:99px;background:rgba(7,31,53,.15);margin:0 auto 20px;}
       .cp-goal-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;color:#071f35;margin:0 0 22px;}
       .cp-goal-form-subtitle{font-size:13px;color:rgba(7,31,53,.5);margin:0 0 20px;line-height:1.5;}
+      .cp-goal-smart-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0 0 24px;}
+      .cp-goal-smart-pill{padding:8px 0 7px;border-radius:12px;text-align:center;font-family:"Raleway",sans-serif;font-size:15px;font-weight:800;color:var(--smart);background:color-mix(in srgb,var(--smart) 11%,#fff);}
+      .cp-goal-smart-pill span{display:block;font-family:"Muli","Mulish",sans-serif;font-size:10px;font-weight:700;letter-spacing:.01em;margin-top:1px;opacity:.85;}
+      .cp-smart-tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:4px;border-radius:6px;vertical-align:1px;font-family:"Raleway",sans-serif;font-size:11px;font-weight:800;color:var(--smart);background:color-mix(in srgb,var(--smart) 12%,#fff);}
+      .cp-smart-tag + .cp-smart-tag{margin-left:3px;}
       .cp-goal-form-field{margin-bottom:20px;}
       .cp-goal-form-field label{display:block;font-family:"Raleway",sans-serif;font-size:15px;font-weight:700;color:#071f35;margin-bottom:8px;letter-spacing:-.005em;}
       .cp-goal-form-optional{font-family:"Muli","Mulish",sans-serif;font-size:13px;font-weight:600;color:rgba(7,31,53,.45);margin-left:4px;}
@@ -136,9 +141,11 @@
       .cp-goal-form-input--ta{height:80px;padding:12px 14px;resize:none;}
       .cp-goal-core-grid{display:flex;flex-wrap:wrap;gap:8px;}
       .cp-goal-core-opt{display:none;}
-      .cp-goal-core-opt + label{margin:0;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:980px;background:rgba(7,31,53,.06);color:#071f35;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background-color .2s,color .2s;}
-      .cp-goal-core-opt + label:hover{background:rgba(7,31,53,.1);}
-      .cp-goal-core-opt:checked + label{background:#071f35;color:#fff;}
+      .cp-goal-core-opt + label{margin:0;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:980px;background:color-mix(in srgb,var(--core) 12%,#fff);color:color-mix(in srgb,var(--core) 70%,#071f35);font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background-color .2s,color .2s;}
+      .cp-goal-core-opt + label:hover{background:color-mix(in srgb,var(--core) 20%,#fff);}
+      .cp-goal-core-opt + label .cp-dot{background:var(--core);}
+      .cp-goal-core-opt:checked + label{background:var(--core);color:#fff;}
+      .cp-goal-core-opt:checked + label .cp-dot{background:#fff;}
       .cp-goal-form-actions{display:flex;gap:10px;margin-top:20px;}
       .cp-goal-form-cancel{all:unset;cursor:pointer;flex:1;height:46px;border-radius:980px;background:rgba(7,31,53,.06);color:#071f35;font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;text-align:center;display:flex;align-items:center;justify-content:center;transition:background-color .2s;}
       .cp-goal-form-cancel:hover{background:rgba(7,31,53,.1);}
@@ -379,7 +386,11 @@
       .cp-gl-by{margin-left:auto;font-size:12px;font-weight:700;color:rgba(7,31,53,.4);}
       .cp-gl-form-ms .cp-gl-form-ms-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(7,31,53,.08);}
       .cp-gl-form-ms-item b{width:22px;height:22px;border-radius:99px;background:rgba(7,31,53,.06);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-      .cp-gl-form-ms-item span{flex:1;font-size:14px;}
+      .cp-gl-form-ms-item span{flex:1;min-width:0;font-size:14px;}
+      input.cp-gl-form-ms-date{flex:none;width:136px;height:32px;box-sizing:border-box;padding:0 10px;border-radius:980px;border:0;background:rgba(7,31,53,.06);font-family:"Muli","Mulish",sans-serif;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);cursor:pointer;}
+      input.cp-gl-form-ms-date.has-value{color:#071f35;}
+      input.cp-gl-form-ms-date:focus{outline:none;box-shadow:0 0 0 3px rgba(0,113,227,.25);}
+      .cp-gl-ms-date{flex:none;font-size:12px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-gl-form-ms-item button{all:unset;cursor:pointer;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.4);}
       .cp-gl-form-ms-item button:hover{background:rgba(240,35,72,.1);color:#c01a38;}
       .cp-gl-form-ms-add{display:flex;gap:8px;margin-top:8px;}
@@ -1195,20 +1206,30 @@
           <div class="cp-goal-form-sheet">
             <div class="cp-goal-form-handle"></div>
             <p class="cp-goal-form-title" id="cpGoalFormHeading">New goal</p>
+            <div class="cp-goal-smart-row">
+              <div class="cp-goal-smart-pill" style="--smart:#3d8c39">S<span>Specific</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#1a6fa8">M<span>Measurable</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#a07820">A<span>Achievable</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#6a3fa0">R<span>Relevant</span></div>
+              <div class="cp-goal-smart-pill" style="--smart:#a01428">T<span>Time-bound</span></div>
+            </div>
             <div class="cp-goal-form-field">
-              <label for="cpGoalTitle">Goal</label>
+              <label for="cpGoalTitle">What do you want to achieve? <span class="cp-smart-tag" style="--smart:#3d8c39">S</span></label>
+              <p class="cp-goal-form-hint">Name a clear, concrete outcome — not "get fit" but "run a 5K in under 30 min."</p>
               <input type="text" id="cpGoalTitle" class="cp-goal-form-input" placeholder="e.g. Run a 5K in under 30 minutes" maxlength="120" />
             </div>
             <div class="cp-goal-form-field">
-              <label for="cpGoalDesc">How you'll measure it</label>
+              <label for="cpGoalDesc">How will you measure it? <span class="cp-smart-tag" style="--smart:#1a6fa8">M</span><span class="cp-smart-tag" style="--smart:#a07820">A</span></label>
+              <p class="cp-goal-form-hint">What number or action proves you hit it? Is it actually within reach?</p>
               <textarea id="cpGoalDesc" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="e.g. Track weekly mileage, adding half a mile each week." maxlength="400"></textarea>
             </div>
             <div class="cp-goal-form-field">
-              <label>Core</label>
+              <label>Which core does this live in? <span class="cp-smart-tag" style="--smart:#6a3fa0">R</span></label>
               <div class="cp-goal-core-grid" id="cpGoalCoreGrid"></div>
             </div>
             <div class="cp-goal-form-field">
               <label for="cpGoalMsInput">Milestones <span class="cp-goal-form-optional">Optional</span></label>
+              <p class="cp-goal-form-hint">Break it into steps you can tick off. Each one can have its own date.</p>
               <div class="cp-gl-form-ms" id="cpGoalMsList"></div>
               <div class="cp-gl-form-ms-add">
                 <input type="text" id="cpGoalMsInput" class="cp-goal-form-input" placeholder="Add a step…" maxlength="140" />
@@ -1217,7 +1238,7 @@
             </div>
             <div class="cp-gl-form-row">
               <div class="cp-goal-form-field">
-                <label for="cpGoalDate">Deadline</label>
+                <label for="cpGoalDate">Deadline <span class="cp-smart-tag" style="--smart:#a01428">T</span></label>
                 <input type="date" id="cpGoalDate" class="cp-goal-form-input" />
               </div>
               <div class="cp-goal-form-field">

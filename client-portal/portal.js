@@ -539,7 +539,10 @@
   }
 
   function mapMilestones(ms){
-    return (Array.isArray(ms) ? ms : []).filter(function(m){ return m && m.label; }).map(function(m){ return { label:String(m.label), done:!!m.done }; });
+    return (Array.isArray(ms) ? ms : []).filter(function(m){ return m && m.label; }).map(function(m){ var o = { label:String(m.label), done:!!m.done };
+      if (m.date) o.date = String(m.date);
+      return o;
+    });
   }
 
   function mapAssignment(a){
@@ -1092,7 +1095,9 @@
       ? g.milestones.map(function(m, j){
           return '<div class="cp-gl-ms'+(m.done ? ' is-done' : '')+'">'
             + '<button type="button" class="cp-gl-ms-box" data-goal-ms="'+j+'" role="checkbox" aria-checked="'+!!m.done+'" aria-label="'+esc(m.label)+'">'+(m.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '')+'</button>'
-            + '<span class="cp-gl-ms-label">'+esc(m.label)+'</span></div>';
+            + '<span class="cp-gl-ms-label">'+esc(m.label)+'</span>'
+            + (m.date ? '<span class="cp-gl-ms-date">'+esc(goalDateLabel(m.date, false))+'</span>' : '')
+            + '</div>';
         }).join('')
       : '<p class="cp-gl-ms-empty">No milestones yet — use Edit to break this into steps.</p>';
     var note = isCoachUser
@@ -1223,7 +1228,7 @@
     var msBtn = e.target.closest('[data-goal-ms]');
     if (msBtn) {
       var j = parseInt(msBtn.getAttribute('data-goal-ms'), 10);
-      var ms = goal.milestones.map(function(m, k){ return k === j ? { label:m.label, done:!m.done } : m; });
+      var ms = goal.milestones.map(function(m, k){ return k === j ? Object.assign({}, m, { done:!m.done }) : m; });
       patchGoal(goal, { milestones:ms }, { milestones:ms });
       return;
     }
@@ -1267,7 +1272,7 @@
     var h = '';
     CORE_DEFS.forEach(function(c){
       h += '<input type="radio" name="cpGoalCore" id="cpGoalCore_'+c.key+'" value="'+c.key+'" class="cp-goal-core-opt">';
-      h += '<label for="cpGoalCore_'+c.key+'"><span class="cp-dot" style="background:'+c.color+'"></span>'+c.label+'</label>';
+      h += '<label for="cpGoalCore_'+c.key+'" style="--core:'+c.color+'"><span class="cp-dot"></span>'+c.label+'</label>';
     });
     $('cpGoalCoreGrid').innerHTML = h;
   }
@@ -1280,6 +1285,7 @@
   function renderGoalFormMs(){
     $('cpGoalMsList').innerHTML = goalFormMs.map(function(m, i){
       return '<div class="cp-gl-form-ms-item"><b>'+(i + 1)+'</b><span>'+esc(m.label)+'</span>'
+        + '<input type="date" class="cp-gl-form-ms-date'+(m.date ? ' has-value' : '')+'" data-goal-ms-date="'+i+'" value="'+esc(m.date || '')+'" aria-label="Optional date for '+esc(m.label)+'" title="Optional date" />'
         + '<button type="button" data-goal-ms-remove="'+i+'" aria-label="Remove '+esc(m.label)+'">✕</button></div>';
     }).join('');
   }
@@ -1301,6 +1307,12 @@
     goalFormMs.splice(parseInt(b.getAttribute('data-goal-ms-remove'), 10), 1);
     renderGoalFormMs();
   });
+  $('cpGoalMsList').addEventListener('change', function(e){
+    var d = e.target.closest('[data-goal-ms-date]'); if (!d) return;
+    var m = goalFormMs[parseInt(d.getAttribute('data-goal-ms-date'), 10)]; if (!m) return;
+    if (d.value) m.date = d.value; else delete m.date;
+    d.classList.toggle('has-value', !!d.value);
+  });
 
   function openGoalForm(goal){
     goalEditingId = goal ? goal.id : null;
@@ -1310,7 +1322,7 @@
     $('cpGoalDesc').value = goal ? goal.description : '';
     $('cpGoalDate').value = goal ? goal.targetDate : '';
     $('cpGoalStatus').value = goal ? goal.status : 'not_started';
-    goalFormMs = goal ? goal.milestones.map(function(m){ return { label:m.label, done:!!m.done }; }) : [];
+    goalFormMs = goal ? goal.milestones.map(function(m){ return Object.assign({}, m); }) : [];
     $('cpGoalMsInput').value = '';
     renderGoalFormMs();
     $('cpGoalNoteField').hidden = !isCoachUser;
