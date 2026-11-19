@@ -6059,7 +6059,7 @@
     this.value = '';
     if (!file || !viewingClientId) return;
     if (!/^image\//.test(file.type)) { alert('Please choose an image file.'); return; }
-    if (file.size > 8 * 1024 * 1024) { alert('That image is too large — please choose one under 8MB.'); return; }
+    if (file.size > 16 * 1024 * 1024) { alert('That image is too large — please choose one under 16MB.'); return; }
 
     setVisionBusy(true);
     var path = viewingClientId + '/vision-board';
