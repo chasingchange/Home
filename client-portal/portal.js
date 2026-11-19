@@ -714,7 +714,7 @@
 
   // ─── Coach: roster (loaded from every client's profile + dashboard row) ─
   async function loadRoster(){
-    var { data: profs } = await sb.from('profiles').select('id, full_name, preferred_name, email, role');
+    var { data: profs } = await sb.from('profiles').select('*');
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
@@ -765,7 +765,11 @@
         reminderDay: d.reminder_day || 'Tuesday',
         reminderChannel: d.reminder_channel || 'text',
         taskCounts: taskCounts[p.id] || { open:0, total:0 },
-        status: statusByClient[p.id] || ''
+        status: statusByClient[p.id] || '',
+        email: p.email || '',
+        // Never set a password → still hasn't accepted the portal invite.
+        invitePending: p.has_password !== true,
+        invitedAt: p.invited_at || null
       };
     });
     // Graduated / Terminated clients sink to the bottom of the roster.
@@ -5801,10 +5805,74 @@
     return '<select class="cp-roster-status" data-status-client="'+c.id+'" aria-label="Status for '+esc(c.name)+'">'+opts+'</select>';
   }
 
+  function inviteLine(c){
+    if (!c.invitePending) return '';
+    var sent = c.invitedAt ? 'Invite sent ' + shortDate(new Date(c.invitedAt)) : 'Hasn\u2019t joined yet';
+    return '<div class="cp-roster-invite"><span>' + esc(sent) + '</span>'
+      + (c.email ? '<button type="button" data-resend-invite="'+esc(c.id)+'">' + (c.invitedAt ? 'Resend' : 'Send invite') + '</button>' : '')
+      + '</div>';
+  }
+
+  // ─── Coach: invite a client to the portal ─────────────────────────────
+  // Goes through the invite-client Edge Function (it needs the service-role
+  // key to create the account + send Supabase's "Invite user" email). The
+  // CRM in the Chasing Change Dashboard calls the same function.
+  var INVITE_FN = 'invite-client';
+
+  async function sendPortalInvite(payload){
+    payload.redirect_to = window.location.origin + window.location.pathname;
+    try {
+      var r = await sb.functions.invoke(INVITE_FN, { body: payload });
+      if (r.error) {
+        var msg = r.error.message || '';
+        if (r.error.context && r.error.context.json) {
+          try { var j = await r.error.context.json(); if (j && j.error) msg = j.error; } catch (e) {}
+        }
+        if (/Failed to send a request|not found|404/i.test(msg)) msg = 'The invite-client function isn\u2019t deployed yet — see scripts/client_invites.sql.';
+        return { ok: false, error: msg || 'Could not send the invite.' };
+      }
+      return r.data || { ok: false, error: 'No response from the invite function.' };
+    } catch (e) {
+      return { ok: false, error: e.message || 'Could not send the invite.' };
+    }
+  }
+
+  $('cpInviteOpenBtn').addEventListener('click', function(){
+    $('cpInviteName').value = '';
+    $('cpInviteEmail').value = '';
+    $('cpInviteStatus').value = 'Onboarding';
+    $('cpInviteNote').hidden = true;
+    hideErr('cpInviteError');
+    openModal('cpInviteOverlay');
+    $('cpInviteName').focus();
+  });
+
+  $('cpInviteSend').addEventListener('click', async function(){
+    var name = $('cpInviteName').value.trim();
+    var email = $('cpInviteEmail').value.trim();
+    hideErr('cpInviteError');
+    $('cpInviteNote').hidden = true;
+    if (!name) { showErr('cpInviteError', 'Add the client\u2019s name.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('cpInviteError', 'Enter a valid email address.'); return; }
+
+    setLoading($('cpInviteSend'), true, 'Sending…');
+    var res = await sendPortalInvite({ email: email, full_name: name, status: $('cpInviteStatus').value });
+    setLoading($('cpInviteSend'), false, 'Send invite');
+
+    if (!res.ok) { showErr('cpInviteError', res.error || 'Could not send the invite.'); return; }
+    $('cpInviteNote').textContent = res.message || ('Invitation sent to ' + email + '.');
+    $('cpInviteNote').hidden = false;
+    $('cpInviteName').value = '';
+    $('cpInviteEmail').value = '';
+    loadRoster();
+  });
+
+  $('cpInviteEmail').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('cpInviteSend').click(); });
+
   function renderRoster(){
     var h='';
     roster.forEach(function(c){
-      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><span class="cp-roster-name">'+esc(c.name)+'</span>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
+      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><div><span class="cp-roster-name">'+esc(c.name)+'</span>'+inviteLine(c)+'</div>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
     });
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
@@ -5876,6 +5944,20 @@
 
   $('cpRosterList').addEventListener('click', function(e){
     if (e.target.closest('[data-status-client]')) { e.stopPropagation(); return; }
+    var resend = e.target.closest('[data-resend-invite]');
+    if (resend) {
+      e.stopPropagation();
+      var rc = findRosterClient(resend.getAttribute('data-resend-invite'));
+      if (!rc || resend.disabled) return;
+      resend.disabled = true; resend.textContent = 'Sending…';
+      sendPortalInvite({ email: rc.email }).then(function(res){
+        if (!res.ok) { resend.disabled = false; resend.textContent = 'Retry'; window.alert('Could not send the invite: ' + res.error); return; }
+        resend.textContent = res.result === 'already_active' ? 'Already joined' : 'Sent ✓';
+        if (res.result !== 'already_active') rc.invitedAt = new Date().toISOString();
+        if (res.result === 'already_active') loadRoster();
+      });
+      return;
+    }
     var editBtn = e.target.closest('[data-edit-client]');
     if (editBtn) {
       e.stopPropagation();
@@ -5947,6 +6029,7 @@
     if(!$('cpCorePopOverlay').hidden) { closeCorePopup(); return; }
     if(!$('cpSheetOverlay').hidden) closeSheet();
     if(!$('cpEditOverlay').hidden) closeEditPortal();
+    if(!$('cpInviteOverlay').hidden) { closeModal('cpInviteOverlay'); return; }
     if(!$('cpQeOverlay').hidden) { closeQuickEdit(); return; }
     if(!$('cpHwFormOverlay').hidden) { closeModal('cpHwFormOverlay'); return; }
     if(!$('cpCurOverlay').hidden) { closeCurriculum(); return; }
