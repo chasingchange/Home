@@ -2001,13 +2001,6 @@
     closeModal(t.getAttribute('data-close-modal'));
   });
 
-  // Client ids an "assign to every client" action should reach.
-  function rosterClientIds(){
-    var ids = roster.map(function(r){ return r.id; });
-    if (viewingClientId && ids.indexOf(viewingClientId) === -1) ids.push(viewingClientId);
-    return ids;
-  }
-
   // ─── Homework tab ──────────────────────────────────────────────────────
   var hwOpenId = null;       // assignment shown in the detail sheet
   var hwEditingId = null;    // assignment being edited in the coach form
@@ -2274,7 +2267,6 @@
     $('cpTodoAddBtn').hidden = show || !isCoachUser;
     $('cpTodoAddInput').value = '';
     $('cpTodoAddDue').value = '';
-    $('cpTodoAllClients').checked = false;
     $('cpTodoAddCores').innerHTML = todoCorePicker();
     if (show) $('cpTodoAddInput').focus();
   }
@@ -2288,7 +2280,7 @@
     if (!title) { $('cpTodoAddInput').focus(); return; }
     var coreEl = $('cpTodoAddCores').querySelector('input[type=radio]:checked');
     var clientId = viewingClientId;
-    var ids = $('cpTodoAllClients').checked ? rosterClientIds() : [clientId];
+    var ids = [clientId];
     var fields = { kind: 'todo', title: title, core_key: coreEl ? coreEl.value : '', due_date: $('cpTodoAddDue').value || null, status: 'assigned' };
     setLoading($('cpTodoAddSave'), true, 'Adding…');
     var res = await sb.from('client_assignments').insert(ids.map(function(id){ return Object.assign({ client_id: id }, fields); })).select();
@@ -2706,8 +2698,6 @@
     $('cpHwInstructions').value = a ? a.instructions : '';
     $('cpHwCore').value = a ? a.coreKey : '';
     $('cpHwDue').value = a ? a.dueDate : '';
-    $('cpHwAllClients').checked = false;
-    $('cpHwAllWrap').hidden = !!a;
     setHwFormView('write');
     openModal('cpHwFormOverlay');
     $('cpHwTitle').focus();
@@ -2760,7 +2750,7 @@
         libId = lib.data.id;
         if (hwLibrary) hwLibrary.push(lib.data);
       }
-      var ids = $('cpHwAllClients').checked ? rosterClientIds() : [clientId];
+      var ids = [clientId];
       res = await sb.from('client_assignments').insert(ids.map(function(id){
         var row = Object.assign({ client_id: id, status: 'assigned' }, fields);
         if (libId) row.library_id = libId;
