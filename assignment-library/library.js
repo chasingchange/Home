@@ -77,15 +77,23 @@
     return n >= 1 && n <= 99 ? n : null;
   }
   // Code: core letter + "." + week, e.g. B.1 = Body, Week 1.
-  function codeFor(coreKey, week){
-    if (week == null || week === '') return '';
+  // Articles add an "A" after the core letter: BA (Body article), BA.2 with a week.
+  function isArticle(category){ return /^articles?$/i.test(String(category || '').trim()); }
+  function codeFor(coreKey, week, category){
+    var art = isArticle(category);
+    var hasWeek = !(week == null || week === '');
+    if (!hasWeek && !art) return '';
     var c = CORE_BY_KEY[coreKey];
-    return (c ? c.label[0] : 'W') + '.' + week;
+    return (c ? c.label[0] : 'W') + (art ? 'A' : '') + (hasWeek ? '.' + week : '');
   }
-  function itemCode(i){ return codeFor(i.core_key, i.week); }
+  function itemCode(i){ return codeFor(i.core_key, i.week, i.category); }
   // "B.1" / "b 1" / "B1" → { core_key:'body', week:1 }
+  // "BA" / "BA.1" → { core_key:'body', week:null|1, category:'Article' }
   function parseCode(v){
-    var m = String(v || '').trim().match(/^([A-Za-z])\s*[.\-]?\s*(\d{1,2})$/);
+    var s = String(v || '').trim();
+    var a = s.match(/^([BMASCLW])A(?:\s*[.\-]?\s*(\d{1,2}))?$/i);
+    if (a) return { core_key: CORE_BY_LETTER[a[1].toUpperCase()] || '', week: a[2] ? weekNum(a[2]) : null, category: 'Article' };
+    var m = s.match(/^([A-Za-z])\s*[.\-]?\s*(\d{1,2})$/);
     if (!m) return null;
     var week = weekNum(m[2]);
     if (week == null) return null;
@@ -142,12 +150,20 @@
   function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
 
   var toastTimer;
-  function toast(msg, isError){
+  // links: optional [{ href, label }] shown after the message; the toast then
+  // stays up longer so there's time to click.
+  function toast(msg, isError, links){
     var el = $('alToast');
     if (!el) { el = document.createElement('div'); el.id = 'alToast'; el.className = 'al-toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
     el.textContent = msg; el.classList.toggle('is-error', !!isError); el.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.hidden = true; }, 3800);
+    (links || []).forEach(function(l){
+      var a = document.createElement('a'); a.className = 'al-toast-link'; a.href = l.href; a.textContent = l.label;
+      el.appendChild(document.createTextNode(' ')); el.appendChild(a);
+    });
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.hidden = true; }, links && links.length ? 10000 : 3800);
   }
+  // Opens the coach portal on this client's To Do's tab.
+  function clientTodosHref(clientId){ return '../client-portal/?client=' + encodeURIComponent(clientId) + '&tab=homework'; }
   function note(id, msg, isError){ var el = $(id); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
   function busy(btn, on, label){ btn.disabled = on; if (label) btn.textContent = label; }
 
@@ -348,9 +364,6 @@
   function renderStats(){
     var live = items.filter(function(i){ return !i.archived_at; });
     $('alStatTotal').textContent = live.length;
-    $('alStatNotion').textContent = live.filter(function(i){ return i.notion_page_id; }).length;
-    $('alStatAssigned').textContent = uses.length;
-    $('alStatClients').textContent = clients.length;
   }
 
   function selectedIds(){ return Object.keys(selected).filter(function(id){ return selected[id] && byId(id); }); }
@@ -502,12 +515,13 @@
   }
 
   function renderEdCode(){
-    var code = codeFor($('alEdCore').value, weekNum($('alEdWeek').value));
+    var code = codeFor($('alEdCore').value, weekNum($('alEdWeek').value), $('alEdCategory').value);
     $('alEdCode').textContent = code;
     $('alEdCode').hidden = !code;
   }
   $('alEdCore').addEventListener('change', renderEdCode);
   $('alEdWeek').addEventListener('input', renderEdCode);
+  $('alEdCategory').addEventListener('input', renderEdCode);
 
   // New assignments start in the week you're looking at.
   $('alNewBtn').addEventListener('click', function(){
@@ -676,7 +690,14 @@
     closeModal('alAssign');
     selected = {};
     renderAll();
-    toast('Assigned ' + plural(p.rows.length, 'to-do') + '. Clients see them in their To Do\'s tab now.');
+    var assignedIds = [];
+    p.rows.forEach(function(r){ if (assignedIds.indexOf(r.client_id) === -1) assignedIds.push(r.client_id); });
+    var links = assignedIds.slice(0, 4).map(function(cid){
+      var c = clients.filter(function(x){ return x.id === cid; })[0];
+      var name = c ? c.name : 'client';
+      return { href: clientTodosHref(cid), label: assignedIds.length === 1 ? 'Open ' + name + '\u2019s To Do\u2019s \u2192' : name + ' \u2192' };
+    });
+    toast('Assigned ' + plural(p.rows.length, 'to-do') + '.', false, links);
   });
 
   // ─── export ─────────────────────────────────────────────────────────────
@@ -1022,7 +1043,7 @@
       title: title,
       week: week != null ? week : (code ? code.week : null),
       core_key: core,
-      category: pick(rec, ['category','type','section','group']),
+      category: pick(rec, ['category','type','section','group']) || (code && code.category) || '',
       tags: parseTags(pick(rec, ['tags','tag','labels'])),
       default_due_days: dueNum(pick(rec, ['due in days','due days','default due days','default_due_days','days to complete'])),
       instructions: cleanMd(pick(rec, ['to do','todo','to-do','instructions','steps','description','details','body','content'])),
@@ -1087,7 +1108,7 @@
       var key = MD_PROPS[norm(m[1])], v = m[2].trim();
       if (key === 'core') row.core_key = coreFromLabel(v) || row.core_key;
       if (key === 'week') row.week = weekNum(v);
-      if (key === 'code') { var pc = parseCode(v); if (pc) { if (!row.core_key) row.core_key = pc.core_key; if (row.week == null) row.week = pc.week; } }
+      if (key === 'code') { var pc = parseCode(v); if (pc) { if (!row.core_key) row.core_key = pc.core_key; if (row.week == null) row.week = pc.week; if (!row.category && pc.category) row.category = pc.category; } }
       if (key === 'category') row.category = v;
       if (key === 'tags') row.tags = parseTags(v);
       if (key === 'due') row.default_due_days = dueNum(v);
@@ -1109,7 +1130,7 @@
       return {
         title: split.title, core_key: core || (pc ? pc.core_key : ''),
         week: wk != null ? wk : (pc ? pc.week : null),
-        category: String(r.category || ''), tags: parseTags(r.tags), default_due_days: dueNum(r.default_due_days),
+        category: String(r.category || '') || (pc && pc.category) || '', tags: parseTags(r.tags), default_due_days: dueNum(r.default_due_days),
         instructions: String(r.instructions || ''), relevance: String(r.relevance || ''), outcome: String(r.outcome || ''),
         implementation: String(r.implementation || ''), alternative: String(r.alternative || ''), examples: String(r.examples || ''), notion_page_id: notionId(r.notion_page_id), notion_url: r.notion_url || ''
       };

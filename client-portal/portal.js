@@ -453,7 +453,7 @@
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
-      loadRoster();
+      loadRoster().then(openDeepLinkedClient);
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
@@ -2029,9 +2029,9 @@
       + (a.submittedAt ? '<span class="cp-due-chip">Submitted '+esc(shortDate(new Date(a.submittedAt)))+'</span>' : '')
       + '</div>';
 
-    h += '<div class="cp-hw-section"><h4>Instructions</h4><div class="cp-hw-instructions">'
-      + (a.instructions ? linkify(a.instructions) : '<span style="color:rgba(7,31,53,.45)">No written instructions.</span>')
-      + '</div></div>';
+    h += '<div class="cp-hw-section"><h4>Instructions</h4>'
+      + (a.instructions ? hwInstructionsHtml(a.instructions, own) : '<div class="cp-hw-instructions"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>')
+      + '</div>';
 
     var statusOpts = HW_STATUSES.filter(function(s){
       return isCoachUser || HW_CLIENT_STATUSES.indexOf(s.key) !== -1 || s.key === a.status;
@@ -2077,6 +2077,105 @@
     $('cpHwSheet').innerHTML = h;
     $('cpHwSheet').setAttribute('data-for', a.id);
   }
+
+  // Instructions come from the library as "RELEVANCE\n…\n\nTO DO\n[ ] step…".
+  // Section headings render bold; steps under TO DO (or anywhere, when the
+  // text has no sections) are checkboxes the client can tick. Ticks are saved
+  // back into this client's own copy of the text as [x] / [ ].
+  var HW_HEADINGS = { 'RELEVANCE':1, 'OUTCOME':1, 'TO DO':1, 'TODO':1, 'TO-DO':1, 'IMPLEMENTATION':1, 'ALTERNATIVE':1, 'EXAMPLES':1 };
+  var HW_STEP_RE = /^(\s*)(?:\[( |x|X)?\]|[-*•]|\d{1,2}[.)])\s+(.*)$/;
+  function hwHeading(line){
+    var t = String(line).trim().replace(/^#{1,3}\s*/, '').replace(/\s*[:|]\s*$/, '').toUpperCase();
+    return HW_HEADINGS[t] ? (t === 'TODO' || t === 'TO-DO' ? 'TO DO' : t) : '';
+  }
+  function hwParse(text){
+    var lines = String(text || '').split('\n');
+    var sections = [], cur = { heading: '', lines: [] };
+    lines.forEach(function(line, i){
+      var hd = hwHeading(line);
+      if (hd) { sections.push(cur); cur = { heading: hd, lines: [] }; return; }
+      cur.lines.push({ text: line, idx: i });
+    });
+    sections.push(cur);
+    var hasHeadings = sections.some(function(x){ return x.heading; });
+    return sections.filter(function(x){ return x.heading || x.lines.some(function(l){ return l.text.trim(); }); }).map(function(x){
+      var stepsOk = x.heading === 'TO DO' || !hasHeadings;
+      var marked = x.lines.filter(function(l){ return HW_STEP_RE.test(l.text); }).length;
+      var nonEmpty = x.lines.filter(function(l){ return l.text.trim(); });
+      // A To Do with no markers but several lines → one step per line.
+      var everyLine = stepsOk && x.heading === 'TO DO' && !marked && nonEmpty.length > 1;
+      x.items = x.lines.map(function(l){
+        var m = stepsOk ? l.text.match(HW_STEP_RE) : null;
+        if (m) return { step: true, done: /x/i.test(m[2] || ''), text: m[3], idx: l.idx };
+        if (everyLine && l.text.trim()) return { step: true, done: false, text: l.text.trim(), idx: l.idx };
+        return { step: false, text: l.text, idx: l.idx };
+      });
+      return x;
+    });
+  }
+  function hwInstructionsHtml(text, canTick){
+    return hwParse(text).map(function(sec){
+      var steps = sec.items.filter(function(it){ return it.step; });
+      var done = steps.filter(function(it){ return it.done; }).length;
+      var h = '<div class="cp-hw-block">';
+      if (sec.heading) h += '<p class="cp-hw-block-head">' + esc(sec.heading === 'TO DO' ? 'To Do' : sec.heading.charAt(0) + sec.heading.slice(1).toLowerCase())
+        + (steps.length ? ' <span class="cp-hw-progress" data-hw-progress>' + done + ' of ' + steps.length + ' done</span>' : '') + '</p>';
+      var para = [];
+      function flush(){
+        var t = para.join('\n').replace(/^\n+|\n+$/g, '');
+        if (t) h += '<div class="cp-hw-instructions">' + linkify(t) + '</div>';
+        para = [];
+      }
+      sec.items.forEach(function(it){
+        if (!it.step) { para.push(it.text); return; }
+        flush();
+        h += '<label class="cp-hw-step' + (it.done ? ' is-done' : '') + '">'
+          + '<input type="checkbox" data-hw-step="' + it.idx + '"' + (it.done ? ' checked' : '') + (canTick ? '' : ' disabled') + ' />'
+          + '<span>' + linkify(it.text) + '</span></label>';
+      });
+      flush();
+      return h + '</div>';
+    }).join('');
+  }
+  function hwToggleStep(text, idx, done){
+    var lines = String(text || '').split('\n');
+    var line = lines[idx]; if (line == null) return text;
+    var m = line.match(HW_STEP_RE);
+    var indent = m ? m[1] : (line.match(/^\s*/) || [''])[0];
+    var body = m ? m[3] : line.trim();
+    lines[idx] = indent + (done ? '[x] ' : '[ ] ') + body;
+    return lines.join('\n');
+  }
+
+  $('cpHwSheetOverlay').addEventListener('change', async function(e){
+    var box = e.target.closest('[data-hw-step]'); if (!box) return;
+    var a = currentHw(); if (!a || !isOwnPortal()) return;
+    var label = box.closest('.cp-hw-step');
+    if (label) label.classList.toggle('is-done', box.checked);
+    var block = box.closest('.cp-hw-block');
+    var prog = block && block.querySelector('[data-hw-progress]');
+    if (prog) {
+      var all = block.querySelectorAll('[data-hw-step]');
+      var n = Array.prototype.filter.call(all, function(b){ return b.checked; }).length;
+      prog.textContent = n + ' of ' + all.length + ' done';
+    }
+    var row = { instructions: hwToggleStep(a.instructions, parseInt(box.getAttribute('data-hw-step'), 10), box.checked) };
+    if (a.status === 'assigned' && box.checked) row.status = 'in_progress';
+    var { data, error } = await sb.from('client_assignments').update(row).eq('id', a.id).select().single();
+    if (error) {
+      box.checked = !box.checked;
+      if (label) label.classList.toggle('is-done', box.checked);
+      setNote('cpHwSaveNote', 'Could not save: ' + error.message, true);
+      return;
+    }
+    var updated = mapAssignment(data);
+    portalData.assignments = portalData.assignments.map(function(x){ return x.id === updated.id ? updated : x; });
+    if (row.status) {
+      var sel = $('cpHwStatusSel');
+      if (sel) sel.value = updated.status;
+    }
+    renderHomeworkTab();
+  });
 
   function hwFormPatch(){
     var patch = {};
@@ -2190,9 +2289,10 @@
     return filled.map(function(x){ return x[1] + '\n' + String(t[x[0]]).trim(); }).join('\n\n');
   }
   function libCode(t){
-    if (t.week == null) return '';
+    var art = /^articles?$/i.test(String(t.category || '').trim());
+    if (t.week == null && !art) return '';
     var c = CORE_DEFS.filter(function(d){ return d.key === t.core_key; })[0];
-    return (c ? c.label[0] : 'W') + '.' + t.week;
+    return (c ? c.label[0] : 'W') + (art ? 'A' : '') + (t.week == null ? '' : '.' + t.week);
   }
 
   async function loadHwLibrary(){
@@ -4782,6 +4882,24 @@
       hideAllPortalTabs();
     }
     renderQeFab();
+  }
+
+  // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
+  // pop-up) opens that client straight onto that tab. Used once, then the
+  // URL is cleaned so a refresh lands back on the roster.
+  var deepLinkUsed = false;
+  function openDeepLinkedClient(){
+    if (deepLinkUsed) return;
+    deepLinkUsed = true;
+    var q = new URLSearchParams(window.location.search);
+    var cid = q.get('client');
+    if (!cid) return;
+    var tab = q.get('tab') || 'portal';
+    if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
+    try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
+    var c = findRosterClient(cid);
+    if (!c) return;
+    enterClientPortalView(cid, c.name, tab);
   }
 
   function findRosterClient(id){

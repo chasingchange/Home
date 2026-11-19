@@ -150,7 +150,9 @@ function weekFrom(raw: string): number | null {
   return n >= 1 && n <= 99 ? n : null;
 }
 
-function codeFrom(raw: string): { core_key: string; week: number } | null {
+function codeFrom(raw: string): { core_key: string; week: number | null; category?: string } | null {
+  const a = String(raw ?? "").trim().match(/^([BMASCLW])A(?:\s*[.\-]?\s*(\d{1,2}))?$/i);
+  if (a) return { core_key: LETTER_CORE[a[1].toUpperCase()] ?? "", week: a[2] ? weekFrom(a[2]) : null, category: "Article" };
   const m = String(raw ?? "").trim().match(/^([A-Za-z])\s*[.\-]?\s*(\d{1,2})$/);
   const week = m ? weekFrom(m[2]) : null;
   return m && week != null ? { core_key: LETTER_CORE[m[1].toUpperCase()] ?? "", week } : null;
@@ -168,9 +170,15 @@ function splitTitleCode(raw: string): { title: string; code: { core_key: string;
   return { title: rest, code: { core_key: LETTER_CORE[m[1].toUpperCase()], week: Number(m[2]) } };
 }
 
-function codeFor(coreKey: string, week: number | null): string {
-  if (week == null) return "";
-  return (CORES[coreKey]?.[0] ?? "W") + "." + week;
+// Articles add an "A" after the core letter: BA (Body article), BA.2 with a week.
+function isArticle(category: string | null | undefined): boolean {
+  return /^articles?$/i.test(String(category ?? "").trim());
+}
+
+function codeFor(coreKey: string, week: number | null, category?: string | null): string {
+  const art = isArticle(category);
+  if (week == null && !art) return "";
+  return (CORES[coreKey]?.[0] ?? "W") + (art ? "A" : "") + (week == null ? "" : "." + week);
 }
 
 // Page body ⇄ editor sections. The body is written as "## Relevance",
@@ -303,7 +311,7 @@ async function rowFromPage(page: Json) {
     examples: body.examples || propText(findProp(props, ["examples", "example"])).trim(),
     core_key: coreKeyFrom(coreLabel) || code?.core_key || "",
     week: week ?? code?.week ?? null,
-    category,
+    category: category || code?.category || "",
     tags,
     default_due_days: due,
     source: "notion",
@@ -350,7 +358,7 @@ function propsFor(row: Json, schema: Json): Json {
   const named = (names: string[]) => entries.find(([k]) => names.includes(k.trim().toLowerCase()));
   // No Code column in Notion → keep the code in the page title there, as the
   // database had it, so pushing doesn't strip "B.1" off Notion pages.
-  const titleCode = named(["code", "assignment code"]) ? "" : codeFor(row.core_key, row.week);
+  const titleCode = named(["code", "assignment code"]) ? "" : codeFor(row.core_key, row.week, row.category);
   const bareTitle = splitTitleCode(row.title || "").title || "Untitled assignment";
   props[titleName] = { title: chunks(titleCode ? titleCode + " " + bareTitle : bareTitle) };
 
@@ -364,7 +372,7 @@ function propsFor(row: Json, schema: Json): Json {
 
   setText(named(["core", "cores", "core key"]), CORES[row.core_key] ?? "");
   setText(named(["category", "type", "section", "group"]), row.category ?? "");
-  setText(named(["code", "assignment code"]), codeFor(row.core_key, row.week));
+  setText(named(["code", "assignment code"]), codeFor(row.core_key, row.week, row.category));
   const week = named(["week", "wk", "week #", "week number"]);
   if (week && week[1].type === "number") props[week[0]] = { number: row.week ?? null };
   else setText(week, row.week == null ? "" : "Week " + row.week);
