@@ -1641,7 +1641,7 @@
 
   // Each habit belongs to one of the six cores (client_habits.core_key; ''
   // means no core yet). The tab groups habit cards by core, in core order.
-  var habitsUi = { editing: null };   // id of the habit whose card is in edit mode
+  var habitsUi = { editing: null, confirmDel: null };   // habit in edit mode / awaiting remove confirm
 
   function habitCoreDef(key){
     return CORE_DEFS.filter(function(c){ return c.key === key; })[0] || null;
@@ -1671,7 +1671,9 @@
           + '<input type="text" class="cp-goal-form-input" name="label" value="'+esc(hb.label)+'" maxlength="120" aria-label="Habit" required />'
           + '<div class="cp-goal-core-grid">'+habitCorePicker('cpHabitEditCore', hb.coreKey)+'</div>'
           + '<div class="cp-habit-form-actions'+(isCoachUser ? ' cp-habit-form-actions--split' : '')+'">'
-          + (isCoachUser ? '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>' : '')
+          + (isCoachUser ? (habitsUi.confirmDel === hb.id
+              ? '<span class="cp-habit-confirm">Remove this habit?<button type="button" class="cp-todo-confirm-yes" data-habit-del-yes="'+idx+'">Remove</button><button type="button" class="cp-todo-confirm-no" data-habit-del-no>Keep</button></span>'
+              : '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>') : '')
           + '<span style="display:flex;gap:10px;align-items:center;"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
           + '<button type="submit" class="cp-goals-add-btn">Save</button></span></div></form>';
       }
@@ -1715,22 +1717,32 @@
     var edit = e.target.closest('[data-habit-edit]');
     if (edit) {
       var hb = portalData.habits[parseInt(edit.getAttribute('data-habit-edit'),10)];
-      if (hb) { habitsUi.editing = hb.id; renderHabitsTab(); }
+      if (hb) { habitsUi.editing = hb.id; habitsUi.confirmDel = null; renderHabitsTab(); }
       return;
     }
-    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; renderHabitsTab(); return; }
-    var del = e.target.closest('[data-habit-del]'); if (!del) return;
-    habitsUi.editing = null;
-    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
-    if (!confirm('Remove "' + habit.label + '"?')) { habitsUi.editing = habit.id; renderHabitsTab(); return; }
-    var { error } = await sb.from('client_habits').delete().eq('id', habit.id);
-    if (error) { alert('Could not remove habit: ' + error.message); return; }
+    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); return; }
+    if (e.target.closest('[data-habit-del-no]')) { habitsUi.confirmDel = null; renderHabitsTab(); return; }
+    // Remove asks inline (no browser confirm() popup — those can be
+    // silently blocked, which made the button look dead).
+    var ask = e.target.closest('[data-habit-del]');
+    if (ask) {
+      var h0 = portalData.habits[parseInt(ask.getAttribute('data-habit-del'),10)];
+      if (h0) { habitsUi.confirmDel = h0.id; renderHabitsTab(); }
+      return;
+    }
+    var del = e.target.closest('[data-habit-del-yes]'); if (!del || !isCoachUser) return;
+    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del-yes'),10)]; if (!habit) return;
+    del.disabled = true; del.textContent = 'Removing…';
+    var res = await sb.from('client_habits').delete().eq('id', habit.id).select('id');
+    if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it (check the "coach can delete" policy in scripts/client_habits.sql).' };
+    if (res.error) { del.disabled = false; del.textContent = 'Remove'; alert('Could not remove habit: ' + res.error.message); return; }
+    habitsUi.editing = null; habitsUi.confirmDel = null;
     portalData.habits = portalData.habits.filter(function(h){ return h.id !== habit.id; });
     renderCoreList(); renderHabitsTab();
   });
 
   $('cpHabitsGrid').addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; renderHabitsTab(); }
+    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); }
   });
 
   $('cpHabitsGrid').addEventListener('submit', async function(e){
@@ -2001,13 +2013,6 @@
     closeModal(t.getAttribute('data-close-modal'));
   });
 
-  // Client ids an "assign to every client" action should reach.
-  function rosterClientIds(){
-    var ids = roster.map(function(r){ return r.id; });
-    if (viewingClientId && ids.indexOf(viewingClientId) === -1) ids.push(viewingClientId);
-    return ids;
-  }
-
   // ─── Homework tab ──────────────────────────────────────────────────────
   var hwOpenId = null;       // assignment shown in the detail sheet
   var hwEditingId = null;    // assignment being edited in the coach form
@@ -2144,7 +2149,7 @@
   // stored in client_assignments with kind 'todo' (scripts/client_todos.sql).
   // The client ticks them off. The coach can turn one into a habit: the
   // to-do is marked complete and a client_habits row is added in its core.
-  var todoUi = { showAllDone: false, busy: {} };
+  var todoUi = { showAllDone: false, busy: {}, confirmDel: null };
   var TODO_DONE_PREVIEW = 5;
 
   function todoHabit(t){
@@ -2160,7 +2165,9 @@
       + (t.dueDate && !done ? dueChip(t) : '')
       + (habit ? '<span class="cp-todo-habit-tag" title="Now tracked on the Habits tab">↻ Now a habit</span>' : '');
     var actions = '';
-    if (isCoachUser) {
+    if (isCoachUser && todoUi.confirmDel === String(t.id)) {
+      actions = '<span class="cp-todo-confirm">Delete?<button type="button" class="cp-todo-confirm-yes" data-todo-del-yes="'+esc(t.id)+'">Delete</button><button type="button" class="cp-todo-confirm-no" data-todo-del-no>Cancel</button></span>';
+    } else if (isCoachUser) {
       if (!habit) actions += '<button type="button" class="cp-todo-habit-btn" data-todo-habit="'+esc(t.id)+'"'+(busy?' disabled':'')+' title="Marks this to-do complete and adds it to the client’s habits">'+(busy ? 'Saving…' : 'Make it a habit')+'</button>';
       actions += '<button type="button" class="cp-todo-del" data-todo-del="'+esc(t.id)+'" aria-label="Delete to-do: '+esc(t.title)+'">×</button>';
     }
@@ -2248,12 +2255,17 @@
       return;
     }
 
-    var del = e.target.closest('[data-todo-del]');
+    if (e.target.closest('[data-todo-del-no]')) { todoUi.confirmDel = null; renderTodoList(); return; }
+    var ask = e.target.closest('[data-todo-del]');
+    if (ask && isCoachUser) { todoUi.confirmDel = ask.getAttribute('data-todo-del'); renderTodoList(); return; }
+    var del = e.target.closest('[data-todo-del-yes]');
     if (del && isCoachUser) {
-      var d = findTodo(del.getAttribute('data-todo-del')); if (!d) return;
-      if (!confirm('Delete "' + d.title + '"?')) return;
-      var res = await sb.from('client_assignments').delete().eq('id', d.id);
-      if (res.error) { alert('Could not delete: ' + res.error.message); return; }
+      var d = findTodo(del.getAttribute('data-todo-del-yes')); if (!d) return;
+      del.disabled = true; del.textContent = 'Deleting…';
+      var res = await sb.from('client_assignments').delete().eq('id', d.id).select('id');
+      if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it.' };
+      todoUi.confirmDel = null;
+      if (res.error) { renderTodoList(); alert('Could not delete: ' + res.error.message); return; }
       portalData.assignments = portalData.assignments.filter(function(x){ return x.id !== d.id; });
       renderHomeworkTab();
     }
@@ -2274,12 +2286,12 @@
     $('cpTodoAddBtn').hidden = show || !isCoachUser;
     $('cpTodoAddInput').value = '';
     $('cpTodoAddDue').value = '';
-    $('cpTodoAllClients').checked = false;
     $('cpTodoAddCores').innerHTML = todoCorePicker();
     if (show) $('cpTodoAddInput').focus();
   }
   $('cpTodoAddBtn').addEventListener('click', function(){ showTodoAddForm(true); });
   $('cpTodoAddCancel').addEventListener('click', function(){ showTodoAddForm(false); });
+  $('cpTodoAddClose').addEventListener('click', function(){ showTodoAddForm(false); });
   $('cpTodoAddForm').addEventListener('keydown', function(e){ if (e.key === 'Escape') showTodoAddForm(false); });
   $('cpTodoAddForm').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -2288,7 +2300,7 @@
     if (!title) { $('cpTodoAddInput').focus(); return; }
     var coreEl = $('cpTodoAddCores').querySelector('input[type=radio]:checked');
     var clientId = viewingClientId;
-    var ids = $('cpTodoAllClients').checked ? rosterClientIds() : [clientId];
+    var ids = [clientId];
     var fields = { kind: 'todo', title: title, core_key: coreEl ? coreEl.value : '', due_date: $('cpTodoAddDue').value || null, status: 'assigned' };
     setLoading($('cpTodoAddSave'), true, 'Adding…');
     var res = await sb.from('client_assignments').insert(ids.map(function(id){ return Object.assign({ client_id: id }, fields); })).select();
@@ -2706,8 +2718,6 @@
     $('cpHwInstructions').value = a ? a.instructions : '';
     $('cpHwCore').value = a ? a.coreKey : '';
     $('cpHwDue').value = a ? a.dueDate : '';
-    $('cpHwAllClients').checked = false;
-    $('cpHwAllWrap').hidden = !!a;
     setHwFormView('write');
     openModal('cpHwFormOverlay');
     $('cpHwTitle').focus();
@@ -2760,7 +2770,7 @@
         libId = lib.data.id;
         if (hwLibrary) hwLibrary.push(lib.data);
       }
-      var ids = $('cpHwAllClients').checked ? rosterClientIds() : [clientId];
+      var ids = [clientId];
       res = await sb.from('client_assignments').insert(ids.map(function(id){
         var row = Object.assign({ client_id: id, status: 'assigned' }, fields);
         if (libId) row.library_id = libId;
