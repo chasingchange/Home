@@ -806,6 +806,12 @@
       .cp-roster-edit:hover{color:rgba(7,31,53,.75);}
       .cp-roster-status{font:inherit;font-size:12px;font-weight:700;color:rgba(7,31,53,.75);background:#fff;border:1px solid rgba(7,31,53,.15);border-radius:8px;padding:5px 6px;cursor:pointer;max-width:100%;}
       .cp-roster-row.is-inactive{opacity:.55;}
+      .cp-roster-invite{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px;font-weight:700;color:#b26a00;}
+      .cp-roster-invite button{all:unset;cursor:pointer;color:rgba(7,31,53,.55);text-decoration:underline;text-underline-offset:3px;}
+      .cp-roster-invite button:hover{color:rgba(7,31,53,.85);}
+      .cp-roster-invite button[disabled]{cursor:default;opacity:.5;}
+      .cp-invite-note{margin:0 0 16px;font-size:14px;line-height:1.5;color:#3d9b37;font-weight:700;}
+      .cp-invite-note[hidden]{display:none;}
       .cp-coach-aside{display:grid;gap:20px;}
       .cp-flag-list{margin-top:12px;display:grid;}
       .cp-flag-row{padding:12px 0;border-top:1px solid rgba(7,31,53,.08);}
@@ -1337,6 +1343,38 @@
         </div>
 
         <!-- CALENDAR ADD EVENT FORM -->
+        <!-- INVITE CLIENT (coach) — sends the portal invitation email -->
+        <div class="cp-modal-overlay" id="cpInviteOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-close-modal="cpInviteOverlay"></div>
+          <div class="cp-goal-form-sheet">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title">Invite a client</p>
+            <p class="cp-goal-form-subtitle">They'll get an email with a link to set a password and open their portal.</p>
+            <div class="cp-goal-form-field">
+              <label for="cpInviteName">Full name</label>
+              <input type="text" id="cpInviteName" class="cp-goal-form-input" placeholder="e.g. Jordan Smith" maxlength="120" autocomplete="off" />
+            </div>
+            <div class="cp-goal-form-field">
+              <label for="cpInviteEmail">Email</label>
+              <input type="email" id="cpInviteEmail" class="cp-goal-form-input" placeholder="client@example.com" autocomplete="off" />
+            </div>
+            <div class="cp-goal-form-field">
+              <label for="cpInviteStatus">Status</label>
+              <select id="cpInviteStatus" class="cp-goal-form-input">
+                <option selected>Onboarding</option>
+                <option>Core Client</option>
+                <option>College Client</option>
+              </select>
+            </div>
+            <p class="cp-invite-note" id="cpInviteNote" hidden></p>
+            <div class="cp-auth-error" id="cpInviteError"></div>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpInviteOverlay">Close</button>
+              <button type="button" class="cp-goal-form-save" id="cpInviteSend">Send invite</button>
+            </div>
+          </div>
+        </div>
+
         <div class="cp-modal-overlay" id="cpCalFormOverlay" hidden>
           <div class="cp-goal-form-backdrop" data-close-modal="cpCalFormOverlay"></div>
           <div class="cp-goal-form-sheet">
@@ -1492,6 +1530,7 @@
                 <a class="cp-btn-sm" href="../assignment-library/" style="text-decoration:none;">Assignment library</a>
                 <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
                 <button type="button" class="cp-btn-sm" id="cpFormOpenBtn">Check-in form</button>
+                <button type="button" class="cp-btn-sm" id="cpInviteOpenBtn">+ Invite client</button>
               </div>
             </div>
             <div class="cp-roster-list" id="cpRosterList"></div>
