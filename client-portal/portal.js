@@ -566,7 +566,7 @@
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
-      loadRoster().then(openDeepLinkedClient);
+      loadRoster().then(openDeepLinkedClient).then(openDeepLinkedTool);
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
@@ -2488,7 +2488,10 @@
   // Cover image across the top of the assignment, like a Notion page cover
   // (client_assignments.cover_url, copied from the library template).
   function hwCoverHtml(url){
-    return /^https:\/\//i.test(url || '') ? '<div class="cp-hw-cover"><img src="' + esc(url) + '" alt="" /></div>' : '';
+    // A trailing #y=<0-100> is the focus the coach dragged to in the library.
+    var m = String(url || '').match(/^(.*)#y=(\d{1,3})$/);
+    var src = m ? m[1] : String(url || ''), y = m ? Math.min(100, +m[2]) : 50;
+    return /^https:\/\//i.test(src) ? '<div class="cp-hw-cover"><img src="' + esc(src) + '" alt="" style="object-position:50% ' + y + '%" /></div>' : '';
   }
 
   function renderHwSheet(){
@@ -3867,7 +3870,16 @@
     if (label) label.textContent = f.label || 'Untitled question';
   }
 
-  $('cpFormOpenBtn').addEventListener('click', openFormEditor);
+  // ?open=checkin-form (the "Form" switch on the check-in notes page)
+  // opens this editor once the coach dashboard is up.
+  function openDeepLinkedTool(){
+    var q = new URLSearchParams(window.location.search);
+    if (q.get('open') !== 'checkin-form') return;
+    q.delete('open');
+    var search = q.toString() ? '?' + q.toString() : '';
+    try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
+    if (isCoachUser && state.view === 'coach') openFormEditor();
+  }
   $('cpFormOverlay').addEventListener('click', function(e){ if (e.target.closest('[data-close-form]')) closeFormEditor(); });
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-fm-mode]'), function(b){

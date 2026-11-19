@@ -24,6 +24,10 @@
       .cn-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;font-size:clamp(30px,5vw,44px);margin:12px 0 0;line-height:1.06;}
       .cn-lede{margin:12px 0 0;font-size:16px;line-height:1.6;color:rgba(7,31,53,.6);max-width:680px;}
       .cn-head{padding-bottom:24px;}
+      .cn-switch{display:inline-flex;gap:2px;margin-top:16px;padding:3px;border-radius:999px;background:rgba(7,31,53,.07);}
+      .cn-switch>*{padding:7px 18px;border-radius:999px;font-size:13px;font-weight:700;color:rgba(7,31,53,.6);text-decoration:none;}
+      .cn-switch>a:hover{color:#071f35;}
+      .cn-switch>.is-active{background:#fff;color:#071f35;box-shadow:0 1px 3px rgba(7,31,53,.12);}
 
       .cn-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border-radius:980px;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;color:#071f35;background:rgba(7,31,53,.07);white-space:nowrap;}
       .cn-btn:hover{background:rgba(7,31,53,.12);}
@@ -106,6 +110,7 @@
         <header class="cn-head">
           <p class="cn-kicker">Coach · Master database</p>
           <h1 class="cn-h1">Check-in Notes</h1>
+          <nav class="cn-switch" aria-label="Check-ins"><span class="is-active" aria-current="page">Notes</span><a href="../client-portal/?open=checkin-form">Form</a></nav>
           <p class="cn-lede">Your side of every client's weekly check-in. Write their wins and your objectives here, before or after they fill out their form, and tick off going over their routine and booking their next meeting. Everything saves as you type and shows up on that week's check-in in their portal.</p>
         </header>
 
