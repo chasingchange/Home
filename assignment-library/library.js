@@ -28,12 +28,12 @@
   // Editor sections, in order. `instructions` (TO DO) is the original column,
   // so homework sent before sections existed still reads fine.
   var SECTIONS = [
-    { key:'relevance',      label:'Relevance',      hint:'Why this matters for the client.' },
-    { key:'outcome',        label:'Outcome',        hint:'What they walk away with.' },
-    { key:'instructions',   label:'To Do',          hint:'The steps. [ ] makes a checkbox.', main:true },
-    { key:'implementation', label:'Implementation', hint:'How they put it to use.' },
-    { key:'alternative',    label:'Alternative',    hint:'Another way to do it.' },
-    { key:'examples',       label:'Examples',       hint:'Examples, links, references.' }
+    { key:'relevance',      label:'Relevance' },
+    { key:'outcome',        label:'Outcome' },
+    { key:'instructions',   label:'To Do', main:true },
+    { key:'implementation', label:'Implementation' },
+    { key:'alternative',    label:'Alternative' },
+    { key:'examples',       label:'Examples' }
   ];
   var SECTION_KEYS = SECTIONS.map(function(x){ return x.key; });
   var SECTION_ALIASES = {
@@ -93,7 +93,7 @@
   }
   // "B.1 Journal" / "[B.1] Journal" / "B.1 - Journal" → { title:'Journal', code:{…} }.
   // The code is shown on its own, so it shouldn't repeat in the title.
-  var TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]\s*(\d{1,2})\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
+  var TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]?\s*(\d{1,2})(?![A-Za-z0-9])\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
   function splitTitleCode(raw){
     var title = String(raw || '').trim();
     var m = title.match(TITLE_CODE_RE);
@@ -201,11 +201,30 @@
       throw res[0].error;
     }
     items = res[0].data || [];
+    await cleanTitleCodes();
     clients = (res[1].data || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; }).map(function(p){
       return { id: p.id, name: p.preferred_name || p.full_name || p.email || 'Client', email: p.email || '' };
     }).sort(function(a, b){ return a.name.localeCompare(b.name); });
     uses = res[2].data || [];
     renderAll();
+  }
+
+  // Titles imported as "B1 Journal" / "B.1 - Journal": move the code out of
+  // the title (filling core/week if they're empty) and save the clean title.
+  async function cleanTitleCodes(){
+    var fixes = [];
+    items.forEach(function(i){
+      var sp = splitTitleCode(i.title);
+      if (!sp.code) return;
+      var patch = { title: sp.title };
+      if (!i.core_key && sp.code.core_key) patch.core_key = sp.code.core_key;
+      if (i.week == null) patch.week = sp.code.week;
+      Object.assign(i, patch);
+      fixes.push({ id: i.id, patch: patch });
+    });
+    for (var n = 0; n < fixes.length; n++) {
+      await sb.from('assignment_library').update(fixes[n].patch).eq('id', fixes[n].id);
+    }
   }
 
   async function reloadItems(){
@@ -241,33 +260,23 @@
   function renderWeeks(){
     var showArchived = $('alShowArchived').checked;
     var pool = items.filter(function(i){ return !!i.archived_at === showArchived; });
-    var counts = {}, none = 0, max = 0;
-    pool.forEach(function(i){
-      if (i.week == null) { none++; return; }
-      counts[i.week] = (counts[i.week] || 0) + 1;
-      if (i.week > max) max = i.week;
-    });
-    // Show every week from 1 up to the highest used, so gaps are visible.
+    var none = 0, max = 0;
+    pool.forEach(function(i){ if (i.week == null) none++; else if (i.week > max) max = i.week; });
     var weeks = [];
     for (var w = 1; w <= max; w++) weeks.push(w);
     if (weekFilter && weekFilter !== 'none' && weeks.indexOf(Number(weekFilter)) === -1) weekFilter = '';
     if (weekFilter === 'none' && !none) weekFilter = '';
-    var pill = function(val, label, n){
-      return '<button type="button" class="al-week'+(weekFilter === val ? ' is-active' : '')+'" data-week="'+val+'" aria-pressed="'+(weekFilter === val)+'">'
-        + label + (n != null ? '<span class="al-week-n">'+n+'</span>' : '') + '</button>';
-    };
-    $('alWeeks').innerHTML = '<span class="al-weeks-label">Week</span>'
-      + pill('', 'All', pool.length)
-      + weeks.map(function(w){ return pill(String(w), 'Week ' + w, counts[w] || 0); }).join('')
-      + (none ? pill('none', 'No week', none) : '');
-    $('alWeeks').hidden = !max;
+    $('alWeekFilter').innerHTML = '<option value="">All weeks</option>'
+      + weeks.map(function(w){ return '<option value="'+w+'">Week '+w+'</option>'; }).join('')
+      + (none ? '<option value="none">No week</option>' : '');
+    $('alWeekFilter').value = weekFilter;
+    $('alWeekFilter').hidden = !max;
   }
 
-  $('alWeeks').addEventListener('click', function(e){
-    var b = e.target.closest('[data-week]'); if (!b) return;
-    weekFilter = b.getAttribute('data-week');
+  $('alWeekFilter').addEventListener('change', function(){
+    weekFilter = this.value;
     lsSet(WEEK_KEY, weekFilter);
-    renderWeeks(); renderList();
+    renderList();
   });
 
   function visibleItems(){
@@ -318,6 +327,7 @@
         return '<div class="al-row'+(selected[i.id] ? ' is-selected' : '')+(i.archived_at ? ' is-archived' : '')+'" data-id="'+i.id+'">'
           + '<input type="checkbox" data-sel="'+i.id+'"'+(selected[i.id] ? ' checked' : '')+' aria-label="Select '+esc(i.title)+'" />'
           + '<div class="al-col-code">'+(itemCode(i) ? '<span class="al-code">'+esc(itemCode(i))+'</span>' : '<span class="al-code al-code--none">—</span>')+'</div>'
+          + '<div class="al-col-week al-row-meta">'+(i.week != null ? 'Week ' + i.week : '—')+'</div>'
           + '<div style="min-width:0;"><p class="al-row-title">'+esc(i.title)
           + (i.source === 'notion' || i.notion_page_id ? '<span class="al-src">Notion</span>' : '') + '</p>'
           + (sub ? '<p class="al-row-sub">'+esc(sub)+'</p>' : '')
@@ -409,7 +419,7 @@
   $('alEdSections').innerHTML = SECTIONS.map(function(x){
     var id = x.key === 'instructions' ? 'alEdInstructions' : 'alEd_' + x.key;
     return '<section class="al-ed-section'+(x.main ? ' al-ed-section--main' : '')+'">'
-      + '<h3 class="al-ed-section-h"><label for="'+id+'">'+esc(x.label)+'</label><small>'+esc(x.hint)+'</small></h3>'
+      + '<h3 class="al-ed-section-h"><label for="'+id+'">'+esc(x.label)+'</label></h3>'
       + '<textarea class="al-input" id="'+id+'" data-section="'+x.key+'"></textarea></section>';
   }).join('');
   function secEl(k){ return $(k === 'instructions' ? 'alEdInstructions' : 'alEd_' + k); }

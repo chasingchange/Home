@@ -158,7 +158,7 @@ function codeFrom(raw: string): { core_key: string; week: number } | null {
 
 // Notion titles often lead with the code ("B.1 Journal", "[B.1] Journal",
 // "B.1 - Journal"). The library shows the code on its own, so split it off.
-const TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]\s*(\d{1,2})\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
+const TITLE_CODE_RE = /^\s*[\[(]?\s*([BMASCL])\s*[.\-]?\s*(\d{1,2})(?![A-Za-z0-9])\s*[\])]?\s*(?:[-–—:·|.)]\s*)?(?=\S)/i;
 
 function splitTitleCode(raw: string): { title: string; code: { core_key: string; week: number } | null } {
   const title = String(raw ?? "").trim();
