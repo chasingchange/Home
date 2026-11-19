@@ -585,7 +585,8 @@
       id: a.id, title: a.title, instructions: a.instructions || '', coreKey: a.core_key || '', coverUrl: a.cover_url || '',
       dueDate: a.due_date || '', status: a.status || 'assigned', clientNote: a.client_note || '',
       coachFeedback: a.coach_feedback || '', files: a.files || [], submittedAt: a.submitted_at,
-      reviewedAt: a.reviewed_at, createdAt: a.created_at
+      reviewedAt: a.reviewed_at, createdAt: a.created_at,
+      kind: a.kind === 'todo' ? 'todo' : 'assignment', habitId: a.habit_id || null
     };
   }
 
@@ -2071,28 +2072,39 @@
       + '</div>';
   }
 
+  // Master assignments (cards with instructions, submission, review) vs
+  // general to-dos (kind 'todo': a one-line checklist item).
+  function isTodo(a){ return a.kind === 'todo'; }
+  function hwAssignments(){ return (portalData.assignments || []).filter(function(a){ return !isTodo(a); }); }
+  function hwTodos(){ return (portalData.assignments || []).filter(isTodo); }
+
   function renderHomeworkTab(){
     if (!portalData) return;
-    var list = portalData.assignments || [];
+    var list = hwAssignments();
+    var todos = hwTodos();
     $('cpHwAddBtn').hidden = !isCoachUser;
+    $('cpTodoAddBtn').hidden = !isCoachUser || !$('cpTodoAddForm').hidden;
 
     var open = list.filter(isHwOpen).sort(sortByDue);
     var submitted = list.filter(isHwAwaitingCoach).sort(sortByDue);
     var complete = list.filter(function(a){ return a.status === 'complete'; });
+    var todosLeft = todos.filter(function(t){ return t.status !== 'complete'; }).length;
 
-    $('cpHwSummary').textContent = list.length
-      ? open.length + ' open · ' + submitted.length + ' submitted · ' + complete.length + ' complete'
-      : '';
-    setBadge('cpTabBadgeHomework', isCoachUser ? submitted.length : open.length);
+    var sum = [];
+    if (todos.length) sum.push(todosLeft + ' of ' + todos.length + ' to-dos left');
+    if (list.length) sum.push(open.length + ' open · ' + submitted.length + ' submitted · ' + complete.length + ' complete');
+    $('cpHwSummary').textContent = sum.join(' · ');
+    setBadge('cpTabBadgeHomework', isCoachUser ? submitted.length : open.length + todosLeft);
+    renderTodoList();
 
     var groups = [
-      { label: isCoachUser ? 'Client is working on' : 'To do', items: open },
+      { label: isCoachUser ? 'Assignments · client is working on' : 'Assignments to do', items: open },
       { label: isCoachUser ? 'Waiting on your review' : 'Submitted · waiting on your coach', items: submitted },
       { label: 'Complete', items: complete }
     ];
     var h = '';
-    if (!list.length) {
-      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'No assignments yet — create one with “New assignment”.' : 'Nothing to do yet. Your coach will add assignments here.') + '</div>';
+    if (!list.length && !todos.length) {
+      h = '<div class="cp-goal-empty">' + (isCoachUser ? 'Nothing assigned yet — add a quick “To-do” or a full “New assignment”.' : 'Nothing to do yet. Your coach will add to-dos and assignments here.') + '</div>';
     }
     groups.forEach(function(g){
       if (!g.items.length) return;
@@ -2107,7 +2119,7 @@
     var open = list.filter(isHwOpen).sort(sortByDue);
     var submitted = list.filter(isHwAwaitingCoach).length;
     $('cpHwCardTitle').textContent = open.length
-      ? open.length + ' open assignment' + (open.length === 1 ? '' : 's')
+      ? open.length + ' open to-do' + (open.length === 1 ? '' : 's')
       : (list.length ? 'All caught up' : 'Nothing assigned yet');
     $('cpHwCardMeta').textContent = submitted ? submitted + ' awaiting review' : '';
     var h = '';
@@ -2126,6 +2138,174 @@
   }
   $('cpHwGroups').addEventListener('click', onHwCardActivate);
   $('cpHwGroups').addEventListener('keydown', onHwCardActivate);
+
+  // ─── General to-dos ────────────────────────────────────────────────────
+  // Quick one-liners ("Read 10 pages") with an optional core and due date,
+  // stored in client_assignments with kind 'todo' (scripts/client_todos.sql).
+  // The client ticks them off. The coach can turn one into a habit: the
+  // to-do is marked complete and a client_habits row is added in its core.
+  var todoUi = { showAllDone: false, busy: {} };
+  var TODO_DONE_PREVIEW = 5;
+
+  function todoHabit(t){
+    return t.habitId ? (portalData.habits || []).filter(function(h){ return String(h.id) === String(t.habitId); })[0] || null : null;
+  }
+
+  function todoRowHtml(t){
+    var done = t.status === 'complete';
+    var canCheck = isOwnPortal() || isCoachUser;
+    var habit = todoHabit(t);
+    var busy = !!todoUi.busy[t.id];
+    var tags = (t.coreKey ? coreChip(t.coreKey) : '<span class="cp-todo-general">General</span>')
+      + (t.dueDate && !done ? dueChip(t) : '')
+      + (habit ? '<span class="cp-todo-habit-tag" title="Now tracked on the Habits tab">↻ Now a habit</span>' : '');
+    var actions = '';
+    if (isCoachUser) {
+      if (!habit) actions += '<button type="button" class="cp-todo-habit-btn" data-todo-habit="'+esc(t.id)+'"'+(busy?' disabled':'')+' title="Marks this to-do complete and adds it to the client’s habits">'+(busy ? 'Saving…' : 'Make it a habit')+'</button>';
+      actions += '<button type="button" class="cp-todo-del" data-todo-del="'+esc(t.id)+'" aria-label="Delete to-do: '+esc(t.title)+'">×</button>';
+    }
+    return '<div class="cp-todo-row'+(done ? ' is-done' : '')+'">'
+      + '<button type="button" class="cp-task-check'+(done ? ' is-done' : '')+'" data-todo-check="'+esc(t.id)+'" role="checkbox" aria-checked="'+done+'" aria-label="'+esc(t.title)+'"'+(canCheck && !busy ? '' : ' disabled')+'>'+(done ? '✓' : '')+'</button>'
+      + '<span class="cp-todo-label">'+esc(t.title)+'</span>'
+      + '<span class="cp-todo-tags">'+tags+'</span>'
+      + (actions ? '<span class="cp-todo-actions">'+actions+'</span>' : '')
+      + '</div>';
+  }
+
+  function renderTodoList(){
+    var todos = hwTodos();
+    if (!todos.length) { $('cpTodoList').innerHTML = ''; return; }
+    var open = todos.filter(function(t){ return t.status !== 'complete'; }).sort(sortByDue);
+    var done = todos.filter(function(t){ return t.status === 'complete'; });
+    var shownDone = todoUi.showAllDone ? done : done.slice(0, TODO_DONE_PREVIEW);
+    var h = '<p class="cp-goals-section-label">To-dos</p><div class="cp-todo-list">';
+    h += open.map(todoRowHtml).join('');
+    if (!open.length) h += '<div class="cp-todo-row"><span class="cp-todo-label" style="color:rgba(7,31,53,.45);font-weight:600;">All done.</span></div>';
+    h += shownDone.map(todoRowHtml).join('');
+    if (done.length > TODO_DONE_PREVIEW) {
+      h += '<button type="button" class="cp-todo-more" data-todo-more>'+(todoUi.showAllDone ? 'Show fewer' : 'Show all '+done.length+' completed')+'</button>';
+    }
+    $('cpTodoList').innerHTML = h + '</div>';
+  }
+
+  function findTodo(id){ return hwTodos().filter(function(t){ return t.id === id; })[0] || null; }
+
+  function replaceAssignment(row){
+    var m = mapAssignment(row);
+    portalData.assignments = portalData.assignments.map(function(x){ return x.id === m.id ? m : x; });
+    return m;
+  }
+
+  async function makeTodoHabit(t){
+    var clientId = viewingClientId;
+    var label = t.title.trim().slice(0, 120);
+    var existing = (portalData.habits || []).filter(function(h){ return h.label.toLowerCase() === label.toLowerCase(); })[0];
+    var habit = existing;
+    if (!habit) {
+      var ins = await sb.from('client_habits')
+        .insert({ client_id: clientId, label: label, core_key: t.coreKey || '', done: false, position: portalData.habits.length })
+        .select().single();
+      if (ins.error) throw new Error('Could not add the habit: ' + ins.error.message);
+      habit = { id:ins.data.id, label:ins.data.label, origLabel:ins.data.label, coreKey:ins.data.core_key||'', done:ins.data.done };
+    }
+    var patch = { habit_id: habit.id };
+    if (t.status !== 'complete') patch.status = 'complete';
+    var up = await sb.from('client_assignments').update(patch).eq('id', t.id).select().single();
+    if (up.error) {
+      if (!existing) await sb.from('client_habits').delete().eq('id', habit.id);
+      throw new Error('Could not update the to-do: ' + up.error.message);
+    }
+    if (viewingClientId !== clientId) return;
+    if (!existing) portalData.habits.push(habit);
+    replaceAssignment(up.data);
+    renderCoreList(); renderHabitsTab();
+  }
+
+  $('cpTodoList').addEventListener('click', async function(e){
+    if (!portalData) return;
+    if (e.target.closest('[data-todo-more]')) { todoUi.showAllDone = !todoUi.showAllDone; renderTodoList(); return; }
+
+    var check = e.target.closest('[data-todo-check]');
+    if (check && !check.disabled) {
+      var t = findTodo(check.getAttribute('data-todo-check')); if (!t) return;
+      var prev = t.status;
+      t.status = prev === 'complete' ? 'assigned' : 'complete';
+      renderHomeworkTab();
+      var r = await sb.from('client_assignments').update({ status: t.status }).eq('id', t.id).select().single();
+      if (r.error) { t.status = prev; renderHomeworkTab(); alert('Could not update the to-do: ' + r.error.message); return; }
+      replaceAssignment(r.data); renderHomeworkTab();
+      return;
+    }
+
+    var hb = e.target.closest('[data-todo-habit]');
+    if (hb && !hb.disabled && isCoachUser) {
+      var todo = findTodo(hb.getAttribute('data-todo-habit')); if (!todo) return;
+      todoUi.busy[todo.id] = true; renderTodoList();
+      try { await makeTodoHabit(todo); }
+      catch (err) { alert(err.message); }
+      delete todoUi.busy[todo.id];
+      renderHomeworkTab();
+      return;
+    }
+
+    var del = e.target.closest('[data-todo-del]');
+    if (del && isCoachUser) {
+      var d = findTodo(del.getAttribute('data-todo-del')); if (!d) return;
+      if (!confirm('Delete "' + d.title + '"?')) return;
+      var res = await sb.from('client_assignments').delete().eq('id', d.id);
+      if (res.error) { alert('Could not delete: ' + res.error.message); return; }
+      portalData.assignments = portalData.assignments.filter(function(x){ return x.id !== d.id; });
+      renderHomeworkTab();
+    }
+  });
+
+  // Core picker for a new to-do: General (no core) or one of the six.
+  function todoCorePicker(){
+    return '<input type="radio" name="cpTodoCore" id="cpTodoCore_general" value="" class="cp-goal-core-opt" checked>'
+      + '<label for="cpTodoCore_general" style="--core:rgba(7,31,53,.35)"><span class="cp-dot"></span>General</label>'
+      + CORE_DEFS.map(function(c){
+        return '<input type="radio" name="cpTodoCore" id="cpTodoCore_'+c.key+'" value="'+c.key+'" class="cp-goal-core-opt">'
+          + '<label for="cpTodoCore_'+c.key+'" style="--core:'+c.color+'"><span class="cp-dot"></span>'+c.label+'</label>';
+      }).join('');
+  }
+
+  function showTodoAddForm(show){
+    $('cpTodoAddForm').hidden = !show;
+    $('cpTodoAddBtn').hidden = show || !isCoachUser;
+    $('cpTodoAddInput').value = '';
+    $('cpTodoAddDue').value = '';
+    $('cpTodoAllClients').checked = false;
+    $('cpTodoAddCores').innerHTML = todoCorePicker();
+    if (show) $('cpTodoAddInput').focus();
+  }
+  $('cpTodoAddBtn').addEventListener('click', function(){ showTodoAddForm(true); });
+  $('cpTodoAddCancel').addEventListener('click', function(){ showTodoAddForm(false); });
+  $('cpTodoAddForm').addEventListener('keydown', function(e){ if (e.key === 'Escape') showTodoAddForm(false); });
+  $('cpTodoAddForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!portalData || !isCoachUser || !viewingClientId) return;
+    var title = $('cpTodoAddInput').value.trim();
+    if (!title) { $('cpTodoAddInput').focus(); return; }
+    var coreEl = $('cpTodoAddCores').querySelector('input[type=radio]:checked');
+    var clientId = viewingClientId;
+    var ids = $('cpTodoAllClients').checked ? rosterClientIds() : [clientId];
+    var fields = { kind: 'todo', title: title, core_key: coreEl ? coreEl.value : '', due_date: $('cpTodoAddDue').value || null, status: 'assigned' };
+    setLoading($('cpTodoAddSave'), true, 'Adding…');
+    var res = await sb.from('client_assignments').insert(ids.map(function(id){ return Object.assign({ client_id: id }, fields); })).select();
+    setLoading($('cpTodoAddSave'), false, 'Add to-do');
+    if (res.error) {
+      alert('Could not add the to-do: ' + res.error.message
+        + (/kind|habit_id/.test(res.error.message) ? '\n\nRun scripts/client_todos.sql in Supabase first.' : ''));
+      return;
+    }
+    if (viewingClientId !== clientId) return;
+    var mine = (res.data || []).filter(function(r){ return r.client_id === clientId; }).map(mapAssignment);
+    portalData.assignments = mine.concat(portalData.assignments);
+    // Keep the form open for adding several in a row.
+    $('cpTodoAddInput').value = '';
+    $('cpTodoAddInput').focus();
+    renderHomeworkTab();
+  });
 
   function currentHw(){
     if (!portalData || !hwOpenId) return null;

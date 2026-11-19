@@ -127,6 +127,31 @@
       .cp-habit-remove:focus-visible,.cp-habit-add-cancel:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
       @media(max-width:420px){.cp-habit-grid{grid-template-columns:1fr;}}
 
+      /* ── General to-dos (To Do's tab) ────────────────────────── */
+      .cp-todo-head-btns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+      .cp-todo-form-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+      .cp-todo-list{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:4px 18px;margin-bottom:32px;}
+      .cp-todo-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);flex-wrap:wrap;}
+      .cp-todo-row:first-child{border-top:0;}
+      .cp-todo-row .cp-task-check{width:22px;height:22px;border-radius:7px;font-size:13px;}
+      .cp-todo-row .cp-task-check:focus-visible{outline:2px solid #071f35;outline-offset:2px;}
+      .cp-todo-row .cp-task-check[disabled]{cursor:default;opacity:.6;}
+      .cp-todo-label{flex:1 1 160px;min-width:0;font-size:15px;font-weight:600;color:#071f35;overflow-wrap:anywhere;}
+      .cp-todo-row.is-done .cp-todo-label{text-decoration:line-through;color:rgba(7,31,53,.45);}
+      .cp-todo-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+      .cp-todo-general{display:inline-flex;align-items:center;padding:4px 10px;border-radius:99px;background:rgba(7,31,53,.06);font-size:12px;font-weight:800;color:rgba(7,31,53,.55);white-space:nowrap;}
+      .cp-todo-habit-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:rgba(119,215,112,.18);font-size:12px;font-weight:800;color:#2f6b2b;white-space:nowrap;}
+      .cp-todo-actions{display:flex;align-items:center;gap:4px;margin-left:auto;}
+      .cp-todo-habit-btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:#071f35;padding:5px 12px;border-radius:99px;border:1px solid rgba(7,31,53,.18);white-space:nowrap;transition:background-color .15s,color .15s;}
+      .cp-todo-habit-btn:hover{background:#071f35;color:#fff;border-color:#071f35;}
+      .cp-todo-habit-btn[disabled]{opacity:.5;cursor:default;}
+      .cp-todo-del{all:unset;cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-size:18px;color:rgba(7,31,53,.35);}
+      .cp-todo-del:hover{color:#c01a38;background:rgba(192,26,56,.08);}
+      .cp-todo-habit-btn:focus-visible,.cp-todo-del:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
+      .cp-todo-more{all:unset;cursor:pointer;display:block;padding:12px 0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);border-top:1px solid rgba(7,31,53,.08);width:100%;}
+      .cp-todo-more:hover{color:#071f35;}
+      @media(max-width:600px){.cp-todo-row{gap:8px 12px;}.cp-todo-label{flex:1 1 calc(100% - 40px);}.cp-todo-tags{margin-left:34px;}}
+
       /* Goal add form — fixed overlay on #cpGoalFormOverlay itself */
       #cpGoalFormOverlay{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
       #cpGoalFormOverlay[hidden]{display:none !important;}
@@ -1177,8 +1202,26 @@
         <div class="cp-goals-view" id="cpHomeworkView" hidden>
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">To Do's</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
-            <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
+            <div class="cp-todo-head-btns">
+              <button type="button" class="cp-btn-sm" id="cpTodoAddBtn" hidden>+ To-do</button>
+              <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
+            </div>
           </div>
+          <form class="cp-habit-add-row" id="cpTodoAddForm" hidden>
+            <input type="text" class="cp-goal-form-input" id="cpTodoAddInput" placeholder="e.g. Read 10 pages" maxlength="140" aria-label="New to-do" />
+            <p class="cp-habit-form-label">Core</p>
+            <div class="cp-goal-core-grid" id="cpTodoAddCores"></div>
+            <div class="cp-todo-form-row">
+              <label class="cp-habit-form-label" for="cpTodoAddDue">Due <span style="text-transform:none;letter-spacing:0;font-weight:600;">(optional)</span></label>
+              <input type="date" class="cp-goal-form-input" id="cpTodoAddDue" style="max-width:200px;" />
+            </div>
+            <label class="cp-check-line"><input type="checkbox" id="cpTodoAllClients" /> Assign to every client on the roster</label>
+            <div class="cp-habit-form-actions">
+              <button type="button" class="cp-habit-add-cancel" id="cpTodoAddCancel">Cancel</button>
+              <button type="submit" class="cp-goals-add-btn" id="cpTodoAddSave">Add to-do</button>
+            </div>
+          </form>
+          <div id="cpTodoList"></div>
           <div id="cpHwGroups"></div>
         </div>
 
