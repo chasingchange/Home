@@ -38,6 +38,11 @@
 //   Tags                     → tags (multi-select)
 //   Due in days | Due days   → default_due_days (number)
 //   Instructions | Description → instructions, used when the page body is empty
+//   Page cover               → cover_url. Notion's own gallery covers and
+//                              linked images are kept as links; images
+//                              uploaded to Notion are copied into the
+//                              assignment-files bucket (Notion's file links
+//                              expire after an hour). Push sets the cover.
 //   Relevance / Outcome / Implementation / Alternative / Examples (text) →
 //                              editor sections. The page body is also split on
 //                              "## Relevance", "## To Do", … headings (or
@@ -283,6 +288,49 @@ function tidy(lines: string[]): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+// ─── Cover images ────────────────────────────────────────────────────────
+
+const COVER_BUCKET = "assignment-files";
+const COVER_TYPES: Record<string, string> = {
+  "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif",
+};
+// deno-lint-ignore no-explicit-any
+let storage: any = null;
+
+// Notion gallery covers come back as "/images/page-cover/…" on older pages.
+function absoluteCover(url: string): string {
+  const u = String(url ?? "").trim();
+  if (!u) return "";
+  if (u.startsWith("/")) return "https://www.notion.so" + u;
+  return /^https:\/\//i.test(u) ? u : "";
+}
+
+async function coverFromPage(page: Json): Promise<string> {
+  const c = page.cover;
+  if (!c) return "";
+  if (c.type === "external") return absoluteCover(c.external?.url);
+  if (c.type !== "file" || !c.file?.url) return "";
+  // Uploaded to Notion: the signed URL dies in an hour, so keep a copy.
+  if (!storage) return "";
+  try {
+    const res = await fetch(c.file.url);
+    if (!res.ok) return "";
+    const type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    const ext = COVER_TYPES[type];
+    if (!ext) return "";
+    const buf = new Uint8Array(await res.arrayBuffer());
+    if (buf.length > 25 * 1024 * 1024) return "";
+    const path = `notion-covers/${normalizeId(page.id)}.${ext}`;
+    const up = await storage.from(COVER_BUCKET).upload(path, buf, { contentType: type, upsert: true });
+    if (up.error) return "";
+    // Version the link so browsers pick up a changed cover after re-import.
+    const stamp = Date.parse(page.last_edited_time ?? "") || Date.now();
+    return storage.from(COVER_BUCKET).getPublicUrl(path).data.publicUrl + "?v=" + stamp;
+  } catch {
+    return "";
+  }
+}
+
 async function rowFromPage(page: Json) {
   const props = page.properties ?? {};
   const titleProp = Object.values(props).find((p: Json) => p?.type === "title");
@@ -309,6 +357,7 @@ async function rowFromPage(page: Json) {
     implementation: body.implementation || propText(findProp(props, ["implementation"])).trim(),
     alternative: body.alternative || propText(findProp(props, ["alternative", "alternatives"])).trim(),
     examples: body.examples || propText(findProp(props, ["examples", "example"])).trim(),
+    cover_url: await coverFromPage(page),
     core_key: coreKeyFrom(coreLabel) || code?.core_key || "",
     week: week ?? code?.week ?? null,
     category: category || code?.category || "",
@@ -417,6 +466,7 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
     auth: { persistSession: false },
   });
+  storage = admin.storage;
 
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const { data: userData } = await admin.auth.getUser(jwt);
@@ -509,7 +559,12 @@ Deno.serve(async (req) => {
 
       let created = 0, updated = 0;
       if (rows.length) {
-        const { error } = await admin.from("assignment_library").upsert(rows, { onConflict: "notion_page_id" });
+        let { error } = await admin.from("assignment_library").upsert(rows, { onConflict: "notion_page_id" });
+        if (error && /cover_url/.test(error.message)) {
+          // scripts/assignment_library.sql not re-run yet — sync without covers.
+          rows.forEach((r: Json) => delete r.cover_url);
+          ({ error } = await admin.from("assignment_library").upsert(rows, { onConflict: "notion_page_id" }));
+        }
         if (error) return json({ error: error.message });
         rows.forEach((r) => known.has(r.notion_page_id) ? updated++ : created++);
       }
@@ -532,11 +587,15 @@ Deno.serve(async (req) => {
         try {
           const properties = propsFor(row, schema);
           const blocks = textBlocks(joinSections(row));
+          // Cover: set it when the library has one. An empty cover leaves
+          // Notion's alone, so a cover that couldn't be imported isn't wiped.
+          const cover = /^https:\/\//i.test(String(row.cover_url ?? ""))
+            ? { type: "external", external: { url: String(row.cover_url) } } : undefined;
           let page: Json = null;
 
           if (row.notion_page_id) {
             try {
-              page = await notion(`/pages/${row.notion_page_id}`, { method: "PATCH", body: { properties } });
+              page = await notion(`/pages/${row.notion_page_id}`, { method: "PATCH", body: { properties, ...(cover ? { cover } : {}) } });
               if (page.archived || page.in_trash) page = null;
             } catch (e) {
               if ((e as Json).status !== 404) throw e;
@@ -551,7 +610,7 @@ Deno.serve(async (req) => {
           if (!page) {
             page = await notion("/pages", {
               method: "POST",
-              body: { parent: { database_id: databaseId }, properties, children: blocks.slice(0, 100) },
+              body: { parent: { database_id: databaseId }, properties, ...(cover ? { cover } : {}), children: blocks.slice(0, 100) },
             });
             if (blocks.length > 100) await appendBlocks(page.id, blocks.slice(100));
             created++;

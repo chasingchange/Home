@@ -217,6 +217,8 @@
       throw res[0].error;
     }
     items = res[0].data || [];
+    // Cover images need the cover_url columns (latest scripts/assignment_library.sql).
+    hasCover = items.length ? 'cover_url' in items[0] : !(await sb.from('assignment_library').select('cover_url').limit(1)).error;
     await cleanTitleCodes();
     clients = (res[1].data || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; }).map(function(p){
       return { id: p.id, name: p.preferred_name || p.full_name || p.email || 'Client', email: p.email || '' };
@@ -437,6 +439,51 @@
       + '<textarea class="al-input" id="'+id+'" data-section="'+x.key+'"></textarea></section>';
   }).join('');
   function secEl(k){ return $(k === 'instructions' ? 'alEdInstructions' : 'alEd_' + k); }
+
+  // ─── Cover image ────────────────────────────────────────────────────────
+  // A banner across the top of the assignment, like a Notion page cover.
+  // Imported from Notion's page cover; uploaded here to the same bucket as
+  // embedded files. Copied onto the client's to-do when assigned.
+  var hasCover = false;
+  var edCover = '';
+  function coverHtml(url, cls){
+    return url ? '<div class="' + cls + '"><img src="' + esc(url) + '" alt="" loading="lazy" /></div>' : '';
+  }
+  function renderEdCover(){
+    var box = $('alEdCover');
+    box.hidden = !hasCover;
+    box.classList.toggle('has-cover', !!edCover);
+    $('alEdCoverImg').innerHTML = edCover ? '<img src="' + esc(edCover) + '" alt="Cover image" />' : '';
+    $('alEdCoverAdd').textContent = edCover ? 'Change cover' : '+ Add cover';
+    $('alEdCoverRemove').hidden = !edCover;
+    if (!$('alEdPreview').hidden) renderEdPreview();
+  }
+  var coverInput = document.createElement('input');
+  coverInput.type = 'file'; coverInput.hidden = true;
+  coverInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+  document.body.appendChild(coverInput);
+  $('alEdCoverAdd').addEventListener('click', function(){ coverInput.value = ''; coverInput.click(); });
+  $('alEdCoverLink').addEventListener('click', function(){
+    var u = window.prompt('Paste an image link (https://…) — a Notion cover or any public image.', edCover || '');
+    if (u == null) return;
+    u = u.trim();
+    if (u && !/^https:\/\//i.test(u)) { toast('Use a link that starts with https://', true); return; }
+    edCover = u; renderEdCover();
+  });
+  $('alEdCoverRemove').addEventListener('click', function(){ edCover = ''; renderEdCover(); });
+  coverInput.addEventListener('change', async function(){
+    var f = coverInput.files && coverInput.files[0]; if (!f) return;
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(f.type)) { toast('Use a PNG, JPG, WebP or GIF for the cover.', true); return; }
+    if (f.size > FILE_MAX) { toast(f.name + ' is over 25 MB.', true); return; }
+    note('alEdNote', 'Uploading cover…');
+    var ext = f.type === 'image/jpeg' ? 'jpg' : f.type.split('/')[1];
+    var path = 'covers/' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    var up = await sb.storage.from(FILE_BUCKET).upload(path, f, { contentType: f.type });
+    if (up.error) { note('alEdNote', 'Could not upload the cover: ' + up.error.message, true); return; }
+    edCover = sb.storage.from(FILE_BUCKET).getPublicUrl(path).data.publicUrl;
+    note('alEdNote', '');
+    renderEdCover();
+  });
   // Pasting a whole "RELEVANCE | … TO DO | …" block into any section
   // spreads it across the right boxes.
   $('alEdSections').addEventListener('paste', function(e){
@@ -540,6 +587,8 @@
     $('alEdDue').value = src.default_due_days == null ? '' : src.default_due_days;
     $('alEdTags').value = (src.tags || []).join(', ');
     SECTION_KEYS.forEach(function(k){ secEl(k).value = src[k] || ''; });
+    edCover = src.cover_url || '';
+    renderEdCover();
     $('alEdDelete').hidden = $('alEdArchive').hidden = $('alEdDuplicate').hidden = !item;
     $('alEdArchive').textContent = item && item.archived_at ? 'Restore' : 'Archive';
     var meta = [];
@@ -558,7 +607,7 @@
   }
 
   function editorFields(){
-    return {
+    return Object.assign({
       title: $('alEdTitle').value.trim(),
       core_key: $('alEdCore').value,
       week: weekNum($('alEdWeek').value),
@@ -571,7 +620,7 @@
       implementation: secEl('implementation').value.replace(/\s+$/, ''),
       alternative: secEl('alternative').value.replace(/\s+$/, ''),
       examples: secEl('examples').value.replace(/\s+$/, '')
-    };
+    }, hasCover ? { cover_url: edCover } : {});
   }
 
   async function saveEditor(){
@@ -662,7 +711,7 @@
   function renderEdPreview(){
     var f = editorFields();
     var text = clientText(f).trim();
-    $('alEdPreview').innerHTML = '<p class="al-kicker">To Do\'s</p>'
+    $('alEdPreview').innerHTML = coverHtml(edCover, 'hw-cover') + '<p class="al-kicker">To Do\'s</p>'
       + '<h3 class="al-ed-preview-title">' + (f.title ? esc(f.title) : '<span style="color:rgba(7,31,53,.35)">Untitled assignment</span>') + '</h3>'
       + '<p class="al-ed-preview-note">This is how it will look to the client.</p>'
       + (text ? hwHtml(text) : '<div class="hw-text"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>');
@@ -805,7 +854,9 @@
         var t = byId(lid);
         if (skip && openFor(lid, cid)) { skipped++; return; }
         var due = mode === 'date' ? fixed : mode === 'default' && t.default_due_days != null ? addDaysKey(from, t.default_due_days) : null;
-        rows.push({ client_id: cid, library_id: lid, title: (itemCode(t) ? itemCode(t) + ' · ' : '') + t.title, instructions: clientText(t), core_key: t.core_key || '', due_date: due, status: 'assigned' });
+        var row = { client_id: cid, library_id: lid, title: (itemCode(t) ? itemCode(t) + ' · ' : '') + t.title, instructions: clientText(t), core_key: t.core_key || '', due_date: due, status: 'assigned' };
+        if (hasCover && t.cover_url) row.cover_url = t.cover_url;
+        rows.push(row);
       });
     });
     return { rows: rows, skipped: skipped };
@@ -900,7 +951,7 @@
     var stamp = todayKey();
     if (kind === 'csv') download('assignment-library-' + stamp + '.csv', new Blob([toCsv(rows)], { type: 'text/csv;charset=utf-8' }));
     if (kind === 'json') {
-      var clean = rows.map(function(i){ return { title: i.title, code: itemCode(i), week: i.week, relevance: i.relevance || '', outcome: i.outcome || '', instructions: i.instructions, implementation: i.implementation || '', alternative: i.alternative || '', examples: i.examples || '', core_key: i.core_key, category: i.category, tags: i.tags, default_due_days: i.default_due_days, notion_page_id: i.notion_page_id, notion_url: i.notion_url }; });
+      var clean = rows.map(function(i){ return { title: i.title, code: itemCode(i), week: i.week, relevance: i.relevance || '', outcome: i.outcome || '', instructions: i.instructions, implementation: i.implementation || '', alternative: i.alternative || '', examples: i.examples || '', core_key: i.core_key, category: i.category, tags: i.tags, default_due_days: i.default_due_days, notion_page_id: i.notion_page_id, notion_url: i.notion_url, cover_url: i.cover_url || '' }; });
       download('assignment-library-' + stamp + '.json', new Blob([JSON.stringify({ type: 'cc-assignment-library', version: 1, exported_at: new Date().toISOString(), assignments: clean }, null, 2)], { type: 'application/json' }));
     }
     if (kind === 'md') {
@@ -1297,7 +1348,8 @@
         week: wk != null ? wk : (pc ? pc.week : null),
         category: String(r.category || '') || (pc && pc.category) || '', tags: parseTags(r.tags), default_due_days: dueNum(r.default_due_days),
         instructions: String(r.instructions || ''), relevance: String(r.relevance || ''), outcome: String(r.outcome || ''),
-        implementation: String(r.implementation || ''), alternative: String(r.alternative || ''), examples: String(r.examples || ''), notion_page_id: notionId(r.notion_page_id), notion_url: r.notion_url || ''
+        implementation: String(r.implementation || ''), alternative: String(r.alternative || ''), examples: String(r.examples || ''), notion_page_id: notionId(r.notion_page_id), notion_url: r.notion_url || '',
+        cover_url: /^https:\/\//i.test(String(r.cover_url || '')) ? String(r.cover_url) : ''
       };
     }).filter(Boolean);
   }
@@ -1342,7 +1394,7 @@
         var k = norm(r.title);
         var cur = byKey[k];
         if (!cur) { byKey[k] = Object.assign({}, r); order.push(k); return; }
-        ['core_key','category','notion_page_id','notion_url'].concat(SECTION_KEYS).forEach(function(f){ if (!cur[f] && r[f]) cur[f] = r[f]; });
+        ['core_key','category','notion_page_id','notion_url','cover_url'].concat(SECTION_KEYS).forEach(function(f){ if (!cur[f] && r[f]) cur[f] = r[f]; });
         if (g.kind === 'md' && (r.instructions || hasSections(r))) SECTION_KEYS.forEach(function(k){ if (r[k]) cur[k] = r[k]; });
         if (!(cur.tags || []).length && (r.tags || []).length) cur.tags = r.tags;
         if (cur.default_due_days == null && r.default_due_days != null) cur.default_due_days = r.default_due_days;
@@ -1410,6 +1462,7 @@
     var inserts = [], updates = [], skipped = 0;
     importRows.filter(function(r){ return r.include; }).forEach(function(r){
       var f = Object.assign(sectionFields(r), { title: r.title, week: r.week == null ? null : r.week, core_key: r.core_key || '', category: r.category || '', tags: r.tags || [], default_due_days: r.default_due_days });
+      if (hasCover && r.cover_url) f.cover_url = r.cover_url;
       if (r.match && mode === 'skip') { skipped++; return; }
       if (r.match && mode === 'update') { updates.push({ id: r.match.id, fields: f, pid: r.notion_page_id }); return; }
       var pid = r.notion_page_id && !items.some(function(i){ return i.notion_page_id === r.notion_page_id; }) ? r.notion_page_id : null;
