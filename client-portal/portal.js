@@ -583,7 +583,7 @@
 
   function mapAssignment(a){
     return {
-      id: a.id, title: a.title, instructions: a.instructions || '', coreKey: a.core_key || '',
+      id: a.id, title: a.title, instructions: a.instructions || '', coreKey: a.core_key || '', coverUrl: a.cover_url || '',
       dueDate: a.due_date || '', status: a.status || 'assigned', clientNote: a.client_note || '',
       coachFeedback: a.coach_feedback || '', files: a.files || [], submittedAt: a.submitted_at,
       reviewedAt: a.reviewed_at, createdAt: a.created_at
@@ -2170,6 +2170,12 @@
     }, 440);
   }
 
+  // Cover image across the top of the assignment, like a Notion page cover
+  // (client_assignments.cover_url, copied from the library template).
+  function hwCoverHtml(url){
+    return /^https:\/\//i.test(url || '') ? '<div class="cp-hw-cover"><img src="' + esc(url) + '" alt="" /></div>' : '';
+  }
+
   function renderHwSheet(){
     var a = currentHw();
     if (!a) { closeHwSheet(); return; }
@@ -2181,7 +2187,8 @@
     var prevNote = $('cpHwNote') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwNote').value : null;
     var prevFeedback = $('cpHwFeedback') && $('cpHwSheet').getAttribute('data-for') === a.id ? $('cpHwFeedback').value : null;
 
-    var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">To Do\'s</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
+    var h = hwCoverHtml(a.coverUrl)
+      + '<div class="cp-sheet-head"><div><p class="cp-kicker">To Do\'s</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
       + '<button type="button" class="cp-sheet-close" data-close-hw-sheet aria-label="Close">×</button></div>';
     h += '<div class="cp-hw-meta">'+hwStatusPills(a)+coreChip(a.coreKey)+hwDatesChip(a)+'</div>';
 
@@ -2454,6 +2461,7 @@
   // can drop into this form. Loaded lazily the first time the form opens.
   var hwLibrary = null;
   var hwLibraryId = null;
+  var hwFormCover = '';
 
   // Library sections → the plain text the client reads (same as
   // assignment-library/library.js clientText).
@@ -2493,6 +2501,7 @@
   $('cpHwLibPick').addEventListener('change', function(){
     var t = (hwLibrary || []).filter(function(x){ return x.id === this.value; }, this)[0];
     hwLibraryId = t ? t.id : null;
+    hwFormCover = t && t.cover_url ? t.cover_url : '';
     $('cpHwSaveLibWrap').hidden = !!t;
     if (!t) return;
     $('cpHwTitle').value = (libCode(t) ? libCode(t) + ' · ' : '') + t.title;
@@ -2505,6 +2514,7 @@
   function openHwForm(a){
     hwEditingId = a ? a.id : null;
     hwLibraryId = null;
+    hwFormCover = a ? a.coverUrl || '' : '';
     $('cpHwLibWrap').hidden = !!a;
     $('cpHwSaveLibWrap').hidden = !!a;
     $('cpHwSaveLib').checked = false;
@@ -2536,7 +2546,7 @@
   function renderHwFormPreview(){
     var title = $('cpHwTitle').value.trim();
     var text = $('cpHwInstructions').value.trim();
-    $('cpHwPreview').innerHTML = '<p class="cp-kicker">To Do\'s</p>'
+    $('cpHwPreview').innerHTML = hwCoverHtml(hwFormCover).replace('cp-hw-cover', 'cp-hw-cover cp-hw-cover--preview') + '<p class="cp-kicker">To Do\'s</p>'
       + '<h3 class="cp-hw-ed-preview-title">' + (title ? esc(title) : '<span style="color:rgba(7,31,53,.35)">Untitled assignment</span>') + '</h3>'
       + '<p class="cp-hw-ed-preview-note">This is how it will look to the client.</p>'
       + (text ? hwInstructionsHtml(text, false) : '<div class="cp-hw-instructions"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>');
@@ -2573,6 +2583,7 @@
       res = await sb.from('client_assignments').insert(ids.map(function(id){
         var row = Object.assign({ client_id: id, status: 'assigned' }, fields);
         if (libId) row.library_id = libId;
+        if (hwLibraryId && hwFormCover) row.cover_url = hwFormCover;
         return row;
       })).select();
     }

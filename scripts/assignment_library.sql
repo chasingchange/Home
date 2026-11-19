@@ -144,3 +144,12 @@ create policy "assignment files coach update" on storage.objects for update
 drop policy if exists "assignment files coach delete" on storage.objects;
 create policy "assignment files coach delete" on storage.objects for delete
   using (bucket_id = 'assignment-files' and public.is_coach(auth.uid()));
+
+-- ─── Cover images ───────────────────────────────────────────────────────
+-- A banner image shown at the top of the assignment, like a Notion page
+-- cover. Imported from the Notion page's cover (files uploaded to Notion are
+-- copied into the assignment-files bucket, since Notion's links expire after
+-- an hour), uploaded in the editor, and pushed back to Notion as the page
+-- cover. Copied onto the client's to-do when assigned.
+alter table public.assignment_library add column if not exists cover_url text not null default '';
+alter table public.client_assignments  add column if not exists cover_url text not null default '';
