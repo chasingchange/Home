@@ -5907,7 +5907,7 @@
     sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
   });
 
-  // ─── Vision board header (client-uploaded image, faded into the page) ──
+  // ─── Vision board header (client- or coach-uploaded image, faded into the page) ──
   // The client's chosen focal point is stored as a "#pos=x,y" fragment (percentages,
   // fed straight into object-position) on vision_board_url itself, so recentering
   // needs no extra column. The fragment never reaches the storage server.
@@ -5935,7 +5935,9 @@
     var band = $('cpVisionBand');
     if (state.view !== 'client' || !portalData) { visionEdit = null; band.hidden = true; return; }
 
-    var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
+    // The client manages their own board; the coach can also upload, change,
+    // reposition or remove it for them (but not while previewing in client mode).
+    var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId) || isCoachUser;
     var url = portalData.visionBoardUrl;
     if (!url && !isOwner) { visionEdit = null; band.hidden = true; return; }
     if (!url || !isOwner) visionEdit = null;
@@ -5959,6 +5961,9 @@
     band.classList.toggle('has-image', !!url);
     $('cpVisionHint').hidden = !editing;
     $('cpVisionEmptyBtn').hidden = !(isOwner && !url);
+    $('cpVisionEmptyBtn').querySelector('.cp-vision-empty-text').textContent = isCoachUser
+      ? '+ Upload a vision board for ' + (viewingClientName || 'this client')
+      : '+ Upload your vision board';
     $('cpVisionControls').hidden = !(isOwner && url && !editing);
     $('cpVisionEditControls').hidden = !(isOwner && url && editing);
   }
@@ -6073,7 +6078,7 @@
     setVisionBusy(false);
     if (res && res.error) {
       portalData.visionBoardUrl = prevUrl;
-      alert('The image uploaded, but saving it to your dashboard failed: ' + res.error.message);
+      alert('The image uploaded, but saving it to the dashboard failed: ' + res.error.message);
       renderVisionBand();
       return;
     }
@@ -6753,11 +6758,8 @@
 
   function renderQeCores(){
     $('cpQeCores').innerHTML = portalData.cores.map(function(c, i){
-      var pct = parseInt(c.pct,10) || 0;
       return '<div class="cp-qe-core">'
         + '<span class="cp-qe-core-name"><span class="cp-dot" style="background:'+c.color+'"></span>'+esc(c.label)+'</span>'
-        + '<input type="range" min="0" max="100" step="5" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" style="accent-color:'+c.color+'" aria-label="'+esc(c.label)+' score" />'
-        + '<span class="cp-qe-pct"><input type="number" min="0" max="100" value="'+pct+'" data-core-idx="'+i+'" data-core-field="pct" aria-label="'+esc(c.label)+' percent" />%</span>'
         + '<input type="text" class="cp-qe-input cp-qe-core-note" value="'+esc(c.note||'')+'" placeholder="Note for '+esc(c.label)+'" data-core-idx="'+i+'" data-core-field="note" />'
         + '</div>';
     }).join('');
@@ -6838,17 +6840,9 @@
   }
 
   $('cpQeCores').addEventListener('input', function(e){
-    var t = e.target.closest('[data-core-field]'); if (!t || !portalData) return;
+    var t = e.target.closest('[data-core-field="note"]'); if (!t || !portalData) return;
     var idx = parseInt(t.getAttribute('data-core-idx'),10);
-    var field = t.getAttribute('data-core-field');
-    var core = portalData.cores[idx];
-    if (field === 'pct') {
-      var v = Math.max(0, Math.min(100, parseInt(t.value,10) || 0));
-      core.pct = v;
-      $('cpQeCores').querySelectorAll('[data-core-idx="'+idx+'"][data-core-field="pct"]').forEach(function(el){ if (el !== t) el.value = v; });
-    } else {
-      core.note = t.value;
-    }
+    portalData.cores[idx].note = t.value;
     renderCoreList();
     saveCore(idx);
   });
