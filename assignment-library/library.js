@@ -473,6 +473,7 @@
     $('alEdMeta').innerHTML = meta.join(' · ');
     $('alEdMeta').hidden = !meta.length;
     note('alEdNote', '');
+    setEdView('write');
     openModal('alEditor');
     $('alEdTitle').focus();
   }
@@ -513,6 +514,77 @@
     renderAll();
     return row;
   }
+
+  // ─── Write / Preview ────────────────────────────────────────────────────
+  // Mirrors hwParse / hwInstructionsHtml in client-portal/portal.js so the
+  // preview matches the client's To Do sheet. Keep the two in step.
+  var HW_HEADINGS = { 'RELEVANCE':1, 'OUTCOME':1, 'TO DO':1, 'TODO':1, 'TO-DO':1, 'IMPLEMENTATION':1, 'ALTERNATIVE':1, 'EXAMPLES':1 };
+  var HW_STEP_RE = /^(\s*)(?:\[( |x|X)?\]|[-*•]|\d{1,2}[.)])\s+(.*)$/;
+  function hwLinkify(text){
+    return esc(text).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+  function hwHeading(line){
+    var t = String(line).trim().replace(/^#{1,3}\s*/, '').replace(/\s*[:|]\s*$/, '').toUpperCase();
+    return HW_HEADINGS[t] ? (t === 'TODO' || t === 'TO-DO' ? 'TO DO' : t) : '';
+  }
+  function hwHtml(text){
+    var sections = [], cur = { heading: '', lines: [] };
+    String(text || '').split('\n').forEach(function(line){
+      var hd = hwHeading(line);
+      if (hd) { sections.push(cur); cur = { heading: hd, lines: [] }; return; }
+      cur.lines.push(line);
+    });
+    sections.push(cur);
+    var hasHeadings = sections.some(function(x){ return x.heading; });
+    return sections.filter(function(x){ return x.heading || x.lines.some(function(l){ return l.trim(); }); }).map(function(x){
+      var stepsOk = x.heading === 'TO DO' || !hasHeadings;
+      var marked = x.lines.filter(function(l){ return HW_STEP_RE.test(l); }).length;
+      var nonEmpty = x.lines.filter(function(l){ return l.trim(); });
+      var everyLine = stepsOk && x.heading === 'TO DO' && !marked && nonEmpty.length > 1;
+      var its = x.lines.map(function(l){
+        var m = stepsOk ? l.match(HW_STEP_RE) : null;
+        if (m) return { step: true, done: /x/i.test(m[2] || ''), text: m[3] };
+        if (everyLine && l.trim()) return { step: true, done: false, text: l.trim() };
+        return { step: false, text: l };
+      });
+      var steps = its.filter(function(it){ return it.step; });
+      var h = '<div class="hw-block">';
+      if (x.heading) h += '<p class="hw-head">' + esc(x.heading === 'TO DO' ? 'To Do' : x.heading.charAt(0) + x.heading.slice(1).toLowerCase())
+        + (steps.length ? ' <span class="hw-progress">0 of ' + steps.length + ' done</span>' : '') + '</p>';
+      var para = [];
+      function flush(){
+        var t = para.join('\n').replace(/^\n+|\n+$/g, '');
+        if (t) h += '<div class="hw-text">' + hwLinkify(t) + '</div>';
+        para = [];
+      }
+      its.forEach(function(it){
+        if (!it.step) { para.push(it.text); return; }
+        flush();
+        h += '<label class="hw-step"><input type="checkbox" disabled /><span>' + hwLinkify(it.text) + '</span></label>';
+      });
+      flush();
+      return h + '</div>';
+    }).join('');
+  }
+  function renderEdPreview(){
+    var f = editorFields();
+    var text = clientText(f).trim();
+    $('alEdPreview').innerHTML = '<p class="al-kicker">To Do\'s</p>'
+      + '<h3 class="al-ed-preview-title">' + (f.title ? esc(f.title) : '<span style="color:rgba(7,31,53,.35)">Untitled assignment</span>') + '</h3>'
+      + '<p class="al-ed-preview-note">This is how it will look to the client.</p>'
+      + (text ? hwHtml(text) : '<div class="hw-text"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>');
+  }
+  function setEdView(view){
+    var preview = view === 'preview';
+    $('alEdTabWrite').setAttribute('aria-selected', String(!preview));
+    $('alEdTabPreview').setAttribute('aria-selected', String(preview));
+    $('alEdSections').hidden = $('alEdHint').hidden = preview;
+    $('alEdPreview').hidden = !preview;
+    if (preview) renderEdPreview();
+  }
+  $('alEdTabWrite').addEventListener('click', function(){ setEdView('write'); });
+  $('alEdTabPreview').addEventListener('click', function(){ setEdView('preview'); });
+  $('alEdTitle').addEventListener('input', function(){ if (!$('alEdPreview').hidden) renderEdPreview(); });
 
   function renderEdCode(){
     var code = codeFor($('alEdCore').value, weekNum($('alEdWeek').value), $('alEdCategory').value);
