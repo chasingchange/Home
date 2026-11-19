@@ -22,6 +22,12 @@
       .cp-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;margin:16px 0 0;line-height:1.06;}
       .cp-auth{min-height:calc(100vh - 5.5rem);display:flex;align-items:center;justify-content:center;padding:24px;}
       .cp-auth-card{width:100%;max-width:400px;}
+      .cp-boot{min-height:calc(100vh - 5.5rem);display:flex;align-items:center;justify-content:center;opacity:0;animation:cpBootIn .2s ease .35s forwards;}
+      .cp-boot-spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(7,31,53,.12);border-top-color:rgba(7,31,53,.55);animation:cpBootSpin .8s linear infinite;}
+      #cpRoot:has(> #cpAuth:not([hidden])) > .cp-boot,#cpRoot:has(> #cpDash:not([hidden])) > .cp-boot{display:none;}
+      @keyframes cpBootIn{to{opacity:1;}}
+      @keyframes cpBootSpin{to{transform:rotate(360deg);}}
+      @media(prefers-reduced-motion:reduce){.cp-boot-spin{animation:none;}}
       .cp-dots{display:flex;gap:7px;margin-bottom:26px;}
       .cp-dots span{width:8px;height:8px;border-radius:999px;}
       .cp-lede{margin:16px 0 0;font-size:17px;line-height:1.6;font-weight:300;color:rgba(7,31,53,.6);}
@@ -826,8 +832,11 @@
   <body class="cc-page">
     <main id="cpRoot">
 
-      <!-- AUTH -->
-      <section class="cp-auth" id="cpAuth">
+      <!-- Shown only while the saved session is checked on load -->
+      <div class="cp-boot" id="cpBoot" role="status" aria-label="Loading your portal"><div class="cp-boot-spin"></div></div>
+
+      <!-- AUTH (revealed by portal.js once we know there's no session) -->
+      <section class="cp-auth" id="cpAuth" hidden>
         <div class="cp-auth-card">
 
           <!-- Step: Email -->

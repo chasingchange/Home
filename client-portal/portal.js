@@ -297,7 +297,9 @@
 
   // ─── Check existing session on load ───────────────────────────────────
   (async function(){
-    var { data:{ session } } = await sb.auth.getSession();
+    var session = null;
+    try { session = (await sb.auth.getSession()).data.session; } catch (e) {}
+    if (!session) $('cpAuth').hidden = false;
     if (session) {
       if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
       if (biometricLockDue(session.user.email)) { showBiometricLock(session.user); return; }
