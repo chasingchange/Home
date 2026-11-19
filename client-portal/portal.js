@@ -187,6 +187,7 @@
   var roster = [];          // coach view: [{id,name,route,weekNow,weekTotal,adh,flag,color,next,...}]
   var flags = [];
   var remQueue = [];
+  var reviewQueue = [];     // coach view: non-negotiables claimed by clients, awaiting the coach's final review
   var hwReviewQueue = [];   // coach view: homework clients have submitted
   var ciWeekByClient = {};  // coach view: client_id -> this week's latest pre-call submission time
 
@@ -633,18 +634,20 @@
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
-    var dashRows = [], taskRows = [], hwRows = [], ciRows = [];
+    var dashRows = [], taskRows = [], nnRows = [], hwRows = [], ciRows = [];
     if (ids.length) {
       var results = await Promise.all([
         sb.from('client_dashboard').select('*').in('client_id', ids),
         sb.from('client_tasks').select('client_id, done').in('client_id', ids),
+        sb.from('client_nonnegotiables').select('*').in('client_id', ids).eq('status','claimed').order('claimed_at'),
         sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).in('status',['submitted','review']).order('submitted_at'),
         sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString())
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
-      hwRows = results[2].data || [];
-      ciRows = results[3].data || [];
+      nnRows = results[2].data || [];
+      hwRows = results[3].data || [];
+      ciRows = results[4].data || [];
     }
 
     var dashByClient = {};
@@ -689,6 +692,10 @@
 
     var nameById = {};
     clients.forEach(function(p){ nameById[p.id] = p.preferred_name || p.full_name || p.email; });
+    reviewQueue = nnRows.map(function(r){
+      return { id: r.id, clientId: r.client_id, clientName: nameById[r.client_id] || 'Client', label: r.label };
+    });
+
     hwReviewQueue = hwRows.map(function(r){
       return { clientId: r.client_id, clientName: nameById[r.client_id] || 'Client', title: r.title, submittedAt: r.submitted_at };
     });
@@ -697,7 +704,7 @@
       if (!ciWeekByClient[r.client_id] || r.submitted_at > ciWeekByClient[r.client_id]) ciWeekByClient[r.client_id] = r.submitted_at;
     });
 
-    renderRoster(); renderFlags(); renderQueue(); renderHwQueue(); renderCiQueue();
+    renderRoster(); renderFlags(); renderQueue(); renderNonNegQueue(); renderHwQueue(); renderCiQueue();
   }
 
   // ─── Coach: homework review + weekly check-in queues ───────────────────
@@ -5041,6 +5048,42 @@
     $('cpQueueList').innerHTML=h;
     $('cpQueueSummary').textContent = remQueue.length + ' queued';
   }
+
+  // ─── Coach: review queue — clients' claimed non-negotiables ────────────
+  function renderNonNegQueue(){
+    // Only show the card when a client has actually claimed something.
+    $('cpNonNegQueueCard').hidden = !reviewQueue.length;
+    $('cpNonNegQueueSummary').textContent = reviewQueue.length ? (reviewQueue.length + ' waiting on your review.') : 'Nothing to review right now.';
+    var h='';
+    reviewQueue.forEach(function(r,i){
+      h += '<div class="cp-flag-row"><div class="cp-nn-row"><div><p class="cp-flag-name">'+esc(r.clientName)+'</p><p class="cp-flag-why">'+esc(r.label)+'</p></div>'
+         + '<div class="cp-nn-actions"><button type="button" class="cp-roster-edit" data-approve-idx="'+i+'">Approve</button><button type="button" class="cp-roster-edit" data-reject-idx="'+i+'">Send back</button></div></div></div>';
+    });
+    $('cpNonNegQueueList').innerHTML = h;
+  }
+
+  $('cpNonNegQueueList').addEventListener('click', async function(e){
+    var approveBtn = e.target.closest('[data-approve-idx]');
+    var rejectBtn = e.target.closest('[data-reject-idx]');
+    if (!approveBtn && !rejectBtn) return;
+    var idx = parseInt((approveBtn||rejectBtn).getAttribute(approveBtn?'data-approve-idx':'data-reject-idx'),10);
+    var item = reviewQueue[idx]; if (!item) return;
+
+    if (approveBtn) {
+      await sb.from('client_nonnegotiables').update({ status:'archived', archived_at:new Date().toISOString() }).eq('id', item.id);
+    } else {
+      await sb.from('client_nonnegotiables').update({ status:'active', claimed_at:null }).eq('id', item.id);
+    }
+
+    await loadRoster();
+    if (viewingClientId === item.clientId && portalData) {
+      var data = await fetchPortalData(item.clientId);
+      if (viewingClientId !== item.clientId) return;
+      portalData.nonNegotiables = data.nonNegotiables;
+      renderNonNegotiables();
+      renderArchive();
+    }
+  });
 
   function renderViewToggle(){
     $('cpCoachView').hidden = state.view !== 'coach';
