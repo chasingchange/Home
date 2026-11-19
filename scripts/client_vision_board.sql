@@ -27,10 +27,10 @@ alter table public.client_dashboard
 
 -- ─── Storage bucket ─────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('vision-boards', 'vision-boards', true, 8388608, array['image/jpeg','image/png','image/webp','image/gif'])
+values ('vision-boards', 'vision-boards', true, 16777216, array['image/jpeg','image/png','image/webp','image/gif'])
 on conflict (id) do update set
   public = true,
-  file_size_limit = 8388608,
+  file_size_limit = 16777216,
   allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif'];
 
 -- Objects are stored as "<client_id>/vision-board" — the leading path
