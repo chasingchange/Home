@@ -15,7 +15,8 @@
     <script src="../shared-global-nav.js" defer></script>
     <script src="../shared-global-footer.js" defer></script>
     <style>
-      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1;}
+      body.cc-page *{font-feature-settings:"lnum" 1;}
       [hidden]{display:none !important;}
       .al-wrap{width:min(100%,1120px);margin:0 auto;padding:24px 24px 140px;box-sizing:border-box;}
       .al-kicker{font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
@@ -44,8 +45,8 @@
 
       .al-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px;}
       .al-stat{padding:16px 18px;}
-      .al-stat-num{font-family:"Raleway",sans-serif;font-weight:800;font-size:26px;margin:4px 0 0;}
-      .al-stat-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .al-stat-num{font-family:"Raleway",sans-serif;font-weight:800;font-size:32px;letter-spacing:-.02em;line-height:1.1;margin:6px 0 0;font-variant-numeric:lining-nums tabular-nums;}
+      .al-stat-label{font-size:13px;font-weight:600;color:rgba(7,31,53,.55);margin:0;}
 
       .al-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px;border-bottom:1px solid rgba(7,31,53,.08);}
       .al-search{flex:1 1 220px;min-width:0;width:100%;height:40px;border-radius:12px;border:1px solid rgba(7,31,53,.16);padding:0 14px;font:inherit;font-size:15px;color:#071f35;background:#fff;outline:none;box-sizing:border-box;}
@@ -58,26 +59,26 @@
       .al-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);cursor:pointer;user-select:none;}
       .al-check input{width:17px;height:17px;accent-color:#071f35;margin:0;}
 
-      .al-list-head{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);border-bottom:1px solid rgba(7,31,53,.06);}
+      .al-list-head{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:.02em;color:rgba(7,31,53,.45);border-bottom:1px solid rgba(7,31,53,.06);}
       .al-row{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
       .al-row:last-child{border-bottom:0;}
       .al-row:hover{background:rgba(7,31,53,.025);}
       .al-row.is-selected{background:rgba(42,157,240,.07);}
       .al-row.is-archived .al-row-title{color:rgba(7,31,53,.45);}
       .al-row input[type=checkbox]{width:17px;height:17px;accent-color:#071f35;margin:0;cursor:pointer;}
-      .al-row-title{font-family:"Raleway",sans-serif;font-weight:700;font-size:15px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-      .al-row-sub{margin:4px 0 0;font-size:13px;color:rgba(7,31,53,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .al-row-title{font-family:"Raleway",sans-serif;font-weight:700;font-size:16px;letter-spacing:-.005em;line-height:1.3;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .al-row-sub{margin:3px 0 0;font-size:13.5px;line-height:1.45;color:rgba(7,31,53,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
       .al-row-meta{font-size:13px;color:rgba(7,31,53,.6);}
       .al-row-actions{display:flex;justify-content:flex-end;}
-      .al-code{font-family:"Raleway",sans-serif;font-weight:800;font-size:13px;letter-spacing:.02em;color:#071f35;font-variant-numeric:tabular-nums;}
-      .al-code--none{color:rgba(7,31,53,.3);font-weight:700;}
+      .al-code{display:inline-block;min-width:36px;box-sizing:border-box;text-align:center;padding:4px 8px;border-radius:8px;background:rgba(7,31,53,.06);font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:800;font-size:13px;letter-spacing:.01em;color:#071f35;font-variant-numeric:lining-nums tabular-nums;}
+      .al-code--none{background:none;color:rgba(7,31,53,.3);font-weight:700;}
       .al-weeks{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(7,31,53,.08);overflow-x:auto;scrollbar-width:thin;}
-      .al-weeks-label{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(7,31,53,.4);margin-right:4px;flex:none;}
+      .al-weeks-label{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);margin-right:4px;flex:none;}
       .al-week{all:unset;box-sizing:border-box;flex:none;cursor:pointer;height:32px;min-width:40px;padding:0 12px;border-radius:999px;border:1px solid rgba(7,31,53,.14);background:#fff;font-size:13px;font-weight:700;color:rgba(7,31,53,.7);display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background-color .12s,color .12s,border-color .12s;}
       .al-week:hover{border-color:rgba(7,31,53,.35);color:#071f35;}
       .al-week:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
       .al-week.is-active{background:#071f35;border-color:#071f35;color:#fff;}
-      .al-week-n{font-size:11px;font-weight:700;opacity:.55;}
+      .al-week-n{font-size:12px;font-weight:600;opacity:.55;font-variant-numeric:lining-nums tabular-nums;}
       .al-code-preview{display:inline-block;margin-left:6px;font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;padding:2px 8px;border-radius:6px;background:rgba(7,31,53,.06);vertical-align:1px;}
       .al-ed-section{border-top:1px solid rgba(7,31,53,.08);padding-top:14px;margin:0 0 14px;}
       .al-ed-section-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 8px;font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#071f35;}
@@ -92,8 +93,8 @@
       .al-grid4{display:grid;grid-template-columns:1.2fr .8fr 1.2fr 1fr;gap:12px;}
       .al-chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(7,31,53,.06);color:#071f35;white-space:nowrap;}
       .al-chip-dot{width:8px;height:8px;border-radius:50%;flex:none;}
-      .al-tag{display:inline-block;font-size:11px;font-weight:700;color:rgba(7,31,53,.55);background:rgba(7,31,53,.05);border-radius:6px;padding:2px 7px;margin:4px 4px 0 0;}
-      .al-src{font-size:11px;font-weight:700;color:rgba(7,31,53,.4);margin-left:6px;}
+      .al-tag{display:inline-block;font-size:12px;font-weight:600;color:rgba(7,31,53,.6);background:rgba(7,31,53,.05);border-radius:999px;padding:2px 9px;margin:6px 4px 0 0;}
+      .al-src{display:inline-block;vertical-align:2px;font-family:"Muli","Mulish",system-ui,sans-serif;font-size:11px;font-weight:700;color:rgba(7,31,53,.5);border:1px solid rgba(7,31,53,.14);border-radius:999px;padding:0 7px;line-height:17px;margin-left:8px;}
       .al-empty{padding:48px 20px;text-align:center;color:rgba(7,31,53,.55);line-height:1.6;}
       .al-empty strong{display:block;font-family:"Raleway",sans-serif;font-size:18px;color:#071f35;margin-bottom:6px;}
 
