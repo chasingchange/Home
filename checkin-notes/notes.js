@@ -124,6 +124,7 @@
     $('cnLoading').hidden = true;
     $('cnApp').hidden = false;
     if (window.CheckinForm) window.CheckinForm.start(sb);   // Form tab (form.js)
+    if (window.CheckinImport) window.CheckinImport.start(sb, { before: flushAll, after: loadWeek });   // import.js
     renderCalBar();
     await loadWeek();
     calResume();
