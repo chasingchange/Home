@@ -255,7 +255,7 @@
     if (!cred) throw new Error('No credential created.');
     localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
     localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
-    localStorage.removeItem(BIOMETRIC_DECLINED_KEY);
+    rememberBiometricAnswer(user.email);
     markUnlocked(user.email);
   }
 
@@ -280,9 +280,31 @@
     showStep('cpStepBiometric');
   }
 
+  // Remembers, per email on this device, that the Face ID / Touch ID offer was
+  // answered (enabled, declined, or Enable tried and cancelled/failed) so the
+  // banner never asks the same person twice.
+  function biometricAnsweredList(){
+    var list = [];
+    try {
+      var raw = localStorage.getItem(BIOMETRIC_DECLINED_KEY);
+      if (raw) {
+        try { list = JSON.parse(raw); } catch (e) { list = [raw]; } // legacy: a single email string
+        if (!Array.isArray(list)) list = [String(list)];
+      }
+    } catch (e) {}
+    return list;
+  }
+
+  function rememberBiometricAnswer(email){
+    if (!email) return;
+    var list = biometricAnsweredList();
+    if (list.indexOf(email) === -1) list.push(email);
+    try { localStorage.setItem(BIOMETRIC_DECLINED_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
   function maybeOfferBiometric(user){
     if (biometricOfferedThisLoad || !user || !user.email) return;
-    if (localStorage.getItem(BIOMETRIC_DECLINED_KEY) === user.email) return;
+    if (biometricAnsweredList().indexOf(user.email) !== -1) return;
     if (biometricEnabledFor(user.email)) return;
     platformAuthAvailable().then(function(avail){
       if (!avail) return;
@@ -878,12 +900,15 @@
   $('cpBiometricEnable').addEventListener('click', async function(){
     $('cpBiometricBanner').hidden = true;
     if (!currentUser) return;
+    // Remember the answer up front, so a cancelled or failed Face ID prompt
+    // doesn't bring the banner back on every visit.
+    rememberBiometricAnswer(currentUser.email);
     try { await registerBiometric(currentUser); } catch (e) { /* user cancelled or unsupported — nothing to do */ }
   });
 
   $('cpBiometricDecline').addEventListener('click', function(){
     $('cpBiometricBanner').hidden = true;
-    if (currentUser && currentUser.email) localStorage.setItem(BIOMETRIC_DECLINED_KEY, currentUser.email);
+    if (currentUser && currentUser.email) rememberBiometricAnswer(currentUser.email);
   });
 
   // ─── Render: client portal (from portalData) ───────────────────────────
@@ -2065,9 +2090,10 @@
       return isCoachUser || HW_CLIENT_STATUSES.indexOf(s.key) !== -1 || s.key === a.status;
     });
     var lockStatus = !isCoachUser && a.status === 'complete';
-    h += '<div class="cp-hw-section"><h4><label for="cpHwStatusSel">Status</label></h4><select class="cp-select" id="cpHwStatusSel"'+(lockStatus?' disabled':'')+'>'
+    // Status sits in the action row, just left of Save.
+    var statusSelHtml = '<select class="cp-select" id="cpHwStatusSel" aria-label="Status"'+(lockStatus?' disabled':'')+'>'
       + statusOpts.map(function(s){ return '<option value="'+s.key+'"'+(s.key===a.status?' selected':'')+'>'+esc(s.label)+'</option>'; }).join('')
-      + '</select></div>';
+      + '</select>';
 
     h += '<div class="cp-hw-section"><h4>'+(own ? 'Your work' : 'Client’s work')+'</h4>';
     if (own) {
@@ -2087,7 +2113,7 @@
     }
     h += '</div>';
 
-    h += '<div class="cp-btn-row" style="margin-top:28px;">';
+    h += '<div class="cp-btn-row" style="margin-top:28px;">' + statusSelHtml;
     if (own) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>';
       if (isHwOpen(a)) h += '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-hw-action="submit">Submit for review</button>';
