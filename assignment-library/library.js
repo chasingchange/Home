@@ -432,7 +432,8 @@
   $('alEdSections').innerHTML = SECTIONS.map(function(x){
     var id = x.key === 'instructions' ? 'alEdInstructions' : 'alEd_' + x.key;
     return '<section class="al-ed-section'+(x.main ? ' al-ed-section--main' : '')+'">'
-      + '<h3 class="al-ed-section-h"><label for="'+id+'">'+esc(x.label)+'</label></h3>'
+      + '<h3 class="al-ed-section-h"><label for="'+id+'">'+esc(x.label)+'</label>'
+      + '<button type="button" class="al-ed-attach" data-attach="'+x.key+'" title="Upload a PNG, JPG or PDF into this section">+ Image / PDF</button></h3>'
       + '<textarea class="al-input" id="'+id+'" data-section="'+x.key+'"></textarea></section>';
   }).join('');
   function secEl(k){ return $(k === 'instructions' ? 'alEdInstructions' : 'alEd_' + k); }
@@ -447,6 +448,84 @@
     var parts = splitSections(text);
     SECTION_KEYS.forEach(function(k){ if (parts[k]) secEl(k).value = parts[k]; });
     toast('Split the pasted text into sections.');
+  });
+
+  // ─── Embedded images & PDFs ─────────────────────────────────────────────
+  // Files go to the public `assignment-files` bucket (scripts/assignment_library.sql)
+  // and a  ![name](url)  line is inserted where the cursor is. The preview and
+  // the client's To Do sheet show the image / PDF itself.
+  var FILE_BUCKET = 'assignment-files';
+  var FILE_TYPES = { 'image/png':1, 'image/jpeg':1, 'image/webp':1, 'image/gif':1, 'application/pdf':1 };
+  var FILE_MAX = 25 * 1024 * 1024;
+  var attachInput = document.createElement('input');
+  attachInput.type = 'file'; attachInput.multiple = true; attachInput.hidden = true;
+  attachInput.accept = 'image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf';
+  document.body.appendChild(attachInput);
+  var attachTarget = null;
+
+  function insertLines(ta, lines){
+    var v = ta.value, at = ta.selectionStart == null ? v.length : ta.selectionEnd;
+    var before = v.slice(0, at), after = v.slice(at);
+    var block = (before && !/\n$/.test(before) ? '\n' : '') + lines.join('\n') + (after && !/^\n/.test(after) ? '\n' : '');
+    ta.value = before + block + after;
+    var pos = (before + block).length;
+    try { ta.setSelectionRange(pos, pos); } catch (e) {}
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function uploadAttachments(ta, files){
+    files = Array.prototype.slice.call(files || []);
+    if (!ta || !files.length) return;
+    var bad = files.filter(function(f){ return !FILE_TYPES[f.type] && !/\.pdf$/i.test(f.name); });
+    if (bad.length) { toast('Only PNG, JPG, WebP, GIF or PDF files can be embedded.', true); return; }
+    var big = files.filter(function(f){ return f.size > FILE_MAX; });
+    if (big.length) { toast(big[0].name + ' is over 25 MB.', true); return; }
+    note('alEdNote', 'Uploading ' + plural(files.length, 'file') + '…');
+    var lines = [];
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      var name = String(f.name || (f.type === 'application/pdf' ? 'file.pdf' : 'image.png')).replace(/[\[\]()\r\n]+/g, ' ').trim();
+      var ext = (name.match(/\.([a-z0-9]{2,5})$/i) || [, f.type === 'application/pdf' ? 'pdf' : (f.type.split('/')[1] || 'png')])[1].toLowerCase();
+      var base = name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'file';
+      var path = 'library/' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + '-' + base + '.' + ext;
+      var up = await sb.storage.from(FILE_BUCKET).upload(path, f, { contentType: f.type || (ext === 'pdf' ? 'application/pdf' : undefined) });
+      if (up.error) {
+        var msg = /bucket not found/i.test(up.error.message) ? 'Run the latest scripts/assignment_library.sql to enable uploads.' : up.error.message;
+        note('alEdNote', 'Could not upload ' + name + ': ' + msg, true);
+        if (lines.length) insertLines(ta, lines);
+        return;
+      }
+      lines.push('![' + name + '](' + sb.storage.from(FILE_BUCKET).getPublicUrl(path).data.publicUrl + ')');
+    }
+    insertLines(ta, lines);
+    note('alEdNote', '');
+    toast('Embedded ' + plural(lines.length, 'file') + '. Check Preview to see it.');
+  }
+
+  $('alEdSections').addEventListener('click', function(e){
+    var b = e.target.closest('[data-attach]'); if (!b) return;
+    attachTarget = secEl(b.getAttribute('data-attach'));
+    attachInput.value = '';
+    attachInput.click();
+  });
+  attachInput.addEventListener('change', function(){ uploadAttachments(attachTarget, attachInput.files); });
+  // Paste a screenshot, or drop files, straight into a section.
+  $('alEdSections').addEventListener('paste', function(e){
+    var ta = e.target.closest('[data-section]'); if (!ta) return;
+    var files = (e.clipboardData && e.clipboardData.files) || [];
+    if (!files.length) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    uploadAttachments(ta, files);
+  }, true);
+  $('alEdSections').addEventListener('dragover', function(e){
+    if (!e.target.closest('[data-section]') || !e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') < 0) return;
+    e.preventDefault();
+  });
+  $('alEdSections').addEventListener('drop', function(e){
+    var ta = e.target.closest('[data-section]'); if (!ta || !e.dataTransfer || !e.dataTransfer.files.length) return;
+    e.preventDefault();
+    ta.focus();
+    uploadAttachments(ta, e.dataTransfer.files);
   });
 
   function openEditor(item, draft){
@@ -527,6 +606,17 @@
     var t = String(line).trim().replace(/^#{1,3}\s*/, '').replace(/\s*[:|]\s*$/, '').toUpperCase();
     return HW_HEADINGS[t] ? (t === 'TODO' || t === 'TO-DO' ? 'TO DO' : t) : '';
   }
+  // A line that is only  ![name](https://…)  is an embedded file: an image,
+  // or a PDF (by extension). Mirrors hwEmbed in client-portal/portal.js.
+  var HW_EMBED_RE = /^\s*!\[([^\]]*)\]\((https:\/\/[^\s)]+)\)\s*$/;
+  function hwEmbedHtml(name, url){
+    var u = esc(url), n = esc(name || 'Attachment');
+    if (/\.pdf(?:[?#]|$)/i.test(url)) {
+      return '<div class="hw-embed hw-embed--pdf"><iframe src="' + u + '#view=FitH" title="' + n + '" loading="lazy"></iframe>'
+        + '<a href="' + u + '" target="_blank" rel="noopener">' + n + ' — open PDF ↗</a></div>';
+    }
+    return '<a class="hw-embed hw-embed--img" href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="' + n + '" loading="lazy" /></a>';
+  }
   function hwHtml(text){
     var sections = [], cur = { heading: '', lines: [] };
     String(text || '').split('\n').forEach(function(line){
@@ -539,9 +629,11 @@
     return sections.filter(function(x){ return x.heading || x.lines.some(function(l){ return l.trim(); }); }).map(function(x){
       var stepsOk = x.heading === 'TO DO' || !hasHeadings;
       var marked = x.lines.filter(function(l){ return HW_STEP_RE.test(l); }).length;
-      var nonEmpty = x.lines.filter(function(l){ return l.trim(); });
+      var nonEmpty = x.lines.filter(function(l){ return l.trim() && !HW_EMBED_RE.test(l); });
       var everyLine = stepsOk && x.heading === 'TO DO' && !marked && nonEmpty.length > 1;
       var its = x.lines.map(function(l){
+        var em = l.match(HW_EMBED_RE);
+        if (em) return { embed: true, name: em[1], url: em[2] };
         var m = stepsOk ? l.match(HW_STEP_RE) : null;
         if (m) return { step: true, done: /x/i.test(m[2] || ''), text: m[3] };
         if (everyLine && l.trim()) return { step: true, done: false, text: l.trim() };
@@ -558,6 +650,7 @@
         para = [];
       }
       its.forEach(function(it){
+        if (it.embed) { flush(); h += hwEmbedHtml(it.name, it.url); return; }
         if (!it.step) { para.push(it.text); return; }
         flush();
         h += '<label class="hw-step"><input type="checkbox" disabled /><span>' + hwLinkify(it.text) + '</span></label>';
