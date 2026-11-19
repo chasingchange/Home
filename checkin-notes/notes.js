@@ -123,6 +123,7 @@
 
     $('cnLoading').hidden = true;
     $('cnApp').hidden = false;
+    if (window.CheckinForm) window.CheckinForm.start(sb);   // Form tab (form.js)
     renderCalBar();
     await loadWeek();
     calResume();
