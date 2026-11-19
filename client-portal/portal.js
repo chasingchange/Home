@@ -598,7 +598,11 @@
       sb.from('education_questions').select('*').order('position'),
       sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS))),
       // Missing table (client_checkin_coach_notes.sql not run yet) just leaves notes empty.
-      sb.from('client_checkin_coach_notes').select('*').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
+      sb.from('client_checkin_coach_notes').select('*').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104),
+      // Call prep is coach-only (RLS has no client policy); a client's session never asks for it.
+      isCoachSession
+        ? sb.from('client_checkin_prep').select('*').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
+        : Promise.resolve({ data: [] })
     ]);
 
     var d = results[0].data || {};
@@ -645,7 +649,8 @@
       assignments: (results[13].data || []).map(mapAssignment),
       eduQuestions: (results[14].data || []).map(curMap),
       habitLogs: mapHabitLogs(results[15].data || []),
-      coachNotes: mapCoachNotes(results[16].data || [])
+      coachNotes: mapCoachNotes(results[16].data || []),
+      callPrep: mapCallPrep(results[17].data || [])
     };
   }
 
@@ -2976,6 +2981,58 @@
   function ensureCoachNote(wk){ return portalData.coachNotes[wk] || (portalData.coachNotes[wk] = blankCoachNote()); }
   function hasCoachNote(n){ return !!(n && (n.wins.trim() || n.coach_objectives.trim())); }
   function hasCoachActivity(n){ return hasCoachNote(n) || !!(n && (n.calendar_reviewed || n.next_scheduled)); }
+
+  // ─── Call prep (coach only) ───────────────────────────────────────────
+  // Talking points for the call, from the weekly Fathom review of the last
+  // meeting with this client (supabase/functions/checkin-prep →
+  // public.client_checkin_prep, scripts/client_checkin_prep.sql). Shown at
+  // the top of the coach's column. Never rendered unless isCoachUser, so
+  // it's gone in client mode too; clients can't read the table at all.
+  var prepTimers = {};
+  function mapCallPrep(rows){
+    var out = {};
+    rows.forEach(function(r){
+      out[r.week_start] = { text: r.talking_points || '', title: r.source_title || '', url: r.source_url || '', date: r.source_date || '' };
+    });
+    return out;
+  }
+  function prepFor(wk){ return (portalData && portalData.callPrep && portalData.callPrep[wk]) || null; }
+  // The first week at or after minWk that has prep (prep can be written
+  // ahead for next week's call).
+  function upcomingPrepWeek(minWk){
+    return Object.keys((portalData && portalData.callPrep) || {}).filter(function(wk){ return wk >= minWk && prepFor(wk).text.trim(); }).sort()[0] || null;
+  }
+  function prepHtml(wk, editable){
+    if (!isCoachUser) return '';
+    var p = prepFor(wk);
+    if (!p && !editable) return '';
+    p = p || { text:'', title:'', url:'', date:'' };
+    var src = '';
+    if (p.title || p.url || p.date) {
+      var label = p.title || 'Last meeting';
+      if (p.date) { var d = p.date.split('-').map(Number); label += ' · ' + new Date(d[0], d[1]-1, d[2]).toLocaleDateString(undefined, { month:'short', day:'numeric' }); }
+      src = '<p class="cp-cn-hint">From ' + (/^https?:\/\//i.test(p.url) ? '<a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(label) + '</a>' : esc(label)) + '</p>';
+    }
+    var wkNote = wk > weekKeyOf(new Date()) ? ' · ' + esc(weekKeyLabel(wk)) : '';
+    return '<div class="cp-prep" data-prep-week="' + esc(wk) + '">'
+      + '<div class="cp-cn-head"><span class="cp-cn-kicker cp-prep-kicker">Call prep · only you see this' + wkNote + '</span><span class="cp-cn-status" data-prep-status></span></div>'
+      + src
+      + '<textarea class="cp-textarea cp-cn-input cp-prep-input" data-prep-text placeholder="Talking points from your last meeting land here automatically. You can also type or paste them." maxlength="20000">' + esc(p.text) + '</textarea>'
+      + '</div>';
+  }
+  function setPrepStatus(box, text, isError){
+    var st = box && box.querySelector('[data-prep-status]');
+    if (!st || !st.isConnected) return;
+    st.textContent = text;
+    st.classList.toggle('is-error', !!isError);
+  }
+  async function saveCallPrep(clientId, wk, text, box){
+    if (!isCoachSession) return;
+    setPrepStatus(box, 'Saving…');
+    var res = await sb.from('client_checkin_prep').upsert({ client_id: clientId, week_start: wk, talking_points: text, updated_at: new Date().toISOString() }, { onConflict: 'client_id,week_start' });
+    if (res.error) { setPrepStatus(box, 'Not saved — ' + (/client_checkin_prep/.test(res.error.message || '') ? 'run scripts/client_checkin_prep.sql' : res.error.message), true); return; }
+    setPrepStatus(box, 'Saved');
+  }
   function weekKeyLabel(wk){
     var p = wk.split('-').map(Number);
     return 'Week of ' + new Date(p[0], p[1]-1, p[2]).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
@@ -3088,7 +3145,9 @@
         + '<label class="cp-cn-field"><span class="cp-ci-key">Next check-in</span>'
         + '<input type="text" class="cp-ci-input cp-cn-next" data-cn-next maxlength="120" placeholder="e.g. Thu, Nov 27 · 3:00 PM" value="' + esc(portalData.nextSessionLabel || '') + '" /></label>'
         + '<div data-cn-cal>' + calLineHtml() + '</div>'
-        + '<p class="cp-cn-hint" style="margin-top:10px;">This week’s notes moved to Past check-ins with the reviewed check-in.</p></div>';
+        + '<p class="cp-cn-hint" style="margin-top:10px;">This week’s notes moved to Past check-ins with the reviewed check-in.</p>'
+        + (function(){ var pw = upcomingPrepWeek(dayKey(addDays(startOfWeek(new Date()), 7))); return pw ? prepHtml(pw, true) : ''; })()
+        + '</div>';
     }
     if (!isCoachUser && nextOnly) {
       return '<div class="cp-cn is-readonly"><div class="cp-cn-head"><span class="cp-cn-kicker">From your coach</span></div>'
@@ -3097,6 +3156,7 @@
     }
     if (isCoachUser) {
       var h = '<div class="cp-cn" data-cn-week="' + esc(wk) + '"><div class="cp-cn-head"><span class="cp-cn-kicker">Coach</span><span class="cp-cn-status" data-cn-status></span></div>';
+      h += prepHtml(isCurrent ? (upcomingPrepWeek(wk) || wk) : wk, isCurrent);
       if (isCurrent) {
         h += '<label class="cp-cn-field"><span class="cp-ci-key">Next check-in</span>'
           + '<input type="text" class="cp-ci-input cp-cn-next" data-cn-next maxlength="120" placeholder="e.g. Thu, Nov 27 · 3:00 PM" value="' + esc(portalData.nextSessionLabel || '') + '" /></label>'
@@ -3125,7 +3185,7 @@
   function renderCiCoachCard(){
     var card = $('cpCiCoachCard');
     // Don't rebuild under the coach's cursor.
-    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field],[data-cn-next]')) { refreshCoachParts(); return; }
+    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field],[data-cn-next],[data-prep-text]')) { refreshCoachParts(); return; }
     card.innerHTML = coachColumnHtml(weekKeyOf(new Date()), true, thisWeekClosed());
   }
 
@@ -3186,6 +3246,16 @@
 
   function onCoachNoteInput(e){
     if (!isCoachUser || !portalData) return;
+    var prepBox = e.target.matches('[data-prep-text]') && e.target.closest('[data-prep-week]');
+    if (prepBox) {
+      var pClient = viewingClientId, pWk = prepBox.getAttribute('data-prep-week'), pText = e.target.value;
+      portalData.callPrep[pWk] = Object.assign(prepFor(pWk) || { title:'', url:'', date:'' }, { text: pText });
+      setPrepStatus(prepBox, 'Editing…');
+      var pKey = pClient + '|' + pWk;
+      clearTimeout(prepTimers[pKey]);
+      prepTimers[pKey] = setTimeout(function(){ delete prepTimers[pKey]; saveCallPrep(pClient, pWk, pText, prepBox); }, 700);
+      return;
+    }
     var box = e.target.closest('[data-cn-week]'); if (!box) return;
     var clientId = viewingClientId;
     if (e.target.matches('[data-cn-next]')) {
@@ -3583,7 +3653,7 @@
     if (ciOpenFor !== viewingClientId) { ciOpenIds = {}; ciOpenFor = viewingClientId; }
     var hist = $('cpCiHistory');
     // Don't rebuild under the coach's cursor.
-    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) { refreshCoachParts(); return; }
+    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field],[data-prep-text]')) { refreshCoachParts(); return; }
     var thisWk = weekKeyOf(new Date());
     var weeks = {};
     (portalData.preCallSubmissions || []).forEach(function(sub){
