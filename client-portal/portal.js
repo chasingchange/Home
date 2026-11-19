@@ -692,7 +692,7 @@
     viewingClientName = String(displayName || '').split(' ')[0];
     renderClientModeUi();
     portalData = null;
-    ciEditing = false;
+    ciEditing = false; ciNew = false;
     ciDraft = null;
     if (hwOpenId) closeHwSheet();
     $('cpWelcome').textContent = 'Welcome to Your Race, ' + displayName + '.';
@@ -905,7 +905,7 @@
     closeQuickEdit();
     qeFlush();
     if (hwOpenId) closeHwSheet();
-    ciEditing = false;
+    ciEditing = false; ciNew = false;
     ciDraft = null;
     renderClientPortal();
     renderViewToggle();
@@ -2911,6 +2911,7 @@
 
   // ─── Check-ins tab: weekly pre-call form + history ────────────────────
   var ciEditing = false;   // client chose to edit this week's submission
+  var ciNew = false;       // client chose to start a new check-in after this week's was reviewed
   var ciDraft = null;      // { id, existing:{field:[files]}, pending:{field:[File]}, removed:[files] }
 
   function findPreCall(id){
@@ -2920,6 +2921,19 @@
   function thisWeeksPreCall(){
     var ws = startOfWeek(new Date());
     return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; })[0] || null;
+  }
+
+  // Once the coach marks a check-in reviewed it moves down to Past
+  // check-ins. This week stays "open" up top only while it has a submission
+  // that hasn't been reviewed yet.
+  function thisWeeksOpenPreCall(){
+    return subsForWeek(weekKeyOf(new Date())).filter(function(s){ return !isReviewedStatus(s.status); })[0] || null;
+  }
+  // This week has been reviewed and nothing new is waiting: the whole week
+  // (answers + coach notes) lives in Past check-ins.
+  function thisWeekClosed(){
+    var subs = subsForWeek(weekKeyOf(new Date()));
+    return subs.length > 0 && subs.every(function(s){ return isReviewedStatus(s.status); });
   }
 
   // ─── Coach's side of the check-in ─────────────────────────────────────
@@ -3067,8 +3081,20 @@
 
   // The right-hand column for one week. Editable for the coach; read-only
   // for the client (no checkboxes — those are the coach's own checklist).
-  function coachColumnHtml(wk, isCurrent){
+  function coachColumnHtml(wk, isCurrent, nextOnly){
     var n = coachNoteFor(wk) || blankCoachNote();
+    if (isCoachUser && nextOnly) {
+      return '<div class="cp-cn" data-cn-week="' + esc(wk) + '"><div class="cp-cn-head"><span class="cp-cn-kicker">Coach</span><span class="cp-cn-status" data-cn-status></span></div>'
+        + '<label class="cp-cn-field"><span class="cp-ci-key">Next check-in</span>'
+        + '<input type="text" class="cp-ci-input cp-cn-next" data-cn-next maxlength="120" placeholder="e.g. Thu, Nov 27 · 3:00 PM" value="' + esc(portalData.nextSessionLabel || '') + '" /></label>'
+        + '<div data-cn-cal>' + calLineHtml() + '</div>'
+        + '<p class="cp-cn-hint" style="margin-top:10px;">This week’s notes moved to Past check-ins with the reviewed check-in.</p></div>';
+    }
+    if (!isCoachUser && nextOnly) {
+      return '<div class="cp-cn is-readonly"><div class="cp-cn-head"><span class="cp-cn-kicker">From your coach</span></div>'
+        + '<div class="cp-ci-row"><span class="cp-ci-key">Next check-in</span><div class="cp-ci-value">'
+        + esc(portalData.nextSessionLabel || 'Not scheduled yet') + '</div></div></div>';
+    }
     if (isCoachUser) {
       var h = '<div class="cp-cn" data-cn-week="' + esc(wk) + '"><div class="cp-cn-head"><span class="cp-cn-kicker">Coach</span><span class="cp-cn-status" data-cn-status></span></div>';
       if (isCurrent) {
@@ -3100,7 +3126,7 @@
     var card = $('cpCiCoachCard');
     // Don't rebuild under the coach's cursor.
     if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field],[data-cn-next]')) { refreshCoachParts(); return; }
-    card.innerHTML = coachColumnHtml(weekKeyOf(new Date()), true);
+    card.innerHTML = coachColumnHtml(weekKeyOf(new Date()), true, thisWeekClosed());
   }
 
   // Calendar line + checkboxes only, so typing isn't interrupted.
@@ -3270,11 +3296,12 @@
   }
 
   function renderCiFormCard(){
-    var cur = thisWeeksPreCall();
+    var cur = thisWeeksOpenPreCall();
     var own = isOwnPortal();
+    var closed = thisWeekClosed();
     var card = $('cpCiFormCard');
 
-    if (own && (ciEditing || !cur)) {
+    if (own && (ciEditing || (!cur && !closed) || ciNew)) {
       var base = ciEditing ? cur : null;
       if (!ciDraft || ciDraft.id !== (base ? base.id : null)) {
         ciDraft = { id: base ? base.id : null, existing: {}, pending: {}, removed: [] };
@@ -3289,7 +3316,15 @@
       return;
     }
 
-    var subs = subsForWeek(weekKeyOf(new Date()));
+    var subs = subsForWeek(weekKeyOf(new Date())).filter(function(s){ return !isReviewedStatus(s.status); });
+    if (closed) {
+      card.innerHTML = '<div class="cp-ci-done"><span class="cp-ci-done-icon" aria-hidden="true">✓</span><div>'
+        + '<p class="cp-card-title" style="margin:0;">' + (own ? 'Your coach reviewed this week’s check-in' : 'This week’s check-in is reviewed') + '</p>'
+        + '<p class="cp-body-text" style="margin-top:6px;">It’s in Past check-ins below' + (own ? ' with your coach’s notes.' : '.') + '</p>'
+        + (own ? '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-action="new">Start another check-in</button></div>' : '')
+        + '</div></div>';
+      return;
+    }
     if (own && cur) {
       card.innerHTML = '<div class="cp-ci-done"><span class="cp-ci-done-icon" aria-hidden="true">✓</span><div>'
         + '<p class="cp-card-title" style="margin:0;">This week’s check-in is in</p>'
@@ -3330,7 +3365,7 @@
       h += '</div>';
     });
     h += '<div class="cp-btn-row" style="margin-top:28px;"><button type="submit" class="cp-btn-sm cp-btn-sm--primary" id="cpCiSubmit">'+(sub ? 'Save changes' : 'Submit check-in')+'</button>'
-      + (sub ? '<button type="button" class="cp-btn-sm" data-ci-action="cancel">Cancel</button>' : '')
+      + ((sub || ciNew) ? '<button type="button" class="cp-btn-sm" data-ci-action="cancel">Cancel</button>' : '')
       + '<span class="cp-save-note" id="cpCiNote"></span></div></form>';
     return h;
   }
@@ -3402,6 +3437,7 @@
     if (act) {
       var action = act.getAttribute('data-ci-action');
       ciEditing = action === 'edit';
+      ciNew = action === 'new';
       ciDraft = null;
       renderCiFormCard();
       return;
@@ -3532,7 +3568,7 @@
     portalData.preCallSubmissions = exists
       ? portalData.preCallSubmissions.map(function(s){ return s.id === saved.id ? saved : s; })
       : [saved].concat(portalData.preCallSubmissions);
-    ciEditing = false;
+    ciEditing = false; ciNew = false;
     ciDraft = null;
     renderCheckinsTab();
   });
@@ -3551,8 +3587,12 @@
     var thisWk = weekKeyOf(new Date());
     var weeks = {};
     (portalData.preCallSubmissions || []).forEach(function(sub){
-      if (sub.submittedAt) { var wk = weekKeyOf(new Date(sub.submittedAt)); if (wk < thisWk) weeks[wk] = true; }
+      if (!sub.submittedAt) return;
+      var wk = weekKeyOf(new Date(sub.submittedAt));
+      // This week's check-in joins the list once it's been reviewed.
+      if (wk < thisWk || (wk === thisWk && isReviewedStatus(sub.status))) weeks[wk] = true;
     });
+    var closed = thisWeekClosed();
     Object.keys(portalData.coachNotes || {}).forEach(function(wk){
       if (wk < thisWk && hasCoachActivity(portalData.coachNotes[wk])) weeks[wk] = true;
     });
@@ -3563,7 +3603,9 @@
     }
     var own = isOwnPortal();
     hist.innerHTML = keys.map(function(wk){
+      var isThis = wk === thisWk;
       var subs = subsForWeek(wk);
+      if (isThis) subs = subs.filter(function(s){ return isReviewedStatus(s.status); });
       var first = subs[0];
       var oid = 'wk:' + wk;
       var date = first ? longDate(new Date(first.submittedAt)) : weekKeyLabel(wk);
@@ -3574,7 +3616,9 @@
         + '<span class="cp-ci-date">' + esc(date) + '</span>' + pill
         + '</summary><div class="cp-ci-body"><div class="cp-ci-cols">'
         + '<div class="cp-ci-col cp-ci-col--client">' + clientColumnHtml(subs, own ? 'Your check-in' : 'Their check-in', 'No check-in submitted that week.') + '</div>'
-        + '<div class="cp-ci-col cp-ci-col--coach">' + coachColumnHtml(wk, false) + '</div>'
+        + '<div class="cp-ci-col cp-ci-col--coach">' + (isThis && !closed
+          ? '<p class="cp-cn-hint">' + (isCoachUser ? 'Your notes for this week are above, with the check-in still to review.' : 'Your coach’s notes for this week are above.') + '</p>'
+          : coachColumnHtml(wk, false)) + '</div>'
         + '</div></div></details>';
     }).join('');
   }
@@ -3598,6 +3642,7 @@
     if (viewingClientId !== clientId) return;
     sub.status = status;
     renderCiFormCard();
+    renderCiCoachCard();
     renderCiHistory();
   }
   $('cpCiHistory').addEventListener('click', onReviewClick);
