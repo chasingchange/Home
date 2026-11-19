@@ -446,19 +446,35 @@
   // embedded files. Copied onto the client's to-do when assigned.
   var hasCover = false;
   var edCover = '';
-  // The cover's vertical focus rides along in the link as #y=<0-100>
-  // (object-position %), so it copies onto clients' to-dos with the URL.
+  var COVER_MAX_ZOOM = 300; // %
+  // The cover's framing rides along in the link as #x=..&y=..&z=..
+  // (object-position % and zoom %), so it copies onto clients' to-dos with
+  // the URL. Older links carry only #y=<0-100>; defaults are dropped.
   function coverSplit(url){
-    var m = String(url || '').match(/^(.*)#y=(\d{1,3})$/);
-    return m ? { src: m[1], y: Math.min(100, +m[2]) } : { src: String(url || ''), y: 50 };
+    var s = String(url || ''), m = s.match(/^(.*)#((?:[xyz]=\d{1,3}&?)+)$/);
+    var c = { src: m ? m[1] : s, x: 50, y: 50, z: 100 };
+    if (m) m[2].split('&').forEach(function(p){ var kv = p.split('='); if (kv[0]) c[kv[0]] = +kv[1]; });
+    c.x = Math.max(0, Math.min(100, c.x)); c.y = Math.max(0, Math.min(100, c.y));
+    c.z = Math.max(100, Math.min(COVER_MAX_ZOOM, c.z));
+    return c;
   }
-  function coverJoin(src, y){
-    y = Math.round(Math.max(0, Math.min(100, y)));
-    return src && y !== 50 ? src + '#y=' + y : src;
+  function coverJoin(c){
+    var x = Math.round(Math.max(0, Math.min(100, c.x))), y = Math.round(Math.max(0, Math.min(100, c.y)));
+    var z = Math.round(Math.max(100, Math.min(COVER_MAX_ZOOM, c.z)));
+    var parts = [];
+    if (x !== 50) parts.push('x=' + x);
+    if (y !== 50) parts.push('y=' + y);
+    if (z !== 100) parts.push('z=' + z);
+    return c.src && parts.length ? c.src + '#' + parts.join('&') : c.src;
+  }
+  // Zoom scales around the focus point, so x/y still sweep edge to edge.
+  function coverStyle(c){
+    var pos = c.x + '% ' + c.y + '%';
+    return 'object-position:' + pos + (c.z > 100 ? ';transform:scale(' + c.z / 100 + ');transform-origin:' + pos : '');
   }
   function coverHtml(url, cls){
     var c = coverSplit(url);
-    return c.src ? '<div class="' + cls + '"><img src="' + esc(c.src) + '" alt="" loading="lazy" style="object-position:50% ' + c.y + '%" /></div>' : '';
+    return c.src ? '<div class="' + cls + '"><img src="' + esc(c.src) + '" alt="" loading="lazy" style="' + coverStyle(c) + '" /></div>' : '';
   }
   function renderEdCover(){
     var box = $('alEdCover');
@@ -466,44 +482,71 @@
     box.classList.toggle('has-cover', !!edCover);
     var c = coverSplit(edCover);
     $('alEdCoverImg').innerHTML = c.src
-      ? '<img src="' + esc(c.src) + '" alt="Cover image" draggable="false" style="object-position:50% ' + c.y + '%" />'
-        + '<span class="al-ed-cover-hint">Drag to reposition</span>'
+      ? '<img src="' + esc(c.src) + '" alt="Cover image" draggable="false" style="' + coverStyle(c) + '" />'
+        + '<span class="al-ed-cover-hint">Drag to reposition · scroll to zoom</span>'
       : '';
     $('alEdCoverAdd').textContent = edCover ? 'Change cover' : '+ Add cover';
     $('alEdCoverRemove').hidden = !edCover;
     if (!$('alEdPreview').hidden) renderEdPreview();
   }
 
-  // Drag the cover up or down to choose which part of the image shows.
+  // Drag the cover to choose which part of the image shows; scroll (or pinch
+  // on a trackpad) over it to zoom in.
   (function(){
     var wrap = $('alEdCoverImg');
     var drag = null;
+    // How far the (zoomed) image overhangs the box on each axis, in px.
+    // Moving x/y by 100% slides the image across exactly that distance.
+    function overhang(img, z){
+      var fit = Math.max(img.clientWidth / img.naturalWidth, img.clientHeight / img.naturalHeight);
+      return {
+        x: img.naturalWidth * fit * z / 100 - img.clientWidth,
+        y: img.naturalHeight * fit * z / 100 - img.clientHeight
+      };
+    }
     wrap.addEventListener('pointerdown', function(e){
       var img = wrap.querySelector('img'); if (!img || !img.naturalWidth) return;
-      var shown = img.naturalHeight * (img.clientWidth / img.naturalWidth);
-      var overflow = shown - img.clientHeight;
-      if (overflow <= 1) return; // the whole image already fits
+      var c = coverSplit(edCover), o = overhang(img, c.z);
+      if (o.x <= 1 && o.y <= 1) return; // the whole image already fits
       e.preventDefault();
-      drag = { img: img, startY: e.clientY, y0: coverSplit(edCover).y, overflow: overflow };
+      drag = { img: img, startX: e.clientX, startY: e.clientY, c0: c, c: null, o: o };
       wrap.classList.add('is-dragging');
       wrap.setPointerCapture(e.pointerId);
     });
     wrap.addEventListener('pointermove', function(e){
       if (!drag) return;
-      var y = drag.y0 - (e.clientY - drag.startY) / drag.overflow * 100;
-      y = Math.max(0, Math.min(100, y));
-      drag.y = y;
-      drag.img.style.objectPosition = '50% ' + y + '%';
+      var c = Object.assign({}, drag.c0);
+      if (drag.o.x > 1) c.x = Math.max(0, Math.min(100, c.x - (e.clientX - drag.startX) / drag.o.x * 100));
+      if (drag.o.y > 1) c.y = Math.max(0, Math.min(100, c.y - (e.clientY - drag.startY) / drag.o.y * 100));
+      drag.c = c;
+      drag.img.style.cssText = coverStyle(c);
     });
     function end(){
       if (!drag) return;
       wrap.classList.remove('is-dragging');
-      if (drag.y != null) { edCover = coverJoin(coverSplit(edCover).src, drag.y); renderEdCover(); }
+      if (drag.c) { edCover = coverJoin(drag.c); renderEdCover(); }
       drag = null;
     }
     wrap.addEventListener('pointerup', end);
     wrap.addEventListener('pointercancel', end);
+
+    var previewTimer = null;
+    wrap.addEventListener('wheel', function(e){
+      var img = wrap.querySelector('img'); if (!img || drag) return;
+      var c = coverSplit(edCover);
+      var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      var z = Math.max(100, Math.min(COVER_MAX_ZOOM, c.z * Math.exp(-dy * 0.002)));
+      // At either end of the range, let the page scroll as normal.
+      if (Math.round(z) === c.z && (c.z === 100 ? dy > 0 : dy < 0)) return;
+      e.preventDefault();
+      c.z = z;
+      edCover = coverJoin(c);
+      img.style.cssText = coverStyle(coverSplit(edCover));
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(function(){ if (!$('alEdPreview').hidden) renderEdPreview(); }, 150);
+    }, { passive: false });
   })();
+
   var coverInput = document.createElement('input');
   coverInput.type = 'file'; coverInput.hidden = true;
   coverInput.accept = 'image/png,image/jpeg,image/webp,image/gif';

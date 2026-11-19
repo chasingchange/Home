@@ -2488,10 +2488,15 @@
   // Cover image across the top of the assignment, like a Notion page cover
   // (client_assignments.cover_url, copied from the library template).
   function hwCoverHtml(url){
-    // A trailing #y=<0-100> is the focus the coach dragged to in the library.
-    var m = String(url || '').match(/^(.*)#y=(\d{1,3})$/);
-    var src = m ? m[1] : String(url || ''), y = m ? Math.min(100, +m[2]) : 50;
-    return /^https:\/\//i.test(src) ? '<div class="cp-hw-cover"><img src="' + esc(src) + '" alt="" style="object-position:50% ' + y + '%" /></div>' : '';
+    // A trailing #x=..&y=..&z=.. is the framing the coach chose in the
+    // library: focus point (object-position %) and zoom %. Older links
+    // carry only #y=<0-100>.
+    var s = String(url || ''), m = s.match(/^(.*)#((?:[xyz]=\d{1,3}&?)+)$/);
+    var c = { x: 50, y: 50, z: 100 }, src = m ? m[1] : s;
+    if (m) m[2].split('&').forEach(function(p){ var kv = p.split('='); if (kv[0]) c[kv[0]] = +kv[1]; });
+    var pos = Math.min(100, c.x) + '% ' + Math.min(100, c.y) + '%', z = Math.max(100, Math.min(300, c.z));
+    var style = 'object-position:' + pos + (z > 100 ? ';transform:scale(' + z / 100 + ');transform-origin:' + pos : '');
+    return /^https:\/\//i.test(src) ? '<div class="cp-hw-cover"><img src="' + esc(src) + '" alt="" style="' + style + '" /></div>' : '';
   }
 
   function renderHwSheet(){
