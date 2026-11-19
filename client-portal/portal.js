@@ -1999,17 +1999,43 @@
     return (portalData.assignments || []).filter(function(a){ return a.id === hwOpenId; })[0] || null;
   }
 
+  // Open/close animate like the mobile nav: the overlay stays mounted while
+  // .is-entering / .is-closing run, then the classes (or `hidden`) settle it.
+  var hwSheetTimer = null;
+  function hwReducedMotion(){
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function openHwSheet(id){
+    var ov = $('cpHwSheetOverlay');
+    var wasOpen = !ov.hidden && !ov.classList.contains('is-closing');
     hwOpenId = id;
     renderHwSheet();
-    $('cpHwSheetOverlay').hidden = false;
+    clearTimeout(hwSheetTimer);
+    ov.classList.remove('is-closing');
+    ov.hidden = false;
     document.body.style.overflow = 'hidden';
+    $('cpHwSheet').scrollTop = 0;
+    if (wasOpen || hwReducedMotion()) return;
+    ov.classList.remove('is-entering');
+    void ov.offsetWidth; // restart the keyframes
+    ov.classList.add('is-entering');
+    hwSheetTimer = setTimeout(function(){ ov.classList.remove('is-entering'); }, 700);
   }
 
   function closeHwSheet(){
+    var ov = $('cpHwSheetOverlay');
     hwOpenId = null;
-    $('cpHwSheetOverlay').hidden = true;
     document.body.style.overflow = '';
+    clearTimeout(hwSheetTimer);
+    ov.classList.remove('is-entering');
+    if (ov.hidden || ov.classList.contains('is-closing')) return;
+    if (hwReducedMotion()) { ov.hidden = true; return; }
+    ov.classList.add('is-closing');
+    hwSheetTimer = setTimeout(function(){
+      ov.classList.remove('is-closing');
+      ov.hidden = true;
+    }, 440);
   }
 
   function renderHwSheet(){
