@@ -22,6 +22,12 @@
       .cp-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;margin:16px 0 0;line-height:1.06;}
       .cp-auth{min-height:calc(100vh - 5.5rem);display:flex;align-items:center;justify-content:center;padding:24px;}
       .cp-auth-card{width:100%;max-width:400px;}
+      .cp-boot{min-height:calc(100vh - 5.5rem);display:flex;align-items:center;justify-content:center;opacity:0;animation:cpBootIn .2s ease .35s forwards;}
+      .cp-boot-spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(7,31,53,.12);border-top-color:rgba(7,31,53,.55);animation:cpBootSpin .8s linear infinite;}
+      #cpRoot:has(> #cpAuth:not([hidden])) > .cp-boot,#cpRoot:has(> #cpDash:not([hidden])) > .cp-boot{display:none;}
+      @keyframes cpBootIn{to{opacity:1;}}
+      @keyframes cpBootSpin{to{transform:rotate(360deg);}}
+      @media(prefers-reduced-motion:reduce){.cp-boot-spin{animation:none;}}
       .cp-dots{display:flex;gap:7px;margin-bottom:26px;}
       .cp-dots span{width:8px;height:8px;border-radius:999px;}
       .cp-lede{margin:16px 0 0;font-size:17px;line-height:1.6;font-weight:300;color:rgba(7,31,53,.6);}
@@ -300,6 +306,16 @@
         #cpHwSheetOverlay.is-closing,#cpHwSheetOverlay.is-closing #cpHwSheet,#cpHwSheetOverlay.is-closing #cpHwSheet > *{animation:none;}
       }
       .cp-hw-block + .cp-hw-block{margin-top:22px;}
+      .cp-hw-ed-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+      .cp-hw-ed-head label{margin:0 !important;}
+      .cp-hw-ed-tabs{display:inline-flex;padding:3px;border-radius:10px;background:rgba(7,31,53,.06);}
+      .cp-hw-ed-tab{border:0;background:none;padding:5px 12px;border-radius:8px;font-family:"Raleway",sans-serif;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);cursor:pointer;}
+      .cp-hw-ed-tab[aria-selected="true"]{background:#fff;color:#071f35;box-shadow:0 1px 2px rgba(7,31,53,.12);}
+      .cp-hw-ed-preview{min-height:180px;max-height:52vh;overflow:auto;box-sizing:border-box;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fbfcfd;padding:18px 20px;}
+      .cp-hw-ed-preview-title{margin:0 0 4px;font-family:"Raleway",sans-serif;font-weight:800;font-size:22px;line-height:1.25;color:#071f35;}
+      .cp-goal-form-field .cp-hw-ed-preview label.cp-hw-step{display:flex;margin:0 -12px;font-family:inherit;font-size:16px;font-weight:400;color:rgba(7,31,53,.85);letter-spacing:normal;}
+      .cp-hw-ed-preview .cp-hw-ed-preview-title{text-transform:none;}
+      .cp-hw-ed-preview-note{margin:0 0 14px;font-size:12px;color:rgba(7,31,53,.45);}
       .cp-hw-block-head{margin:0 0 8px;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;line-height:1.3;color:#071f35;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
       .cp-hw-progress{font-family:"Muli","Mulish",system-ui,sans-serif;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
       .cp-hw-block .cp-hw-instructions + .cp-hw-step,.cp-hw-block .cp-hw-step + .cp-hw-instructions{margin-top:8px;}
@@ -826,8 +842,11 @@
   <body class="cc-page">
     <main id="cpRoot">
 
-      <!-- AUTH -->
-      <section class="cp-auth" id="cpAuth">
+      <!-- Shown only while the saved session is checked on load -->
+      <div class="cp-boot" id="cpBoot" role="status" aria-label="Loading your portal"><div class="cp-boot-spin"></div></div>
+
+      <!-- AUTH (revealed by portal.js once we know there's no session) -->
+      <section class="cp-auth" id="cpAuth" hidden>
         <div class="cp-auth-card">
 
           <!-- Step: Email -->
@@ -1260,8 +1279,15 @@
               <input type="text" id="cpHwTitle" class="cp-goal-form-input" placeholder="e.g. Write your I AM statements" maxlength="140" />
             </div>
             <div class="cp-goal-form-field">
-              <label for="cpHwInstructions">Instructions</label>
+              <div class="cp-hw-ed-head">
+                <label for="cpHwInstructions">Instructions</label>
+                <div class="cp-hw-ed-tabs" role="tablist" aria-label="Instructions view">
+                  <button type="button" class="cp-hw-ed-tab" role="tab" id="cpHwTabWrite" aria-selected="true" aria-controls="cpHwInstructions">Write</button>
+                  <button type="button" class="cp-hw-ed-tab" role="tab" id="cpHwTabPreview" aria-selected="false" aria-controls="cpHwPreview">Preview</button>
+                </div>
+              </div>
               <textarea id="cpHwInstructions" class="cp-goal-form-input cp-goal-form-input--ta" style="height:180px;" placeholder="What to do, how to do it, and what to turn in."></textarea>
+              <div class="cp-hw-ed-preview" id="cpHwPreview" role="tabpanel" aria-label="Preview of what the client sees" hidden></div>
             </div>
             <div class="cp-goal-form-field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div><label for="cpHwCore">Core</label><select id="cpHwCore" class="cp-goal-form-input"></select></div>

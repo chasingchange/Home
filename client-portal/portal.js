@@ -297,7 +297,9 @@
 
   // ─── Check existing session on load ───────────────────────────────────
   (async function(){
-    var { data:{ session } } = await sb.auth.getSession();
+    var session = null;
+    try { session = (await sb.auth.getSession()).data.session; } catch (e) {}
+    if (!session) $('cpAuth').hidden = false;
     if (session) {
       if (urlAuthType === 'recovery') { showSetPasswordStep(session.user); return; }
       if (biometricLockDue(session.user.email)) { showBiometricLock(session.user); return; }
@@ -2349,6 +2351,7 @@
     $('cpHwInstructions').value = libClientText(t);
     $('cpHwCore').value = t.core_key || '';
     if (t.default_due_days != null) $('cpHwDue').value = dayKey(addDays(new Date(), t.default_due_days));
+    if (!$('cpHwPreview').hidden) renderHwFormPreview();
   });
 
   function openHwForm(a){
@@ -2366,11 +2369,33 @@
     $('cpHwDue').value = a ? a.dueDate : '';
     $('cpHwAllClients').checked = false;
     $('cpHwAllWrap').hidden = !!a;
+    setHwFormView('write');
     openModal('cpHwFormOverlay');
     $('cpHwTitle').focus();
   }
 
   $('cpHwAddBtn').addEventListener('click', function(){ openHwForm(null); });
+
+  // Write / Preview toggle: the preview uses the same renderer the client sees.
+  function setHwFormView(view){
+    var preview = view === 'preview';
+    $('cpHwTabWrite').setAttribute('aria-selected', String(!preview));
+    $('cpHwTabPreview').setAttribute('aria-selected', String(preview));
+    $('cpHwInstructions').hidden = preview;
+    $('cpHwPreview').hidden = !preview;
+    if (preview) renderHwFormPreview();
+  }
+  function renderHwFormPreview(){
+    var title = $('cpHwTitle').value.trim();
+    var text = $('cpHwInstructions').value.trim();
+    $('cpHwPreview').innerHTML = '<p class="cp-kicker">To Do\'s</p>'
+      + '<h3 class="cp-hw-ed-preview-title">' + (title ? esc(title) : '<span style="color:rgba(7,31,53,.35)">Untitled assignment</span>') + '</h3>'
+      + '<p class="cp-hw-ed-preview-note">This is how it will look to the client.</p>'
+      + (text ? hwInstructionsHtml(text, false) : '<div class="cp-hw-instructions"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>');
+  }
+  $('cpHwTabWrite').addEventListener('click', function(){ setHwFormView('write'); $('cpHwInstructions').focus(); });
+  $('cpHwTabPreview').addEventListener('click', function(){ setHwFormView('preview'); });
+  $('cpHwTitle').addEventListener('input', function(){ if (!$('cpHwPreview').hidden) renderHwFormPreview(); });
 
   $('cpHwFormSave').addEventListener('click', async function(){
     var title = $('cpHwTitle').value.trim();
