@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="../Logo.png" />
+    <link rel="apple-touch-icon" href="../Logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Check-in Notes | Chasing Change</title>
+    <meta name="description" content="Coach-only master editor for weekly check-in notes." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&family=Raleway:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
+    <script src="../shared-global-nav.js" defer></script>
+    <script src="../shared-global-footer.js" defer></script>
+    <style>
+      body.cc-page{margin:0;background:#eaeaee;color:#071f35;font-family:"Muli","Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:lining-nums;}
+      [hidden]{display:none !important;}
+      .cn-wrap{width:min(100%,1120px);margin:0 auto;padding:24px 24px 120px;box-sizing:border-box;}
+      .cn-back{display:inline-block;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);text-decoration:none;margin-bottom:14px;}
+      .cn-back:hover{color:#071f35;}
+      .cn-kicker{font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(7,31,53,.45);margin:0;}
+      .cn-h1{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.02em;font-size:clamp(30px,5vw,44px);margin:12px 0 0;line-height:1.06;}
+      .cn-lede{margin:12px 0 0;font-size:16px;line-height:1.6;color:rgba(7,31,53,.6);max-width:680px;}
+      .cn-head{padding-bottom:24px;}
+
+      .cn-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border-radius:980px;font-family:"Raleway",sans-serif;font-size:14px;font-weight:700;color:#071f35;background:rgba(7,31,53,.07);white-space:nowrap;}
+      .cn-btn:hover{background:rgba(7,31,53,.12);}
+      .cn-btn:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
+      .cn-btn--primary{background:#071f35;color:#fff;}
+      .cn-btn--primary:hover{background:#071f35;opacity:.88;}
+      .cn-btn:disabled{opacity:.4;cursor:not-allowed;}
+      .cn-btn-icon{width:38px;padding:0;font-size:18px;}
+
+      .cn-card{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;}
+      .cn-gate{max-width:440px;margin:60px auto;padding:32px;text-align:center;}
+      .cn-gate h2{font-family:"Raleway",sans-serif;font-weight:800;font-size:24px;margin:0 0 10px;}
+      .cn-gate p{color:rgba(7,31,53,.6);line-height:1.6;margin:0 0 20px;}
+      .cn-empty{padding:48px 20px;text-align:center;color:rgba(7,31,53,.55);line-height:1.6;}
+
+      .cn-weekbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cn-week-label{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;min-width:200px;text-align:center;}
+      .cn-week-tag{font-size:12px;font-weight:700;color:#aa70d7;margin-left:4px;}
+      .cn-stats{margin-left:auto;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
+      .cn-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(7,31,53,.08);}
+      .cn-search{flex:1 1 220px;min-width:0;height:40px;border-radius:12px;border:1px solid rgba(7,31,53,.16);padding:0 14px;font:inherit;font-size:15px;color:#071f35;background:#fff;outline:none;box-sizing:border-box;width:auto;}
+      .cn-select{height:40px;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fff;padding:0 10px;font:inherit;font-size:14px;color:#071f35;width:auto;}
+      .cn-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);cursor:pointer;user-select:none;}
+      .cc-page .cn-check input{width:17px;height:17px;accent-color:#071f35;margin:0;padding:0;flex:none;}
+
+      .cn-row{padding:18px 16px 20px;border-bottom:1px solid rgba(7,31,53,.06);}
+      .cn-row:last-child{border-bottom:0;}
+      .cn-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+      .cn-name{font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;margin:0;}
+      .cn-chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(7,31,53,.06);color:rgba(7,31,53,.7);white-space:nowrap;}
+      .cn-chip--in{background:rgba(119,215,112,.18);color:#2f7a2b;}
+      .cn-chip--out{background:rgba(245,139,28,.14);color:#a5560a;}
+      .cn-row-link{margin-left:auto;font-size:13px;font-weight:700;color:#1a6fa8;text-decoration:none;white-space:nowrap;}
+      .cn-row-link:hover{text-decoration:underline;}
+      .cn-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);min-width:60px;}
+      .cn-status.is-error{color:#c01a38;}
+      .cn-objective{margin:0 0 12px;font-size:14px;line-height:1.5;color:rgba(7,31,53,.6);}
+      .cn-objective b{color:rgba(7,31,53,.8);}
+      .cn-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+      .cn-field{display:grid;gap:6px;align-content:start;}
+      .cn-label{font-family:"Raleway",sans-serif;font-size:13px;font-weight:800;}
+      .cn-input{width:100%;box-sizing:border-box;min-height:84px;border-radius:12px;border:1px solid rgba(7,31,53,.16);background:#fff;padding:10px 12px;font:inherit;font-size:15px;line-height:1.5;color:#071f35;outline:none;resize:vertical;}
+      .cn-input:focus{border-color:rgba(7,31,53,.45);}
+      .cn-prev{font-size:12.5px;line-height:1.45;color:rgba(7,31,53,.5);margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}
+      .cn-prev button{all:unset;cursor:pointer;font-weight:700;color:#1a6fa8;margin-left:4px;}
+      .cn-prev button:hover{text-decoration:underline;}
+      @media (max-width:720px){ .cn-fields{grid-template-columns:1fr;} .cn-wrap{padding:16px 16px 100px;} .cn-week-label{min-width:0;} .cn-stats{margin-left:0;width:100%;} }
+    </style>
+  </head>
+  <body class="cc-page">
+    <main class="cn-wrap">
+      <a class="cn-back" href="../client-portal/">← Coach dashboard</a>
+
+      <section class="cn-card cn-gate" id="cnGate" hidden>
+        <h2 id="cnGateTitle">Sign in to continue</h2>
+        <p id="cnGateBody">Check-in notes are for the coach. Sign in through the client portal, then come back here.</p>
+        <a class="cn-btn cn-btn--primary" href="../client-portal/" id="cnGateLink">Go to sign in</a>
+      </section>
+
+      <p class="cn-empty" id="cnLoading">Loading…</p>
+
+      <section id="cnApp" hidden>
+        <header class="cn-head">
+          <p class="cn-kicker">Coach · Master database</p>
+          <h1 class="cn-h1">Check-in Notes</h1>
+          <p class="cn-lede">Your side of every client's weekly check-in. Write their wins and your objectives here, before or after they fill out their form. Everything saves as you type and shows up on that week's check-in in their portal.</p>
+        </header>
+
+        <div class="cn-card">
+          <div class="cn-weekbar">
+            <button type="button" class="cn-btn cn-btn-icon" id="cnPrev" aria-label="Previous week">‹</button>
+            <span class="cn-week-label" id="cnWeekLabel"></span>
+            <button type="button" class="cn-btn cn-btn-icon" id="cnNext" aria-label="Next week">›</button>
+            <button type="button" class="cn-btn" id="cnToday">This week</button>
+            <span class="cn-stats" id="cnStats"></span>
+          </div>
+          <div class="cn-toolbar">
+            <input type="search" class="cn-search" id="cnSearch" placeholder="Find a client…" aria-label="Find a client" />
+            <select class="cn-select" id="cnFilter" aria-label="Filter">
+              <option value="">All clients</option>
+              <option value="todo">Notes not written yet</option>
+              <option value="in">Client checked in</option>
+              <option value="out">Client hasn't checked in</option>
+            </select>
+            <label class="cn-check"><input type="checkbox" id="cnShowInactive" /> Graduated &amp; terminated</label>
+          </div>
+          <div id="cnList"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../shared-supabase-config.js"></script>
+    <script src="notes.js?v=20261119a"></script>
+  </body>
+</html>

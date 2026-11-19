@@ -596,7 +596,9 @@
       sb.from('client_goals').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_assignments').select('*').eq('client_id', clientId).order('created_at', { ascending:false }),
       sb.from('education_questions').select('*').order('position'),
-      sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS)))
+      sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS))),
+      // Missing table (client_checkin_coach_notes.sql not run yet) just leaves notes empty.
+      sb.from('client_checkin_coach_notes').select('week_start,wins,coach_objectives').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
     ]);
 
     var d = results[0].data || {};
@@ -642,7 +644,8 @@
       goals: (results[12].data || []).map(mapGoal),
       assignments: (results[13].data || []).map(mapAssignment),
       eduQuestions: (results[14].data || []).map(curMap),
-      habitLogs: mapHabitLogs(results[15].data || [])
+      habitLogs: mapHabitLogs(results[15].data || []),
+      coachNotes: mapCoachNotes(results[16].data || [])
     };
   }
 
@@ -2915,6 +2918,92 @@
     return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; })[0] || null;
   }
 
+  // ─── Coach's side of the check-in: Wins + Coach's Objectives ──────────
+  // One row per client per week in client_checkin_coach_notes
+  // (scripts/client_checkin_coach_notes.sql), keyed by that week's Monday.
+  // Shown on the same week's card as the client's form; the coach can fill
+  // it in before or after the client submits. Also edited in bulk from the
+  // master editor at checkin-notes/.
+  var COACH_NOTE_FIELDS = [
+    { key:'wins',             label:'Wins',                placeholder:'What went well for them this week…' },
+    { key:'coach_objectives', label:'Coach\u2019s Objectives', placeholder:'What you want to cover or push on…' }
+  ];
+  var cnTimers = {};
+
+  function mapCoachNotes(rows){
+    var out = {};
+    rows.forEach(function(r){ out[r.week_start] = { wins: r.wins || '', coach_objectives: r.coach_objectives || '' }; });
+    return out;
+  }
+  function weekKeyOf(d){ return dayKey(startOfWeek(d)); }
+  function coachNoteFor(wk){ return (portalData && portalData.coachNotes && portalData.coachNotes[wk]) || null; }
+  function hasCoachNote(n){ return !!(n && (n.wins.trim() || n.coach_objectives.trim())); }
+  function weekKeyLabel(wk){
+    var p = wk.split('-').map(Number);
+    return 'Week of ' + new Date(p[0], p[1]-1, p[2]).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // The notes block for one week. Editable for the coach; read-only (and
+  // only when there's something to read) for the client.
+  function coachNotesHtml(wk){
+    var n = coachNoteFor(wk) || { wins:'', coach_objectives:'' };
+    if (isCoachUser) {
+      var h = '<div class="cp-cn" data-cn-week="'+esc(wk)+'"><div class="cp-cn-head"><span class="cp-cn-kicker">Your notes</span><span class="cp-cn-status" data-cn-status></span></div>';
+      COACH_NOTE_FIELDS.forEach(function(f){
+        h += '<label class="cp-cn-field"><span class="cp-ci-key">'+esc(f.label)+'</span>'
+          + '<textarea class="cp-textarea cp-cn-input" data-cn-field="'+f.key+'" placeholder="'+esc(f.placeholder)+'" maxlength="4000">'+esc(n[f.key])+'</textarea></label>';
+      });
+      return h + '</div>';
+    }
+    if (!hasCoachNote(n)) return '';
+    var r = '<div class="cp-cn is-readonly"><div class="cp-cn-head"><span class="cp-cn-kicker">From your coach</span></div>';
+    COACH_NOTE_FIELDS.forEach(function(f){
+      if (!n[f.key].trim()) return;
+      r += '<div class="cp-ci-row"><span class="cp-ci-key">'+esc(f.label)+'</span><div class="cp-ci-value">'+linkify(n[f.key])+'</div></div>';
+    });
+    return r + '</div>';
+  }
+
+  function renderCiCoachCard(){
+    var html = coachNotesHtml(weekKeyOf(new Date()));
+    var card = $('cpCiCoachCard');
+    // Don't rebuild under the coach's cursor.
+    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
+    card.innerHTML = html;
+    card.hidden = !html;
+  }
+
+  // `n` is the note object captured when typing started, so a save that
+  // fires after the coach has moved on still goes to the right client.
+  async function saveCoachNote(clientId, wk, n, box){
+    if (!isCoachSession) return;
+    var st = box && box.querySelector('[data-cn-status]');
+    if (st) { st.textContent = 'Saving…'; st.classList.remove('is-error'); }
+    var { error } = await sb.from('client_checkin_coach_notes').upsert({
+      client_id: clientId, week_start: wk, wins: n.wins, coach_objectives: n.coach_objectives, updated_at: new Date().toISOString()
+    }, { onConflict: 'client_id,week_start' });
+    if (!st || !st.isConnected) return;
+    if (error) { st.textContent = 'Not saved — ' + error.message; st.classList.add('is-error'); return; }
+    st.textContent = 'Saved';
+  }
+
+  function onCoachNoteInput(e){
+    var ta = e.target.closest('[data-cn-field]'); if (!ta || !isCoachUser || !portalData) return;
+    var box = ta.closest('[data-cn-week]');
+    var wk = box.getAttribute('data-cn-week');
+    var field = ta.getAttribute('data-cn-field');
+    var n = portalData.coachNotes[wk] || (portalData.coachNotes[wk] = { wins:'', coach_objectives:'' });
+    n[field] = ta.value;
+    // Keep the same week's other copy (top card / history card) in step.
+    document.querySelectorAll('[data-cn-week="'+wk+'"] [data-cn-field="'+field+'"]').forEach(function(o){ if (o !== ta) o.value = ta.value; });
+    var st = box.querySelector('[data-cn-status]'); if (st) { st.textContent = 'Editing…'; st.classList.remove('is-error'); }
+    var clientId = viewingClientId;
+    var key = clientId + '|' + wk + '|' + field;
+    clearTimeout(cnTimers[key]);
+    cnTimers[key] = setTimeout(function(){ delete cnTimers[key]; saveCoachNote(clientId, wk, n, box); }, 700);
+  }
+  ['cpCiCoachCard','cpCiHistory'].forEach(function(id){ $(id).addEventListener('input', onCoachNoteInput); });
+
   function isReviewedStatus(status){ return /^(reviewed|done)$/i.test(status || ''); }
 
   function renderCheckinsTab(){
@@ -2924,6 +3013,7 @@
       + (isOwnPortal() ? ' — fill this out before your call.' : '');
     setBadge('cpTabBadgeCheckins', isOwnPortal() && !thisWeeksPreCall() ? 1 : 0);
     renderCiFormCard();
+    renderCiCoachCard();
     renderCiHistory();
     renderCheckinCard();
   }
@@ -3202,20 +3292,50 @@
 
   function renderCiHistory(){
     if (ciOpenFor !== viewingClientId) { ciOpenIds = {}; ciOpenFor = viewingClientId; }
+    var hist = $('cpCiHistory');
+    // Don't rebuild under the coach's cursor.
+    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
     var rows = portalData.preCallSubmissions || [];
-    if (!rows.length) {
-      $('cpCiHistory').innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
+    // Past weeks the coach wrote notes for but the client never submitted
+    // still get a card. (This week's notes live in the card up top.)
+    var thisWk = weekKeyOf(new Date());
+    var subWeeks = {};
+    rows.forEach(function(sub){ if (sub.submittedAt) subWeeks[weekKeyOf(new Date(sub.submittedAt))] = true; });
+    var items = rows.map(function(sub){ return { sub: sub, wk: sub.submittedAt ? weekKeyOf(new Date(sub.submittedAt)) : '', sortKey: sub.submittedAt || '' }; });
+    Object.keys(portalData.coachNotes || {}).forEach(function(wk){
+      if (wk >= thisWk || subWeeks[wk] || !hasCoachNote(portalData.coachNotes[wk])) return;
+      items.push({ sub: null, wk: wk, sortKey: wk + 'T00:00:00' });
+    });
+    items.sort(function(a, b){ return a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0; });
+    if (!items.length) {
+      hist.innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
       return;
     }
     var h = '';
-    rows.forEach(function(sub){
+    // A week's coach notes go on its newest submission only.
+    var notesShown = {};
+    items.forEach(function(it){
+      var sub = it.sub, wk = it.wk;
+      var showNotes = wk && !notesShown[wk] && (isCoachUser || hasCoachNote(coachNoteFor(wk)));
+      if (showNotes) notesShown[wk] = true;
+      var noteChip = hasCoachNote(coachNoteFor(wk)) && showNotes ? '<span class="cp-due-chip">📝 Coach notes</span>' : '';
+      if (!sub) {
+        var oid = 'wk:' + wk;
+        h += '<details class="cp-ci-item" data-ci-item="'+esc(oid)+'"'+(ciOpenIds[oid] ? ' open' : '')+'><summary>'
+          + '<span class="cp-ci-date">'+esc(weekKeyLabel(wk))+'</span>'
+          + statusPill('No client check-in', '#9aa3ad') + noteChip
+          + '</summary><div class="cp-ci-body">' + coachNotesHtml(wk) + '</div></details>';
+        return;
+      }
       var reviewed = isReviewedStatus(sub.status);
       h += '<details class="cp-ci-item" data-ci-item="'+esc(sub.id)+'"'+(ciOpenIds[sub.id] ? ' open' : '')+'><summary>'
         + '<span class="cp-ci-date">'+esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated')+'</span>'
         + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
         + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : 'Notion')+'</span>'
+        + noteChip
         + (sub.coaching_call_objective ? '<p class="cp-ci-snippet">'+esc(sub.coaching_call_objective)+'</p>' : '')
         + '</summary><div class="cp-ci-body">';
+      if (showNotes) h += coachNotesHtml(wk);
       var any = false;
       PRECALL_FIELDS.forEach(function(f){
         var v = sub[f.key], html;
@@ -3239,7 +3359,7 @@
       }
       h += '</div></details>';
     });
-    $('cpCiHistory').innerHTML = h;
+    hist.innerHTML = h;
   }
 
   // 'toggle' doesn't bubble, so listen in the capture phase.

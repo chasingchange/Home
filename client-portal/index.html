@@ -467,6 +467,16 @@
       .cp-ci-key{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-ci-value{font-size:15px;line-height:1.55;color:rgba(7,31,53,.85);white-space:pre-wrap;overflow-wrap:anywhere;}
       .cp-ci-value .cp-file-list{margin-top:0;}
+      .cp-ci-coach-card{margin-top:14px;}
+      .cp-cn{display:grid;gap:12px;}
+      .cp-ci-body .cp-cn{padding:14px 0 6px;border-bottom:1px solid rgba(7,31,53,.08);margin-bottom:4px;}
+      .cp-cn-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+      .cp-cn-kicker{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#aa70d7;}
+      .cp-cn-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-cn-status.is-error{color:#c01a38;}
+      .cp-cn-field{display:grid;gap:6px;}
+      .cp-cn-input{min-height:72px;}
+      .cp-cn.is-readonly{gap:0;}
       @media(max-width:600px){ .cp-ci-row{grid-template-columns:1fr;gap:4px;} }
       /* education */
       .cp-edu-group{margin-bottom:30px;}
@@ -1297,6 +1307,7 @@
             <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
           </div>
           <div class="cp-panel" id="cpCiFormCard"></div>
+          <div class="cp-panel cp-ci-coach-card" id="cpCiCoachCard" hidden></div>
           <p class="cp-goals-section-label" style="margin-top:32px;">Past check-ins</p>
           <div class="cp-ci-history" id="cpCiHistory"></div>
         </div>
@@ -1502,6 +1513,7 @@
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <a class="cp-btn-sm" href="../assignment-library/" style="text-decoration:none;">Assignment library</a>
+                <a class="cp-btn-sm" href="../checkin-notes/" style="text-decoration:none;">Check-in notes</a>
                 <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
                 <button type="button" class="cp-btn-sm" id="cpFormOpenBtn">Check-in form</button>
               </div>
