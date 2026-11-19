@@ -2488,7 +2488,10 @@
   // Cover image across the top of the assignment, like a Notion page cover
   // (client_assignments.cover_url, copied from the library template).
   function hwCoverHtml(url){
-    return /^https:\/\//i.test(url || '') ? '<div class="cp-hw-cover"><img src="' + esc(url) + '" alt="" /></div>' : '';
+    // A trailing #y=<0-100> is the focus the coach dragged to in the library.
+    var m = String(url || '').match(/^(.*)#y=(\d{1,3})$/);
+    var src = m ? m[1] : String(url || ''), y = m ? Math.min(100, +m[2]) : 50;
+    return /^https:\/\//i.test(src) ? '<div class="cp-hw-cover"><img src="' + esc(src) + '" alt="" style="object-position:50% ' + y + '%" /></div>' : '';
   }
 
   function renderHwSheet(){

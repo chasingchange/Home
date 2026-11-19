@@ -446,29 +446,76 @@
   // embedded files. Copied onto the client's to-do when assigned.
   var hasCover = false;
   var edCover = '';
+  // The cover's vertical focus rides along in the link as #y=<0-100>
+  // (object-position %), so it copies onto clients' to-dos with the URL.
+  function coverSplit(url){
+    var m = String(url || '').match(/^(.*)#y=(\d{1,3})$/);
+    return m ? { src: m[1], y: Math.min(100, +m[2]) } : { src: String(url || ''), y: 50 };
+  }
+  function coverJoin(src, y){
+    y = Math.round(Math.max(0, Math.min(100, y)));
+    return src && y !== 50 ? src + '#y=' + y : src;
+  }
   function coverHtml(url, cls){
-    return url ? '<div class="' + cls + '"><img src="' + esc(url) + '" alt="" loading="lazy" /></div>' : '';
+    var c = coverSplit(url);
+    return c.src ? '<div class="' + cls + '"><img src="' + esc(c.src) + '" alt="" loading="lazy" style="object-position:50% ' + c.y + '%" /></div>' : '';
   }
   function renderEdCover(){
     var box = $('alEdCover');
     box.hidden = !hasCover;
     box.classList.toggle('has-cover', !!edCover);
-    $('alEdCoverImg').innerHTML = edCover ? '<img src="' + esc(edCover) + '" alt="Cover image" />' : '';
+    var c = coverSplit(edCover);
+    $('alEdCoverImg').innerHTML = c.src
+      ? '<img src="' + esc(c.src) + '" alt="Cover image" draggable="false" style="object-position:50% ' + c.y + '%" />'
+        + '<span class="al-ed-cover-hint">Drag to reposition</span>'
+      : '';
     $('alEdCoverAdd').textContent = edCover ? 'Change cover' : '+ Add cover';
     $('alEdCoverRemove').hidden = !edCover;
     if (!$('alEdPreview').hidden) renderEdPreview();
   }
+
+  // Drag the cover up or down to choose which part of the image shows.
+  (function(){
+    var wrap = $('alEdCoverImg');
+    var drag = null;
+    wrap.addEventListener('pointerdown', function(e){
+      var img = wrap.querySelector('img'); if (!img || !img.naturalWidth) return;
+      var shown = img.naturalHeight * (img.clientWidth / img.naturalWidth);
+      var overflow = shown - img.clientHeight;
+      if (overflow <= 1) return; // the whole image already fits
+      e.preventDefault();
+      drag = { img: img, startY: e.clientY, y0: coverSplit(edCover).y, overflow: overflow };
+      wrap.classList.add('is-dragging');
+      wrap.setPointerCapture(e.pointerId);
+    });
+    wrap.addEventListener('pointermove', function(e){
+      if (!drag) return;
+      var y = drag.y0 - (e.clientY - drag.startY) / drag.overflow * 100;
+      y = Math.max(0, Math.min(100, y));
+      drag.y = y;
+      drag.img.style.objectPosition = '50% ' + y + '%';
+    });
+    function end(){
+      if (!drag) return;
+      wrap.classList.remove('is-dragging');
+      if (drag.y != null) { edCover = coverJoin(coverSplit(edCover).src, drag.y); renderEdCover(); }
+      drag = null;
+    }
+    wrap.addEventListener('pointerup', end);
+    wrap.addEventListener('pointercancel', end);
+  })();
   var coverInput = document.createElement('input');
   coverInput.type = 'file'; coverInput.hidden = true;
   coverInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
   document.body.appendChild(coverInput);
   $('alEdCoverAdd').addEventListener('click', function(){ coverInput.value = ''; coverInput.click(); });
   $('alEdCoverLink').addEventListener('click', function(){
-    var u = window.prompt('Paste an image link (https://…) — a Notion cover or any public image.', edCover || '');
+    var u = window.prompt('Paste an image link (https://…) — a Notion cover or any public image.', coverSplit(edCover).src);
     if (u == null) return;
     u = u.trim();
     if (u && !/^https:\/\//i.test(u)) { toast('Use a link that starts with https://', true); return; }
-    edCover = u; renderEdCover();
+    if (u !== coverSplit(edCover).src) edCover = u;
+    renderEdCover();
   });
   $('alEdCoverRemove').addEventListener('click', function(){ edCover = ''; renderEdCover(); });
   coverInput.addEventListener('change', async function(){
