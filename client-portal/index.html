@@ -268,6 +268,37 @@
       .cp-hw-feedback{border-radius:14px;background:rgba(119,215,112,.1);border:1px solid rgba(119,215,112,.35);padding:14px 16px;font-size:15px;line-height:1.6;color:rgba(7,31,53,.8);white-space:pre-wrap;}
       .cp-hw-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;}
       #cpHwSheet{width:50%;min-width:min(600px,100%);}
+      /* Assignment sheet opens/closes with the same clip-path reveal + staggered content as the mobile nav. */
+      #cpHwSheetOverlay{--hw-ease:cubic-bezier(0.4,0,0.2,1);--hw-ease-out:cubic-bezier(0.22,1,0.36,1);}
+      #cpHwSheetOverlay.is-entering{animation:cpHwFadeIn .32s var(--hw-ease) both;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet{animation:cpHwRevealX .48s var(--hw-ease-out) both;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > *{animation:cpHwItemIn .4s var(--hw-ease-out) both;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(1){animation-delay:.08s;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(2){animation-delay:.11s;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(3){animation-delay:.14s;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(4){animation-delay:.17s;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(5){animation-delay:.20s;}
+      #cpHwSheetOverlay.is-entering #cpHwSheet > :nth-child(n+6){animation-delay:.23s;}
+      #cpHwSheetOverlay.is-closing{pointer-events:none;animation:cpHwFadeOut .36s var(--hw-ease) .06s both;}
+      #cpHwSheetOverlay.is-closing #cpHwSheet{animation:cpHwHideX .36s var(--hw-ease) .06s both;}
+      #cpHwSheetOverlay.is-closing #cpHwSheet > *{animation:cpHwItemOut .16s var(--hw-ease) both;}
+      @keyframes cpHwFadeIn{from{background-color:rgba(7,31,53,0);}}
+      @keyframes cpHwFadeOut{to{background-color:rgba(7,31,53,0);}}
+      @keyframes cpHwRevealX{from{clip-path:inset(0 0 0 100%);}to{clip-path:inset(0 0 0 0);}}
+      @keyframes cpHwHideX{from{clip-path:inset(0 0 0 0);}to{clip-path:inset(0 0 0 100%);}}
+      @keyframes cpHwRevealY{from{clip-path:inset(0 0 100% 0);}to{clip-path:inset(0 0 0 0);}}
+      @keyframes cpHwHideY{from{clip-path:inset(0 0 0 0);}to{clip-path:inset(0 0 100% 0);}}
+      @keyframes cpHwItemIn{from{opacity:0;transform:translateY(-.5rem);}to{opacity:1;transform:none;}}
+      @keyframes cpHwItemOut{to{opacity:0;transform:translateY(-.25rem);}}
+      /* Full-width on phones: drop down from the top exactly like the mobile menu. */
+      @media(max-width:760px){
+        #cpHwSheetOverlay.is-entering #cpHwSheet{animation-name:cpHwRevealY;}
+        #cpHwSheetOverlay.is-closing #cpHwSheet{animation-name:cpHwHideY;}
+      }
+      @media(prefers-reduced-motion:reduce){
+        #cpHwSheetOverlay.is-entering,#cpHwSheetOverlay.is-entering #cpHwSheet,#cpHwSheetOverlay.is-entering #cpHwSheet > *,
+        #cpHwSheetOverlay.is-closing,#cpHwSheetOverlay.is-closing #cpHwSheet,#cpHwSheetOverlay.is-closing #cpHwSheet > *{animation:none;}
+      }
       .cp-hw-block + .cp-hw-block{margin-top:22px;}
       .cp-hw-block-head{margin:0 0 8px;font-family:"Raleway",sans-serif;font-weight:800;font-size:17px;line-height:1.3;color:#071f35;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
       .cp-hw-progress{font-family:"Muli","Mulish",system-ui,sans-serif;font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
