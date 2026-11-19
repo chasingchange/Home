@@ -136,6 +136,11 @@ alter table public.client_pre_call_submissions
 alter table public.client_pre_call_submissions
   add column if not exists source text not null default 'notion';   -- 'notion' | 'portal'
 
+-- Questions on the Notion form the portal now asks too.
+alter table public.client_pre_call_submissions
+  add column if not exists progress_photos text not null default '',  -- "Did you upload Progress Photos this week?"
+  add column if not exists suggestions     text not null default '';  -- "Suggestions *Optional"
+
 drop policy if exists "Clients can submit their own pre-call form" on public.client_pre_call_submissions;
 create policy "Clients can submit their own pre-call form"
   on public.client_pre_call_submissions for insert

@@ -122,19 +122,25 @@
   // Weekly pre-call form, mirrored from the coach's Notion "Client Pre Call
   // Form". Keys are client_pre_call_submissions columns, so Notion-synced
   // rows and portal submissions render through the same definitions.
+  // `showIf` copies the Notion form's conditional logic: a field only
+  // appears when the field it depends on has one of the listed answers
+  // (e.g. weight, food tracking and workouts only for Body Core clients).
+  // `legacy` fields are no longer asked but still show in history.
   var PRECALL_FIELDS = [
-    { key:"coaching_call_objective", label:"What's the objective for our coaching call?", type:"textarea", required:true },
-    { key:"current_weight",          label:"Current weight", type:"text", placeholder:"e.g. 182.4 lb" },
-    { key:"body_core",               label:"Are you participating in the Body Core?", type:"choice", options:["Yes","No"] },
-    { key:"workout_days",            label:"Which workouts did you complete this week?", type:"multi", options:["Push","Pull","Legs","Cardio"] },
-    { key:"missed_workouts",         label:"Did you miss any workouts?", type:"choice", options:["Yes","No"] },
-    { key:"obstacle",                label:"What was the obstacle?", hint:"If anything got in the way this week, what was it?", type:"textarea" },
-    { key:"tracked_food",            label:"Did you track your food?", type:"choice", options:["Yes","No","Most Days","I've been instructed not to track"] },
-    { key:"review_items",            label:"What do you want to review on the call?", type:"multi", options:["Homework","Next Week's Calendar"] },
-    { key:"has_more_homework",       label:"Do you have more homework to turn in?", type:"choice", options:["Yes","No"] },
-    { key:"text_url_upload",         label:"Homework — paste text or links", type:"textarea" },
-    { key:"files",                   label:"Files & media", hint:"Photos, documents, anything you want your coach to see.", type:"files" },
-    { key:"calendar_upload",         label:"Next week's calendar", hint:"A screenshot or export of your calendar for the week ahead.", type:"files" }
+    { key:"coaching_call_objective", label:"What would you like to focus on during this week's call?", type:"textarea", required:true },
+    { key:"body_core",               label:"Are you participating in the Body Core?", type:"choice", options:["Yes","No"], required:true },
+    { key:"current_weight",          label:"Current weight", type:"text", placeholder:"e.g. 182.4 lb", showIf:{ key:"body_core", values:["Yes"] } },
+    { key:"tracked_food",            label:"Did you track your food?", type:"choice", options:["Yes","Most Days","No","I've been instructed not to track"], showIf:{ key:"body_core", values:["Yes"] } },
+    { key:"obstacle",                label:"What was the obstacle?", hint:"What got in the way of tracking your food this week?", type:"textarea", showIf:{ key:"tracked_food", values:["Most Days","No"] } },
+    { key:"progress_photos",         label:"Did you upload Progress Photos this week?", type:"choice", options:["Yes","No (but I will right now)"], showIf:{ key:"body_core", values:["Yes"] } },
+    { key:"missed_workouts",         label:"Did you miss any workouts?", type:"choice", options:["Yes","No"], showIf:{ key:"body_core", values:["Yes"] } },
+    { key:"workout_days",            label:"Which workouts did you miss?", type:"multi", options:["Push","Pull","Legs","Upper","Lower","Cardio"], showIf:{ key:"missed_workouts", values:["Yes"] } },
+    { key:"review_items",            label:"What do you have for us to review?", type:"multi", options:["Homework","Next Week's Calendar"] },
+    { key:"files",                   label:"Files & media upload bin", hint:"Up to 10 files — photos, documents, anything you want your coach to see.", type:"files", showIf:{ key:"review_items", values:["Homework"] } },
+    { key:"text_url_upload",         label:"Text/URL upload bin", hint:"Separate assignments by title: the assignment title on one line, then the details or URL underneath.", type:"textarea", showIf:{ key:"review_items", values:["Homework"] } },
+    { key:"calendar_upload",         label:"Weekly calendar upload", hint:"A PDF or screenshot of your calendar for the week ahead.", type:"files", showIf:{ key:"review_items", values:["Next Week's Calendar","Calendar"] } },
+    { key:"suggestions",             label:"Suggestions (optional)", hint:"Feel free to list any suggestions about service, communication, or resources.", type:"textarea" },
+    { key:"has_more_homework",       label:"Do you have more homework to turn in?", type:"choice", options:["Yes","No"], legacy:true }
   ];
 
   // Homework lifecycle: assigned -> in_progress -> submitted -> complete,
@@ -2838,9 +2844,10 @@
   function ciFormHtml(sub){
     var h = '<form id="cpCiForm" novalidate>';
     PRECALL_FIELDS.forEach(function(f){
+      if (f.legacy) return;
       var v = sub ? sub[f.key] : ((f.type === 'multi' || f.type === 'files') ? [] : '');
       var lid = 'cpCiL_' + f.key;
-      h += '<div class="cp-ci-field"><span class="cp-ci-label" id="'+lid+'">'+esc(f.label)+(f.required ? ' *' : '')+'</span>'
+      h += '<div class="cp-ci-field" data-ci-wrap="'+f.key+'"'+(ciFieldVisible(f, ciValuesFrom(sub)) ? '' : ' hidden')+'><span class="cp-ci-label" id="'+lid+'">'+esc(f.label)+(f.required ? ' *' : '')+'</span>'
         + (f.hint ? '<p class="cp-ci-hint">'+esc(f.hint)+'</p>' : '');
       if (f.type === 'textarea') {
         h += '<textarea class="cp-textarea" data-ci-field="'+f.key+'" aria-labelledby="'+lid+'"'+(f.required?' required':'')+'>'+esc(v)+'</textarea>';
@@ -2866,6 +2873,44 @@
     return h;
   }
 
+  // Current answers for the choice/multi fields that drive `showIf`.
+  function ciValuesFrom(sub){
+    var vals = {};
+    PRECALL_FIELDS.forEach(function(f){
+      if (f.type !== 'choice' && f.type !== 'multi') return;
+      var v = sub ? sub[f.key] : '';
+      vals[f.key] = Array.isArray(v) ? v : (v ? [v] : []);
+    });
+    return vals;
+  }
+
+  function ciValuesFromForm(form){
+    var vals = {};
+    PRECALL_FIELDS.forEach(function(f){
+      if (f.type !== 'choice' && f.type !== 'multi') return;
+      vals[f.key] = Array.prototype.map.call(form.querySelectorAll('input[name="ci_'+f.key+'"]:checked'), function(c){ return c.value; });
+    });
+    return vals;
+  }
+
+  // A field is visible when its parent is visible and has a matching answer.
+  function ciFieldVisible(f, vals){
+    if (f.legacy) return false;
+    if (!f.showIf) return true;
+    var parent = PRECALL_FIELDS.filter(function(p){ return p.key === f.showIf.key; })[0];
+    if (parent && !ciFieldVisible(parent, vals)) return false;
+    return (vals[f.showIf.key] || []).some(function(v){ return f.showIf.values.indexOf(v) !== -1; });
+  }
+
+  function applyCiVisibility(){
+    var form = $('cpCiForm'); if (!form) return;
+    var vals = ciValuesFromForm(form);
+    PRECALL_FIELDS.forEach(function(f){
+      var wrap = form.querySelector('[data-ci-wrap="'+f.key+'"]');
+      if (wrap) wrap.hidden = !ciFieldVisible(f, vals);
+    });
+  }
+
   function renderCiFiles(key){
     var el = $('cpCiFiles_' + key); if (!el || !ciDraft) return;
     var h = fileRowsHtml(ciDraft.existing[key], 'ciform:' + key, true);
@@ -2878,6 +2923,7 @@
   }
 
   $('cpCiFormCard').addEventListener('change', function(e){
+    if (e.target.matches('input[name^="ci_"]')) { applyCiVisibility(); return; }
     var input = e.target.closest('[data-ci-file-input]'); if (!input || !ciDraft) return;
     var key = input.getAttribute('data-ci-file-input');
     var files = Array.prototype.slice.call(input.files || []);
@@ -2921,7 +2967,16 @@
     var draft = ciDraft;
 
     var row = {};
+    var vals = ciValuesFromForm(form);
+    var shown = {};
     PRECALL_FIELDS.forEach(function(f){
+      if (f.legacy) return;
+      shown[f.key] = ciFieldVisible(f, vals);
+      // Answers to questions that no longer apply are cleared, not kept.
+      if (!shown[f.key]) {
+        if (f.type !== 'files') row[f.key] = (f.type === 'multi') ? [] : '';
+        return;
+      }
       if (f.type === 'text' || f.type === 'textarea') {
         row[f.key] = form.querySelector('[data-ci-field="'+f.key+'"]').value.trim();
       } else if (f.type === 'choice') {
@@ -2936,15 +2991,26 @@
       form.querySelector('[data-ci-field="coaching_call_objective"]').focus();
       return;
     }
+    if (!row.body_core) {
+      setNote('cpCiNote', 'Let us know whether you\'re participating in the Body Core.', true);
+      return;
+    }
 
     var btn = $('cpCiSubmit');
     btn.disabled = true;
     var stamp = Date.now();
     var uploaded = [];
+    var dropped = [];
     try {
       for (var k = 0; k < PRECALL_FIELDS.length; k++) {
         var f = PRECALL_FIELDS[k];
-        if (f.type !== 'files') continue;
+        if (f.type !== 'files' || f.legacy) continue;
+        if (!shown[f.key]) {
+          // Section hidden: drop its files (removed from storage after save).
+          dropped = dropped.concat(draft.existing[f.key]);
+          row[f.key] = [];
+          continue;
+        }
         var added = [];
         for (var i = 0; i < draft.pending[f.key].length; i++) {
           setNote('cpCiNote', 'Uploading ' + draft.pending[f.key][i].name + '…');
@@ -2977,7 +3043,7 @@
       setNote('cpCiNote', 'Could not save your check-in: ' + res.error.message, true);
       return;
     }
-    removeStoredFiles(draft.removed);
+    removeStoredFiles(draft.removed.concat(dropped));
     if (viewingClientId !== clientId) return;
 
     var saved = mapPreCall(res.data);
