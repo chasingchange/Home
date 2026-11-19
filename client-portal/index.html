@@ -127,9 +127,31 @@
       .cp-habit-remove:focus-visible,.cp-habit-add-cancel:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
       @media(max-width:420px){.cp-habit-grid{grid-template-columns:1fr;}}
 
-      /* ── General to-dos (To Do's tab) ────────────────────────── */
+      /* ── General to-dos (To Do List tab) ────────────────────────── */
       .cp-todo-head-btns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-      .cp-todo-form-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+      .cp-todo-form{display:flex;flex-direction:column;gap:18px;margin:-8px 0 28px;padding:22px 22px 20px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:20px;box-shadow:0 10px 28px rgba(7,31,53,.07);}
+      .cp-todo-form[hidden]{display:none;}
+      .cp-todo-form-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:-4px;}
+      .cp-todo-form-title{font-family:"Raleway",sans-serif;font-weight:800;font-size:18px;letter-spacing:-.01em;color:#071f35;margin:0;}
+      .cp-todo-form-x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;font-size:20px;color:rgba(7,31,53,.4);}
+      .cp-todo-form-x:hover{background:rgba(7,31,53,.06);color:#071f35;}
+      .cp-todo-form-x:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
+      .cp-todo-form-input{height:52px;font-size:16px;font-weight:600;}
+      .cp-todo-form-field{display:flex;flex-direction:column;gap:10px;}
+      .cp-todo-form-label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.5);margin:0;}
+      .cp-todo-form-opt{text-transform:none;letter-spacing:0;font-weight:600;color:rgba(7,31,53,.38);margin-left:4px;}
+      .cp-todo-form-cores{gap:6px;}
+      .cp-todo-form-cores .cp-goal-core-opt + label{height:32px;padding:0 13px;font-size:13px;gap:7px;}
+      .cp-todo-form-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:16px;border-top:1px solid rgba(7,31,53,.08);}
+      .cp-todo-form-due{display:flex;flex-direction:column;gap:8px;margin:0;}
+      .cp-todo-form-due .cp-goal-form-input{width:190px;height:42px;}
+      .cp-todo-form-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+      @media(max-width:520px){.cp-todo-form{padding:18px 16px;}.cp-todo-form-due,.cp-todo-form-due .cp-goal-form-input{width:100%;}.cp-todo-form-actions{width:100%;justify-content:flex-end;}}
+      .cp-todo-confirm{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#071f35;}
+      .cp-todo-confirm-yes{all:unset;cursor:pointer;font-size:12px;font-weight:800;color:#fff;background:#c01a38;padding:5px 12px;border-radius:99px;}
+      .cp-todo-confirm-no{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(7,31,53,.55);padding:5px 8px;}
+      .cp-todo-confirm-yes:focus-visible,.cp-todo-confirm-no:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
+      .cp-habit-confirm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;color:#c01a38;}
       .cp-todo-list{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:4px 18px;margin-bottom:32px;}
       .cp-todo-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid rgba(7,31,53,.08);flex-wrap:wrap;}
       .cp-todo-row:first-child{border-top:0;}
@@ -1025,7 +1047,6 @@
         </div>
         <div class="cp-dash-head">
           <div>
-            <p class="cp-kicker">Client Portal</p>
             <div class="cp-welcome-row">
               <h1 class="cp-h1" id="cpWelcome"></h1>
               <button type="button" class="cp-nickname-edit" id="cpNicknameEdit" hidden title="Go by a different name?">✎</button>
@@ -1052,7 +1073,7 @@
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
           <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
-          <button type="button" class="cp-portal-tab" data-portal-tab="homework">To Do's<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="homework">To Do List<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="habits">Habits</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
@@ -1093,11 +1114,11 @@
             </div>
             <div class="cp-card" id="cpHomeworkCard" data-goto-tab="homework">
               <div class="cp-card-head">
-                <div><p class="cp-kicker">To Do's</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
+                <div><p class="cp-kicker">To Do List</p><h3 class="cp-card-title" id="cpHwCardTitle"></h3></div>
                 <span class="cp-meta" id="cpHwCardMeta"></span>
               </div>
               <div class="cp-note-list" id="cpHwCardList"></div>
-              <div class="cp-cta-row"><span class="cp-cta-primary">Open To Do's</span></div>
+              <div class="cp-cta-row"><span class="cp-cta-primary">Open To Do List</span></div>
             </div>
             <div class="cp-card" id="cpPreCallCard" data-goto-tab="checkins">
               <p class="cp-kicker">Weekly Check-in</p>
@@ -1201,23 +1222,31 @@
         <!-- HOMEWORK TAB -->
         <div class="cp-goals-view" id="cpHomeworkView" hidden>
           <div class="cp-goals-header">
-            <div><h2 class="cp-goals-title">To Do's</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
+            <div><h2 class="cp-goals-title">To Do List</h2><p class="cp-tab-sub" id="cpHwSummary"></p></div>
             <div class="cp-todo-head-btns">
               <button type="button" class="cp-btn-sm" id="cpTodoAddBtn" hidden>+ To-do</button>
               <button type="button" class="cp-goals-add-btn" id="cpHwAddBtn" hidden>+ New assignment</button>
             </div>
           </div>
-          <form class="cp-habit-add-row" id="cpTodoAddForm" hidden>
-            <input type="text" class="cp-goal-form-input" id="cpTodoAddInput" placeholder="e.g. Read 10 pages" maxlength="140" aria-label="New to-do" />
-            <p class="cp-habit-form-label">Core</p>
-            <div class="cp-goal-core-grid" id="cpTodoAddCores"></div>
-            <div class="cp-todo-form-row">
-              <label class="cp-habit-form-label" for="cpTodoAddDue">Due <span style="text-transform:none;letter-spacing:0;font-weight:600;">(optional)</span></label>
-              <input type="date" class="cp-goal-form-input" id="cpTodoAddDue" style="max-width:200px;" />
+          <form class="cp-todo-form" id="cpTodoAddForm" hidden>
+            <div class="cp-todo-form-head">
+              <p class="cp-todo-form-title">New to-do</p>
+              <button type="button" class="cp-todo-form-x" id="cpTodoAddClose" aria-label="Close">×</button>
             </div>
-            <div class="cp-habit-form-actions">
-              <button type="button" class="cp-habit-add-cancel" id="cpTodoAddCancel">Cancel</button>
-              <button type="submit" class="cp-goals-add-btn" id="cpTodoAddSave">Add to-do</button>
+            <input type="text" class="cp-goal-form-input cp-todo-form-input" id="cpTodoAddInput" placeholder="e.g. Read 10 pages" maxlength="140" aria-label="New to-do" />
+            <div class="cp-todo-form-field">
+              <p class="cp-todo-form-label">Core</p>
+              <div class="cp-goal-core-grid cp-todo-form-cores" id="cpTodoAddCores"></div>
+            </div>
+            <div class="cp-todo-form-foot">
+              <label class="cp-todo-form-due" for="cpTodoAddDue">
+                <span class="cp-todo-form-label">Due date <span class="cp-todo-form-opt">optional</span></span>
+                <input type="date" class="cp-goal-form-input" id="cpTodoAddDue" />
+              </label>
+              <div class="cp-todo-form-actions">
+                <button type="button" class="cp-habit-add-cancel" id="cpTodoAddCancel">Cancel</button>
+                <button type="submit" class="cp-goals-add-btn" id="cpTodoAddSave">Add to-do</button>
+              </div>
             </div>
           </form>
           <div id="cpTodoList"></div>
@@ -1443,7 +1472,7 @@
           <aside class="cp-coach-aside">
             <div class="cp-card cp-roster-card"><p class="cp-kicker">Needs Attention</p><div class="cp-flag-list" id="cpFlagList"></div></div>
             <div class="cp-card cp-roster-card">
-              <p class="cp-kicker">To Do's</p>
+              <p class="cp-kicker">To Do List</p>
               <h3 class="cp-card-title">To review</h3>
               <p class="cp-body-text" id="cpHwQueueSummary"></p>
               <div class="cp-flag-list" id="cpHwQueueList"></div>
@@ -1763,6 +1792,6 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
-    <script src="portal.js?v=20261119b"></script>
+    <script src="portal.js?v=20261119c"></script>
   </body>
 </html>
