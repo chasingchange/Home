@@ -1641,7 +1641,7 @@
 
   // Each habit belongs to one of the six cores (client_habits.core_key; ''
   // means no core yet). The tab groups habit cards by core, in core order.
-  var habitsUi = { editing: null, confirmDel: null };   // habit in edit mode / awaiting remove confirm
+  var habitsUi = { editing: null };   // id of the habit whose card is in edit mode
 
   function habitCoreDef(key){
     return CORE_DEFS.filter(function(c){ return c.key === key; })[0] || null;
@@ -1671,9 +1671,7 @@
           + '<input type="text" class="cp-goal-form-input" name="label" value="'+esc(hb.label)+'" maxlength="120" aria-label="Habit" required />'
           + '<div class="cp-goal-core-grid">'+habitCorePicker('cpHabitEditCore', hb.coreKey)+'</div>'
           + '<div class="cp-habit-form-actions'+(isCoachUser ? ' cp-habit-form-actions--split' : '')+'">'
-          + (isCoachUser ? (habitsUi.confirmDel === hb.id
-              ? '<span class="cp-habit-confirm">Remove this habit?<button type="button" class="cp-todo-confirm-yes" data-habit-del-yes="'+idx+'">Remove</button><button type="button" class="cp-todo-confirm-no" data-habit-del-no>Keep</button></span>'
-              : '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>') : '')
+          + (isCoachUser ? '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>' : '')
           + '<span style="display:flex;gap:10px;align-items:center;"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
           + '<button type="submit" class="cp-goals-add-btn">Save</button></span></div></form>';
       }
@@ -1717,32 +1715,25 @@
     var edit = e.target.closest('[data-habit-edit]');
     if (edit) {
       var hb = portalData.habits[parseInt(edit.getAttribute('data-habit-edit'),10)];
-      if (hb) { habitsUi.editing = hb.id; habitsUi.confirmDel = null; renderHabitsTab(); }
+      if (hb) { habitsUi.editing = hb.id; renderHabitsTab(); }
       return;
     }
-    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); return; }
-    if (e.target.closest('[data-habit-del-no]')) { habitsUi.confirmDel = null; renderHabitsTab(); return; }
-    // Remove asks inline (no browser confirm() popup — those can be
-    // silently blocked, which made the button look dead).
-    var ask = e.target.closest('[data-habit-del]');
-    if (ask) {
-      var h0 = portalData.habits[parseInt(ask.getAttribute('data-habit-del'),10)];
-      if (h0) { habitsUi.confirmDel = h0.id; renderHabitsTab(); }
-      return;
-    }
-    var del = e.target.closest('[data-habit-del-yes]'); if (!del || !isCoachUser) return;
-    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del-yes'),10)]; if (!habit) return;
+    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; renderHabitsTab(); return; }
+    // Opening the habit and tapping "Remove habit" is already deliberate,
+    // so it removes straight away — no second "are you sure?" step.
+    var del = e.target.closest('[data-habit-del]'); if (!del || !isCoachUser) return;
+    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
     del.disabled = true; del.textContent = 'Removing…';
     var res = await sb.from('client_habits').delete().eq('id', habit.id).select('id');
     if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it (check the "coach can delete" policy in scripts/client_habits.sql).' };
-    if (res.error) { del.disabled = false; del.textContent = 'Remove'; alert('Could not remove habit: ' + res.error.message); return; }
-    habitsUi.editing = null; habitsUi.confirmDel = null;
+    if (res.error) { del.disabled = false; del.textContent = 'Remove habit'; alert('Could not remove habit: ' + res.error.message); return; }
+    habitsUi.editing = null;
     portalData.habits = portalData.habits.filter(function(h){ return h.id !== habit.id; });
     renderCoreList(); renderHabitsTab();
   });
 
   $('cpHabitsGrid').addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); }
+    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; renderHabitsTab(); }
   });
 
   $('cpHabitsGrid').addEventListener('submit', async function(e){
