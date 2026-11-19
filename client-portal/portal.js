@@ -633,19 +633,24 @@
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
-    var dashRows = [], taskRows = [], hwRows = [], ciRows = [];
+    var dashRows = [], taskRows = [], hwRows = [], ciRows = [], statusRows = [];
     if (ids.length) {
       var results = await Promise.all([
         sb.from('client_dashboard').select('*').in('client_id', ids),
         sb.from('client_tasks').select('client_id, done').in('client_id', ids),
         sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).in('status',['submitted','review']).order('submitted_at'),
-        sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString())
+        sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString()),
+        // Missing table (client_status.sql not run yet) just leaves statuses blank.
+        sb.from('client_status').select('client_id, status, updated_at').in('client_id', ids)
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
       hwRows = results[2].data || [];
       ciRows = results[3].data || [];
+      statusRows = results[4].data || [];
     }
+    var statusByClient = {};
+    statusRows.forEach(function(r){ statusByClient[r.client_id] = r.status; });
 
     var dashByClient = {};
     dashRows.forEach(function(d){ dashByClient[d.client_id] = d; });
@@ -674,9 +679,12 @@
         reminderOn: d.reminder_on !== false,
         reminderDay: d.reminder_day || 'Tuesday',
         reminderChannel: d.reminder_channel || 'text',
-        taskCounts: taskCounts[p.id] || { open:0, total:0 }
+        taskCounts: taskCounts[p.id] || { open:0, total:0 },
+        status: statusByClient[p.id] || ''
       };
     });
+    // Graduated / Terminated clients sink to the bottom of the roster.
+    roster.sort(function(a, b){ return isInactiveStatus(a.status) - isInactiveStatus(b.status); });
 
     flags = roster.filter(function(c){ return c.flag !== 'On track'; }).map(function(c){
       return { name: c.name, why: weekLabel(c) + ' · flagged "' + c.flag + '"' };
@@ -5023,10 +5031,20 @@
   });
 
   // ─── Render: coach roster / flags / reminder queue ─────────────────────
+  // Same list as the CRM in the Chasing Change Dashboard — the dashboard
+  // keeps the two in sync (see scripts/client_status.sql).
+  var CLIENT_STATUSES = ['Onboarding', 'Core Client', 'College Client', 'Paused', 'Graduated', 'Terminated'];
+  function isInactiveStatus(s){ return s === 'Graduated' || s === 'Terminated' ? 1 : 0; }
+  function statusSelect(c){
+    var opts = '<option value="">No status</option>';
+    CLIENT_STATUSES.forEach(function(s){ opts += '<option'+(s===c.status?' selected':'')+'>'+s+'</option>'; });
+    return '<select class="cp-roster-status" data-status-client="'+c.id+'" aria-label="Status for '+esc(c.name)+'">'+opts+'</select>';
+  }
+
   function renderRoster(){
     var h='';
     roster.forEach(function(c){
-      h+='<div class="cp-roster-row" data-view-client="'+c.id+'"><span class="cp-roster-name">'+esc(c.name)+'</span><span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
+      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><span class="cp-roster-name">'+esc(c.name)+'</span>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
     });
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
@@ -5074,7 +5092,29 @@
     return roster.filter(function(r){ return r.id === id; })[0];
   }
 
+  $('cpRosterList').addEventListener('change', async function(e){
+    var sel = e.target.closest('[data-status-client]'); if (!sel) return;
+    var cid = sel.getAttribute('data-status-client');
+    var c = findRosterClient(cid);
+    var prev = c ? c.status : '';
+    sel.disabled = true;
+    var { error } = await sb.from('client_status').upsert(
+      { client_id: cid, status: sel.value, updated_at: new Date().toISOString() },
+      { onConflict: 'client_id' }
+    );
+    sel.disabled = false;
+    if (error) {
+      sel.value = prev;
+      alert("Couldn't save the status. If this is the first time, run scripts/client_status.sql in Supabase.");
+      return;
+    }
+    if (c) c.status = sel.value;
+    roster.sort(function(a, b){ return isInactiveStatus(a.status) - isInactiveStatus(b.status); });
+    renderRoster();
+  });
+
   $('cpRosterList').addEventListener('click', function(e){
+    if (e.target.closest('[data-status-client]')) { e.stopPropagation(); return; }
     var editBtn = e.target.closest('[data-edit-client]');
     if (editBtn) {
       e.stopPropagation();
