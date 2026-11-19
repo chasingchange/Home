@@ -43,7 +43,7 @@
       .al-gate h2{font-family:"Raleway",sans-serif;font-weight:800;font-size:24px;margin:0 0 10px;}
       .al-gate p{color:rgba(7,31,53,.6);line-height:1.6;margin:0 0 20px;}
 
-      .al-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px;}
+      .al-stats{display:grid;grid-template-columns:minmax(0,260px);gap:12px;margin-bottom:18px;}
       .al-stat{padding:16px 18px;}
       .al-stat-num{font-family:"Raleway",sans-serif;font-weight:800;font-size:32px;letter-spacing:-.02em;line-height:1.1;margin:6px 0 0;font-variant-numeric:lining-nums tabular-nums;}
       .al-stat-label{font-size:13px;font-weight:600;color:rgba(7,31,53,.55);margin:0;}
@@ -163,7 +163,7 @@
 
       @media (max-width:760px){
         .al-wrap{padding:16px 16px 160px;}
-        .al-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+        .al-stats{grid-template-columns:minmax(0,1fr);}
         .al-list-head{display:none;}
         .al-row{grid-template-columns:24px minmax(0,1fr) auto;row-gap:6px;}
         .al-row .al-col-code{grid-column:2;grid-row:1;}
@@ -226,9 +226,6 @@
 
         <div class="al-stats">
           <div class="al-card al-stat"><p class="al-stat-label">In library</p><p class="al-stat-num" id="alStatTotal">0</p></div>
-          <div class="al-card al-stat"><p class="al-stat-label">From Notion</p><p class="al-stat-num" id="alStatNotion">0</p></div>
-          <div class="al-card al-stat"><p class="al-stat-label">Times assigned</p><p class="al-stat-num" id="alStatAssigned">0</p></div>
-          <div class="al-card al-stat"><p class="al-stat-label">Active clients</p><p class="al-stat-num" id="alStatClients">0</p></div>
         </div>
 
         <div class="al-card">

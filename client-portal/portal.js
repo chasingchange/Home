@@ -2190,9 +2190,10 @@
     return filled.map(function(x){ return x[1] + '\n' + String(t[x[0]]).trim(); }).join('\n\n');
   }
   function libCode(t){
-    if (t.week == null) return '';
+    var art = /^articles?$/i.test(String(t.category || '').trim());
+    if (t.week == null && !art) return '';
     var c = CORE_DEFS.filter(function(d){ return d.key === t.core_key; })[0];
-    return (c ? c.label[0] : 'W') + '.' + t.week;
+    return (c ? c.label[0] : 'W') + (art ? 'A' : '') + (t.week == null ? '' : '.' + t.week);
   }
 
   async function loadHwLibrary(){

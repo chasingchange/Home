@@ -97,3 +97,18 @@ alter table public.assignment_library add column if not exists outcome        te
 alter table public.assignment_library add column if not exists implementation text not null default '';
 alter table public.assignment_library add column if not exists alternative    text not null default '';
 alter table public.assignment_library add column if not exists examples       text not null default '';
+
+-- Articles: category "Article" adds an "A" after the core letter, so a Body
+-- article is BA (BA.2 if it also has a week). Generated columns can't be
+-- altered in place, so drop and re-add `code` with the new rule.
+alter table public.assignment_library drop column if exists code;
+alter table public.assignment_library
+  add column code text generated always as (
+    case
+      when week is null and lower(btrim(category)) not in ('article', 'articles') then ''
+      else
+        (case when core_key = '' then 'W' else upper(left(core_key, 1)) end)
+        || (case when lower(btrim(category)) in ('article', 'articles') then 'A' else '' end)
+        || (case when week is null then '' else '.' || week::text end)
+    end
+  ) stored;
