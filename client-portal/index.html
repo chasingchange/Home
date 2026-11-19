@@ -72,6 +72,12 @@
       .cp-route-line{margin:14px 0 0;font-size:17px;line-height:1.6;color:rgba(7,31,53,.62);}
       .cp-back-roster-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:rgba(7,31,53,.55);letter-spacing:.02em;}
       .cp-back-roster-btn:hover{color:rgba(7,31,53,.85);}
+      .cp-client-mode-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.02em;padding:7px 14px;border-radius:980px;border:1.5px solid rgba(7,31,53,.18);color:rgba(7,31,53,.75);white-space:nowrap;}
+      .cp-client-mode-btn:hover{border-color:rgba(7,31,53,.45);color:#071f35;}
+      .cp-client-mode-btn.is-on{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-client-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:#fff6d6;border:1px solid #f0d27a;color:#4a3a06;font-size:14px;line-height:1.4;}
+      .cp-client-mode-banner[hidden]{display:none;}
+      .cp-client-mode-banner button{all:unset;cursor:pointer;font-weight:700;font-size:13px;padding:6px 12px;border-radius:980px;background:#4a3a06;color:#fff;white-space:nowrap;}
       .cp-portal-tabs{display:flex;gap:6px;margin-bottom:20px;}
       .cp-portal-tab{all:unset;cursor:pointer;padding:10px 20px;border-radius:12px;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:rgba(7,31,53,.5);}
       .cp-portal-tab:hover{color:rgba(7,31,53,.8);}
@@ -461,6 +467,16 @@
       .cp-ci-key{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-ci-value{font-size:15px;line-height:1.55;color:rgba(7,31,53,.85);white-space:pre-wrap;overflow-wrap:anywhere;}
       .cp-ci-value .cp-file-list{margin-top:0;}
+      .cp-ci-coach-card{margin-top:14px;}
+      .cp-cn{display:grid;gap:12px;}
+      .cp-ci-body .cp-cn{padding:14px 0 6px;border-bottom:1px solid rgba(7,31,53,.08);margin-bottom:4px;}
+      .cp-cn-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+      .cp-cn-kicker{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#aa70d7;}
+      .cp-cn-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
+      .cp-cn-status.is-error{color:#c01a38;}
+      .cp-cn-field{display:grid;gap:6px;}
+      .cp-cn-input{min-height:72px;}
+      .cp-cn.is-readonly{gap:0;}
       @media(max-width:600px){ .cp-ci-row{grid-template-columns:1fr;gap:4px;} }
       /* education */
       .cp-edu-group{margin-bottom:30px;}
@@ -1085,8 +1101,14 @@
             <p class="cp-route-line" id="cpRouteLine"></p>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
+            <button type="button" class="cp-client-mode-btn" id="cpClientModeBtn" aria-pressed="false" title="See this portal exactly as the client does" hidden>👁 Client mode</button>
             <button type="button" class="cp-back-roster-btn" id="cpBackToRoster" hidden>← Back to roster</button>
           </div>
+        </div>
+
+        <div class="cp-client-mode-banner" id="cpClientModeBanner" role="status" hidden>
+          <span><strong>Client mode</strong> — you're seeing exactly what <span id="cpClientModeName">this client</span> sees. Anything you submit or check off here is saved to their portal.</span>
+          <button type="button" id="cpClientModeExit">Back to coach view</button>
         </div>
 
         <div class="cp-biometric-banner" id="cpBiometricBanner" hidden>
@@ -1285,6 +1307,7 @@
             <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
           </div>
           <div class="cp-panel" id="cpCiFormCard"></div>
+          <div class="cp-panel cp-ci-coach-card" id="cpCiCoachCard" hidden></div>
           <p class="cp-goals-section-label" style="margin-top:32px;">Past check-ins</p>
           <div class="cp-ci-history" id="cpCiHistory"></div>
         </div>
@@ -1490,6 +1513,7 @@
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <a class="cp-btn-sm" href="../assignment-library/" style="text-decoration:none;">Assignment library</a>
+                <a class="cp-btn-sm" href="../checkin-notes/" style="text-decoration:none;">Check-in notes</a>
                 <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
                 <button type="button" class="cp-btn-sm" id="cpFormOpenBtn">Check-in form</button>
               </div>

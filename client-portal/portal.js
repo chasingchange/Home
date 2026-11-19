@@ -247,7 +247,14 @@
   var needsPassword = (urlAuthType === 'invite');
   var currentUser = null;
   var biometricOfferedThisLoad = false;
+  // isCoachUser drives every coach-vs-client difference in the UI. In
+  // client mode (the coach previewing a client's portal exactly as the
+  // client sees it) it is switched off; isCoachSession always keeps the
+  // signed-in user's real role, for things that must not change with the
+  // preview (calendar tokens, the roster).
   var isCoachUser = false;
+  var isCoachSession = false;
+  var clientMode = false;
   var coachUser = null;
   var coachProfile = null;
   var ownProfile = null;   // the signed-in client's own profile row (nickname editing)
@@ -540,6 +547,8 @@
     $('cpDash').hidden = false;
 
     isCoachUser  = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+    isCoachSession = isCoachUser;
+    clientMode   = false;
     coachUser    = isCoachUser ? user : null;
     coachProfile = isCoachUser ? profile : null;
 
@@ -548,6 +557,7 @@
     preCallFormReady = loadPreCallForm();
 
     $('cpBackToRoster').hidden = true;
+    renderClientModeUi();
 
     if (isCoachUser) {
       state.view = 'coach';
@@ -586,7 +596,9 @@
       sb.from('client_goals').select('*').eq('client_id', clientId).order('created_at', { ascending:true }),
       sb.from('client_assignments').select('*').eq('client_id', clientId).order('created_at', { ascending:false }),
       sb.from('education_questions').select('*').order('position'),
-      sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS)))
+      sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS))),
+      // Missing table (client_checkin_coach_notes.sql not run yet) just leaves notes empty.
+      sb.from('client_checkin_coach_notes').select('week_start,wins,coach_objectives').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
     ]);
 
     var d = results[0].data || {};
@@ -632,7 +644,8 @@
       goals: (results[12].data || []).map(mapGoal),
       assignments: (results[13].data || []).map(mapAssignment),
       eduQuestions: (results[14].data || []).map(curMap),
-      habitLogs: mapHabitLogs(results[15].data || [])
+      habitLogs: mapHabitLogs(results[15].data || []),
+      coachNotes: mapCoachNotes(results[16].data || [])
     };
   }
 
@@ -677,6 +690,7 @@
   async function loadClientPortal(clientId, displayName){
     viewingClientId = clientId;
     viewingClientName = String(displayName || '').split(' ')[0];
+    renderClientModeUi();
     portalData = null;
     ciEditing = false;
     ciDraft = null;
@@ -821,12 +835,14 @@
     var q = new URLSearchParams(window.location.search);
     q.delete('tab');
     if (clientId) q.set('client', clientId); else q.delete('client');
+    if (clientId && clientMode) q.set('as', 'client'); else q.delete('as');
     var search = q.toString() ? '?' + q.toString() : '';
     if (search === window.location.search) return;
     try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
   }
 
-  function enterClientPortalView(clientId, name, tab){
+  function enterClientPortalView(clientId, name, tab, asClient){
+    setClientModeFlag(!!asClient);
     writeClientParam(clientId);
     state.view = 'client';
     state.portalTab = tab || 'portal';
@@ -836,6 +852,7 @@
   }
 
   function exitClientPortalView(){
+    setClientModeFlag(false);
     writeClientParam(null);
     closeQuickEdit();
     qeFlush();
@@ -852,6 +869,47 @@
   }
 
   $('cpBackToRoster').addEventListener('click', exitClientPortalView);
+
+  // ─── Coach: client mode ───────────────────────────────────────────────
+  // Lets the coach see a client's portal exactly as that client does: no
+  // coach controls, the client's own prompts and forms. Anything done in
+  // client mode is saved to that client's portal (the coach is still the
+  // one signed in). The calendar keeps its coach view, since connecting
+  // Google / Outlook here would link the coach's account, not the client's.
+  function setClientModeFlag(on){
+    clientMode = !!(on && isCoachSession);
+    isCoachUser = isCoachSession && !clientMode;
+    renderClientModeUi();
+  }
+
+  function renderClientModeUi(){
+    var inClient = isCoachSession && state.view === 'client' && !!viewingClientId;
+    var btn = $('cpClientModeBtn');
+    btn.hidden = !inClient;
+    btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
+    btn.classList.toggle('is-on', clientMode);
+    btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
+    $('cpClientModeBanner').hidden = !(inClient && clientMode);
+    $('cpClientModeName').textContent = viewingClientName || 'this client';
+  }
+
+  function toggleClientMode(){
+    if (!isCoachSession || !viewingClientId) return;
+    setClientModeFlag(!clientMode);
+    writeClientParam(viewingClientId);
+    // Drop anything half-open from the other mode before re-rendering.
+    closeQuickEdit();
+    qeFlush();
+    if (hwOpenId) closeHwSheet();
+    ciEditing = false;
+    ciDraft = null;
+    renderClientPortal();
+    renderViewToggle();
+    renderVisionBand();
+  }
+
+  $('cpClientModeBtn').addEventListener('click', toggleClientMode);
+  $('cpClientModeExit').addEventListener('click', toggleClientMode);
 
   // ─── First-time name capture ───────────────────────────────────────────
   $('cpNameSubmit').addEventListener('click', async function(){
@@ -1078,6 +1136,7 @@
   // Whether the signed-in user is looking at their own portal (vs the
   // coach browsing a client's).
   function isOwnPortal(){
+    if (clientMode && viewingClientId) return true;
     return !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
   }
 
@@ -2859,6 +2918,92 @@
     return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; })[0] || null;
   }
 
+  // ─── Coach's side of the check-in: Wins + Coach's Objectives ──────────
+  // One row per client per week in client_checkin_coach_notes
+  // (scripts/client_checkin_coach_notes.sql), keyed by that week's Monday.
+  // Shown on the same week's card as the client's form; the coach can fill
+  // it in before or after the client submits. Also edited in bulk from the
+  // master editor at checkin-notes/.
+  var COACH_NOTE_FIELDS = [
+    { key:'wins',             label:'Wins',                placeholder:'What went well for them this week…' },
+    { key:'coach_objectives', label:'Coach\u2019s Objectives', placeholder:'What you want to cover or push on…' }
+  ];
+  var cnTimers = {};
+
+  function mapCoachNotes(rows){
+    var out = {};
+    rows.forEach(function(r){ out[r.week_start] = { wins: r.wins || '', coach_objectives: r.coach_objectives || '' }; });
+    return out;
+  }
+  function weekKeyOf(d){ return dayKey(startOfWeek(d)); }
+  function coachNoteFor(wk){ return (portalData && portalData.coachNotes && portalData.coachNotes[wk]) || null; }
+  function hasCoachNote(n){ return !!(n && (n.wins.trim() || n.coach_objectives.trim())); }
+  function weekKeyLabel(wk){
+    var p = wk.split('-').map(Number);
+    return 'Week of ' + new Date(p[0], p[1]-1, p[2]).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // The notes block for one week. Editable for the coach; read-only (and
+  // only when there's something to read) for the client.
+  function coachNotesHtml(wk){
+    var n = coachNoteFor(wk) || { wins:'', coach_objectives:'' };
+    if (isCoachUser) {
+      var h = '<div class="cp-cn" data-cn-week="'+esc(wk)+'"><div class="cp-cn-head"><span class="cp-cn-kicker">Your notes</span><span class="cp-cn-status" data-cn-status></span></div>';
+      COACH_NOTE_FIELDS.forEach(function(f){
+        h += '<label class="cp-cn-field"><span class="cp-ci-key">'+esc(f.label)+'</span>'
+          + '<textarea class="cp-textarea cp-cn-input" data-cn-field="'+f.key+'" placeholder="'+esc(f.placeholder)+'" maxlength="4000">'+esc(n[f.key])+'</textarea></label>';
+      });
+      return h + '</div>';
+    }
+    if (!hasCoachNote(n)) return '';
+    var r = '<div class="cp-cn is-readonly"><div class="cp-cn-head"><span class="cp-cn-kicker">From your coach</span></div>';
+    COACH_NOTE_FIELDS.forEach(function(f){
+      if (!n[f.key].trim()) return;
+      r += '<div class="cp-ci-row"><span class="cp-ci-key">'+esc(f.label)+'</span><div class="cp-ci-value">'+linkify(n[f.key])+'</div></div>';
+    });
+    return r + '</div>';
+  }
+
+  function renderCiCoachCard(){
+    var html = coachNotesHtml(weekKeyOf(new Date()));
+    var card = $('cpCiCoachCard');
+    // Don't rebuild under the coach's cursor.
+    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
+    card.innerHTML = html;
+    card.hidden = !html;
+  }
+
+  // `n` is the note object captured when typing started, so a save that
+  // fires after the coach has moved on still goes to the right client.
+  async function saveCoachNote(clientId, wk, n, box){
+    if (!isCoachSession) return;
+    var st = box && box.querySelector('[data-cn-status]');
+    if (st) { st.textContent = 'Saving…'; st.classList.remove('is-error'); }
+    var { error } = await sb.from('client_checkin_coach_notes').upsert({
+      client_id: clientId, week_start: wk, wins: n.wins, coach_objectives: n.coach_objectives, updated_at: new Date().toISOString()
+    }, { onConflict: 'client_id,week_start' });
+    if (!st || !st.isConnected) return;
+    if (error) { st.textContent = 'Not saved — ' + error.message; st.classList.add('is-error'); return; }
+    st.textContent = 'Saved';
+  }
+
+  function onCoachNoteInput(e){
+    var ta = e.target.closest('[data-cn-field]'); if (!ta || !isCoachUser || !portalData) return;
+    var box = ta.closest('[data-cn-week]');
+    var wk = box.getAttribute('data-cn-week');
+    var field = ta.getAttribute('data-cn-field');
+    var n = portalData.coachNotes[wk] || (portalData.coachNotes[wk] = { wins:'', coach_objectives:'' });
+    n[field] = ta.value;
+    // Keep the same week's other copy (top card / history card) in step.
+    document.querySelectorAll('[data-cn-week="'+wk+'"] [data-cn-field="'+field+'"]').forEach(function(o){ if (o !== ta) o.value = ta.value; });
+    var st = box.querySelector('[data-cn-status]'); if (st) { st.textContent = 'Editing…'; st.classList.remove('is-error'); }
+    var clientId = viewingClientId;
+    var key = clientId + '|' + wk + '|' + field;
+    clearTimeout(cnTimers[key]);
+    cnTimers[key] = setTimeout(function(){ delete cnTimers[key]; saveCoachNote(clientId, wk, n, box); }, 700);
+  }
+  ['cpCiCoachCard','cpCiHistory'].forEach(function(id){ $(id).addEventListener('input', onCoachNoteInput); });
+
   function isReviewedStatus(status){ return /^(reviewed|done)$/i.test(status || ''); }
 
   function renderCheckinsTab(){
@@ -2868,6 +3013,7 @@
       + (isOwnPortal() ? ' — fill this out before your call.' : '');
     setBadge('cpTabBadgeCheckins', isOwnPortal() && !thisWeeksPreCall() ? 1 : 0);
     renderCiFormCard();
+    renderCiCoachCard();
     renderCiHistory();
     renderCheckinCard();
   }
@@ -3139,21 +3285,57 @@
     renderCheckinsTab();
   });
 
+  // Past check-ins start collapsed. The ones opened stay open when the list
+  // re-renders (a review toggle, a realtime refresh); cleared per client.
+  var ciOpenIds = {};
+  var ciOpenFor = null;
+
   function renderCiHistory(){
+    if (ciOpenFor !== viewingClientId) { ciOpenIds = {}; ciOpenFor = viewingClientId; }
+    var hist = $('cpCiHistory');
+    // Don't rebuild under the coach's cursor.
+    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
     var rows = portalData.preCallSubmissions || [];
-    if (!rows.length) {
-      $('cpCiHistory').innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
+    // Past weeks the coach wrote notes for but the client never submitted
+    // still get a card. (This week's notes live in the card up top.)
+    var thisWk = weekKeyOf(new Date());
+    var subWeeks = {};
+    rows.forEach(function(sub){ if (sub.submittedAt) subWeeks[weekKeyOf(new Date(sub.submittedAt))] = true; });
+    var items = rows.map(function(sub){ return { sub: sub, wk: sub.submittedAt ? weekKeyOf(new Date(sub.submittedAt)) : '', sortKey: sub.submittedAt || '' }; });
+    Object.keys(portalData.coachNotes || {}).forEach(function(wk){
+      if (wk >= thisWk || subWeeks[wk] || !hasCoachNote(portalData.coachNotes[wk])) return;
+      items.push({ sub: null, wk: wk, sortKey: wk + 'T00:00:00' });
+    });
+    items.sort(function(a, b){ return a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0; });
+    if (!items.length) {
+      hist.innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
       return;
     }
     var h = '';
-    rows.forEach(function(sub, idx){
+    // A week's coach notes go on its newest submission only.
+    var notesShown = {};
+    items.forEach(function(it){
+      var sub = it.sub, wk = it.wk;
+      var showNotes = wk && !notesShown[wk] && (isCoachUser || hasCoachNote(coachNoteFor(wk)));
+      if (showNotes) notesShown[wk] = true;
+      var noteChip = hasCoachNote(coachNoteFor(wk)) && showNotes ? '<span class="cp-due-chip">📝 Coach notes</span>' : '';
+      if (!sub) {
+        var oid = 'wk:' + wk;
+        h += '<details class="cp-ci-item" data-ci-item="'+esc(oid)+'"'+(ciOpenIds[oid] ? ' open' : '')+'><summary>'
+          + '<span class="cp-ci-date">'+esc(weekKeyLabel(wk))+'</span>'
+          + statusPill('No client check-in', '#9aa3ad') + noteChip
+          + '</summary><div class="cp-ci-body">' + coachNotesHtml(wk) + '</div></details>';
+        return;
+      }
       var reviewed = isReviewedStatus(sub.status);
-      h += '<details class="cp-ci-item"'+(idx === 0 ? ' open' : '')+'><summary>'
+      h += '<details class="cp-ci-item" data-ci-item="'+esc(sub.id)+'"'+(ciOpenIds[sub.id] ? ' open' : '')+'><summary>'
         + '<span class="cp-ci-date">'+esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated')+'</span>'
         + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
         + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : 'Notion')+'</span>'
+        + noteChip
         + (sub.coaching_call_objective ? '<p class="cp-ci-snippet">'+esc(sub.coaching_call_objective)+'</p>' : '')
         + '</summary><div class="cp-ci-body">';
+      if (showNotes) h += coachNotesHtml(wk);
       var any = false;
       PRECALL_FIELDS.forEach(function(f){
         var v = sub[f.key], html;
@@ -3177,8 +3359,15 @@
       }
       h += '</div></details>';
     });
-    $('cpCiHistory').innerHTML = h;
+    hist.innerHTML = h;
   }
+
+  // 'toggle' doesn't bubble, so listen in the capture phase.
+  $('cpCiHistory').addEventListener('toggle', function(e){
+    var d = e.target; if (!d.matches || !d.matches('[data-ci-item]')) return;
+    var id = d.getAttribute('data-ci-item');
+    if (d.open) ciOpenIds[id] = true; else delete ciOpenIds[id];
+  }, true);
 
   $('cpCiHistory').addEventListener('click', async function(e){
     var btn = e.target.closest('[data-ci-review]'); if (!btn || !isCoachUser) return;
@@ -3689,7 +3878,7 @@
   // Only the client can connect — the OAuth flows below run as whoever is
   // signed into this browser tab. Each time the client's browser loads
   // events it saves a copy (calSaveSnapshot), and a coach browsing the
-  // client's portal (see isCoachUser) sees that copy.
+  // client's portal (see isCoachSession) sees that copy.
   //
   // Writes: with a live token the client's browser adds / moves / removes
   // events straight on Google or Outlook. The coach never holds the client's
@@ -4342,7 +4531,7 @@
       if (!row.connected || !calState[row.provider]) return;
       calState[row.provider].connected = true;
       calState[row.provider].email = row.account_email || '';
-      if (isCoachUser) {
+      if (isCoachSession) {
         // Coach: show the client's last saved copy, with queued edits on top.
         calState[row.provider].events = calEventsFromSnapshot(row.events);
         calState[row.provider].syncedAt = row.synced_at ? new Date(row.synced_at) : null;
@@ -4351,7 +4540,7 @@
       }
     });
     calRenderCard();
-    if (isCoachUser) return;
+    if (isCoachSession) return;
 
     // Google: no popup here, ever (GIS's "silent" popup could open a real
     // sign-in window by itself). Instead use the token this browser still
@@ -4412,7 +4601,7 @@
   function calPaintStatus(){
     var el = $('cpCalStatus');
     var msg = calUi.statusMsg, isError = calUi.statusErr;
-    if (!msg) { msg = isCoachUser ? calCoachSyncNote() : calClientNote(); isError = false; }
+    if (!msg) { msg = isCoachSession ? calCoachSyncNote() : calClientNote(); isError = false; }
     el.textContent = msg;
     el.hidden = !msg;
     el.classList.toggle('is-error', !!isError);
@@ -4420,7 +4609,7 @@
 
   function calProviderBtnLabel(provider, name){
     var s = calState[provider];
-    if (isCoachUser) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
+    if (isCoachSession) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
     if (s.busy) return 'Connecting…';
     if (s.connected && (s.needsReconnect || !s.canWrite)) return 'Reconnect ' + name;
     if (s.connected) return name + ' · ' + (s.email || 'Connected');
@@ -4430,12 +4619,12 @@
   function calRenderButtons(){
     [['google','cpCalConnectGoogle','Google'], ['outlook','cpCalConnectOutlook','Outlook']].forEach(function(p){
       var s = calState[p[0]], btn = $(p[1]);
-      var on = s.connected && !s.needsReconnect && (isCoachUser || s.canWrite);
+      var on = s.connected && !s.needsReconnect && (isCoachSession || s.canWrite);
       btn.innerHTML = (on ? '<span class="cp-cal-provider-dot" style="background:' + CAL_PROVIDER_COLORS[p[0]] + '"></span>' : '')
         + esc(calProviderBtnLabel(p[0], p[2]));
       btn.classList.toggle('is-connected', on);
       btn.classList.toggle('is-loading', s.busy);
-      btn.disabled = isCoachUser;
+      btn.disabled = isCoachSession;
     });
   }
 
@@ -4514,7 +4703,7 @@
       var m = calState.meta[e.id] || (e.seriesId && calState.meta[e.seriesId]) || {};
       return Object.assign({}, e, { core:m.core === 'none' ? null : (m.core || null), suggestedCore:m.core ? null : calSuggestCore(e.title), createdBy:m.createdBy || null });
     });
-    if (isCoachUser) {
+    if (isCoachSession) {
       calState.ops.forEach(function(op){
         var p = op.payload;
         if (op.op === 'create') {
@@ -4707,7 +4896,7 @@
   function calStatusLine(e){
     var cal = e.provider === 'google' ? 'Google Calendar' : 'Outlook';
     var name = viewingClientName || 'the client';
-    if (isCoachUser) {
+    if (isCoachSession) {
       if (e.pendingOp) return 'Pending — this lands on ' + name + '’s ' + cal + ' the next time they open their portal.';
       if (e.moveOp) return 'Moved — updates on ' + name + '’s ' + cal + ' the next time they open their portal.';
       if (e.createdBy === 'coach') return 'You added this. It’s on ' + name + '’s ' + cal + '.';
@@ -4720,7 +4909,7 @@
   }
 
   // Only events made in the portal can be removed from it.
-  function calRemovable(e){ return isCoachUser ? !!(e.pendingOp || e.createdBy === 'coach') : !!e.createdBy; }
+  function calRemovable(e){ return isCoachSession ? !!(e.pendingOp || e.createdBy === 'coach') : !!e.createdBy; }
 
   function calRenderPop(evs){
     var pop = $('cpCalPop');
@@ -4752,7 +4941,7 @@
     var evs = calEvents();
     if (calUi.selId && !evs.some(function(e){ return e.id === calUi.selId; })) calUi.selId = null;
     var body = view === 'month' ? calRenderMonth(evs) : view === 'agenda' ? calRenderAgenda(evs) : calRenderWeek(evs);
-    if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
+    if (isCoachSession && !calState.google.connected && !calState.outlook.connected) {
       body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
     }
     $('cpCalBody').innerHTML = body;   // also drops any paging ghost
@@ -4764,12 +4953,12 @@
   function calRenderCard(){
     $('cpCalendarCard').hidden = false;
     $('cpTabCalendar').hidden = false;
-    $('cpCalSub').textContent = isCoachUser
+    $('cpCalSub').textContent = isCoachSession
       ? 'Upcoming events from this client\'s connected calendars.'
       : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
     calRenderButtons();
-    $('cpCalRoutineLink').href = './body/' + (isCoachUser && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
+    $('cpCalRoutineLink').href = './body/' + (isCoachSession && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
     calPaintStatus();
     calRenderCalendar();
   }
@@ -4783,7 +4972,7 @@
     calUi.selId = id;
     calSetStatus('');
 
-    if (isCoachUser) {
+    if (isCoachSession) {
       var times = { start:start.toISOString(), end:end.toISOString() };
       var saving = ev.pendingOp ? calUpdateOp(ev.pendingOp, Object.assign({}, ev.pendingOp.payload, times))
         : ev.moveOp ? calUpdateOp(ev.moveOp, Object.assign({ allDay:ev.allDay }, times))
@@ -4828,7 +5017,7 @@
     var clientId = viewingClientId;
     calSetStatus('');
     try {
-      if (isCoachUser) {
+      if (isCoachSession) {
         if (ev.pendingOp) await calDropOp(ev.pendingOp);
         else {
           if (ev.moveOp) await calDropOp(ev.moveOp);
@@ -4874,17 +5063,17 @@
     var providers = calFormProviders();
     var name = viewingClientName || 'the client';
     if (!providers.length) {
-      calSetStatus(isCoachUser ? name + ' hasn\'t connected a calendar yet.' : 'Connect Google or Outlook above first, then add events here.', true);
+      calSetStatus(isCoachSession ? name + ' hasn\'t connected a calendar yet.' : 'Connect Google or Outlook above first, then add events here.', true);
       return;
     }
-    var preferred = providers.filter(function(p){ return isCoachUser || calCanWrite(p); })[0] || providers[0];
+    var preferred = providers.filter(function(p){ return isCoachSession || calCanWrite(p); })[0] || providers[0];
     var h = Math.min(Math.max(hour == null ? 9 : hour, 0), 23);
     calUi.form = { provider:preferred, core:null, coreTouched:false, saving:false };
-    $('cpCalFormHeading').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
-    $('cpCalFormSub').textContent = isCoachUser
+    $('cpCalFormHeading').textContent = isCoachSession ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
+    $('cpCalFormSub').textContent = isCoachSession
       ? 'Goes onto the calendar ' + name + ' has connected. It shows as pending here until it syncs.'
       : 'Goes straight onto your connected calendar. Your coach will see it too.';
-    $('cpCalFormSave').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add event';
+    $('cpCalFormSave').textContent = isCoachSession ? 'Add to ' + name + '’s calendar' : 'Add event';
     $('cpCalFormTitle').value = '';
     $('cpCalFormDate').value = calDateKey(day);
     $('cpCalFormStart').value = calHHMM(h);
@@ -4906,7 +5095,7 @@
     if (!date || !st || !en) return calFormError('Pick a date, start and end time.');
     var start = new Date(date + 'T' + st), end = new Date(date + 'T' + en);
     if (end <= start) return calFormError('End time needs to be after the start time.');
-    if (!isCoachUser && !calCanWrite(f.provider)) {
+    if (!isCoachSession && !calCanWrite(f.provider)) {
       return calFormError('Reconnect ' + calProviderName(f.provider) + ' first — the portal needs permission to add events to your calendar.');
     }
     var joinRaw = $('cpCalFormJoin').value.trim();
@@ -4919,7 +5108,7 @@
     f.saving = true; $('cpCalFormSave').disabled = true; calFormError('');
     try {
       var newId;
-      if (isCoachUser) {
+      if (isCoachSession) {
         var op = await calQueueOp(clientId, f.provider, 'create', null,
           { title:title, start:start.toISOString(), end:end.toISOString(), joinUrl:joinRaw, core:f.core, repeat:repeat, until:until });
         newId = op.key;
@@ -5148,7 +5337,7 @@
     var sc = calScroller(); if (!sc) return true;
     return dir > 0 ? sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2 : sc.scrollLeft <= 1;
   }
-  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachUser && !calState.google.connected && !calState.outlook.connected); }
+  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachSession && !calState.google.connected && !calState.outlook.connected); }
 
   // Trackpad: the grid moves with every sideways scroll event. A flick that
   // goes far enough pages right away and ignores the rest of its coast;
@@ -5363,12 +5552,12 @@
   }
 
   $('cpCalConnectGoogle').addEventListener('click', function(){
-    if (isCoachUser) return;
+    if (isCoachSession) return;
     if (calState.google.connected && !calState.google.needsReconnect) calDisconnectGoogle();
     else calConnectGoogle();
   });
   $('cpCalConnectOutlook').addEventListener('click', function(){
-    if (isCoachUser) return;
+    if (isCoachSession) return;
     if (calState.outlook.connected && !calState.outlook.needsReconnect) calDisconnectOutlook();
     else calConnectOutlook();
   });
@@ -5640,6 +5829,7 @@
       hideAllPortalTabs();
     }
     renderQeFab();
+    renderClientModeUi();
   }
 
   // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
@@ -5656,7 +5846,7 @@
     if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
     var c = findRosterClient(cid);
     if (!c) { writeClientParam(null); return; }
-    enterClientPortalView(cid, c.name, tab);
+    enterClientPortalView(cid, c.name, tab, q.get('as') === 'client');
   }
 
   function findRosterClient(id){
