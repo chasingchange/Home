@@ -566,7 +566,7 @@
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
-      loadRoster().then(openDeepLinkedClient);
+      loadRoster().then(openDeepLinkedClient).then(openDeepLinkedTool);
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
@@ -3867,7 +3867,16 @@
     if (label) label.textContent = f.label || 'Untitled question';
   }
 
-  $('cpFormOpenBtn').addEventListener('click', openFormEditor);
+  // ?open=checkin-form (the "Form" switch on the check-in notes page)
+  // opens this editor once the coach dashboard is up.
+  function openDeepLinkedTool(){
+    var q = new URLSearchParams(window.location.search);
+    if (q.get('open') !== 'checkin-form') return;
+    q.delete('open');
+    var search = q.toString() ? '?' + q.toString() : '';
+    try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
+    if (isCoachUser && state.view === 'coach') openFormEditor();
+  }
   $('cpFormOverlay').addEventListener('click', function(e){ if (e.target.closest('[data-close-form]')) closeFormEditor(); });
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-fm-mode]'), function(b){
