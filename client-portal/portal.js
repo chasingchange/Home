@@ -5869,10 +5869,65 @@
 
   $('cpInviteEmail').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('cpInviteSend').click(); });
 
+  // ─── Coach: permanently delete a client ───────────────────────────────
+  // Goes through the delete-client Edge Function (removing the login needs
+  // the service-role key). The CRM can call the same function.
+  var DELETE_FN = 'delete-client';
+  var deleteTarget = null;
+
+  function openDeleteClient(id, name){
+    deleteTarget = { id: id, name: (name || '').trim() || 'this client' };
+    $('cpDeleteName').textContent = deleteTarget.name;
+    $('cpDeleteNameHint').textContent = deleteTarget.name;
+    $('cpDeleteConfirm').value = '';
+    $('cpDeleteGo').disabled = true;
+    hideErr('cpDeleteError');
+    openModal('cpDeleteOverlay');
+    $('cpDeleteConfirm').focus();
+  }
+
+  function deleteConfirmed(){
+    return !!deleteTarget && $('cpDeleteConfirm').value.trim().toLowerCase() === deleteTarget.name.toLowerCase();
+  }
+
+  $('cpDeleteConfirm').addEventListener('input', function(){ $('cpDeleteGo').disabled = !deleteConfirmed(); });
+  $('cpDeleteConfirm').addEventListener('keydown', function(e){ if (e.key === 'Enter' && deleteConfirmed()) $('cpDeleteGo').click(); });
+
+  $('cpDeleteGo').addEventListener('click', async function(){
+    if (!deleteConfirmed()) return;
+    var target = deleteTarget;
+    hideErr('cpDeleteError');
+    setLoading($('cpDeleteGo'), true, 'Deleting…');
+    var res;
+    try {
+      var r = await sb.functions.invoke(DELETE_FN, { body: { client_id: target.id } });
+      if (r.error) {
+        var msg = r.error.message || '';
+        if (r.error.context && r.error.context.json) {
+          try { var j = await r.error.context.json(); if (j && j.error) msg = j.error; } catch (e) {}
+        }
+        if (/Failed to send a request|not found|404/i.test(msg)) msg = 'The delete-client function isn\u2019t deployed yet — run: supabase functions deploy delete-client';
+        res = { ok: false, error: msg };
+      } else {
+        res = r.data || { ok: false, error: 'No response from the delete function.' };
+      }
+    } catch (e) {
+      res = { ok: false, error: e.message || 'Could not delete the client.' };
+    }
+    setLoading($('cpDeleteGo'), false, 'Delete client');
+    if (!res.ok) { showErr('cpDeleteError', res.error || 'Could not delete the client.'); $('cpDeleteGo').disabled = !deleteConfirmed(); return; }
+    closeModal('cpDeleteOverlay');
+    deleteTarget = null;
+    if (editState && $('cpEditOverlay') && !$('cpEditOverlay').hidden) closeEditPortal();
+    roster = roster.filter(function(c){ return c.id !== target.id; });
+    renderRoster();
+    loadRoster();
+  });
+
   function renderRoster(){
     var h='';
     roster.forEach(function(c){
-      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><div><span class="cp-roster-name">'+esc(c.name)+'</span>'+inviteLine(c)+'</div>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button></div>';
+      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><div><span class="cp-roster-name">'+esc(c.name)+'</span>'+inviteLine(c)+'</div>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><div class="cp-roster-actions"><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button><button type="button" class="cp-roster-delete" data-delete-client="'+c.id+'" aria-label="Delete '+esc(c.name)+'">Delete</button></div></div>';
     });
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
@@ -5956,6 +6011,13 @@
         if (res.result !== 'already_active') rc.invitedAt = new Date().toISOString();
         if (res.result === 'already_active') loadRoster();
       });
+      return;
+    }
+    var delBtn = e.target.closest('[data-delete-client]');
+    if (delBtn) {
+      e.stopPropagation();
+      var dc = findRosterClient(delBtn.getAttribute('data-delete-client'));
+      if (dc) openDeleteClient(dc.id, dc.name);
       return;
     }
     var editBtn = e.target.closest('[data-edit-client]');
@@ -6336,6 +6398,11 @@
 
   $('cpEditCancel').addEventListener('click',closeEditPortal);
   $('cpEditClose').addEventListener('click',closeEditPortal);
+  $('cpEditDelete').addEventListener('click', function(){
+    var id = editState && (editState.clientId || editState.id);
+    if (!id) return;
+    openDeleteClient(id, $('cpEditTitle').textContent);
+  });
   $('cpEditBack').addEventListener('click',closeEditPortal);
 
   // ─── Coach: quick edit popup (persists across every portal tab) ───────
