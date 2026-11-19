@@ -453,7 +453,7 @@
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
-      loadRoster();
+      loadRoster().then(openDeepLinkedClient);
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
@@ -4783,6 +4783,24 @@
       hideAllPortalTabs();
     }
     renderQeFab();
+  }
+
+  // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
+  // pop-up) opens that client straight onto that tab. Used once, then the
+  // URL is cleaned so a refresh lands back on the roster.
+  var deepLinkUsed = false;
+  function openDeepLinkedClient(){
+    if (deepLinkUsed) return;
+    deepLinkUsed = true;
+    var q = new URLSearchParams(window.location.search);
+    var cid = q.get('client');
+    if (!cid) return;
+    var tab = q.get('tab') || 'portal';
+    if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
+    try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
+    var c = findRosterClient(cid);
+    if (!c) return;
+    enterClientPortalView(cid, c.name, tab);
   }
 
   function findRosterClient(id){

@@ -150,12 +150,20 @@
   function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
 
   var toastTimer;
-  function toast(msg, isError){
+  // links: optional [{ href, label }] shown after the message; the toast then
+  // stays up longer so there's time to click.
+  function toast(msg, isError, links){
     var el = $('alToast');
     if (!el) { el = document.createElement('div'); el.id = 'alToast'; el.className = 'al-toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
     el.textContent = msg; el.classList.toggle('is-error', !!isError); el.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.hidden = true; }, 3800);
+    (links || []).forEach(function(l){
+      var a = document.createElement('a'); a.className = 'al-toast-link'; a.href = l.href; a.textContent = l.label;
+      el.appendChild(document.createTextNode(' ')); el.appendChild(a);
+    });
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.hidden = true; }, links && links.length ? 10000 : 3800);
   }
+  // Opens the coach portal on this client's To Do's tab.
+  function clientTodosHref(clientId){ return '../client-portal/?client=' + encodeURIComponent(clientId) + '&tab=homework'; }
   function note(id, msg, isError){ var el = $(id); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
   function busy(btn, on, label){ btn.disabled = on; if (label) btn.textContent = label; }
 
@@ -682,7 +690,14 @@
     closeModal('alAssign');
     selected = {};
     renderAll();
-    toast('Assigned ' + plural(p.rows.length, 'to-do') + '. Clients see them in their To Do\'s tab now.');
+    var assignedIds = [];
+    p.rows.forEach(function(r){ if (assignedIds.indexOf(r.client_id) === -1) assignedIds.push(r.client_id); });
+    var links = assignedIds.slice(0, 4).map(function(cid){
+      var c = clients.filter(function(x){ return x.id === cid; })[0];
+      var name = c ? c.name : 'client';
+      return { href: clientTodosHref(cid), label: assignedIds.length === 1 ? 'Open ' + name + '\u2019s To Do\u2019s \u2192' : name + ' \u2192' };
+    });
+    toast('Assigned ' + plural(p.rows.length, 'to-do') + '.', false, links);
   });
 
   // ─── export ─────────────────────────────────────────────────────────────
