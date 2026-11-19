@@ -59,8 +59,8 @@
       .al-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:rgba(7,31,53,.7);cursor:pointer;user-select:none;}
       .al-check input{width:17px;height:17px;accent-color:#071f35;margin:0;}
 
-      .al-list-head{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:.02em;color:rgba(7,31,53,.45);border-bottom:1px solid rgba(7,31,53,.06);}
-      .al-row{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
+      .al-list-head{display:grid;grid-template-columns:28px 64px 72px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:.02em;color:rgba(7,31,53,.45);border-bottom:1px solid rgba(7,31,53,.06);}
+      .al-row{display:grid;grid-template-columns:28px 64px 72px minmax(0,1fr) 110px 110px 92px;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(7,31,53,.06);cursor:pointer;transition:background-color .12s;}
       .al-row:last-child{border-bottom:0;}
       .al-row:hover{background:rgba(7,31,53,.025);}
       .al-row.is-selected{background:rgba(42,157,240,.07);}
@@ -72,13 +72,6 @@
       .al-row-actions{display:flex;justify-content:flex-end;}
       .al-code{display:inline-block;min-width:36px;box-sizing:border-box;text-align:center;padding:4px 8px;border-radius:8px;background:rgba(7,31,53,.06);font-family:"Muli","Mulish",system-ui,sans-serif;font-weight:800;font-size:13px;letter-spacing:.01em;color:#071f35;font-variant-numeric:lining-nums tabular-nums;}
       .al-code--none{background:none;color:rgba(7,31,53,.3);font-weight:700;}
-      .al-weeks{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(7,31,53,.08);overflow-x:auto;scrollbar-width:thin;}
-      .al-weeks-label{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);margin-right:4px;flex:none;}
-      .al-week{all:unset;box-sizing:border-box;flex:none;cursor:pointer;height:32px;min-width:40px;padding:0 12px;border-radius:999px;border:1px solid rgba(7,31,53,.14);background:#fff;font-size:13px;font-weight:700;color:rgba(7,31,53,.7);display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background-color .12s,color .12s,border-color .12s;}
-      .al-week:hover{border-color:rgba(7,31,53,.35);color:#071f35;}
-      .al-week:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
-      .al-week.is-active{background:#071f35;border-color:#071f35;color:#fff;}
-      .al-week-n{font-size:12px;font-weight:600;opacity:.55;font-variant-numeric:lining-nums tabular-nums;}
       .al-code-preview{display:inline-block;margin-left:6px;font-family:"Raleway",sans-serif;font-weight:800;font-size:12px;padding:2px 8px;border-radius:6px;background:rgba(7,31,53,.06);vertical-align:1px;}
       .al-ed-section{border-top:1px solid rgba(7,31,53,.08);padding-top:14px;margin:0 0 14px;}
       .al-ed-section-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 8px;font-family:"Raleway",sans-serif;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#071f35;}
@@ -174,7 +167,8 @@
         .al-list-head{display:none;}
         .al-row{grid-template-columns:24px minmax(0,1fr) auto;row-gap:6px;}
         .al-row .al-col-code{grid-column:2;grid-row:1;}
-        .al-row > div:nth-child(3){grid-column:2;grid-row:2;}
+        .al-row > div:nth-child(4){grid-column:2;grid-row:2;}
+        .al-row .al-col-week{display:none;}
         .al-row .al-col-core{grid-column:2;grid-row:3;}
         .al-row .al-col-used{display:none;}
         .al-row .al-row-actions{grid-column:3;grid-row:1 / span 3;}
@@ -240,6 +234,7 @@
         <div class="al-card">
           <div class="al-toolbar">
             <input type="search" class="al-search" id="alSearch" placeholder="Search titles, instructions, tags…" aria-label="Search assignments" />
+            <select class="al-select" id="alWeekFilter" aria-label="Filter by week"></select>
             <select class="al-select" id="alCoreFilter" aria-label="Filter by core"></select>
             <select class="al-select" id="alCatFilter" aria-label="Filter by category"></select>
             <select class="al-select" id="alSort" aria-label="Sort">
@@ -251,10 +246,9 @@
             </select>
             <label class="al-check"><input type="checkbox" id="alShowArchived" /> Archived</label>
           </div>
-          <div class="al-weeks" id="alWeeks" role="group" aria-label="Choose a week"></div>
           <div class="al-list-head">
             <input type="checkbox" id="alSelectAll" aria-label="Select all shown" style="width:17px;height:17px;accent-color:#071f35;margin:0;" />
-            <span>Code</span><span>Assignment</span><span>Core</span><span>Assigned</span><span></span>
+            <span>Code</span><span>Week</span><span>Assignment</span><span>Core</span><span>Assigned</span><span></span>
           </div>
           <div id="alList"></div>
         </div>
