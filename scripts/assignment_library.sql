@@ -112,3 +112,35 @@ alter table public.assignment_library
         || (case when week is null then '' else '.' || week::text end)
     end
   ) stored;
+
+-- ─── Embedded images & PDFs ─────────────────────────────────────────────
+-- The editor's "+ Image / PDF" button uploads to this bucket and drops a
+-- line like  ![worksheet.pdf](https://…/assignment-files/library/…)  into
+-- the section text. The library preview and the client's To Do sheet render
+-- that line as the image itself, or an embedded PDF viewer. Because the line
+-- is part of the text, it is copied to clients with the rest of the
+-- assignment. Public read so clients can see them; only the coach can write.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('assignment-files', 'assignment-files', true, 26214400,
+        array['image/png','image/jpeg','image/webp','image/gif','application/pdf'])
+on conflict (id) do update set
+  public = true,
+  file_size_limit = 26214400,
+  allowed_mime_types = array['image/png','image/jpeg','image/webp','image/gif','application/pdf'];
+
+drop policy if exists "assignment files public read" on storage.objects;
+create policy "assignment files public read" on storage.objects for select
+  using (bucket_id = 'assignment-files');
+
+drop policy if exists "assignment files coach insert" on storage.objects;
+create policy "assignment files coach insert" on storage.objects for insert
+  with check (bucket_id = 'assignment-files' and public.is_coach(auth.uid()));
+
+drop policy if exists "assignment files coach update" on storage.objects;
+create policy "assignment files coach update" on storage.objects for update
+  using (bucket_id = 'assignment-files' and public.is_coach(auth.uid()))
+  with check (bucket_id = 'assignment-files' and public.is_coach(auth.uid()));
+
+drop policy if exists "assignment files coach delete" on storage.objects;
+create policy "assignment files coach delete" on storage.objects for delete
+  using (bucket_id = 'assignment-files' and public.is_coach(auth.uid()));

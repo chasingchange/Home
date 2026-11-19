@@ -2116,6 +2116,18 @@
     var t = String(line).trim().replace(/^#{1,3}\s*/, '').replace(/\s*[:|]\s*$/, '').toUpperCase();
     return HW_HEADINGS[t] ? (t === 'TODO' || t === 'TO-DO' ? 'TO DO' : t) : '';
   }
+  // A line that is only  ![name](https://…)  is a file the coach embedded
+  // from the Assignment Library: shown as the image itself, or a PDF viewer.
+  // Mirrors hwEmbedHtml in assignment-library/library.js.
+  var HW_EMBED_RE = /^\s*!\[([^\]]*)\]\((https:\/\/[^\s)]+)\)\s*$/;
+  function hwEmbedHtml(name, url){
+    var u = esc(url), n = esc(name || 'Attachment');
+    if (/\.pdf(?:[?#]|$)/i.test(url)) {
+      return '<div class="cp-hw-embed cp-hw-embed--pdf"><iframe src="' + u + '#view=FitH" title="' + n + '" loading="lazy"></iframe>'
+        + '<a href="' + u + '" target="_blank" rel="noopener">' + n + ' — open PDF ↗</a></div>';
+    }
+    return '<a class="cp-hw-embed cp-hw-embed--img" href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="' + n + '" loading="lazy" /></a>';
+  }
   function hwParse(text){
     var lines = String(text || '').split('\n');
     var sections = [], cur = { heading: '', lines: [] };
@@ -2129,10 +2141,12 @@
     return sections.filter(function(x){ return x.heading || x.lines.some(function(l){ return l.text.trim(); }); }).map(function(x){
       var stepsOk = x.heading === 'TO DO' || !hasHeadings;
       var marked = x.lines.filter(function(l){ return HW_STEP_RE.test(l.text); }).length;
-      var nonEmpty = x.lines.filter(function(l){ return l.text.trim(); });
+      var nonEmpty = x.lines.filter(function(l){ return l.text.trim() && !HW_EMBED_RE.test(l.text); });
       // A To Do with no markers but several lines → one step per line.
       var everyLine = stepsOk && x.heading === 'TO DO' && !marked && nonEmpty.length > 1;
       x.items = x.lines.map(function(l){
+        var em = l.text.match(HW_EMBED_RE);
+        if (em) return { embed: true, name: em[1], url: em[2], idx: l.idx };
         var m = stepsOk ? l.text.match(HW_STEP_RE) : null;
         if (m) return { step: true, done: /x/i.test(m[2] || ''), text: m[3], idx: l.idx };
         if (everyLine && l.text.trim()) return { step: true, done: false, text: l.text.trim(), idx: l.idx };
@@ -2155,6 +2169,7 @@
         para = [];
       }
       sec.items.forEach(function(it){
+        if (it.embed) { flush(); h += hwEmbedHtml(it.name, it.url); return; }
         if (!it.step) { para.push(it.text); return; }
         flush();
         h += '<label class="cp-hw-step' + (it.done ? ' is-done' : '') + '">'
