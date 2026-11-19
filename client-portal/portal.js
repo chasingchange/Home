@@ -1302,7 +1302,6 @@
     }
     if (e.target.closest('[data-goal-edit]')) { openGoalForm(goal); return; }
     if (e.target.closest('[data-goal-del]')) {
-      if (!confirm('Delete "' + goal.title + '"? This cannot be undone.')) return;
       var { error } = await sb.from('client_goals').delete().eq('id', goal.id);
       if (error) { alert('Could not delete goal: ' + error.message); return; }
       portalData.goals = portalData.goals.filter(function(g){ return g.id !== goal.id; });
@@ -2140,7 +2139,7 @@
   // stored in client_assignments with kind 'todo' (scripts/client_todos.sql).
   // The client ticks them off. The coach can turn one into a habit: the
   // to-do is marked complete and a client_habits row is added in its core.
-  var todoUi = { showAllDone: false, busy: {}, confirmDel: null };
+  var todoUi = { showAllDone: false, busy: {} };
   var TODO_DONE_PREVIEW = 5;
 
   function todoHabit(t){
@@ -2156,9 +2155,7 @@
       + (t.dueDate && !done ? dueChip(t) : '')
       + (habit ? '<span class="cp-todo-habit-tag" title="Now tracked on the Habits tab">↻ Now a habit</span>' : '');
     var actions = '';
-    if (isCoachUser && todoUi.confirmDel === String(t.id)) {
-      actions = '<span class="cp-todo-confirm">Delete?<button type="button" class="cp-todo-confirm-yes" data-todo-del-yes="'+esc(t.id)+'">Delete</button><button type="button" class="cp-todo-confirm-no" data-todo-del-no>Cancel</button></span>';
-    } else if (isCoachUser) {
+    if (isCoachUser) {
       if (!habit) actions += '<button type="button" class="cp-todo-habit-btn" data-todo-habit="'+esc(t.id)+'"'+(busy?' disabled':'')+' title="Marks this to-do complete and adds it to the client’s habits">'+(busy ? 'Saving…' : 'Make it a habit')+'</button>';
       actions += '<button type="button" class="cp-todo-del" data-todo-del="'+esc(t.id)+'" aria-label="Delete to-do: '+esc(t.title)+'">×</button>';
     }
@@ -2246,16 +2243,12 @@
       return;
     }
 
-    if (e.target.closest('[data-todo-del-no]')) { todoUi.confirmDel = null; renderTodoList(); return; }
-    var ask = e.target.closest('[data-todo-del]');
-    if (ask && isCoachUser) { todoUi.confirmDel = ask.getAttribute('data-todo-del'); renderTodoList(); return; }
-    var del = e.target.closest('[data-todo-del-yes]');
-    if (del && isCoachUser) {
-      var d = findTodo(del.getAttribute('data-todo-del-yes')); if (!d) return;
-      del.disabled = true; del.textContent = 'Deleting…';
+    var del = e.target.closest('[data-todo-del]');
+    if (del && isCoachUser && !del.disabled) {
+      var d = findTodo(del.getAttribute('data-todo-del')); if (!d) return;
+      del.disabled = true;
       var res = await sb.from('client_assignments').delete().eq('id', d.id).select('id');
       if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it.' };
-      todoUi.confirmDel = null;
       if (res.error) { renderTodoList(); alert('Could not delete: ' + res.error.message); return; }
       portalData.assignments = portalData.assignments.filter(function(x){ return x.id !== d.id; });
       renderHomeworkTab();
@@ -2581,7 +2574,6 @@
     var rm = e.target.closest('[data-file-remove-ctx="hw"]');
     if (rm) {
       var f = a.files[parseInt(rm.getAttribute('data-file-idx'), 10)]; if (!f) return;
-      if (!confirm('Remove "' + f.name + '"?')) return;
       var ok = await saveHw(a, { files: a.files.filter(function(x){ return x !== f; }) });
       if (ok) removeStoredFiles([f]);
       return;
@@ -2592,7 +2584,6 @@
     if (action === 'upload') { $('cpHwFileInput').click(); return; }
     if (action === 'edit') { openHwForm(a); return; }
     if (action === 'delete') {
-      if (!confirm('Delete "' + a.title + '"? Uploaded files are removed too.')) return;
       var { error } = await sb.from('client_assignments').delete().eq('id', a.id);
       if (error) { setNote('cpHwSaveNote', 'Could not delete: ' + error.message, true); return; }
       removeStoredFiles(a.files);
@@ -3238,7 +3229,6 @@
     var q = curFind(row.getAttribute('data-cur-id')); if (!q) return;
 
     if (e.target.closest('[data-cur-del]')) {
-      if (!confirm('Delete this question for every client?')) return;
       var del = await sb.from('education_questions').delete().eq('id', q.id);
       if (del.error) { setNote('cpCurNote', 'Could not delete: ' + del.error.message, true); return; }
       curBank = curBank.filter(function(x){ return x.id !== q.id; });
@@ -4433,7 +4423,6 @@
 
   async function calRemoveEvent(id){
     var ev = calFindEvent(id); if (!ev) return;
-    if (!ev.pendingOp && !confirm('Remove "' + ev.title + '" from ' + (isCoachUser ? (viewingClientName || 'the client') + '’s' : 'your') + ' calendar?')) return;
     var clientId = viewingClientId;
     calSetStatus('');
     try {
@@ -5162,7 +5151,6 @@
 
   $('cpVisionRemoveBtn').addEventListener('click', async function(){
     if (!viewingClientId || !portalData) return;
-    if (!window.confirm('Remove your vision board image?')) return;
     visionEdit = null;
     setVisionBusy(true);
     await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
