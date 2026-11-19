@@ -8,7 +8,7 @@
 // (client-portal/portal.js → coachNotesHtml).
 //
 // Each row also has two checkboxes (scripts/client_checkin_scheduling.sql):
-// "Went over their calendar" and "Next meeting scheduled". With the coach's
+// "Went over routine" and "Next meeting scheduled". With the coach's
 // Google Calendar connected, the page finds each client's meetings ("Name x
 // Tyler", or the client as a guest) and shows this week's meeting, the next
 // one, and the repeating series behind it. "Next meeting scheduled" follows
@@ -464,7 +464,7 @@
     var reviewed = active.filter(function(c){ return isReviewed(c.id); }).length;
     var scheduled = active.filter(function(c){ return isScheduled(c.id); }).length;
     $('cnStats').textContent = written + ' / ' + active.length + ' notes · ' + checkedIn + ' checked in · '
-      + reviewed + ' calendars reviewed · ' + scheduled + ' next booked';
+      + reviewed + ' routines reviewed · ' + scheduled + ' next booked';
   }
 
   function renderList(){
@@ -507,7 +507,7 @@
     } else if (calFresh() && n.next_scheduled !== !!nextMeeting(c.id)) {
       schedHint = 'marked by you · <button type="button" class="cn-linkbtn" data-reset="next_scheduled">use calendar</button>';
     }
-    return '<label class="cn-check"><input type="checkbox" data-flag="calendar_reviewed"' + (n.calendar_reviewed ? ' checked' : '') + dis + ' /> Went over their calendar</label>'
+    return '<label class="cn-check"><input type="checkbox" data-flag="calendar_reviewed"' + (n.calendar_reviewed ? ' checked' : '') + dis + ' /> Went over routine</label>'
       + '<a class="cn-minilink" href="../client-portal/?client=' + encodeURIComponent(c.id) + '#calendar">Open their calendar</a>' + theirCal
       + '<span class="cn-sep"></span>'
       + '<label class="cn-check"><input type="checkbox" data-flag="next_scheduled"' + (sched ? ' checked' : '') + dis + ' /> Next meeting scheduled</label>'

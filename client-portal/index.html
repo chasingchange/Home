@@ -467,9 +467,30 @@
       .cp-ci-key{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
       .cp-ci-value{font-size:15px;line-height:1.55;color:rgba(7,31,53,.85);white-space:pre-wrap;overflow-wrap:anywhere;}
       .cp-ci-value .cp-file-list{margin-top:0;}
-      .cp-ci-coach-card{margin-top:14px;}
-      .cp-cn{display:grid;gap:12px;}
-      .cp-ci-body .cp-cn{padding:14px 0 6px;border-bottom:1px solid rgba(7,31,53,.08);margin-bottom:4px;}
+      .cp-ci-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);}
+      .cp-ci-col{min-width:0;}
+      .cp-ci-col--client{padding-right:24px;}
+      .cp-ci-col--coach{padding-left:24px;border-left:1px solid rgba(7,31,53,.08);}
+      .cp-ci-cols .cp-ci-row{grid-template-columns:1fr;gap:4px;}
+      .cp-ci-cols .cp-ci-row:last-child{border-bottom:0;}
+      .cp-ci-body .cp-ci-cols{padding-top:16px;}
+      .cp-ci-sub + .cp-ci-sub{margin-top:18px;padding-top:14px;border-top:1px dashed rgba(7,31,53,.14);}
+      .cp-ci-subhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0 4px;}
+      .cp-ci-review{height:30px;padding:0 14px;font-size:13px;margin-left:auto;}
+      .cp-cn{display:grid;gap:12px;align-content:start;}
+      .cp-cn-kicker.cp-cn-kicker--client{color:#071f35;}
+      .cp-cn-next{max-width:none;}
+      .cp-cn-checks{display:grid;gap:8px;padding:4px 0;}
+      .cp-cn-check{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#071f35;cursor:pointer;}
+      .cp-cn-check input{width:18px;height:18px;margin:0;accent-color:#aa70d7;flex-shrink:0;}
+      .cp-cn-hint{margin:0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.55);}
+      .cp-cn-hint a,.cp-cn-link{color:#1a6fa8;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
+      .cp-cn-link{all:unset;cursor:pointer;color:#1a6fa8;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
+      @media(max-width:860px){
+        .cp-ci-cols{grid-template-columns:1fr;}
+        .cp-ci-col--client{padding-right:0;}
+        .cp-ci-col--coach{padding-left:0;border-left:0;border-top:1px solid rgba(7,31,53,.08);margin-top:20px;padding-top:20px;}
+      }
       .cp-cn-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
       .cp-cn-kicker{font-family:"Raleway",sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#aa70d7;}
       .cp-cn-status{font-size:12px;font-weight:700;color:rgba(7,31,53,.45);}
@@ -1336,8 +1357,12 @@
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
           </div>
-          <div class="cp-panel" id="cpCiFormCard"></div>
-          <div class="cp-panel cp-ci-coach-card" id="cpCiCoachCard" hidden></div>
+          <div class="cp-panel cp-ci-week">
+            <div class="cp-ci-cols">
+              <div class="cp-ci-col cp-ci-col--client" id="cpCiFormCard"></div>
+              <div class="cp-ci-col cp-ci-col--coach" id="cpCiCoachCard"></div>
+            </div>
+          </div>
           <p class="cp-goals-section-label" style="margin-top:32px;">Past check-ins</p>
           <div class="cp-ci-history" id="cpCiHistory"></div>
         </div>
@@ -1976,6 +2001,6 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
-    <script src="portal.js?v=20261119f"></script>
+    <script src="portal.js?v=20261119g"></script>
   </body>
 </html>

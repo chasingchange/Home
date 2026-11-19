@@ -598,7 +598,7 @@
       sb.from('education_questions').select('*').order('position'),
       sb.from('client_habit_logs').select('habit_label,day').eq('client_id', clientId).gte('day', dayKey(addDays(new Date(), -HABIT_LOG_DAYS))),
       // Missing table (client_checkin_coach_notes.sql not run yet) just leaves notes empty.
-      sb.from('client_checkin_coach_notes').select('week_start,wins,coach_objectives').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
+      sb.from('client_checkin_coach_notes').select('*').eq('client_id', clientId).order('week_start', { ascending:false }).limit(104)
     ]);
 
     var d = results[0].data || {};
@@ -2922,91 +2922,296 @@
     return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && new Date(s.submittedAt) >= ws; })[0] || null;
   }
 
-  // ─── Coach's side of the check-in: Wins + Coach's Objectives ──────────
-  // One row per client per week in client_checkin_coach_notes
-  // (scripts/client_checkin_coach_notes.sql), keyed by that week's Monday.
-  // Shown on the same week's card as the client's form; the coach can fill
-  // it in before or after the client submits. Also edited in bulk from the
-  // master editor at checkin-notes/.
+  // ─── Coach's side of the check-in ─────────────────────────────────────
+  // One row per client per week in client_checkin_coach_notes, keyed by that
+  // week's Monday (scripts/client_checkin_coach_notes.sql and
+  // client_checkin_scheduling.sql): Wins, Coach's Objectives, "Went over
+  // routine" (calendar_reviewed) and "Next meeting scheduled" (next_scheduled;
+  // null = follow the coach's Google Calendar). It fills the right-hand column
+  // beside the client's answers, for this week and every past week. Also
+  // edited in bulk from the master editor at checkin-notes/.
+  //
+  // "Next check-in" is client_dashboard.next_session_label, the same line the
+  // client sees on their Portal tab, so it only lives in one place.
   var COACH_NOTE_FIELDS = [
     { key:'wins',             label:'Wins',                placeholder:'What went well for them this week…' },
-    { key:'coach_objectives', label:'Coach\u2019s Objectives', placeholder:'What you want to cover or push on…' }
+    { key:'coach_objectives', label:'Coach’s Objectives', placeholder:'What you want to cover or push on…' }
   ];
+  var COACH_FLAGS = [
+    { key:'calendar_reviewed', label:'Went over routine' },
+    { key:'next_scheduled',    label:'Next meeting scheduled' }
+  ];
+  var CI_CAL_WEEKS = 6;
   var cnTimers = {};
+  var cnNextTimer = null;
+  var cnSchedCols = true;  // false until client_checkin_scheduling.sql has been run
 
+  function blankCoachNote(){ return { wins:'', coach_objectives:'', calendar_reviewed:false, next_scheduled:null }; }
   function mapCoachNotes(rows){
     var out = {};
-    rows.forEach(function(r){ out[r.week_start] = { wins: r.wins || '', coach_objectives: r.coach_objectives || '' }; });
+    rows.forEach(function(r){
+      out[r.week_start] = {
+        wins: r.wins || '', coach_objectives: r.coach_objectives || '',
+        calendar_reviewed: !!r.calendar_reviewed, next_scheduled: r.next_scheduled == null ? null : !!r.next_scheduled
+      };
+    });
     return out;
   }
   function weekKeyOf(d){ return dayKey(startOfWeek(d)); }
   function coachNoteFor(wk){ return (portalData && portalData.coachNotes && portalData.coachNotes[wk]) || null; }
+  function ensureCoachNote(wk){ return portalData.coachNotes[wk] || (portalData.coachNotes[wk] = blankCoachNote()); }
   function hasCoachNote(n){ return !!(n && (n.wins.trim() || n.coach_objectives.trim())); }
+  function hasCoachActivity(n){ return hasCoachNote(n) || !!(n && (n.calendar_reviewed || n.next_scheduled)); }
   function weekKeyLabel(wk){
     var p = wk.split('-').map(Number);
     return 'Week of ' + new Date(p[0], p[1]-1, p[2]).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
   }
+  function fmtMeeting(d){
+    return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })
+      + ' · ' + d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+  }
 
-  // The notes block for one week. Editable for the coach; read-only (and
-  // only when there's something to read) for the client.
-  function coachNotesHtml(wk){
-    var n = coachNoteFor(wk) || { wins:'', coach_objectives:'' };
+  // ─── Coach's Google Calendar: their next meeting with this client ─────
+  // Uses the coach's own Google connection (made on Check-in Notes; same
+  // google-calendar-token function and token cache). Coach only — the client
+  // sees whatever ends up in "Next check-in".
+  var ciCal = { clientId:null, status:'idle', next:null };  // idle | loading | on | off
+
+  async function ciCoachGoogleToken(){
+    var key = 'cc_gcal_token_' + ((coachUser && coachUser.id) || '');
+    try {
+      var c = JSON.parse(localStorage.getItem(key) || 'null');
+      if (c && c.t && c.e - Date.now() > 2 * 60 * 1000) return c.t;
+    } catch (e) { /* storage off */ }
+    var d = await calGoogleServerCall({ action:'token' });
+    if (!d || !d.access_token) return null;
+    try { localStorage.setItem(key, JSON.stringify({ t:d.access_token, e:Date.now() + (Number(d.expires_in) || 3600) * 1000, m:d.email || '' })); } catch (e) { /* storage off */ }
+    return d.access_token;
+  }
+
+  // A guest's email, or a "Name x Tyler" title (as on Check-in Notes).
+  function ciEventIsClient(ev, c){
+    if (ev.status === 'cancelled' || !ev.start || !ev.start.dateTime) return false;
+    var email = String(c.email || '').toLowerCase();
+    if (email && (ev.attendees || []).some(function(a){ return String(a.email || '').toLowerCase() === email; })) return true;
+    var title = String(ev.summary || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    var m = title.match(/^(.+?)\s+(?:x|<>|\/|&)\s+tyler\b/) || title.match(/^tyler(?:\s+wade)?\s+(?:x|<>|\/|&)\s+(.+)$/);
+    if (!m) return false;
+    var who = m[1].replace(/[^a-z' -]/g, '').trim().split(' ')[0];
+    var first = String(c.name || '').toLowerCase().trim().split(' ')[0];
+    return !!who && who === first;
+  }
+
+  async function ciLoadCalendar(clientId){
+    if (!isCoachUser || !clientId) return;
+    if (ciCal.clientId === clientId && ciCal.status !== 'idle') return;
+    ciCal = { clientId: clientId, status:'loading', next:null };
+    var c = findRosterClient(clientId) || {};
+    var found = null;
+    try {
+      var token = await ciCoachGoogleToken();
+      if (!token) throw new Error('not connected');
+      var from = new Date(), to = addDays(from, CI_CAL_WEEKS * 7);
+      var terms = [c.email, String(c.name || '').trim().split(' ')[0]].filter(Boolean);
+      for (var i = 0; i < terms.length; i++) {
+        var r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=50'
+          + '&timeMin=' + encodeURIComponent(from.toISOString()) + '&timeMax=' + encodeURIComponent(to.toISOString())
+          + '&q=' + encodeURIComponent(terms[i]), { headers: { Authorization: 'Bearer ' + token } });
+        if (!r.ok) throw new Error('Google Calendar said ' + r.status);
+        var hit = ((await r.json()).items || []).filter(function(ev){ return ciEventIsClient(ev, c); })[0];
+        if (hit) { var s = new Date(hit.start.dateTime); if (!found || s < found) found = s; }
+      }
+      if (ciCal.clientId !== clientId) return;
+      ciCal.status = 'on'; ciCal.next = found;
+    } catch (e) {
+      if (ciCal.clientId !== clientId) return;
+      ciCal.status = 'off';
+    }
+    // Nothing typed yet: fill it in from the calendar so the client sees it.
+    if (found && viewingClientId === clientId && portalData && !String(portalData.nextSessionLabel || '').trim()) {
+      setNextCheckin(clientId, fmtMeeting(found));
+    }
+    refreshCoachParts();
+  }
+
+  // Ticked when the calendar shows a next meeting, unless the coach ticked /
+  // unticked it by hand.
+  function nextScheduledOn(wk, n){
+    if (n.next_scheduled != null) return !!n.next_scheduled;
+    return wk === weekKeyOf(new Date()) && ciCal.clientId === viewingClientId && ciCal.status === 'on' && !!ciCal.next;
+  }
+
+  function calLineHtml(){
+    if (ciCal.clientId !== viewingClientId || ciCal.status === 'idle') return '';
+    if (ciCal.status === 'loading') return '<p class="cp-cn-hint">Checking your calendar…</p>';
+    if (ciCal.status === 'off') return '<p class="cp-cn-hint"><a href="../checkin-notes/">Connect Google Calendar</a> to fill this in from your calendar.</p>';
+    if (!ciCal.next) return '<p class="cp-cn-hint">Nothing with them on your calendar in the next ' + CI_CAL_WEEKS + ' weeks.</p>';
+    var label = fmtMeeting(ciCal.next);
+    var same = String(portalData.nextSessionLabel || '').trim() === label;
+    return '<p class="cp-cn-hint">On your calendar: <b>' + esc(label) + '</b>'
+      + (same ? '' : ' <button type="button" class="cp-cn-link" data-cn-usecal>Use this</button>') + '</p>';
+  }
+
+  function checksHtml(wk, n){
+    var h = '';
+    COACH_FLAGS.forEach(function(f){
+      var on = f.key === 'next_scheduled' ? nextScheduledOn(wk, n) : !!n[f.key];
+      h += '<label class="cp-cn-check"><input type="checkbox" data-cn-flag="' + f.key + '"' + (on ? ' checked' : '') + ' /><span>' + esc(f.label) + '</span></label>';
+    });
+    if (n.next_scheduled != null && wk === weekKeyOf(new Date()) && ciCal.clientId === viewingClientId && ciCal.status === 'on'
+        && n.next_scheduled !== !!ciCal.next) {
+      h += '<p class="cp-cn-hint">Next meeting marked by you · <button type="button" class="cp-cn-link" data-cn-reset>use calendar</button></p>';
+    }
+    return h;
+  }
+
+  // The right-hand column for one week. Editable for the coach; read-only
+  // for the client (no checkboxes — those are the coach's own checklist).
+  function coachColumnHtml(wk, isCurrent){
+    var n = coachNoteFor(wk) || blankCoachNote();
     if (isCoachUser) {
-      var h = '<div class="cp-cn" data-cn-week="'+esc(wk)+'"><div class="cp-cn-head"><span class="cp-cn-kicker">Your notes</span><span class="cp-cn-status" data-cn-status></span></div>';
+      var h = '<div class="cp-cn" data-cn-week="' + esc(wk) + '"><div class="cp-cn-head"><span class="cp-cn-kicker">Coach</span><span class="cp-cn-status" data-cn-status></span></div>';
+      if (isCurrent) {
+        h += '<label class="cp-cn-field"><span class="cp-ci-key">Next check-in</span>'
+          + '<input type="text" class="cp-ci-input cp-cn-next" data-cn-next maxlength="120" placeholder="e.g. Thu, Nov 27 · 3:00 PM" value="' + esc(portalData.nextSessionLabel || '') + '" /></label>'
+          + '<div data-cn-cal>' + calLineHtml() + '</div>';
+      }
+      h += '<div class="cp-cn-checks" data-cn-checks>' + checksHtml(wk, n) + '</div>';
       COACH_NOTE_FIELDS.forEach(function(f){
-        h += '<label class="cp-cn-field"><span class="cp-ci-key">'+esc(f.label)+'</span>'
-          + '<textarea class="cp-textarea cp-cn-input" data-cn-field="'+f.key+'" placeholder="'+esc(f.placeholder)+'" maxlength="4000">'+esc(n[f.key])+'</textarea></label>';
+        h += '<label class="cp-cn-field"><span class="cp-ci-key">' + esc(f.label) + '</span>'
+          + '<textarea class="cp-textarea cp-cn-input" data-cn-field="' + f.key + '" placeholder="' + esc(f.placeholder) + '" maxlength="4000">' + esc(n[f.key]) + '</textarea></label>';
       });
       return h + '</div>';
     }
-    if (!hasCoachNote(n)) return '';
     var r = '<div class="cp-cn is-readonly"><div class="cp-cn-head"><span class="cp-cn-kicker">From your coach</span></div>';
+    if (isCurrent) {
+      r += '<div class="cp-ci-row"><span class="cp-ci-key">Next check-in</span><div class="cp-ci-value">'
+        + esc(portalData.nextSessionLabel || 'Not scheduled yet') + '</div></div>';
+    }
     COACH_NOTE_FIELDS.forEach(function(f){
       if (!n[f.key].trim()) return;
-      r += '<div class="cp-ci-row"><span class="cp-ci-key">'+esc(f.label)+'</span><div class="cp-ci-value">'+linkify(n[f.key])+'</div></div>';
+      r += '<div class="cp-ci-row"><span class="cp-ci-key">' + esc(f.label) + '</span><div class="cp-ci-value">' + linkify(n[f.key]) + '</div></div>';
     });
+    if (!hasCoachNote(n)) r += '<p class="cp-cn-hint" style="margin-top:10px;">' + (isCurrent ? 'Your coach’s notes for this week will show here.' : 'No notes from your coach this week.') + '</p>';
     return r + '</div>';
   }
 
   function renderCiCoachCard(){
-    var html = coachNotesHtml(weekKeyOf(new Date()));
     var card = $('cpCiCoachCard');
     // Don't rebuild under the coach's cursor.
-    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
-    card.innerHTML = html;
-    card.hidden = !html;
+    if (card.contains(document.activeElement) && document.activeElement.matches('[data-cn-field],[data-cn-next]')) { refreshCoachParts(); return; }
+    card.innerHTML = coachColumnHtml(weekKeyOf(new Date()), true);
   }
 
-  // `n` is the note object captured when typing started, so a save that
+  // Calendar line + checkboxes only, so typing isn't interrupted.
+  function refreshCoachParts(){
+    if (!portalData) return;
+    document.querySelectorAll('#cpCheckinsView [data-cn-week]').forEach(function(box){
+      var wk = box.getAttribute('data-cn-week');
+      var cal = box.querySelector('[data-cn-cal]'); if (cal) cal.innerHTML = calLineHtml();
+      var checks = box.querySelector('[data-cn-checks]'); if (checks) checks.innerHTML = checksHtml(wk, coachNoteFor(wk) || blankCoachNote());
+      var next = box.querySelector('[data-cn-next]');
+      if (next && next !== document.activeElement) next.value = portalData.nextSessionLabel || '';
+    });
+  }
+
+  function setCnStatus(box, text, isError){
+    var st = box && box.querySelector('[data-cn-status]');
+    if (!st || !st.isConnected) return;
+    st.textContent = text;
+    st.classList.toggle('is-error', !!isError);
+  }
+
+  // `n` is the note object captured when editing started, so a save that
   // fires after the coach has moved on still goes to the right client.
   async function saveCoachNote(clientId, wk, n, box){
     if (!isCoachSession) return;
-    var st = box && box.querySelector('[data-cn-status]');
-    if (st) { st.textContent = 'Saving…'; st.classList.remove('is-error'); }
-    var { error } = await sb.from('client_checkin_coach_notes').upsert({
-      client_id: clientId, week_start: wk, wins: n.wins, coach_objectives: n.coach_objectives, updated_at: new Date().toISOString()
-    }, { onConflict: 'client_id,week_start' });
-    if (!st || !st.isConnected) return;
-    if (error) { st.textContent = 'Not saved — ' + error.message; st.classList.add('is-error'); return; }
-    st.textContent = 'Saved';
+    setCnStatus(box, 'Saving…');
+    var row = { client_id: clientId, week_start: wk, wins: n.wins, coach_objectives: n.coach_objectives, updated_at: new Date().toISOString() };
+    if (cnSchedCols) { row.calendar_reviewed = !!n.calendar_reviewed; row.next_scheduled = n.next_scheduled; }
+    var res = await sb.from('client_checkin_coach_notes').upsert(row, { onConflict: 'client_id,week_start' });
+    if (res.error && cnSchedCols && /calendar_reviewed|next_scheduled/.test(res.error.message || '')) {
+      cnSchedCols = false;
+      delete row.calendar_reviewed; delete row.next_scheduled;
+      res = await sb.from('client_checkin_coach_notes').upsert(row, { onConflict: 'client_id,week_start' });
+      if (!res.error) { setCnStatus(box, 'Notes saved — checkboxes need scripts/client_checkin_scheduling.sql', true); return; }
+    }
+    if (res.error) { setCnStatus(box, 'Not saved — ' + res.error.message, true); return; }
+    setCnStatus(box, 'Saved');
+  }
+
+  async function saveNextCheckin(clientId, label, box){
+    setCnStatus(box, 'Saving…');
+    var { error } = await sb.from('client_dashboard').upsert({ client_id: clientId, next_session_label: label }, { onConflict: 'client_id' });
+    if (error) { setCnStatus(box, 'Not saved — ' + error.message, true); return; }
+    setCnStatus(box, 'Saved');
+  }
+
+  function setNextCheckin(clientId, label){
+    portalData.nextSessionLabel = label;
+    renderSessionCard();
+    var box = document.querySelector('#cpCiCoachCard [data-cn-week]');
+    var input = box && box.querySelector('[data-cn-next]');
+    if (input) input.value = label;
+    clearTimeout(cnNextTimer);
+    saveNextCheckin(clientId, label, box);
+    refreshCoachParts();
   }
 
   function onCoachNoteInput(e){
-    var ta = e.target.closest('[data-cn-field]'); if (!ta || !isCoachUser || !portalData) return;
-    var box = ta.closest('[data-cn-week]');
+    if (!isCoachUser || !portalData) return;
+    var box = e.target.closest('[data-cn-week]'); if (!box) return;
+    var clientId = viewingClientId;
+    if (e.target.matches('[data-cn-next]')) {
+      var val = e.target.value;
+      portalData.nextSessionLabel = val;
+      renderSessionCard();
+      setCnStatus(box, 'Editing…');
+      clearTimeout(cnNextTimer);
+      cnNextTimer = setTimeout(function(){ saveNextCheckin(clientId, val.trim(), box); var cal = box.querySelector('[data-cn-cal]'); if (cal && viewingClientId === clientId) cal.innerHTML = calLineHtml(); }, 700);
+      return;
+    }
+    var ta = e.target.closest('[data-cn-field]'); if (!ta) return;
     var wk = box.getAttribute('data-cn-week');
     var field = ta.getAttribute('data-cn-field');
-    var n = portalData.coachNotes[wk] || (portalData.coachNotes[wk] = { wins:'', coach_objectives:'' });
+    var n = ensureCoachNote(wk);
     n[field] = ta.value;
-    // Keep the same week's other copy (top card / history card) in step.
-    document.querySelectorAll('[data-cn-week="'+wk+'"] [data-cn-field="'+field+'"]').forEach(function(o){ if (o !== ta) o.value = ta.value; });
-    var st = box.querySelector('[data-cn-status]'); if (st) { st.textContent = 'Editing…'; st.classList.remove('is-error'); }
-    var clientId = viewingClientId;
-    var key = clientId + '|' + wk + '|' + field;
+    setCnStatus(box, 'Editing…');
+    var key = clientId + '|' + wk;
     clearTimeout(cnTimers[key]);
     cnTimers[key] = setTimeout(function(){ delete cnTimers[key]; saveCoachNote(clientId, wk, n, box); }, 700);
   }
-  ['cpCiCoachCard','cpCiHistory'].forEach(function(id){ $(id).addEventListener('input', onCoachNoteInput); });
+
+  function onCoachFlagChange(e){
+    var cb = e.target.closest('[data-cn-flag]'); if (!cb || !isCoachUser || !portalData) return;
+    var box = cb.closest('[data-cn-week]');
+    var wk = box.getAttribute('data-cn-week');
+    var n = ensureCoachNote(wk);
+    n[cb.getAttribute('data-cn-flag')] = cb.checked;
+    var key = viewingClientId + '|' + wk;
+    clearTimeout(cnTimers[key]); delete cnTimers[key];
+    saveCoachNote(viewingClientId, wk, n, box);
+    box.querySelector('[data-cn-checks]').innerHTML = checksHtml(wk, n);
+  }
+
+  function onCoachColumnClick(e){
+    if (!isCoachUser || !portalData) return;
+    if (e.target.closest('[data-cn-usecal]') && ciCal.next) { setNextCheckin(viewingClientId, fmtMeeting(ciCal.next)); return; }
+    if (e.target.closest('[data-cn-reset]')) {
+      var box = e.target.closest('[data-cn-week]');
+      var wk = box.getAttribute('data-cn-week');
+      var n = ensureCoachNote(wk);
+      n.next_scheduled = null;
+      saveCoachNote(viewingClientId, wk, n, box);
+      box.querySelector('[data-cn-checks]').innerHTML = checksHtml(wk, n);
+    }
+  }
+
+  ['cpCiCoachCard','cpCiHistory'].forEach(function(id){
+    $(id).addEventListener('input', onCoachNoteInput);
+    $(id).addEventListener('change', onCoachFlagChange);
+    $(id).addEventListener('click', onCoachColumnClick);
+  });
 
   function isReviewedStatus(status){ return /^(reviewed|done)$/i.test(status || ''); }
 
@@ -3020,6 +3225,48 @@
     renderCiCoachCard();
     renderCiHistory();
     renderCheckinCard();
+    if (isCoachUser) ciLoadCalendar(viewingClientId);
+  }
+
+  // One submission's answers, as label / value rows.
+  function subAnswersHtml(sub){
+    var h = '', any = false;
+    PRECALL_FIELDS.forEach(function(f){
+      var v = sub[f.key], html;
+      if (f.type === 'files') {
+        if (!v || !v.length) return;
+        html = '<div class="cp-file-list">' + fileRowsHtml(v, 'ci:' + sub.id + ':' + f.key, false) + '</div>';
+      } else if (f.type === 'multi') {
+        if (!v || !v.length) return;
+        html = esc(v.join(', '));
+      } else {
+        if (!v) return;
+        html = linkify(v);
+      }
+      any = true;
+      h += '<div class="cp-ci-row"><span class="cp-ci-key">' + esc(f.label) + '</span><div class="cp-ci-value">' + html + '</div></div>';
+    });
+    if (sub.url_upload) { any = true; h += '<div class="cp-ci-row"><span class="cp-ci-key">Link</span><div class="cp-ci-value">' + linkify(sub.url_upload) + '</div></div>'; }
+    return any ? h : '<p class="cp-cn-hint" style="margin-top:10px;">No answers recorded.</p>';
+  }
+
+  // The left-hand column: the client's submission(s) for one week.
+  function clientColumnHtml(subs, kicker, emptyText){
+    var h = '<div class="cp-cn-head" style="margin-bottom:4px;"><span class="cp-cn-kicker cp-cn-kicker--client">' + esc(kicker) + '</span></div>';
+    if (!subs.length) return h + '<p class="cp-body-text" style="margin:8px 0 0;">' + esc(emptyText) + '</p>';
+    subs.forEach(function(sub){
+      var reviewed = isReviewedStatus(sub.status);
+      h += '<div class="cp-ci-sub"><div class="cp-ci-subhead">'
+        + '<span class="cp-ci-date">' + esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated') + '</span>'
+        + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
+        + (isCoachUser ? '<button type="button" class="cp-btn-sm cp-ci-review" data-ci-review="' + esc(sub.id) + '">' + (reviewed ? 'Mark not reviewed' : 'Mark reviewed') + '</button>' : '')
+        + '</div>' + subAnswersHtml(sub) + '</div>';
+    });
+    return h;
+  }
+
+  function subsForWeek(wk){
+    return (portalData.preCallSubmissions || []).filter(function(s){ return s.submittedAt && weekKeyOf(new Date(s.submittedAt)) === wk; });
   }
 
   function renderCiFormCard(){
@@ -3037,22 +3284,23 @@
           ciDraft.pending[f.key] = [];
         });
       }
-      card.innerHTML = ciFormHtml(base);
+      card.innerHTML = '<div class="cp-cn-head" style="margin-bottom:14px;"><span class="cp-cn-kicker cp-cn-kicker--client">Your check-in</span></div>' + ciFormHtml(base);
       PRECALL_FIELDS.forEach(function(f){ if (f.type === 'files') renderCiFiles(f.key); });
       return;
     }
 
-    if (cur) {
-      var when = longDate(new Date(cur.submittedAt));
+    var subs = subsForWeek(weekKeyOf(new Date()));
+    if (own && cur) {
       card.innerHTML = '<div class="cp-ci-done"><span class="cp-ci-done-icon" aria-hidden="true">✓</span><div>'
         + '<p class="cp-card-title" style="margin:0;">This week’s check-in is in</p>'
-        + '<p class="cp-body-text" style="margin-top:6px;">Submitted ' + esc(when) + (own ? '. Your coach will review it before your call.' : '. Full details are below.') + '</p>'
-        + (own && cur.source === 'portal' ? '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-action="edit">Edit this week’s check-in</button></div>' : '')
-        + '</div></div>';
+        + '<p class="cp-body-text" style="margin-top:6px;">Submitted ' + esc(longDate(new Date(cur.submittedAt))) + '. Your coach will review it before your call.</p>'
+        + (cur.source === 'portal' ? '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-action="edit">Edit this week’s check-in</button></div>' : '')
+        + '</div></div>'
+        + '<div style="margin-top:18px;">' + clientColumnHtml(subs, 'Your answers', '') + '</div>';
       return;
     }
 
-    card.innerHTML = '<p class="cp-body-text" style="margin:0;">No check-in submitted yet this week.</p>';
+    card.innerHTML = clientColumnHtml(subs, own ? 'Your check-in' : 'Their check-in', 'No check-in submitted yet this week.');
   }
 
   function ciFormHtml(sub){
@@ -3289,8 +3537,9 @@
     renderCheckinsTab();
   });
 
-  // Past check-ins start collapsed. The ones opened stay open when the list
-  // re-renders (a review toggle, a realtime refresh); cleared per client.
+  // Past weeks: one card per week (date + status), collapsed. Opening one
+  // shows the same two columns as this week. The ones opened stay open when
+  // the list re-renders; cleared per client.
   var ciOpenIds = {};
   var ciOpenFor = null;
 
@@ -3298,72 +3547,36 @@
     if (ciOpenFor !== viewingClientId) { ciOpenIds = {}; ciOpenFor = viewingClientId; }
     var hist = $('cpCiHistory');
     // Don't rebuild under the coach's cursor.
-    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) return;
-    var rows = portalData.preCallSubmissions || [];
-    // Past weeks the coach wrote notes for but the client never submitted
-    // still get a card. (This week's notes live in the card up top.)
+    if (hist.contains(document.activeElement) && document.activeElement.matches('[data-cn-field]')) { refreshCoachParts(); return; }
     var thisWk = weekKeyOf(new Date());
-    var subWeeks = {};
-    rows.forEach(function(sub){ if (sub.submittedAt) subWeeks[weekKeyOf(new Date(sub.submittedAt))] = true; });
-    var items = rows.map(function(sub){ return { sub: sub, wk: sub.submittedAt ? weekKeyOf(new Date(sub.submittedAt)) : '', sortKey: sub.submittedAt || '' }; });
-    Object.keys(portalData.coachNotes || {}).forEach(function(wk){
-      if (wk >= thisWk || subWeeks[wk] || !hasCoachNote(portalData.coachNotes[wk])) return;
-      items.push({ sub: null, wk: wk, sortKey: wk + 'T00:00:00' });
+    var weeks = {};
+    (portalData.preCallSubmissions || []).forEach(function(sub){
+      if (sub.submittedAt) { var wk = weekKeyOf(new Date(sub.submittedAt)); if (wk < thisWk) weeks[wk] = true; }
     });
-    items.sort(function(a, b){ return a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0; });
-    if (!items.length) {
-      hist.innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
+    Object.keys(portalData.coachNotes || {}).forEach(function(wk){
+      if (wk < thisWk && hasCoachActivity(portalData.coachNotes[wk])) weeks[wk] = true;
+    });
+    var keys = Object.keys(weeks).sort().reverse();
+    if (!keys.length) {
+      hist.innerHTML = '<div class="cp-goal-empty">No past check-ins yet.</div>';
       return;
     }
-    var h = '';
-    // A week's coach notes go on its newest submission only.
-    var notesShown = {};
-    items.forEach(function(it){
-      var sub = it.sub, wk = it.wk;
-      var showNotes = wk && !notesShown[wk] && (isCoachUser || hasCoachNote(coachNoteFor(wk)));
-      if (showNotes) notesShown[wk] = true;
-      var noteChip = hasCoachNote(coachNoteFor(wk)) && showNotes ? '<span class="cp-due-chip">📝 Coach notes</span>' : '';
-      if (!sub) {
-        var oid = 'wk:' + wk;
-        h += '<details class="cp-ci-item" data-ci-item="'+esc(oid)+'"'+(ciOpenIds[oid] ? ' open' : '')+'><summary>'
-          + '<span class="cp-ci-date">'+esc(weekKeyLabel(wk))+'</span>'
-          + statusPill('No client check-in', '#9aa3ad') + noteChip
-          + '</summary><div class="cp-ci-body">' + coachNotesHtml(wk) + '</div></details>';
-        return;
-      }
-      var reviewed = isReviewedStatus(sub.status);
-      h += '<details class="cp-ci-item" data-ci-item="'+esc(sub.id)+'"'+(ciOpenIds[sub.id] ? ' open' : '')+'><summary>'
-        + '<span class="cp-ci-date">'+esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated')+'</span>'
-        + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
-        + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : 'Notion')+'</span>'
-        + noteChip
-        + (sub.coaching_call_objective ? '<p class="cp-ci-snippet">'+esc(sub.coaching_call_objective)+'</p>' : '')
-        + '</summary><div class="cp-ci-body">';
-      if (showNotes) h += coachNotesHtml(wk);
-      var any = false;
-      PRECALL_FIELDS.forEach(function(f){
-        var v = sub[f.key], html;
-        if (f.type === 'files') {
-          if (!v.length) return;
-          html = '<div class="cp-file-list">' + fileRowsHtml(v, 'ci:' + sub.id + ':' + f.key, false) + '</div>';
-        } else if (f.type === 'multi') {
-          if (!v.length) return;
-          html = esc(v.join(', '));
-        } else {
-          if (!v) return;
-          html = linkify(v);
-        }
-        any = true;
-        h += '<div class="cp-ci-row"><span class="cp-ci-key">'+esc(f.label)+'</span><div class="cp-ci-value">'+html+'</div></div>';
-      });
-      if (sub.url_upload) { any = true; h += '<div class="cp-ci-row"><span class="cp-ci-key">Link</span><div class="cp-ci-value">'+linkify(sub.url_upload)+'</div></div>'; }
-      if (!any) h += '<p class="cp-caption">No answers recorded.</p>';
-      if (isCoachUser) {
-        h += '<div class="cp-btn-row"><button type="button" class="cp-btn-sm" data-ci-review="'+esc(sub.id)+'">'+(reviewed ? 'Mark not reviewed' : 'Mark reviewed')+'</button></div>';
-      }
-      h += '</div></details>';
-    });
-    hist.innerHTML = h;
+    var own = isOwnPortal();
+    hist.innerHTML = keys.map(function(wk){
+      var subs = subsForWeek(wk);
+      var first = subs[0];
+      var oid = 'wk:' + wk;
+      var date = first ? longDate(new Date(first.submittedAt)) : weekKeyLabel(wk);
+      var pill = first
+        ? statusPill(first.status || 'Submitted', isReviewedStatus(first.status) ? '#3d9b37' : '#aa70d7')
+        : statusPill('No check-in', '#9aa3ad');
+      return '<details class="cp-ci-item" data-ci-item="' + esc(oid) + '"' + (ciOpenIds[oid] ? ' open' : '') + '><summary>'
+        + '<span class="cp-ci-date">' + esc(date) + '</span>' + pill
+        + '</summary><div class="cp-ci-body"><div class="cp-ci-cols">'
+        + '<div class="cp-ci-col cp-ci-col--client">' + clientColumnHtml(subs, own ? 'Your check-in' : 'Their check-in', 'No check-in submitted that week.') + '</div>'
+        + '<div class="cp-ci-col cp-ci-col--coach">' + coachColumnHtml(wk, false) + '</div>'
+        + '</div></div></details>';
+    }).join('');
   }
 
   // 'toggle' doesn't bubble, so listen in the capture phase.
@@ -3373,7 +3586,7 @@
     if (d.open) ciOpenIds[id] = true; else delete ciOpenIds[id];
   }, true);
 
-  $('cpCiHistory').addEventListener('click', async function(e){
+  async function onReviewClick(e){
     var btn = e.target.closest('[data-ci-review]'); if (!btn || !isCoachUser) return;
     var sub = findPreCall(btn.getAttribute('data-ci-review')); if (!sub) return;
     var clientId = viewingClientId;
@@ -3384,8 +3597,11 @@
     if (error) { alert('Could not update: ' + error.message); return; }
     if (viewingClientId !== clientId) return;
     sub.status = status;
+    renderCiFormCard();
     renderCiHistory();
-  });
+  }
+  $('cpCiHistory').addEventListener('click', onReviewClick);
+  $('cpCiFormCard').addEventListener('click', onReviewClick);
 
   function renderCheckinCard(){
     var cur = thisWeeksPreCall();

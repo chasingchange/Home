@@ -106,7 +106,7 @@
         <header class="cn-head">
           <p class="cn-kicker">Coach · Master database</p>
           <h1 class="cn-h1">Check-in Notes</h1>
-          <p class="cn-lede">Your side of every client's weekly check-in. Write their wins and your objectives here, before or after they fill out their form, and tick off going over their calendar and booking their next meeting. Everything saves as you type and shows up on that week's check-in in their portal.</p>
+          <p class="cn-lede">Your side of every client's weekly check-in. Write their wins and your objectives here, before or after they fill out their form, and tick off going over their routine and booking their next meeting. Everything saves as you type and shows up on that week's check-in in their portal.</p>
         </header>
 
         <p class="cn-banner" id="cnBanner" hidden>The calendar checkboxes can't save yet. Run <b>scripts/client_checkin_scheduling.sql</b> in the Supabase SQL editor, then reload.</p>
@@ -127,7 +127,7 @@
               <option value="todo">Notes not written yet</option>
               <option value="in">Client checked in</option>
               <option value="out">Client hasn't checked in</option>
-              <option value="unreviewed">Calendar not gone over</option>
+              <option value="unreviewed">Routine not gone over</option>
               <option value="unscheduled">Next meeting not scheduled</option>
             </select>
             <label class="cn-check"><input type="checkbox" id="cnShowInactive" /> Graduated &amp; terminated</label>
@@ -140,6 +140,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../shared-supabase-config.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="notes.js?v=20261119b"></script>
+    <script src="notes.js?v=20261119c"></script>
   </body>
 </html>
