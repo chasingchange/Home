@@ -129,6 +129,49 @@ create policy "coach can write curriculum" on public.education_questions for all
 grant select, insert, update, delete on public.education_questions to authenticated;
 
 -- ─── Weekly pre-call form submitted from the portal ──────────────────────
+-- Creates the table if client_pre_call_submissions.sql was never run (same
+-- definition and read policies); on databases that already have it, this
+-- is a no-op and the alters below bring it up to date.
+create table if not exists public.client_pre_call_submissions (
+  id                     bigint generated always as identity primary key,
+  client_id              uuid references public.profiles(id) on delete cascade,
+  notion_page_id         text unique,
+  submitted_at           timestamptz not null,
+  status                 text not null default 'Not started',
+  coaching_call_objective text not null default '',
+  current_weight         text not null default '',
+  body_core              text not null default '',
+  tracked_food           text not null default '',
+  missed_workouts        text not null default '',
+  obstacle               text not null default '',
+  has_more_homework      text not null default '',
+  review_items           jsonb not null default '[]',
+  workout_days           jsonb not null default '[]',
+  text_url_upload        text not null default '',
+  url_upload             text not null default '',
+  files                  jsonb not null default '[]',
+  calendar_upload        jsonb not null default '[]',
+  raw                    jsonb not null default '{}',
+  created_at             timestamptz not null default now()
+);
+
+create index if not exists client_pre_call_submissions_client_id_submitted_at_idx
+  on public.client_pre_call_submissions (client_id, submitted_at desc);
+
+alter table public.client_pre_call_submissions enable row level security;
+
+drop policy if exists "Clients can view their own pre-call submissions" on public.client_pre_call_submissions;
+create policy "Clients can view their own pre-call submissions"
+  on public.client_pre_call_submissions for select
+  using (auth.uid() = client_id);
+
+drop policy if exists "Coaches can view all pre-call submissions" on public.client_pre_call_submissions;
+create policy "Coaches can view all pre-call submissions"
+  on public.client_pre_call_submissions for select
+  using (public.is_coach(auth.uid()));
+
+grant select on public.client_pre_call_submissions to authenticated;
+
 -- Notion-synced rows keep their notion_page_id; portal submissions have none.
 alter table public.client_pre_call_submissions
   alter column notion_page_id drop not null;
