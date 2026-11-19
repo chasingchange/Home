@@ -8,6 +8,10 @@
     return m ? m[1] : null;
   })();
 
+  // The tab named in the hash at load (e.g. #goals). Kept so a coach's
+  // refresh can reopen the client on that tab after the roster loads.
+  var initialHashTab = (window.location.hash || '').replace(/^#/, '');
+
   // ─── Config ───────────────────────────────────────────────────────────
   // Falls back to the known project values if shared-supabase-config.js
   // wasn't loaded first, so this still works standalone.
@@ -739,7 +743,19 @@
   });
 
   // ─── Coach: open a client's portal to see what they see ───────────────
+  // ?client=<id> in the URL while the coach is in a client's portal, so a
+  // refresh reopens that client instead of dropping back to the roster.
+  function writeClientParam(clientId){
+    var q = new URLSearchParams(window.location.search);
+    q.delete('tab');
+    if (clientId) q.set('client', clientId); else q.delete('client');
+    var search = q.toString() ? '?' + q.toString() : '';
+    if (search === window.location.search) return;
+    try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
+  }
+
   function enterClientPortalView(clientId, name, tab){
+    writeClientParam(clientId);
     state.view = 'client';
     state.portalTab = tab || 'portal';
     $('cpBackToRoster').hidden = false;
@@ -748,6 +764,7 @@
   }
 
   function exitClientPortalView(){
+    writeClientParam(null);
     closeQuickEdit();
     qeFlush();
     unsubscribePortalRealtime();
@@ -5067,8 +5084,8 @@
   }
 
   // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
-  // pop-up) opens that client straight onto that tab. Used once, then the
-  // URL is cleaned so a refresh lands back on the roster.
+  // pop-up) opens that client straight onto that tab. The same ?client=<id>
+  // plus a #tab hash is what a coach's refresh reopens.
   var deepLinkUsed = false;
   function openDeepLinkedClient(){
     if (deepLinkUsed) return;
@@ -5076,11 +5093,10 @@
     var q = new URLSearchParams(window.location.search);
     var cid = q.get('client');
     if (!cid) return;
-    var tab = q.get('tab') || 'portal';
+    var tab = q.get('tab') || initialHashTab || 'portal';
     if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
-    try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
     var c = findRosterClient(cid);
-    if (!c) return;
+    if (!c) { writeClientParam(null); return; }
     enterClientPortalView(cid, c.name, tab);
   }
 
