@@ -1893,8 +1893,46 @@
         + '<button type="button" class="cp-file-open" data-file-ctx="'+esc(ctx)+'" data-file-idx="'+i+'">'+esc(f.name || 'File')+'</button>'
         + (f.size ? '<span class="cp-file-size">'+fmtBytes(f.size)+'</span>' : '')
         + (canRemove ? '<button type="button" class="cp-file-remove" data-file-remove-ctx="'+esc(ctx)+'" data-file-idx="'+i+'" aria-label="Remove '+esc(f.name || 'file')+'">×</button>' : '')
-        + '</div>';
+        + '</div>'
+        + (ctx === 'hw' && filePreviewKind(f) ? '<div class="cp-file-preview cp-file-preview--'+filePreviewKind(f)+'" data-preview-ctx="'+esc(ctx)+'" data-file-idx="'+i+'"></div>' : '');
     }).join('');
+  }
+
+  // Images, PDFs and videos render inline under their file row so they can
+  // be read without opening a new tab. Private uploads need a signed URL,
+  // fetched after render and cached so re-renders don't flicker.
+  function filePreviewKind(f){
+    var n = String((f && (f.name || f.path || f.url)) || '').toLowerCase().replace(/[?#].*$/, '');
+    if (/\.(png|jpe?g|gif|webp|avif|svg)$/.test(n)) return 'img';
+    if (/\.pdf$/.test(n)) return 'pdf';
+    if (/\.(mp4|webm|mov|m4v)$/.test(n)) return 'video';
+    return '';
+  }
+  var signedUrlCache = {};
+  function storedFileUrl(f){
+    if (f.url) return Promise.resolve(f.url);
+    if (!f.path) return Promise.resolve('');
+    var c = signedUrlCache[f.path];
+    if (c && c.exp > Date.now()) return Promise.resolve(c.url);
+    return sb.storage.from(UPLOAD_BUCKET).createSignedUrl(f.path, 3600).then(function(res){
+      if (res.error || !res.data) return '';
+      signedUrlCache[f.path] = { url: res.data.signedUrl, exp: Date.now() + 50 * 60 * 1000 };
+      return res.data.signedUrl;
+    });
+  }
+  function hydrateFilePreviews(root){
+    Array.prototype.forEach.call(root.querySelectorAll('[data-preview-ctx]'), function(slot){
+      var f = filesForCtx(slot.getAttribute('data-preview-ctx'))[parseInt(slot.getAttribute('data-file-idx'), 10)];
+      if (!f) return;
+      var kind = filePreviewKind(f), n = esc(f.name || 'File');
+      storedFileUrl(f).then(function(url){
+        if (!url || !slot.isConnected) { slot.remove(); return; }
+        var u = esc(url);
+        if (kind === 'img') slot.innerHTML = '<img src="'+u+'" alt="'+n+'" loading="lazy" />';
+        else if (kind === 'pdf') slot.innerHTML = '<iframe src="'+u+'#view=FitH" title="'+n+'" loading="lazy"></iframe>';
+        else if (kind === 'video') slot.innerHTML = '<video src="'+u+'" controls playsinline preload="metadata"></video>';
+      });
+    });
   }
 
   // ctx: "hw" (open assignment), "ci:<submissionId>:<field>" (check-in
@@ -2090,8 +2128,8 @@
       return isCoachUser || HW_CLIENT_STATUSES.indexOf(s.key) !== -1 || s.key === a.status;
     });
     var lockStatus = !isCoachUser && a.status === 'complete';
-    // Status sits in the action row, just left of Save.
-    var statusSelHtml = '<select class="cp-select" id="cpHwStatusSel" aria-label="Status"'+(lockStatus?' disabled':'')+'>'
+    // Status sits in the action row, just right of Submit / Mark complete.
+    var statusSelHtml = '<select class="cp-hw-status-sel" id="cpHwStatusSel" aria-label="Status"'+(lockStatus?' disabled':'')+'>'
       + statusOpts.map(function(s){ return '<option value="'+s.key+'"'+(s.key===a.status?' selected':'')+'>'+esc(s.label)+'</option>'; }).join('')
       + '</select>';
 
@@ -2113,15 +2151,17 @@
     }
     h += '</div>';
 
-    h += '<div class="cp-btn-row" style="margin-top:28px;">' + statusSelHtml;
+    h += '<div class="cp-btn-row" style="margin-top:28px;">';
     if (own) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>';
       if (isHwOpen(a)) h += '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-hw-action="submit">Submit for review</button>';
+      h += statusSelHtml;
       if (a.status === 'submitted') h += '<button type="button" class="cp-btn-sm" data-hw-action="withdraw">Withdraw submission</button>';
     }
     if (isCoachUser) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>'
         + '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-hw-action="complete">Mark complete</button>'
+        + statusSelHtml
         + '<button type="button" class="cp-btn-sm" data-hw-action="revise">Request revision</button>'
         + '<button type="button" class="cp-btn-sm" data-hw-action="edit">Edit details</button>'
         + '<button type="button" class="cp-btn-sm cp-btn-sm--danger" data-hw-action="delete">Delete</button>';
@@ -2130,6 +2170,7 @@
 
     $('cpHwSheet').innerHTML = h;
     $('cpHwSheet').setAttribute('data-for', a.id);
+    hydrateFilePreviews($('cpHwSheet'));
   }
 
   // Instructions come from the library as "RELEVANCE\n…\n\nTO DO\n[ ] step…".
