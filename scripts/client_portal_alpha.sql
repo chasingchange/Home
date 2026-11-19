@@ -141,6 +141,34 @@ alter table public.client_pre_call_submissions
   add column if not exists progress_photos text not null default '',  -- "Did you upload Progress Photos this week?"
   add column if not exists suggestions     text not null default '';  -- "Suggestions *Optional"
 
+-- Answers to questions the coach adds in the portal's "Check-in form"
+-- editor, keyed by question id (e.g. {"q_lx3k9a": "Slept badly"}).
+alter table public.client_pre_call_submissions
+  add column if not exists answers jsonb not null default '{}';
+
+-- ─── Coach-editable form definitions ─────────────────────────────────────
+-- One row per form. 'pre_call' holds the weekly check-in's questions,
+-- order and show-if rules as edited in the portal. With no row the portal
+-- uses the built-in default questions.
+create table if not exists public.form_settings (
+  key        text primary key,
+  fields     jsonb not null default '[]',
+  updated_at timestamptz not null default now()
+);
+
+alter table public.form_settings enable row level security;
+
+drop policy if exists "signed in can read forms" on public.form_settings;
+create policy "signed in can read forms" on public.form_settings for select
+  using (auth.uid() is not null);
+
+drop policy if exists "coach can write forms" on public.form_settings;
+create policy "coach can write forms" on public.form_settings for all
+  using (public.is_coach(auth.uid()))
+  with check (public.is_coach(auth.uid()));
+
+grant select, insert, update, delete on public.form_settings to authenticated;
+
 drop policy if exists "Clients can submit their own pre-call form" on public.client_pre_call_submissions;
 create policy "Clients can submit their own pre-call form"
   on public.client_pre_call_submissions for insert

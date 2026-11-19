@@ -415,6 +415,37 @@
       .cp-opt span{display:inline-flex;align-items:center;padding:8px 14px;border-radius:999px;border:1px solid rgba(7,31,53,.15);font-size:14px;font-weight:700;color:rgba(7,31,53,.7);cursor:pointer;transition:all .15s;}
       .cp-opt input:checked + span{background:#071f35;border-color:#071f35;color:#fff;}
       .cp-opt input:focus-visible + span{outline:2px solid #2a9df0;outline-offset:2px;}
+      /* check-in form editor (coach) */
+      .cp-sheet.cp-fm-sheet{width:min(720px,100%);padding-bottom:0;}
+      .cp-fm-tabs{display:flex;gap:6px;margin:22px 0 16px;}
+      .cp-fm-tab{all:unset;cursor:pointer;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:700;color:rgba(7,31,53,.6);border:1px solid rgba(7,31,53,.15);}
+      .cp-fm-tab.is-active{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-fm-list{display:grid;gap:10px;}
+      .cp-fm-q{border:1px solid rgba(7,31,53,.12);border-radius:16px;background:#fff;}
+      .cp-fm-q.is-hidden{background:#f5f5f7;}
+      .cp-fm-q.is-hidden .cp-fm-q-label{color:rgba(7,31,53,.45);}
+      .cp-fm-q.is-new{border-color:#2a9df0;}
+      .cp-fm-q-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;}
+      .cp-fm-q-num{font-size:12px;font-weight:800;color:rgba(7,31,53,.35);width:20px;flex-shrink:0;}
+      .cp-fm-q-main{flex:1;min-width:0;}
+      .cp-fm-q-label{font-size:15px;font-weight:700;color:#071f35;}
+      .cp-fm-q-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+      .cp-fm-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(7,31,53,.06);color:rgba(7,31,53,.6);}
+      .cp-fm-chip--if{background:rgba(42,157,240,.12);color:#1a6fad;}
+      .cp-fm-chip--off{background:rgba(240,35,72,.08);color:#c01a38;}
+      .cp-fm-move{all:unset;cursor:pointer;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(7,31,53,.5);font-size:14px;}
+      .cp-fm-move:hover{background:rgba(7,31,53,.06);}
+      .cp-fm-move:disabled{opacity:.25;cursor:default;}
+      .cp-fm-q-body{padding:4px 14px 16px 44px;display:grid;gap:12px;}
+      .cp-fm-q-body[hidden]{display:none;}
+      .cp-fm-q-body .cp-ci-input,.cp-fm-q-body .cp-select{max-width:none;width:100%;}
+      .cp-fm-q-body .cp-textarea{min-height:84px;}
+      .cp-fm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+      .cp-fm-check{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:#071f35;cursor:pointer;}
+      .cp-fm-if{background:rgba(42,157,240,.06);border-radius:12px;padding:12px;}
+      .cp-fm-foot{position:sticky;bottom:0;background:#fff;border-top:1px solid rgba(7,31,53,.08);margin:24px -36px 0;padding:14px 36px 18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+      .cp-fm-preview{border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:22px;}
+      @media(max-width:720px){ .cp-fm-q-body{padding-left:14px;} }
       .cp-ci-done{display:flex;align-items:flex-start;gap:14px;}
       .cp-ci-done-icon{width:38px;height:38px;border-radius:999px;background:rgba(119,215,112,.18);color:#3d8c39;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
       .cp-ci-history{display:grid;gap:10px;}
@@ -1460,6 +1491,7 @@
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <a class="cp-btn-sm" href="../assignment-library/" style="text-decoration:none;">Assignment library</a>
                 <button type="button" class="cp-btn-sm" id="cpCurOpenBtn">Education curriculum</button>
+                <button type="button" class="cp-btn-sm" id="cpFormOpenBtn">Check-in form</button>
               </div>
             </div>
             <div class="cp-roster-list" id="cpRosterList"></div>
@@ -1527,6 +1559,29 @@
           <label class="cp-ci-hint" for="cpCurQuestions" style="display:block;margin-top:14px;">Questions — one per line</label>
           <textarea id="cpCurQuestions" class="cp-textarea" placeholder="Why does protein matter in a calorie deficit?&#10;Roughly how much protein do you aim for per day?"></textarea>
           <div class="cp-btn-row"><button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpCurAddBtn">Add questions</button><span class="cp-save-note" id="cpCurNote"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECK-IN FORM EDITOR (coach) — one weekly pre-call form shared by every client -->
+    <div class="cp-sheet-overlay" id="cpFormOverlay" hidden>
+      <div class="cp-sheet-backdrop" data-close-form></div>
+      <div class="cp-sheet cp-fm-sheet" role="dialog" aria-modal="true" aria-labelledby="cpFormTitle">
+        <div class="cp-sheet-head">
+          <div><p class="cp-kicker">Check-ins</p><h2 class="cp-sheet-title" id="cpFormTitle">Check-in form</h2></div>
+          <button type="button" class="cp-sheet-close" data-close-form aria-label="Close">×</button>
+        </div>
+        <p class="cp-sheet-lede">Every client fills this out before their call. Reword, reorder or add questions, and use “Only show when” to ask a question based on an earlier answer. Nothing changes for clients until you save.</p>
+        <div class="cp-fm-tabs" role="tablist">
+          <button type="button" class="cp-fm-tab is-active" data-fm-mode="edit" role="tab">Edit</button>
+          <button type="button" class="cp-fm-tab" data-fm-mode="preview" role="tab">Preview</button>
+        </div>
+        <div id="cpFormBody"></div>
+        <div class="cp-fm-foot">
+          <button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpFormSave">Save form</button>
+          <button type="button" class="cp-btn-sm" id="cpFormAdd">+ Add question</button>
+          <button type="button" class="cp-btn-sm cp-btn-sm--danger" id="cpFormReset">Reset to default</button>
+          <span class="cp-save-note" id="cpFormNote"></span>
         </div>
       </div>
     </div>
@@ -1787,6 +1842,6 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
-    <script src="portal.js?v=20261119e"></script>
+    <script src="portal.js?v=20261119f"></script>
   </body>
 </html>

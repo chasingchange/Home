@@ -126,7 +126,14 @@
   // appears when the field it depends on has one of the listed answers
   // (e.g. weight, food tracking and workouts only for Body Core clients).
   // `legacy` fields are no longer asked but still show in history.
-  var PRECALL_FIELDS = [
+  //
+  // These are the defaults. The coach can reword, reorder, hide and add
+  // questions from the "Check-in form" editor; that version is stored in
+  // public.form_settings and replaces this list on load (see
+  // loadPreCallForm). Questions the coach adds are `custom` and save their
+  // answers in the submission's `answers` jsonb column instead of a column
+  // of their own.
+  var DEFAULT_PRECALL_FIELDS = [
     { key:"coaching_call_objective", label:"What would you like to focus on during this week's call?", type:"textarea", required:true },
     { key:"body_core",               label:"Are you participating in the Body Core?", type:"choice", options:["Yes","No"], required:true },
     { key:"current_weight",          label:"Current weight", type:"text", placeholder:"e.g. 182.4 lb", showIf:{ key:"body_core", values:["Yes"] } },
@@ -142,6 +149,61 @@
     { key:"suggestions",             label:"Suggestions (optional)", hint:"Feel free to list any suggestions about service, communication, or resources.", type:"textarea" },
     { key:"has_more_homework",       label:"Do you have more homework to turn in?", type:"choice", options:["Yes","No"], legacy:true }
   ];
+  var PRECALL_FIELDS = DEFAULT_PRECALL_FIELDS.slice();
+  var PRECALL_FIELD_TYPES = [
+    { key:"text",     label:"Short answer" },
+    { key:"textarea", label:"Long answer" },
+    { key:"choice",   label:"Pick one" },
+    { key:"multi",    label:"Pick any" },
+    { key:"files",    label:"File upload" }
+  ];
+  var preCallFormReady = Promise.resolve();
+
+  function defaultPreCallField(key){
+    return DEFAULT_PRECALL_FIELDS.filter(function(f){ return f.key === key; })[0] || null;
+  }
+
+  // Cleans a stored form definition. Built-in questions keep the type of
+  // their DB column; any built-in missing from the stored list comes back
+  // hidden so its past answers still show in history.
+  function normalizePreCallFields(list){
+    var out = [], seen = {};
+    (Array.isArray(list) ? list : []).forEach(function(f){
+      if (!f || typeof f.key !== 'string' || seen[f.key]) return;
+      var def = defaultPreCallField(f.key);
+      if (!def && !/^q_[a-z0-9]+$/.test(f.key)) return;
+      var type = def ? def.type : f.type;
+      if (!PRECALL_FIELD_TYPES.some(function(t){ return t.key === type; })) return;
+      seen[f.key] = true;
+      var o = {
+        key: f.key, type: type, custom: !def,
+        label: String(f.label || '').trim() || (def ? def.label : 'Untitled question'),
+        hint: String(f.hint || '').trim(),
+        placeholder: String(f.placeholder || (def && def.placeholder) || ''),
+        required: !!f.required,
+        legacy: !!f.legacy
+      };
+      if (type === 'choice' || type === 'multi') {
+        var opts = (Array.isArray(f.options) ? f.options : []).map(function(x){ return String(x).trim(); }).filter(Boolean);
+        o.options = opts.length ? opts : (def && def.options ? def.options.slice() : ['Yes','No']);
+      }
+      if (f.showIf && typeof f.showIf.key === 'string' && Array.isArray(f.showIf.values) && f.showIf.values.length) {
+        o.showIf = { key: f.showIf.key, values: f.showIf.values.map(String) };
+      }
+      out.push(o);
+    });
+    DEFAULT_PRECALL_FIELDS.forEach(function(d){
+      if (!seen[d.key]) out.push(Object.assign({}, d, { legacy: true, custom: false }));
+    });
+    return out;
+  }
+
+  async function loadPreCallForm(){
+    var { data, error } = await sb.from('form_settings').select('fields').eq('key', 'pre_call').maybeSingle();
+    // No saved version yet (or the table isn't set up): keep the defaults.
+    if (error || !data || !Array.isArray(data.fields) || !data.fields.length) return;
+    PRECALL_FIELDS = normalizePreCallFields(data.fields);
+  }
 
   // Homework lifecycle: assigned -> in_progress -> submitted -> complete,
   // with needs_revision sending it back to the client. Overdue, On hold and
@@ -483,6 +545,7 @@
 
     currentUser = user;
     maybeOfferBiometric(user);
+    preCallFormReady = loadPreCallForm();
 
     $('cpBackToRoster').hidden = true;
 
@@ -601,9 +664,10 @@
   // Pre-call rows keep their DB column names (PRECALL_FIELDS keys) so the
   // weekly form and the history view can read/write them directly.
   function mapPreCall(row){
-    var s = { id: row.id, submittedAt: row.submitted_at, status: row.status || '', source: row.source || 'notion' };
+    var answers = (row.answers && typeof row.answers === 'object') ? row.answers : {};
+    var s = { id: row.id, submittedAt: row.submitted_at, status: row.status || '', source: row.source || 'notion', answers: answers, _row: row };
     PRECALL_FIELDS.forEach(function(f){
-      var v = row[f.key];
+      var v = f.custom ? answers[f.key] : row[f.key];
       s[f.key] = (f.type === 'multi' || f.type === 'files') ? (Array.isArray(v) ? v : []) : (v || '');
     });
     s.url_upload = row.url_upload || '';
@@ -620,7 +684,7 @@
     $('cpWelcome').textContent = 'Welcome to Your Race, ' + displayName + '.';
     $('cpRouteLine').textContent = 'Loading…';
 
-    var data = await fetchPortalData(clientId);
+    var data = await Promise.all([fetchPortalData(clientId), preCallFormReady]).then(function(r){ return r[0]; });
     if (viewingClientId !== clientId) return; // superseded by a newer view
 
     portalData = data;
@@ -2894,16 +2958,17 @@
   }
 
   // A field is visible when its parent is visible and has a matching answer.
-  function ciFieldVisible(f, vals){
+  function ciFieldVisible(f, vals, depth){
     if (f.legacy) return false;
     if (!f.showIf) return true;
+    if ((depth || 0) > PRECALL_FIELDS.length) return false; // circular show-if
     var parent = PRECALL_FIELDS.filter(function(p){ return p.key === f.showIf.key; })[0];
-    if (parent && !ciFieldVisible(parent, vals)) return false;
+    if (!parent || !ciFieldVisible(parent, vals, (depth || 0) + 1)) return false;
     return (vals[f.showIf.key] || []).some(function(v){ return f.showIf.values.indexOf(v) !== -1; });
   }
 
-  function applyCiVisibility(){
-    var form = $('cpCiForm'); if (!form) return;
+  function applyCiVisibility(form){
+    form = form || $('cpCiForm'); if (!form) return;
     var vals = ciValuesFromForm(form);
     PRECALL_FIELDS.forEach(function(f){
       var wrap = form.querySelector('[data-ci-wrap="'+f.key+'"]');
@@ -2959,6 +3024,11 @@
     }
   });
 
+  $('cpFormBody').addEventListener('submit', function(e){
+    e.preventDefault();
+    setNote('cpFmPreviewNote', 'Preview only — nothing was sent.');
+  });
+
   $('cpCiFormCard').addEventListener('submit', async function(e){
     e.preventDefault();
     var form = $('cpCiForm');
@@ -2986,13 +3056,16 @@
         row[f.key] = Array.prototype.map.call(form.querySelectorAll('input[name="ci_'+f.key+'"]:checked'), function(c){ return c.value; });
       }
     });
-    if (!row.coaching_call_objective) {
-      setNote('cpCiNote', 'Add the objective for our call first.', true);
-      form.querySelector('[data-ci-field="coaching_call_objective"]').focus();
-      return;
-    }
-    if (!row.body_core) {
-      setNote('cpCiNote', 'Let us know whether you\'re participating in the Body Core.', true);
+    var missing = PRECALL_FIELDS.filter(function(f){
+      if (!f.required || !shown[f.key]) return false;
+      if (f.type === 'files') return !draft.existing[f.key].length && !draft.pending[f.key].length;
+      var v = row[f.key];
+      return Array.isArray(v) ? !v.length : !v;
+    })[0];
+    if (missing) {
+      setNote('cpCiNote', 'Please answer: ' + missing.label, true);
+      var focusEl = form.querySelector('[data-ci-wrap="'+missing.key+'"] textarea, [data-ci-wrap="'+missing.key+'"] input');
+      if (focusEl && focusEl.type !== 'radio' && focusEl.type !== 'checkbox' && focusEl.type !== 'file') focusEl.focus();
       return;
     }
 
@@ -3025,6 +3098,16 @@
       setNote('cpCiNote', err.message, true);
       return;
     }
+
+    // Custom questions live in the answers jsonb, not their own columns.
+    var base = draft.id ? findPreCall(draft.id) : null;
+    var answers = Object.assign({}, base ? base.answers : {});
+    PRECALL_FIELDS.forEach(function(f){
+      if (!f.custom || !(f.key in row)) return;
+      answers[f.key] = row[f.key];
+      delete row[f.key];
+    });
+    row.answers = answers;
 
     setNote('cpCiNote', 'Saving…');
     var res;
@@ -3122,6 +3205,259 @@
       + (total ? ' ' + total + ' check-in' + (total === 1 ? '' : 's') + ' on record.' : '');
     $('cpCiCardCta').textContent = (!cur && own) ? 'Fill out check-in' : 'View check-ins';
   }
+
+  // ─── Coach: check-in form editor ──────────────────────────────────────
+  // Edits a draft copy of PRECALL_FIELDS; "Save form" writes it to
+  // public.form_settings (key 'pre_call') and every client gets it on
+  // their next load.
+  var fmDraft = [];
+  var fmOpenKey = null;
+  var fmMode = 'edit';
+  var fmDirty = false;
+
+  function fmTypeLabel(t){ var x = PRECALL_FIELD_TYPES.filter(function(y){ return y.key === t; })[0]; return x ? x.label : t; }
+  function fmFind(key){ return fmDraft.filter(function(f){ return f.key === key; })[0] || null; }
+  function fmCopy(list){ return JSON.parse(JSON.stringify(list)); }
+
+  function fmSetDirty(d){
+    fmDirty = d;
+    setNote('cpFormNote', d ? 'Unsaved changes' : '');
+  }
+
+  async function openFormEditor(){
+    if (!isCoachUser) return;
+    $('cpFormOverlay').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('cpFormBody').innerHTML = '<p class="cp-caption">Loading…</p>';
+    await loadPreCallForm();
+    fmDraft = fmCopy(PRECALL_FIELDS);
+    fmOpenKey = null;
+    fmMode = 'edit';
+    fmSetDirty(false);
+    fmRender();
+  }
+
+  function closeFormEditor(){
+    if (fmDirty && !confirm('Discard your unsaved changes to the check-in form?')) return;
+    $('cpFormOverlay').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  // Swap the live field list for the draft while running fn (used by preview).
+  function fmWithDraft(fn){
+    var live = PRECALL_FIELDS;
+    PRECALL_FIELDS = normalizePreCallFields(fmCleaned());
+    try { return fn(); } finally { PRECALL_FIELDS = live; }
+  }
+
+  function fmRender(){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fm-mode]'), function(b){
+      b.classList.toggle('is-active', b.getAttribute('data-fm-mode') === fmMode);
+    });
+    $('cpFormAdd').hidden = fmMode !== 'edit';
+    if (fmMode === 'preview') {
+      var html = fmWithDraft(function(){ return ciFormHtml(null); })
+        .replace('id="cpCiForm"', 'id="cpFmPreviewForm"')
+        .replace('id="cpCiSubmit"', 'id="cpFmPreviewSubmit"')
+        .replace('id="cpCiNote"', 'id="cpFmPreviewNote"');
+      $('cpFormBody').innerHTML = '<p class="cp-ci-hint">This is what clients see. Try different answers to check which questions show up. Nothing here is saved.</p>'
+        + '<div class="cp-fm-preview">' + html + '</div>';
+      return;
+    }
+    var h = '<div class="cp-fm-list">';
+    fmDraft.forEach(function(f, i){ h += fmQuestionHtml(f, i); });
+    $('cpFormBody').innerHTML = h + '</div>';
+  }
+
+  function fmQuestionHtml(f, i){
+    var open = fmOpenKey === f.key;
+    var parent = f.showIf ? fmFind(f.showIf.key) : null;
+    var chips = '<span class="cp-fm-chip">'+esc(fmTypeLabel(f.type))+'</span>'
+      + (f.required ? '<span class="cp-fm-chip">Required</span>' : '')
+      + (parent ? '<span class="cp-fm-chip cp-fm-chip--if">Only if “'+esc(parent.label)+'” is '+esc(f.showIf.values.join(' or '))+'</span>' : '')
+      + (f.legacy ? '<span class="cp-fm-chip cp-fm-chip--off">Hidden from clients</span>' : '');
+    var h = '<div class="cp-fm-q'+(f.legacy ? ' is-hidden' : '')+(f.custom && f._new ? ' is-new' : '')+'" data-fm-key="'+esc(f.key)+'">'
+      + '<div class="cp-fm-q-head" data-fm-toggle>'
+      + '<span class="cp-fm-q-num">'+(i + 1)+'</span>'
+      + '<div class="cp-fm-q-main"><div class="cp-fm-q-label">'+esc(f.label)+'</div><div class="cp-fm-q-meta">'+chips+'</div></div>'
+      + '<button type="button" class="cp-fm-move" data-fm-move="-1" aria-label="Move up"'+(i === 0 ? ' disabled' : '')+'>↑</button>'
+      + '<button type="button" class="cp-fm-move" data-fm-move="1" aria-label="Move down"'+(i === fmDraft.length - 1 ? ' disabled' : '')+'>↓</button>'
+      + '</div>';
+    h += '<div class="cp-fm-q-body"'+(open ? '' : ' hidden')+'>';
+    h += '<div><label class="cp-ci-hint">Question</label><input type="text" class="cp-ci-input" data-fm="label" value="'+esc(f.label)+'" maxlength="200" /></div>';
+    h += '<div><label class="cp-ci-hint">Help text (optional)</label><input type="text" class="cp-ci-input" data-fm="hint" value="'+esc(f.hint || '')+'" maxlength="300" /></div>';
+    if (f.custom) {
+      h += '<div><label class="cp-ci-hint">Answer type</label><select class="cp-select" data-fm="type">'
+        + PRECALL_FIELD_TYPES.map(function(t){ return '<option value="'+t.key+'"'+(t.key === f.type ? ' selected' : '')+'>'+esc(t.label)+'</option>'; }).join('')
+        + '</select></div>';
+    } else {
+      h += '<p class="cp-ci-hint" style="margin:0;">Answer type: '+esc(fmTypeLabel(f.type))+' — this is one of the original Notion questions, so its type is fixed.</p>';
+    }
+    if (f.type === 'choice' || f.type === 'multi') {
+      h += '<div><label class="cp-ci-hint">Answer choices — one per line</label><textarea class="cp-textarea" data-fm="options">'+esc((f.options || []).join('\n'))+'</textarea></div>';
+    }
+    h += '<div class="cp-fm-row"><label class="cp-fm-check"><input type="checkbox" data-fm="required"'+(f.required ? ' checked' : '')+' /> Required</label></div>';
+
+    // Conditional logic: any other pick-one / pick-any question can drive this one.
+    var parents = fmDraft.filter(function(p){ return p.key !== f.key && (p.type === 'choice' || p.type === 'multi'); });
+    h += '<div class="cp-fm-if"><label class="cp-ci-hint">Only show when…</label>'
+      + '<select class="cp-select" data-fm="ifKey"><option value="">Always show this question</option>'
+      + parents.map(function(p){ return '<option value="'+esc(p.key)+'"'+(parent && parent.key === p.key ? ' selected' : '')+'>'+esc(p.label)+'</option>'; }).join('')
+      + '</select>';
+    if (parent) {
+      h += '<p class="cp-ci-hint" style="margin:10px 0 6px;">…the answer is any of:</p><div class="cp-fm-row">'
+        + (parent.options || []).map(function(o){
+            return '<label class="cp-fm-check"><input type="checkbox" data-fm-ifval value="'+esc(o)+'"'+(f.showIf.values.indexOf(o) !== -1 ? ' checked' : '')+' /> '+esc(o)+'</label>';
+          }).join('')
+        + '</div>';
+    }
+    h += '</div>';
+    h += '<div class="cp-fm-row">'
+      + '<button type="button" class="cp-btn-sm" data-fm-act="hide">'+(f.legacy ? 'Show to clients' : 'Hide from clients')+'</button>'
+      + (f.custom ? '<button type="button" class="cp-btn-sm cp-btn-sm--danger" data-fm-act="delete">Delete question</button>' : '')
+      + '</div>';
+    if (!f.custom) h += '<p class="cp-ci-hint" style="margin:0;">Original questions can be hidden but not deleted, so past answers keep showing in check-in history.</p>';
+    return h + '</div></div>';
+  }
+
+  // The draft as it will be stored: options trimmed, stale show-if answers dropped.
+  function fmCleaned(){
+    return fmDraft.map(function(f){
+      var o = { key:f.key, type:f.type, label:String(f.label || '').trim() || 'Untitled question' };
+      if (f.hint) o.hint = String(f.hint).trim();
+      if (f.placeholder) o.placeholder = f.placeholder;
+      if (f.required) o.required = true;
+      if (f.legacy) o.legacy = true;
+      if (f.type === 'choice' || f.type === 'multi') o.options = (f.options || []).map(function(x){ return String(x).trim(); }).filter(Boolean);
+      if (f.showIf) {
+        var p = fmFind(f.showIf.key);
+        var vals = p ? f.showIf.values.filter(function(v){ return (p.options || []).indexOf(v) !== -1; }) : [];
+        if (vals.length) o.showIf = { key:f.showIf.key, values:vals };
+      }
+      return o;
+    });
+  }
+
+  function fmUpdateHead(card, f){
+    var label = card.querySelector('.cp-fm-q-label');
+    if (label) label.textContent = f.label || 'Untitled question';
+  }
+
+  $('cpFormOpenBtn').addEventListener('click', openFormEditor);
+  $('cpFormOverlay').addEventListener('click', function(e){ if (e.target.closest('[data-close-form]')) closeFormEditor(); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-fm-mode]'), function(b){
+    b.addEventListener('click', function(){ fmMode = b.getAttribute('data-fm-mode'); fmRender(); });
+  });
+
+  // Typing: update the draft in place (no re-render, so focus stays put).
+  $('cpFormBody').addEventListener('input', function(e){
+    var el = e.target.closest('[data-fm]'); if (!el) return;
+    var card = el.closest('[data-fm-key]'); var f = card && fmFind(card.getAttribute('data-fm-key')); if (!f) return;
+    var prop = el.getAttribute('data-fm');
+    if (prop === 'label' || prop === 'hint') { f[prop] = el.value; if (prop === 'label') fmUpdateHead(card, f); fmSetDirty(true); }
+    if (prop === 'options') { f.options = el.value.split('\n'); fmSetDirty(true); }
+  });
+
+  $('cpFormBody').addEventListener('change', function(e){
+    // Preview: re-run the show/hide rules against the draft.
+    var pv = $('cpFmPreviewForm');
+    if (pv && pv.contains(e.target)) { fmWithDraft(function(){ applyCiVisibility(pv); }); return; }
+
+    var el = e.target.closest('[data-fm], [data-fm-ifval]'); if (!el) return;
+    var card = el.closest('[data-fm-key]'); var f = card && fmFind(card.getAttribute('data-fm-key')); if (!f) return;
+    var prop = el.getAttribute('data-fm');
+    if (prop === 'options') {
+      f.options = el.value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+    } else if (prop === 'required') {
+      f.required = el.checked;
+    } else if (prop === 'type') {
+      f.type = el.value;
+      if ((f.type === 'choice' || f.type === 'multi') && !(f.options || []).filter(Boolean).length) f.options = ['Yes','No'];
+      // Questions that depended on this one no longer can if it isn't a choice.
+      if (f.type !== 'choice' && f.type !== 'multi') fmDraft.forEach(function(c){ if (c.showIf && c.showIf.key === f.key) delete c.showIf; });
+    } else if (prop === 'ifKey') {
+      if (el.value) { var p = fmFind(el.value); f.showIf = { key: el.value, values: p && p.options && p.options.length ? [p.options[0]] : [] }; }
+      else delete f.showIf;
+    } else if (el.hasAttribute('data-fm-ifval')) {
+      f.showIf.values = Array.prototype.map.call(card.querySelectorAll('[data-fm-ifval]:checked'), function(c){ return c.value; });
+    } else {
+      return;
+    }
+    fmSetDirty(true);
+    fmRender();
+  });
+
+  $('cpFormBody').addEventListener('click', function(e){
+    var card = e.target.closest('[data-fm-key]'); if (!card) return;
+    var key = card.getAttribute('data-fm-key');
+    var f = fmFind(key); if (!f) return;
+    var mv = e.target.closest('[data-fm-move]');
+    if (mv) {
+      var i = fmDraft.indexOf(f), j = i + parseInt(mv.getAttribute('data-fm-move'), 10);
+      if (j < 0 || j >= fmDraft.length) return;
+      fmDraft.splice(i, 1); fmDraft.splice(j, 0, f);
+      fmSetDirty(true); fmRender();
+      return;
+    }
+    var act = e.target.closest('[data-fm-act]');
+    if (act) {
+      var a = act.getAttribute('data-fm-act');
+      if (a === 'hide') f.legacy = !f.legacy;
+      if (a === 'delete') {
+        if (!confirm('Delete “' + f.label + '”? Clients’ past answers to it will no longer show in their check-in history. (To keep them, hide the question instead.)')) return;
+        fmDraft.splice(fmDraft.indexOf(f), 1);
+        fmDraft.forEach(function(c){ if (c.showIf && c.showIf.key === key) delete c.showIf; });
+        fmOpenKey = null;
+      }
+      fmSetDirty(true); fmRender();
+      return;
+    }
+    if (e.target.closest('[data-fm-toggle]')) {
+      fmOpenKey = fmOpenKey === key ? null : key;
+      fmRender();
+    }
+  });
+
+  $('cpFormAdd').addEventListener('click', function(){
+    var key = 'q_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    fmDraft.push({ key:key, type:'text', label:'New question', hint:'', custom:true, _new:true });
+    fmOpenKey = key;
+    fmSetDirty(true);
+    fmRender();
+    var card = document.querySelector('[data-fm-key="'+key+'"]');
+    if (card) { card.scrollIntoView({ block:'center', behavior:'smooth' }); var inp = card.querySelector('[data-fm="label"]'); if (inp) { inp.focus(); inp.select(); } }
+  });
+
+  $('cpFormReset').addEventListener('click', function(){
+    if (!confirm('Reset to the original Notion questions? Questions you added will be removed when you save, and past answers to them will no longer show.')) return;
+    fmDraft = fmCopy(normalizePreCallFields(DEFAULT_PRECALL_FIELDS));
+    fmOpenKey = null;
+    fmSetDirty(true);
+    fmRender();
+  });
+
+  $('cpFormSave').addEventListener('click', async function(){
+    var fields = fmCleaned();
+    var empty = fields.filter(function(f){ return (f.type === 'choice' || f.type === 'multi') && !f.options.length; })[0];
+    if (empty) { setNote('cpFormNote', '“' + empty.label + '” needs at least one answer choice.', true); return; }
+    var btn = $('cpFormSave');
+    btn.disabled = true;
+    setNote('cpFormNote', 'Saving…');
+    var { error } = await sb.from('form_settings').upsert({ key:'pre_call', fields:fields, updated_at:new Date().toISOString() });
+    btn.disabled = false;
+    if (error) { setNote('cpFormNote', 'Could not save: ' + error.message, true); return; }
+    PRECALL_FIELDS = normalizePreCallFields(fields);
+    fmDraft = fmCopy(PRECALL_FIELDS);
+    fmSetDirty(false);
+    setNote('cpFormNote', 'Saved — clients see the new form next time they open it.');
+    fmRender();
+    // Re-read open check-ins against the new questions.
+    if (portalData && portalData.preCallSubmissions) {
+      portalData.preCallSubmissions = portalData.preCallSubmissions.map(function(sub){ return mapPreCall(sub._row); });
+      renderCheckinsTab();
+    }
+  });
 
   // ─── Education tab: shared curriculum ─────────────────────────────────
   // One curriculum (core -> competency -> question) shared by every client.
