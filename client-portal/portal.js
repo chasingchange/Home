@@ -199,6 +199,9 @@
   var coachUser = null;
   var coachProfile = null;
   var ownProfile = null;   // the signed-in client's own profile row (nickname editing)
+  // Profile whose nickname the ✎ beside the welcome edits: the client's own
+  // row, or — for the coach — the client whose portal is open.
+  var nicknameProfile = null;
 
   var roster = [];          // coach view: [{id,name,route,weekNow,weekTotal,adh,flag,color,next,...}]
   var flags = [];
@@ -503,7 +506,9 @@
     if (isCoachUser) {
       state.view = 'coach';
       ownProfile = null;
+      nicknameProfile = null;
       $('cpNicknameEdit').hidden = true;
+      $('cpNicknameForm').hidden = true;
       $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(profile, user) + '.';
       $('cpRouteLine').textContent = 'Coach Dashboard';
       renderViewToggle();
@@ -514,7 +519,6 @@
       // A refresh keeps whichever tab was open (setPortalTab writes it to the hash).
       state.portalTab = tabFromHash() || 'portal';
       ownProfile = profile;
-      $('cpNicknameEdit').hidden = false;
       loadClientPortal(user.id, preferredNameOf(profile, user));
     }
   }
@@ -643,6 +647,7 @@
     if (hwOpenId) closeHwSheet();
     $('cpWelcome').textContent = 'Welcome to Your Race, ' + displayName + '.';
     $('cpRouteLine').textContent = 'Loading…';
+    setNicknameTarget(clientId);
 
     var data = await Promise.all([fetchPortalData(clientId), preCallFormReady]).then(function(r){ return r[0]; });
     if (viewingClientId !== clientId) return; // superseded by a newer view
@@ -698,6 +703,7 @@
       var t = programTimeline(d);
       return {
         id: p.id,
+        profile: p,
         name: p.preferred_name || p.full_name || p.email,
         route: t.route || 'No route set',
         weekNow: t.weekNow,
@@ -809,6 +815,9 @@
     unsubscribePortalRealtime();
     viewingClientId = null;
     portalData = null;
+    nicknameProfile = null;
+    $('cpNicknameEdit').hidden = true;
+    $('cpNicknameForm').hidden = true;
     state.view = 'coach';
     $('cpWelcome').textContent   = 'Welcome back, ' + firstNameOf(coachProfile, coachUser) + '.';
     $('cpRouteLine').textContent = 'Coach Dashboard';
@@ -856,6 +865,7 @@
     renderClientPortal();
     renderViewToggle();
     renderVisionBand();
+    setNicknameTarget(viewingClientId);
   }
 
   $('cpClientModeBtn').addEventListener('click', toggleClientMode);
@@ -888,9 +898,40 @@
     renderDash(user, { full_name: fullName });
   });
 
-  // ─── Preferred name / nickname (client-set, shown instead of first name) ─
+  // ─── Preferred name / nickname (shown instead of first name) ──────────
+  // The client sets their own; the coach can set it for any client from
+  // that client's portal (needs scripts/coach_edit_client_profiles.sql).
+  async function setNicknameTarget(clientId){
+    $('cpNicknameForm').hidden = true;
+    var prof = null;
+    if (!isCoachSession) {
+      prof = ownProfile;
+    } else {
+      var c = findRosterClient(clientId);
+      prof = c && c.profile;
+      if (!prof) {
+        var res = await sb.from('profiles').select('*').eq('id', clientId).maybeSingle();
+        prof = res.data || null;
+      }
+    }
+    if (viewingClientId !== clientId) return; // superseded by a newer view
+    nicknameProfile = prof;
+    var forClient = isCoachSession && !clientMode;
+    $('cpNicknameEdit').title = forClient ? 'Change what ' + (viewingClientName || 'this client') + ' is called' : 'Go by a different name?';
+    $('cpNicknameInput').placeholder = forClient ? 'What should we call ' + (viewingClientName || 'them') + '?' : 'What should we call you?';
+    $('cpNicknameEdit').hidden = !nicknameProfile;
+  }
+
+  // Welcome-line name: clients see their nickname or first name; the coach
+  // sees the nickname or full name, matching the roster.
+  function welcomeNameFor(prof){
+    if (prof.preferred_name) return prof.preferred_name;
+    if (isCoachSession) return prof.full_name || prof.email || '';
+    return firstNameOf(prof, currentUser);
+  }
+
   $('cpNicknameEdit').addEventListener('click', function(){
-    $('cpNicknameInput').value = (ownProfile && ownProfile.preferred_name) || '';
+    $('cpNicknameInput').value = (nicknameProfile && nicknameProfile.preferred_name) || '';
     $('cpNicknameForm').hidden = false;
     $('cpNicknameInput').focus();
   });
@@ -905,16 +946,30 @@
   });
 
   $('cpNicknameSave').addEventListener('click', async function(){
-    if (!currentUser || !ownProfile) return;
+    var prof = nicknameProfile;
+    if (!currentUser || !prof) return;
     var nickname = $('cpNicknameInput').value.trim();
     setLoading($('cpNicknameSave'), true, 'Saving…');
-    var { error } = await sb.from('profiles').update({ preferred_name: nickname }).eq('id', currentUser.id);
+    // .select() so an update RLS silently blocks (0 rows) shows up as a failure.
+    var { data, error } = await sb.from('profiles').update({ preferred_name: nickname }).eq('id', prof.id).select('id');
     setLoading($('cpNicknameSave'), false, 'Save');
-    if (error) { window.alert('Could not save your name: ' + error.message); return; }
-    ownProfile.preferred_name = nickname;
+    if (!error && (!data || !data.length)) {
+      error = { message: isCoachSession
+        ? 'you don’t have permission to edit client profiles yet. Run scripts/coach_edit_client_profiles.sql in Supabase.'
+        : 'no profile row was updated.' };
+    }
+    if (error) { window.alert('Could not save the name: ' + error.message); return; }
+    prof.preferred_name = nickname;
     $('cpNicknameForm').hidden = true;
-    if (viewingClientId === currentUser.id) {
-      $('cpWelcome').textContent = 'Welcome to Your Race, ' + preferredNameOf(ownProfile, currentUser) + '.';
+    if (viewingClientId === prof.id) {
+      var name = welcomeNameFor(prof);
+      $('cpWelcome').textContent = 'Welcome to Your Race, ' + name + '.';
+      if (isCoachSession) {
+        var c = findRosterClient(prof.id);
+        if (c) c.name = prof.preferred_name || prof.full_name || prof.email;
+        viewingClientName = String(name).split(' ')[0];
+        renderClientModeUi();
+      }
     }
   });
 
