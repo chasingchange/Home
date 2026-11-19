@@ -823,10 +823,20 @@
       @media(max-width:1080px){.cp-coach-tools{grid-template-columns:repeat(2,minmax(0,1fr));}}
       @media(max-width:520px){.cp-coach-tools{grid-template-columns:1fr;gap:10px;}.cp-tool{padding:14px 16px;}}
       @media(prefers-reduced-motion:reduce){.cp-tool,.cp-tool-arrow{transition:none;}.cp-tool:hover{transform:none;}}
+      .cp-roster-actions{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+      .cp-roster-delete{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(192,26,56,.6);text-decoration:underline;text-underline-offset:3px;}
+      .cp-roster-delete:hover{color:#c01a38;}
+      .cp-danger-card{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-color:rgba(240,35,72,.25) !important;}
+      .cp-danger-card h4{margin:0;color:#c01a38;}
+      .cp-danger-card p{margin:6px 0 0;font-size:14px;line-height:1.5;color:rgba(7,31,53,.6);}
+      .cp-delete-tip{margin:0 0 18px;padding:12px 14px;border-radius:12px;background:rgba(7,31,53,.05);font-size:13.5px;line-height:1.5;color:rgba(7,31,53,.7);}
+      .cp-delete-go{background:#c01a38 !important;}
+      .cp-delete-go:hover:not(:disabled){background:#a0142e !important;}
+      .cp-delete-go:disabled{opacity:.45;cursor:not-allowed;}
       .cp-roster-card{cursor:default;}
       .cp-roster-card:hover{box-shadow:none;}
       .cp-roster-list{margin-top:20px;display:grid;}
-      .cp-roster-row{display:grid;grid-template-columns:1.4fr 130px 1fr 1fr 1.2fr 110px 50px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);cursor:pointer;}
+      .cp-roster-row{display:grid;grid-template-columns:1.4fr 130px 1fr 1fr 1.2fr 110px 56px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid rgba(7,31,53,.08);cursor:pointer;}
       .cp-roster-row:hover{background:rgba(7,31,53,.03);}
       .cp-roster-name{font-family:"Raleway",sans-serif;font-weight:700;font-size:16px;}
       .cp-roster-route,.cp-roster-week{font-size:14px;color:rgba(7,31,53,.6);}
@@ -1412,6 +1422,25 @@
           </div>
         </div>
 
+        <div class="cp-modal-overlay" id="cpDeleteOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-close-modal="cpDeleteOverlay"></div>
+          <div class="cp-goal-form-sheet" role="alertdialog" aria-modal="true" aria-labelledby="cpDeleteTitle" aria-describedby="cpDeleteBody">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title" id="cpDeleteTitle">Delete client?</p>
+            <p class="cp-goal-form-subtitle" id="cpDeleteBody">This permanently deletes <b id="cpDeleteName"></b>'s login, portal, goals, habits, assignments, check-ins and uploaded files. It can't be undone.</p>
+            <p class="cp-delete-tip">Just finished working together? Set their status to <b>Graduated</b> or <b>Terminated</b> instead — that keeps their history.</p>
+            <div class="cp-goal-form-field">
+              <label for="cpDeleteConfirm">Type <b id="cpDeleteNameHint"></b> to confirm</label>
+              <input type="text" id="cpDeleteConfirm" class="cp-goal-form-input" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="cp-auth-error" id="cpDeleteError"></div>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-close-modal="cpDeleteOverlay">Cancel</button>
+              <button type="button" class="cp-goal-form-save cp-delete-go" id="cpDeleteGo" disabled>Delete client</button>
+            </div>
+          </div>
+        </div>
+
         <div class="cp-modal-overlay" id="cpCalFormOverlay" hidden>
           <div class="cp-goal-form-backdrop" data-close-modal="cpCalFormOverlay"></div>
           <div class="cp-goal-form-sheet">
@@ -1825,6 +1854,18 @@
             <div class="cp-editor-card">
               <div class="cp-assign-list" id="cpEditResourceList"></div>
               <button type="button" class="cp-assign-add" id="cpEditResourceAdd">+ Add resource</button>
+            </div>
+          </div>
+
+          <div class="cp-editor-section" data-editor-sec="danger">
+            <h3>Remove client</h3>
+            <p class="cp-editor-section-lede">Finished working together? Set their status to Graduated or Terminated in Overview to keep their history. Delete only if you want them gone for good.</p>
+            <div class="cp-editor-card cp-danger-card">
+              <div>
+                <h4>Delete this client</h4>
+                <p>Removes their login, portal and every file and record. This can't be undone.</p>
+              </div>
+              <button type="button" class="cp-btn-sm cp-btn-sm--danger" id="cpEditDelete">Delete client</button>
             </div>
           </div>
 
