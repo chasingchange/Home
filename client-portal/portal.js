@@ -2090,9 +2090,10 @@
       return isCoachUser || HW_CLIENT_STATUSES.indexOf(s.key) !== -1 || s.key === a.status;
     });
     var lockStatus = !isCoachUser && a.status === 'complete';
-    h += '<div class="cp-hw-section"><h4><label for="cpHwStatusSel">Status</label></h4><select class="cp-select" id="cpHwStatusSel"'+(lockStatus?' disabled':'')+'>'
+    // Status sits in the action row, just left of Save.
+    var statusSelHtml = '<select class="cp-select" id="cpHwStatusSel" aria-label="Status"'+(lockStatus?' disabled':'')+'>'
       + statusOpts.map(function(s){ return '<option value="'+s.key+'"'+(s.key===a.status?' selected':'')+'>'+esc(s.label)+'</option>'; }).join('')
-      + '</select></div>';
+      + '</select>';
 
     h += '<div class="cp-hw-section"><h4>'+(own ? 'Your work' : 'Client’s work')+'</h4>';
     if (own) {
@@ -2112,7 +2113,7 @@
     }
     h += '</div>';
 
-    h += '<div class="cp-btn-row" style="margin-top:28px;">';
+    h += '<div class="cp-btn-row" style="margin-top:28px;">' + statusSelHtml;
     if (own) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>';
       if (isHwOpen(a)) h += '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-hw-action="submit">Submit for review</button>';
