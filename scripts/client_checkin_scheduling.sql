@@ -3,7 +3,8 @@
 -- Two per-client, per-week checkboxes on the coach's Check-in Notes page
 -- (checkin-notes/):
 --
---   calendar_reviewed  "Went over their calendar" — ticked by the coach.
+--   calendar_reviewed  "Went over routine" — ticked by the coach. (Column
+--                      name kept from when it read "Went over their calendar".)
 --   next_scheduled     "Next meeting scheduled". NULL means "go by my
 --                      calendar": the page ticks it when the coach's Google
 --                      Calendar shows a meeting with that client after this
