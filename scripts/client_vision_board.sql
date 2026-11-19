@@ -8,9 +8,9 @@
 -- .cp-vision-band in client-portal/index.html and renderVisionBand() /
 -- the cpVisionFileInput handler in client-portal/portal.js.
 --
--- Only the owning client can upload/replace/remove their own image (the
--- coach can view it when looking at a client's portal, same as everything
--- else there, but has no upload control in the UI). The bucket is public
+-- The owning client can upload/replace/remove their own image, and so can
+-- the coach when viewing that client's portal (public.is_coach). Safe to
+-- re-run: re-running it updates the storage policies below. The bucket is public
 -- for read so the dashboard can just use the plain public URL — nothing
 -- sensitive lives in it, and paths are namespaced by client_id so a client
 -- can only ever touch objects under their own folder. The image is always
@@ -40,26 +40,29 @@ create policy "vision board public read" on storage.objects for select
   using (bucket_id = 'vision-boards');
 
 drop policy if exists "vision board owner can write" on storage.objects;
-create policy "vision board owner can write" on storage.objects for insert
+drop policy if exists "vision board owner or coach can write" on storage.objects;
+create policy "vision board owner or coach can write" on storage.objects for insert
   with check (
     bucket_id = 'vision-boards'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and ((storage.foldername(name))[1] = auth.uid()::text or public.is_coach(auth.uid()))
   );
 
 drop policy if exists "vision board owner can update" on storage.objects;
-create policy "vision board owner can update" on storage.objects for update
+drop policy if exists "vision board owner or coach can update" on storage.objects;
+create policy "vision board owner or coach can update" on storage.objects for update
   using (
     bucket_id = 'vision-boards'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and ((storage.foldername(name))[1] = auth.uid()::text or public.is_coach(auth.uid()))
   )
   with check (
     bucket_id = 'vision-boards'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and ((storage.foldername(name))[1] = auth.uid()::text or public.is_coach(auth.uid()))
   );
 
 drop policy if exists "vision board owner can delete" on storage.objects;
-create policy "vision board owner can delete" on storage.objects for delete
+drop policy if exists "vision board owner or coach can delete" on storage.objects;
+create policy "vision board owner or coach can delete" on storage.objects for delete
   using (
     bucket_id = 'vision-boards'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and ((storage.foldername(name))[1] = auth.uid()::text or public.is_coach(auth.uid()))
   );

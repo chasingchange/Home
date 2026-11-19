@@ -5907,7 +5907,7 @@
     sb.from('client_tasks').update({ done: task.done }).eq('id', task.id);
   });
 
-  // ─── Vision board header (client-uploaded image, faded into the page) ──
+  // ─── Vision board header (client- or coach-uploaded image, faded into the page) ──
   // The client's chosen focal point is stored as a "#pos=x,y" fragment (percentages,
   // fed straight into object-position) on vision_board_url itself, so recentering
   // needs no extra column. The fragment never reaches the storage server.
@@ -5935,7 +5935,9 @@
     var band = $('cpVisionBand');
     if (state.view !== 'client' || !portalData) { visionEdit = null; band.hidden = true; return; }
 
-    var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
+    // The client manages their own board; the coach can also upload, change,
+    // reposition or remove it for them (but not while previewing in client mode).
+    var isOwner = !!(currentUser && viewingClientId && currentUser.id === viewingClientId) || isCoachUser;
     var url = portalData.visionBoardUrl;
     if (!url && !isOwner) { visionEdit = null; band.hidden = true; return; }
     if (!url || !isOwner) visionEdit = null;
@@ -5959,6 +5961,9 @@
     band.classList.toggle('has-image', !!url);
     $('cpVisionHint').hidden = !editing;
     $('cpVisionEmptyBtn').hidden = !(isOwner && !url);
+    $('cpVisionEmptyBtn').querySelector('.cp-vision-empty-text').textContent = isCoachUser
+      ? '+ Upload a vision board for ' + (viewingClientName || 'this client')
+      : '+ Upload your vision board';
     $('cpVisionControls').hidden = !(isOwner && url && !editing);
     $('cpVisionEditControls').hidden = !(isOwner && url && editing);
   }
@@ -6073,7 +6078,7 @@
     setVisionBusy(false);
     if (res && res.error) {
       portalData.visionBoardUrl = prevUrl;
-      alert('The image uploaded, but saving it to your dashboard failed: ' + res.error.message);
+      alert('The image uploaded, but saving it to the dashboard failed: ' + res.error.message);
       renderVisionBand();
       return;
     }
