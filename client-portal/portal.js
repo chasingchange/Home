@@ -3195,16 +3195,22 @@
     renderCheckinsTab();
   });
 
+  // Past check-ins start collapsed. The ones opened stay open when the list
+  // re-renders (a review toggle, a realtime refresh); cleared per client.
+  var ciOpenIds = {};
+  var ciOpenFor = null;
+
   function renderCiHistory(){
+    if (ciOpenFor !== viewingClientId) { ciOpenIds = {}; ciOpenFor = viewingClientId; }
     var rows = portalData.preCallSubmissions || [];
     if (!rows.length) {
       $('cpCiHistory').innerHTML = '<div class="cp-goal-empty">No check-ins yet.</div>';
       return;
     }
     var h = '';
-    rows.forEach(function(sub, idx){
+    rows.forEach(function(sub){
       var reviewed = isReviewedStatus(sub.status);
-      h += '<details class="cp-ci-item"'+(idx === 0 ? ' open' : '')+'><summary>'
+      h += '<details class="cp-ci-item" data-ci-item="'+esc(sub.id)+'"'+(ciOpenIds[sub.id] ? ' open' : '')+'><summary>'
         + '<span class="cp-ci-date">'+esc(sub.submittedAt ? longDate(new Date(sub.submittedAt)) : 'Undated')+'</span>'
         + statusPill(sub.status || 'Submitted', reviewed ? '#3d9b37' : '#aa70d7')
         + '<span class="cp-due-chip">'+(sub.source === 'portal' ? 'Portal' : 'Notion')+'</span>'
@@ -3235,6 +3241,13 @@
     });
     $('cpCiHistory').innerHTML = h;
   }
+
+  // 'toggle' doesn't bubble, so listen in the capture phase.
+  $('cpCiHistory').addEventListener('toggle', function(e){
+    var d = e.target; if (!d.matches || !d.matches('[data-ci-item]')) return;
+    var id = d.getAttribute('data-ci-item');
+    if (d.open) ciOpenIds[id] = true; else delete ciOpenIds[id];
+  }, true);
 
   $('cpCiHistory').addEventListener('click', async function(e){
     var btn = e.target.closest('[data-ci-review]'); if (!btn || !isCoachUser) return;
