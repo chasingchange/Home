@@ -247,7 +247,14 @@
   var needsPassword = (urlAuthType === 'invite');
   var currentUser = null;
   var biometricOfferedThisLoad = false;
+  // isCoachUser drives every coach-vs-client difference in the UI. In
+  // client mode (the coach previewing a client's portal exactly as the
+  // client sees it) it is switched off; isCoachSession always keeps the
+  // signed-in user's real role, for things that must not change with the
+  // preview (calendar tokens, the roster).
   var isCoachUser = false;
+  var isCoachSession = false;
+  var clientMode = false;
   var coachUser = null;
   var coachProfile = null;
   var ownProfile = null;   // the signed-in client's own profile row (nickname editing)
@@ -540,6 +547,8 @@
     $('cpDash').hidden = false;
 
     isCoachUser  = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+    isCoachSession = isCoachUser;
+    clientMode   = false;
     coachUser    = isCoachUser ? user : null;
     coachProfile = isCoachUser ? profile : null;
 
@@ -548,6 +557,7 @@
     preCallFormReady = loadPreCallForm();
 
     $('cpBackToRoster').hidden = true;
+    renderClientModeUi();
 
     if (isCoachUser) {
       state.view = 'coach';
@@ -677,6 +687,7 @@
   async function loadClientPortal(clientId, displayName){
     viewingClientId = clientId;
     viewingClientName = String(displayName || '').split(' ')[0];
+    renderClientModeUi();
     portalData = null;
     ciEditing = false;
     ciDraft = null;
@@ -821,12 +832,14 @@
     var q = new URLSearchParams(window.location.search);
     q.delete('tab');
     if (clientId) q.set('client', clientId); else q.delete('client');
+    if (clientId && clientMode) q.set('as', 'client'); else q.delete('as');
     var search = q.toString() ? '?' + q.toString() : '';
     if (search === window.location.search) return;
     try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
   }
 
-  function enterClientPortalView(clientId, name, tab){
+  function enterClientPortalView(clientId, name, tab, asClient){
+    setClientModeFlag(!!asClient);
     writeClientParam(clientId);
     state.view = 'client';
     state.portalTab = tab || 'portal';
@@ -836,6 +849,7 @@
   }
 
   function exitClientPortalView(){
+    setClientModeFlag(false);
     writeClientParam(null);
     closeQuickEdit();
     qeFlush();
@@ -852,6 +866,47 @@
   }
 
   $('cpBackToRoster').addEventListener('click', exitClientPortalView);
+
+  // ─── Coach: client mode ───────────────────────────────────────────────
+  // Lets the coach see a client's portal exactly as that client does: no
+  // coach controls, the client's own prompts and forms. Anything done in
+  // client mode is saved to that client's portal (the coach is still the
+  // one signed in). The calendar keeps its coach view, since connecting
+  // Google / Outlook here would link the coach's account, not the client's.
+  function setClientModeFlag(on){
+    clientMode = !!(on && isCoachSession);
+    isCoachUser = isCoachSession && !clientMode;
+    renderClientModeUi();
+  }
+
+  function renderClientModeUi(){
+    var inClient = isCoachSession && state.view === 'client' && !!viewingClientId;
+    var btn = $('cpClientModeBtn');
+    btn.hidden = !inClient;
+    btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
+    btn.classList.toggle('is-on', clientMode);
+    btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
+    $('cpClientModeBanner').hidden = !(inClient && clientMode);
+    $('cpClientModeName').textContent = viewingClientName || 'this client';
+  }
+
+  function toggleClientMode(){
+    if (!isCoachSession || !viewingClientId) return;
+    setClientModeFlag(!clientMode);
+    writeClientParam(viewingClientId);
+    // Drop anything half-open from the other mode before re-rendering.
+    closeQuickEdit();
+    qeFlush();
+    if (hwOpenId) closeHwSheet();
+    ciEditing = false;
+    ciDraft = null;
+    renderClientPortal();
+    renderViewToggle();
+    renderVisionBand();
+  }
+
+  $('cpClientModeBtn').addEventListener('click', toggleClientMode);
+  $('cpClientModeExit').addEventListener('click', toggleClientMode);
 
   // ─── First-time name capture ───────────────────────────────────────────
   $('cpNameSubmit').addEventListener('click', async function(){
@@ -1078,6 +1133,7 @@
   // Whether the signed-in user is looking at their own portal (vs the
   // coach browsing a client's).
   function isOwnPortal(){
+    if (clientMode && viewingClientId) return true;
     return !!(currentUser && viewingClientId && currentUser.id === viewingClientId);
   }
 
@@ -3689,7 +3745,7 @@
   // Only the client can connect — the OAuth flows below run as whoever is
   // signed into this browser tab. Each time the client's browser loads
   // events it saves a copy (calSaveSnapshot), and a coach browsing the
-  // client's portal (see isCoachUser) sees that copy.
+  // client's portal (see isCoachSession) sees that copy.
   //
   // Writes: with a live token the client's browser adds / moves / removes
   // events straight on Google or Outlook. The coach never holds the client's
@@ -4342,7 +4398,7 @@
       if (!row.connected || !calState[row.provider]) return;
       calState[row.provider].connected = true;
       calState[row.provider].email = row.account_email || '';
-      if (isCoachUser) {
+      if (isCoachSession) {
         // Coach: show the client's last saved copy, with queued edits on top.
         calState[row.provider].events = calEventsFromSnapshot(row.events);
         calState[row.provider].syncedAt = row.synced_at ? new Date(row.synced_at) : null;
@@ -4351,7 +4407,7 @@
       }
     });
     calRenderCard();
-    if (isCoachUser) return;
+    if (isCoachSession) return;
 
     // Google: no popup here, ever (GIS's "silent" popup could open a real
     // sign-in window by itself). Instead use the token this browser still
@@ -4412,7 +4468,7 @@
   function calPaintStatus(){
     var el = $('cpCalStatus');
     var msg = calUi.statusMsg, isError = calUi.statusErr;
-    if (!msg) { msg = isCoachUser ? calCoachSyncNote() : calClientNote(); isError = false; }
+    if (!msg) { msg = isCoachSession ? calCoachSyncNote() : calClientNote(); isError = false; }
     el.textContent = msg;
     el.hidden = !msg;
     el.classList.toggle('is-error', !!isError);
@@ -4420,7 +4476,7 @@
 
   function calProviderBtnLabel(provider, name){
     var s = calState[provider];
-    if (isCoachUser) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
+    if (isCoachSession) return name + ' · ' + (s.connected ? (s.email || 'Connected') : 'Not connected');
     if (s.busy) return 'Connecting…';
     if (s.connected && (s.needsReconnect || !s.canWrite)) return 'Reconnect ' + name;
     if (s.connected) return name + ' · ' + (s.email || 'Connected');
@@ -4430,12 +4486,12 @@
   function calRenderButtons(){
     [['google','cpCalConnectGoogle','Google'], ['outlook','cpCalConnectOutlook','Outlook']].forEach(function(p){
       var s = calState[p[0]], btn = $(p[1]);
-      var on = s.connected && !s.needsReconnect && (isCoachUser || s.canWrite);
+      var on = s.connected && !s.needsReconnect && (isCoachSession || s.canWrite);
       btn.innerHTML = (on ? '<span class="cp-cal-provider-dot" style="background:' + CAL_PROVIDER_COLORS[p[0]] + '"></span>' : '')
         + esc(calProviderBtnLabel(p[0], p[2]));
       btn.classList.toggle('is-connected', on);
       btn.classList.toggle('is-loading', s.busy);
-      btn.disabled = isCoachUser;
+      btn.disabled = isCoachSession;
     });
   }
 
@@ -4514,7 +4570,7 @@
       var m = calState.meta[e.id] || (e.seriesId && calState.meta[e.seriesId]) || {};
       return Object.assign({}, e, { core:m.core === 'none' ? null : (m.core || null), suggestedCore:m.core ? null : calSuggestCore(e.title), createdBy:m.createdBy || null });
     });
-    if (isCoachUser) {
+    if (isCoachSession) {
       calState.ops.forEach(function(op){
         var p = op.payload;
         if (op.op === 'create') {
@@ -4707,7 +4763,7 @@
   function calStatusLine(e){
     var cal = e.provider === 'google' ? 'Google Calendar' : 'Outlook';
     var name = viewingClientName || 'the client';
-    if (isCoachUser) {
+    if (isCoachSession) {
       if (e.pendingOp) return 'Pending — this lands on ' + name + '’s ' + cal + ' the next time they open their portal.';
       if (e.moveOp) return 'Moved — updates on ' + name + '’s ' + cal + ' the next time they open their portal.';
       if (e.createdBy === 'coach') return 'You added this. It’s on ' + name + '’s ' + cal + '.';
@@ -4720,7 +4776,7 @@
   }
 
   // Only events made in the portal can be removed from it.
-  function calRemovable(e){ return isCoachUser ? !!(e.pendingOp || e.createdBy === 'coach') : !!e.createdBy; }
+  function calRemovable(e){ return isCoachSession ? !!(e.pendingOp || e.createdBy === 'coach') : !!e.createdBy; }
 
   function calRenderPop(evs){
     var pop = $('cpCalPop');
@@ -4752,7 +4808,7 @@
     var evs = calEvents();
     if (calUi.selId && !evs.some(function(e){ return e.id === calUi.selId; })) calUi.selId = null;
     var body = view === 'month' ? calRenderMonth(evs) : view === 'agenda' ? calRenderAgenda(evs) : calRenderWeek(evs);
-    if (isCoachUser && !calState.google.connected && !calState.outlook.connected) {
+    if (isCoachSession && !calState.google.connected && !calState.outlook.connected) {
       body = '<p class="cp-cal-empty">This client hasn\'t connected a calendar yet.</p>';
     }
     $('cpCalBody').innerHTML = body;   // also drops any paging ghost
@@ -4764,12 +4820,12 @@
   function calRenderCard(){
     $('cpCalendarCard').hidden = false;
     $('cpTabCalendar').hidden = false;
-    $('cpCalSub').textContent = isCoachUser
+    $('cpCalSub').textContent = isCoachSession
       ? 'Upcoming events from this client\'s connected calendars.'
       : 'Upcoming events from your connected calendars. Your coach can see these too.';
     renderSessionCTA();
     calRenderButtons();
-    $('cpCalRoutineLink').href = './body/' + (isCoachUser && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
+    $('cpCalRoutineLink').href = './body/' + (isCoachSession && viewingClientId ? '?client=' + encodeURIComponent(viewingClientId) : '');
     calPaintStatus();
     calRenderCalendar();
   }
@@ -4783,7 +4839,7 @@
     calUi.selId = id;
     calSetStatus('');
 
-    if (isCoachUser) {
+    if (isCoachSession) {
       var times = { start:start.toISOString(), end:end.toISOString() };
       var saving = ev.pendingOp ? calUpdateOp(ev.pendingOp, Object.assign({}, ev.pendingOp.payload, times))
         : ev.moveOp ? calUpdateOp(ev.moveOp, Object.assign({ allDay:ev.allDay }, times))
@@ -4828,7 +4884,7 @@
     var clientId = viewingClientId;
     calSetStatus('');
     try {
-      if (isCoachUser) {
+      if (isCoachSession) {
         if (ev.pendingOp) await calDropOp(ev.pendingOp);
         else {
           if (ev.moveOp) await calDropOp(ev.moveOp);
@@ -4874,17 +4930,17 @@
     var providers = calFormProviders();
     var name = viewingClientName || 'the client';
     if (!providers.length) {
-      calSetStatus(isCoachUser ? name + ' hasn\'t connected a calendar yet.' : 'Connect Google or Outlook above first, then add events here.', true);
+      calSetStatus(isCoachSession ? name + ' hasn\'t connected a calendar yet.' : 'Connect Google or Outlook above first, then add events here.', true);
       return;
     }
-    var preferred = providers.filter(function(p){ return isCoachUser || calCanWrite(p); })[0] || providers[0];
+    var preferred = providers.filter(function(p){ return isCoachSession || calCanWrite(p); })[0] || providers[0];
     var h = Math.min(Math.max(hour == null ? 9 : hour, 0), 23);
     calUi.form = { provider:preferred, core:null, coreTouched:false, saving:false };
-    $('cpCalFormHeading').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
-    $('cpCalFormSub').textContent = isCoachUser
+    $('cpCalFormHeading').textContent = isCoachSession ? 'Add to ' + name + '’s calendar' : 'Add to your calendar';
+    $('cpCalFormSub').textContent = isCoachSession
       ? 'Goes onto the calendar ' + name + ' has connected. It shows as pending here until it syncs.'
       : 'Goes straight onto your connected calendar. Your coach will see it too.';
-    $('cpCalFormSave').textContent = isCoachUser ? 'Add to ' + name + '’s calendar' : 'Add event';
+    $('cpCalFormSave').textContent = isCoachSession ? 'Add to ' + name + '’s calendar' : 'Add event';
     $('cpCalFormTitle').value = '';
     $('cpCalFormDate').value = calDateKey(day);
     $('cpCalFormStart').value = calHHMM(h);
@@ -4906,7 +4962,7 @@
     if (!date || !st || !en) return calFormError('Pick a date, start and end time.');
     var start = new Date(date + 'T' + st), end = new Date(date + 'T' + en);
     if (end <= start) return calFormError('End time needs to be after the start time.');
-    if (!isCoachUser && !calCanWrite(f.provider)) {
+    if (!isCoachSession && !calCanWrite(f.provider)) {
       return calFormError('Reconnect ' + calProviderName(f.provider) + ' first — the portal needs permission to add events to your calendar.');
     }
     var joinRaw = $('cpCalFormJoin').value.trim();
@@ -4919,7 +4975,7 @@
     f.saving = true; $('cpCalFormSave').disabled = true; calFormError('');
     try {
       var newId;
-      if (isCoachUser) {
+      if (isCoachSession) {
         var op = await calQueueOp(clientId, f.provider, 'create', null,
           { title:title, start:start.toISOString(), end:end.toISOString(), joinUrl:joinRaw, core:f.core, repeat:repeat, until:until });
         newId = op.key;
@@ -5148,7 +5204,7 @@
     var sc = calScroller(); if (!sc) return true;
     return dir > 0 ? sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2 : sc.scrollLeft <= 1;
   }
-  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachUser && !calState.google.connected && !calState.outlook.connected); }
+  function calCanFlip(){ return calUi.view === 'month' && !calUi.drag && !calUi.dragId && !(isCoachSession && !calState.google.connected && !calState.outlook.connected); }
 
   // Trackpad: the grid moves with every sideways scroll event. A flick that
   // goes far enough pages right away and ignores the rest of its coast;
@@ -5363,12 +5419,12 @@
   }
 
   $('cpCalConnectGoogle').addEventListener('click', function(){
-    if (isCoachUser) return;
+    if (isCoachSession) return;
     if (calState.google.connected && !calState.google.needsReconnect) calDisconnectGoogle();
     else calConnectGoogle();
   });
   $('cpCalConnectOutlook').addEventListener('click', function(){
-    if (isCoachUser) return;
+    if (isCoachSession) return;
     if (calState.outlook.connected && !calState.outlook.needsReconnect) calDisconnectOutlook();
     else calConnectOutlook();
   });
@@ -5640,6 +5696,7 @@
       hideAllPortalTabs();
     }
     renderQeFab();
+    renderClientModeUi();
   }
 
   // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
@@ -5656,7 +5713,7 @@
     if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
     var c = findRosterClient(cid);
     if (!c) { writeClientParam(null); return; }
-    enterClientPortalView(cid, c.name, tab);
+    enterClientPortalView(cid, c.name, tab, q.get('as') === 'client');
   }
 
   function findRosterClient(id){
