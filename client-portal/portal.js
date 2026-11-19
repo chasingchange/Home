@@ -488,7 +488,8 @@
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
-      state.portalTab = window.location.hash === '#calendar' ? 'calendar' : 'portal';
+      // A refresh keeps whichever tab was open (setPortalTab writes it to the hash).
+      state.portalTab = tabFromHash() || 'portal';
       ownProfile = profile;
       $('cpNicknameEdit').hidden = false;
       loadClientPortal(user.id, preferredNameOf(profile, user));
@@ -943,9 +944,22 @@
     checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
   };
 
+  function tabFromHash(){
+    var h = (window.location.hash || '').replace(/^#/, '');
+    return PORTAL_TABS.hasOwnProperty(h) ? h : null;
+  }
+
+  // Mirror the open tab in the URL so a refresh lands back on it.
+  function writeTabHash(tab){
+    var hash = tab && tab !== 'portal' ? '#' + tab : '';
+    if (window.location.hash === hash) return;
+    try { history.replaceState(history.state, '', window.location.pathname + window.location.search + hash); } catch (e) {}
+  }
+
   function setPortalTab(tab){
     if (!PORTAL_TABS[tab]) tab = 'portal';
     state.portalTab = tab;
+    writeTabHash(tab);
     $('cpPortalTabs').querySelectorAll('[data-portal-tab]').forEach(function(btn){
       btn.classList.toggle('is-active', btn.getAttribute('data-portal-tab') === tab);
     });
@@ -955,6 +969,7 @@
   }
 
   function hideAllPortalTabs(){
+    if (tabFromHash()) writeTabHash(null);
     Object.keys(PORTAL_TABS).forEach(function(k){ $(PORTAL_TABS[k]).hidden = true; });
     $('cpVisionBand').hidden = true;
   }
