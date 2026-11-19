@@ -255,7 +255,7 @@
     if (!cred) throw new Error('No credential created.');
     localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
     localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
-    localStorage.removeItem(BIOMETRIC_DECLINED_KEY);
+    rememberBiometricAnswer(user.email);
     markUnlocked(user.email);
   }
 
@@ -280,9 +280,31 @@
     showStep('cpStepBiometric');
   }
 
+  // Remembers, per email on this device, that the Face ID / Touch ID offer was
+  // answered (enabled, declined, or Enable tried and cancelled/failed) so the
+  // banner never asks the same person twice.
+  function biometricAnsweredList(){
+    var list = [];
+    try {
+      var raw = localStorage.getItem(BIOMETRIC_DECLINED_KEY);
+      if (raw) {
+        try { list = JSON.parse(raw); } catch (e) { list = [raw]; } // legacy: a single email string
+        if (!Array.isArray(list)) list = [String(list)];
+      }
+    } catch (e) {}
+    return list;
+  }
+
+  function rememberBiometricAnswer(email){
+    if (!email) return;
+    var list = biometricAnsweredList();
+    if (list.indexOf(email) === -1) list.push(email);
+    try { localStorage.setItem(BIOMETRIC_DECLINED_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
   function maybeOfferBiometric(user){
     if (biometricOfferedThisLoad || !user || !user.email) return;
-    if (localStorage.getItem(BIOMETRIC_DECLINED_KEY) === user.email) return;
+    if (biometricAnsweredList().indexOf(user.email) !== -1) return;
     if (biometricEnabledFor(user.email)) return;
     platformAuthAvailable().then(function(avail){
       if (!avail) return;
@@ -878,12 +900,15 @@
   $('cpBiometricEnable').addEventListener('click', async function(){
     $('cpBiometricBanner').hidden = true;
     if (!currentUser) return;
+    // Remember the answer up front, so a cancelled or failed Face ID prompt
+    // doesn't bring the banner back on every visit.
+    rememberBiometricAnswer(currentUser.email);
     try { await registerBiometric(currentUser); } catch (e) { /* user cancelled or unsupported — nothing to do */ }
   });
 
   $('cpBiometricDecline').addEventListener('click', function(){
     $('cpBiometricBanner').hidden = true;
-    if (currentUser && currentUser.email) localStorage.setItem(BIOMETRIC_DECLINED_KEY, currentUser.email);
+    if (currentUser && currentUser.email) rememberBiometricAnswer(currentUser.email);
   });
 
   // ─── Render: client portal (from portalData) ───────────────────────────
