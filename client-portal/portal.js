@@ -1302,7 +1302,6 @@
     }
     if (e.target.closest('[data-goal-edit]')) { openGoalForm(goal); return; }
     if (e.target.closest('[data-goal-del]')) {
-      if (!confirm('Delete "' + goal.title + '"? This cannot be undone.')) return;
       var { error } = await sb.from('client_goals').delete().eq('id', goal.id);
       if (error) { alert('Could not delete goal: ' + error.message); return; }
       portalData.goals = portalData.goals.filter(function(g){ return g.id !== goal.id; });
@@ -1641,7 +1640,7 @@
 
   // Each habit belongs to one of the six cores (client_habits.core_key; ''
   // means no core yet). The tab groups habit cards by core, in core order.
-  var habitsUi = { editing: null, confirmDel: null };   // habit in edit mode / awaiting remove confirm
+  var habitsUi = { editing: null };   // id of the habit whose card is in edit mode
 
   function habitCoreDef(key){
     return CORE_DEFS.filter(function(c){ return c.key === key; })[0] || null;
@@ -1671,9 +1670,7 @@
           + '<input type="text" class="cp-goal-form-input" name="label" value="'+esc(hb.label)+'" maxlength="120" aria-label="Habit" required />'
           + '<div class="cp-goal-core-grid">'+habitCorePicker('cpHabitEditCore', hb.coreKey)+'</div>'
           + '<div class="cp-habit-form-actions'+(isCoachUser ? ' cp-habit-form-actions--split' : '')+'">'
-          + (isCoachUser ? (habitsUi.confirmDel === hb.id
-              ? '<span class="cp-habit-confirm">Remove this habit?<button type="button" class="cp-todo-confirm-yes" data-habit-del-yes="'+idx+'">Remove</button><button type="button" class="cp-todo-confirm-no" data-habit-del-no>Keep</button></span>'
-              : '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>') : '')
+          + (isCoachUser ? '<button type="button" class="cp-habit-remove" data-habit-del="'+idx+'">Remove habit</button>' : '')
           + '<span style="display:flex;gap:10px;align-items:center;"><button type="button" class="cp-habit-add-cancel" data-habit-edit-cancel>Cancel</button>'
           + '<button type="submit" class="cp-goals-add-btn">Save</button></span></div></form>';
       }
@@ -1717,32 +1714,25 @@
     var edit = e.target.closest('[data-habit-edit]');
     if (edit) {
       var hb = portalData.habits[parseInt(edit.getAttribute('data-habit-edit'),10)];
-      if (hb) { habitsUi.editing = hb.id; habitsUi.confirmDel = null; renderHabitsTab(); }
+      if (hb) { habitsUi.editing = hb.id; renderHabitsTab(); }
       return;
     }
-    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); return; }
-    if (e.target.closest('[data-habit-del-no]')) { habitsUi.confirmDel = null; renderHabitsTab(); return; }
-    // Remove asks inline (no browser confirm() popup — those can be
-    // silently blocked, which made the button look dead).
-    var ask = e.target.closest('[data-habit-del]');
-    if (ask) {
-      var h0 = portalData.habits[parseInt(ask.getAttribute('data-habit-del'),10)];
-      if (h0) { habitsUi.confirmDel = h0.id; renderHabitsTab(); }
-      return;
-    }
-    var del = e.target.closest('[data-habit-del-yes]'); if (!del || !isCoachUser) return;
-    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del-yes'),10)]; if (!habit) return;
+    if (e.target.closest('[data-habit-edit-cancel]')) { habitsUi.editing = null; renderHabitsTab(); return; }
+    // Opening the habit and tapping "Remove habit" is already deliberate,
+    // so it removes straight away — no second "are you sure?" step.
+    var del = e.target.closest('[data-habit-del]'); if (!del || !isCoachUser) return;
+    var habit = portalData.habits[parseInt(del.getAttribute('data-habit-del'),10)]; if (!habit) return;
     del.disabled = true; del.textContent = 'Removing…';
     var res = await sb.from('client_habits').delete().eq('id', habit.id).select('id');
     if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it (check the "coach can delete" policy in scripts/client_habits.sql).' };
-    if (res.error) { del.disabled = false; del.textContent = 'Remove'; alert('Could not remove habit: ' + res.error.message); return; }
-    habitsUi.editing = null; habitsUi.confirmDel = null;
+    if (res.error) { del.disabled = false; del.textContent = 'Remove habit'; alert('Could not remove habit: ' + res.error.message); return; }
+    habitsUi.editing = null;
     portalData.habits = portalData.habits.filter(function(h){ return h.id !== habit.id; });
     renderCoreList(); renderHabitsTab();
   });
 
   $('cpHabitsGrid').addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; habitsUi.confirmDel = null; renderHabitsTab(); }
+    if (e.key === 'Escape' && e.target.closest('[data-habit-edit-form]')) { habitsUi.editing = null; renderHabitsTab(); }
   });
 
   $('cpHabitsGrid').addEventListener('submit', async function(e){
@@ -2149,7 +2139,7 @@
   // stored in client_assignments with kind 'todo' (scripts/client_todos.sql).
   // The client ticks them off. The coach can turn one into a habit: the
   // to-do is marked complete and a client_habits row is added in its core.
-  var todoUi = { showAllDone: false, busy: {}, confirmDel: null };
+  var todoUi = { showAllDone: false, busy: {} };
   var TODO_DONE_PREVIEW = 5;
 
   function todoHabit(t){
@@ -2165,9 +2155,7 @@
       + (t.dueDate && !done ? dueChip(t) : '')
       + (habit ? '<span class="cp-todo-habit-tag" title="Now tracked on the Habits tab">↻ Now a habit</span>' : '');
     var actions = '';
-    if (isCoachUser && todoUi.confirmDel === String(t.id)) {
-      actions = '<span class="cp-todo-confirm">Delete?<button type="button" class="cp-todo-confirm-yes" data-todo-del-yes="'+esc(t.id)+'">Delete</button><button type="button" class="cp-todo-confirm-no" data-todo-del-no>Cancel</button></span>';
-    } else if (isCoachUser) {
+    if (isCoachUser) {
       if (!habit) actions += '<button type="button" class="cp-todo-habit-btn" data-todo-habit="'+esc(t.id)+'"'+(busy?' disabled':'')+' title="Marks this to-do complete and adds it to the client’s habits">'+(busy ? 'Saving…' : 'Make it a habit')+'</button>';
       actions += '<button type="button" class="cp-todo-del" data-todo-del="'+esc(t.id)+'" aria-label="Delete to-do: '+esc(t.title)+'">×</button>';
     }
@@ -2255,16 +2243,12 @@
       return;
     }
 
-    if (e.target.closest('[data-todo-del-no]')) { todoUi.confirmDel = null; renderTodoList(); return; }
-    var ask = e.target.closest('[data-todo-del]');
-    if (ask && isCoachUser) { todoUi.confirmDel = ask.getAttribute('data-todo-del'); renderTodoList(); return; }
-    var del = e.target.closest('[data-todo-del-yes]');
-    if (del && isCoachUser) {
-      var d = findTodo(del.getAttribute('data-todo-del-yes')); if (!d) return;
-      del.disabled = true; del.textContent = 'Deleting…';
+    var del = e.target.closest('[data-todo-del]');
+    if (del && isCoachUser && !del.disabled) {
+      var d = findTodo(del.getAttribute('data-todo-del')); if (!d) return;
+      del.disabled = true;
       var res = await sb.from('client_assignments').delete().eq('id', d.id).select('id');
       if (!res.error && !(res.data || []).length) res.error = { message: 'the database did not allow it.' };
-      todoUi.confirmDel = null;
       if (res.error) { renderTodoList(); alert('Could not delete: ' + res.error.message); return; }
       portalData.assignments = portalData.assignments.filter(function(x){ return x.id !== d.id; });
       renderHomeworkTab();
@@ -2590,7 +2574,6 @@
     var rm = e.target.closest('[data-file-remove-ctx="hw"]');
     if (rm) {
       var f = a.files[parseInt(rm.getAttribute('data-file-idx'), 10)]; if (!f) return;
-      if (!confirm('Remove "' + f.name + '"?')) return;
       var ok = await saveHw(a, { files: a.files.filter(function(x){ return x !== f; }) });
       if (ok) removeStoredFiles([f]);
       return;
@@ -2601,7 +2584,6 @@
     if (action === 'upload') { $('cpHwFileInput').click(); return; }
     if (action === 'edit') { openHwForm(a); return; }
     if (action === 'delete') {
-      if (!confirm('Delete "' + a.title + '"? Uploaded files are removed too.')) return;
       var { error } = await sb.from('client_assignments').delete().eq('id', a.id);
       if (error) { setNote('cpHwSaveNote', 'Could not delete: ' + error.message, true); return; }
       removeStoredFiles(a.files);
@@ -3247,7 +3229,6 @@
     var q = curFind(row.getAttribute('data-cur-id')); if (!q) return;
 
     if (e.target.closest('[data-cur-del]')) {
-      if (!confirm('Delete this question for every client?')) return;
       var del = await sb.from('education_questions').delete().eq('id', q.id);
       if (del.error) { setNote('cpCurNote', 'Could not delete: ' + del.error.message, true); return; }
       curBank = curBank.filter(function(x){ return x.id !== q.id; });
@@ -4442,7 +4423,6 @@
 
   async function calRemoveEvent(id){
     var ev = calFindEvent(id); if (!ev) return;
-    if (!ev.pendingOp && !confirm('Remove "' + ev.title + '" from ' + (isCoachUser ? (viewingClientName || 'the client') + '’s' : 'your') + ' calendar?')) return;
     var clientId = viewingClientId;
     calSetStatus('');
     try {
@@ -5171,7 +5151,6 @@
 
   $('cpVisionRemoveBtn').addEventListener('click', async function(){
     if (!viewingClientId || !portalData) return;
-    if (!window.confirm('Remove your vision board image?')) return;
     visionEdit = null;
     setVisionBusy(true);
     await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
