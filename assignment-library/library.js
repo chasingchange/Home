@@ -777,7 +777,7 @@
     var msg = 'Delete ' + plural(ids.length, 'assignment') + ' from the library?'
       + (n ? '\n\nHomework already sent to clients stays in their portal.' : '')
       + '\n\nArchiving hides them without deleting.';
-    if (!confirm(msg)) return false;
+    if (!(await ccConfirm(msg, { confirmLabel: 'Delete', danger: true }))) return false;
     var r = await sb.from('assignment_library').delete().in('id', ids);
     if (r.error) { toast('Could not delete: ' + r.error.message, true); return false; }
     ids.forEach(function(id){ delete selected[id]; });

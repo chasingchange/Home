@@ -14,6 +14,7 @@
 <script src="../shared-global-nav.js" defer></script>
 <script src="../shared-global-footer.js" defer></script>
 <script src="../shared-coach.js"></script>
+<script src="../shared-confirm.js?v=20261119"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="../shared-coach-export.js"></script>
@@ -2536,14 +2537,14 @@ function renderStartupMacrocycleCard() {
   card.querySelector('#startup-new-btn')?.addEventListener('click', () => {
     msg.textContent = 'Starting a new macrocycle. Continue through the steps and save when ready.';
   });
-  card.querySelector('#startup-load-btn')?.addEventListener('click', () => {
+  card.querySelector('#startup-load-btn')?.addEventListener('click', async () => {
     const key = card.querySelector('#startup-load-select')?.value;
     const found = splitArchive[key];
     if (!found?.state) {
       msg.textContent = `No saved data found for ${key}.`;
       return;
     }
-    const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current setup will be replaced.`);
+    const shouldLoad = await ccConfirm(`Load ${key}? Unsaved changes in your current setup will be replaced.`, { confirmLabel: 'Load' });
     if (!shouldLoad) {
       msg.textContent = 'Load canceled. Current setup kept.';
       return;
@@ -2635,7 +2636,7 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-document.getElementById('load-selected-split-btn').addEventListener('click', () => {
+document.getElementById('load-selected-split-btn').addEventListener('click', async () => {
   const controls = getArchiveControls();
   const selectedYear = Number(controls.splitYear.value);
   const selectedQuarter = Number(controls.splitQuarter.value);
@@ -2645,7 +2646,7 @@ document.getElementById('load-selected-split-btn').addEventListener('click', () 
     controls.msg.textContent = `No saved split found for ${key}.`;
     return;
   }
-  const shouldLoad = window.confirm(`Load ${key}? Unsaved changes in your current split will be lost.`);
+  const shouldLoad = await ccConfirm(`Load ${key}? Unsaved changes in your current split will be lost.`, { confirmLabel: 'Load' });
   if (!shouldLoad) {
     controls.msg.textContent = 'Load canceled. Save your current split before loading an old macrocycle.';
     return;
@@ -2669,7 +2670,7 @@ document.getElementById('save-selected-split-btn').addEventListener('click', asy
   const key = quarterKey(year, quarter);
   const existing = splitArchive[key];
   if (existing) {
-    const shouldOverwrite = window.confirm(`Overwrite existing Split Sculptor data for ${key}? This cannot be undone.`);
+    const shouldOverwrite = await ccConfirm(`Overwrite existing Split Sculptor data for ${key}? This cannot be undone.`, { confirmLabel: 'Overwrite', danger: true });
     if (!shouldOverwrite) {
       controls.saveMsg.textContent = `Save canceled. Existing ${key} split data was kept.`;
       return;

@@ -1302,7 +1302,7 @@
     }
     if (e.target.closest('[data-goal-edit]')) { openGoalForm(goal); return; }
     if (e.target.closest('[data-goal-del]')) {
-      if (!confirm('Delete "' + goal.title + '"? This cannot be undone.')) return;
+      if (!(await ccConfirm('Delete "' + goal.title + '"? This cannot be undone.', { confirmLabel: 'Delete', danger: true }))) return;
       var { error } = await sb.from('client_goals').delete().eq('id', goal.id);
       if (error) { alert('Could not delete goal: ' + error.message); return; }
       portalData.goals = portalData.goals.filter(function(g){ return g.id !== goal.id; });
@@ -2590,7 +2590,7 @@
     var rm = e.target.closest('[data-file-remove-ctx="hw"]');
     if (rm) {
       var f = a.files[parseInt(rm.getAttribute('data-file-idx'), 10)]; if (!f) return;
-      if (!confirm('Remove "' + f.name + '"?')) return;
+      if (!(await ccConfirm('Remove "' + f.name + '"?', { confirmLabel: 'Remove', danger: true }))) return;
       var ok = await saveHw(a, { files: a.files.filter(function(x){ return x !== f; }) });
       if (ok) removeStoredFiles([f]);
       return;
@@ -2601,7 +2601,7 @@
     if (action === 'upload') { $('cpHwFileInput').click(); return; }
     if (action === 'edit') { openHwForm(a); return; }
     if (action === 'delete') {
-      if (!confirm('Delete "' + a.title + '"? Uploaded files are removed too.')) return;
+      if (!(await ccConfirm('Delete "' + a.title + '"? Uploaded files are removed too.', { confirmLabel: 'Delete', danger: true }))) return;
       var { error } = await sb.from('client_assignments').delete().eq('id', a.id);
       if (error) { setNote('cpHwSaveNote', 'Could not delete: ' + error.message, true); return; }
       removeStoredFiles(a.files);
@@ -3247,7 +3247,7 @@
     var q = curFind(row.getAttribute('data-cur-id')); if (!q) return;
 
     if (e.target.closest('[data-cur-del]')) {
-      if (!confirm('Delete this question for every client?')) return;
+      if (!(await ccConfirm('Delete this question for every client?', { confirmLabel: 'Delete', danger: true }))) return;
       var del = await sb.from('education_questions').delete().eq('id', q.id);
       if (del.error) { setNote('cpCurNote', 'Could not delete: ' + del.error.message, true); return; }
       curBank = curBank.filter(function(x){ return x.id !== q.id; });
@@ -4442,7 +4442,7 @@
 
   async function calRemoveEvent(id){
     var ev = calFindEvent(id); if (!ev) return;
-    if (!ev.pendingOp && !confirm('Remove "' + ev.title + '" from ' + (isCoachUser ? (viewingClientName || 'the client') + '’s' : 'your') + ' calendar?')) return;
+    if (!ev.pendingOp && !(await ccConfirm('Remove "' + ev.title + '" from ' + (isCoachUser ? (viewingClientName || 'the client') + '’s' : 'your') + ' calendar?', { confirmLabel: 'Remove', danger: true }))) return;
     var clientId = viewingClientId;
     calSetStatus('');
     try {
@@ -5171,7 +5171,7 @@
 
   $('cpVisionRemoveBtn').addEventListener('click', async function(){
     if (!viewingClientId || !portalData) return;
-    if (!window.confirm('Remove your vision board image?')) return;
+    if (!(await ccConfirm('Remove your vision board image?', { confirmLabel: 'Remove', danger: true }))) return;
     visionEdit = null;
     setVisionBusy(true);
     await sb.storage.from('vision-boards').remove([viewingClientId + '/vision-board']);
