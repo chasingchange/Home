@@ -8,6 +8,10 @@
     return m ? m[1] : null;
   })();
 
+  // The tab named in the hash at load (e.g. #goals). Kept so a coach's
+  // refresh can reopen the client on that tab after the roster loads.
+  var initialHashTab = (window.location.hash || '').replace(/^#/, '');
+
   // ─── Config ───────────────────────────────────────────────────────────
   // Falls back to the known project values if shared-supabase-config.js
   // wasn't loaded first, so this still works standalone.
@@ -488,7 +492,8 @@
     } else {
       state.view = 'client';
       // ../body/ links here with #calendar so adding a workout is one tap away.
-      state.portalTab = window.location.hash === '#calendar' ? 'calendar' : 'portal';
+      // A refresh keeps whichever tab was open (setPortalTab writes it to the hash).
+      state.portalTab = tabFromHash() || 'portal';
       ownProfile = profile;
       $('cpNicknameEdit').hidden = false;
       loadClientPortal(user.id, preferredNameOf(profile, user));
@@ -738,7 +743,19 @@
   });
 
   // ─── Coach: open a client's portal to see what they see ───────────────
+  // ?client=<id> in the URL while the coach is in a client's portal, so a
+  // refresh reopens that client instead of dropping back to the roster.
+  function writeClientParam(clientId){
+    var q = new URLSearchParams(window.location.search);
+    q.delete('tab');
+    if (clientId) q.set('client', clientId); else q.delete('client');
+    var search = q.toString() ? '?' + q.toString() : '';
+    if (search === window.location.search) return;
+    try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
+  }
+
   function enterClientPortalView(clientId, name, tab){
+    writeClientParam(clientId);
     state.view = 'client';
     state.portalTab = tab || 'portal';
     $('cpBackToRoster').hidden = false;
@@ -747,6 +764,7 @@
   }
 
   function exitClientPortalView(){
+    writeClientParam(null);
     closeQuickEdit();
     qeFlush();
     unsubscribePortalRealtime();
@@ -943,9 +961,22 @@
     checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
   };
 
+  function tabFromHash(){
+    var h = (window.location.hash || '').replace(/^#/, '');
+    return PORTAL_TABS.hasOwnProperty(h) ? h : null;
+  }
+
+  // Mirror the open tab in the URL so a refresh lands back on it.
+  function writeTabHash(tab){
+    var hash = tab && tab !== 'portal' ? '#' + tab : '';
+    if (window.location.hash === hash) return;
+    try { history.replaceState(history.state, '', window.location.pathname + window.location.search + hash); } catch (e) {}
+  }
+
   function setPortalTab(tab){
     if (!PORTAL_TABS[tab]) tab = 'portal';
     state.portalTab = tab;
+    writeTabHash(tab);
     $('cpPortalTabs').querySelectorAll('[data-portal-tab]').forEach(function(btn){
       btn.classList.toggle('is-active', btn.getAttribute('data-portal-tab') === tab);
     });
@@ -955,6 +986,7 @@
   }
 
   function hideAllPortalTabs(){
+    if (tabFromHash()) writeTabHash(null);
     Object.keys(PORTAL_TABS).forEach(function(k){ $(PORTAL_TABS[k]).hidden = true; });
     $('cpVisionBand').hidden = true;
   }
@@ -1991,11 +2023,25 @@
     return a.dueDate < b.dueDate ? -1 : (a.dueDate > b.dueDate ? 1 : 0);
   }
 
+  // Open, not on hold, and the due date has passed.
+  function isHwPastDue(a){
+    return !!a.dueDate && isHwOpen(a) && a.status !== 'on_hold' && parseLocalDate(a.dueDate) < todayStart();
+  }
+
+  // The status pill, plus a red "Overdue" pill when it's past due — so an
+  // overdue to-do reads "In progress · Overdue" without the coach having to
+  // set the Overdue status by hand.
+  function hwStatusPills(a){
+    var def = hwStatusDef(a.status);
+    var overdueDef = hwStatusDef('overdue');
+    return statusPill(def.label, def.color)
+      + (a.status !== 'overdue' && isHwPastDue(a) ? statusPill(overdueDef.label, overdueDef.color) : '');
+  }
+
   function dueChip(a){
     if (!a.dueDate) return '';
     var d = parseLocalDate(a.dueDate);
-    var overdue = isHwOpen(a) && a.status !== 'on_hold' && d < todayStart();
-    return '<span class="cp-due-chip'+(overdue?' is-overdue':'')+'">'+(overdue && a.status !== 'overdue' ? 'Overdue · ' : 'Due ')+esc(shortDate(d))+'</span>';
+    return '<span class="cp-due-chip'+(isHwPastDue(a)?' is-overdue':'')+'">Due '+esc(shortDate(d))+'</span>';
   }
 
   // Due and submitted dates share one chip: "Due Nov 20 · Submitted Nov 18".
@@ -2003,8 +2049,8 @@
     var parts = [], overdue = false;
     if (a.dueDate) {
       var d = parseLocalDate(a.dueDate);
-      overdue = isHwOpen(a) && a.status !== 'on_hold' && d < todayStart();
-      parts.push((overdue && a.status !== 'overdue' ? 'Overdue · ' : 'Due ') + shortDate(d));
+      overdue = isHwPastDue(a);
+      parts.push('Due ' + shortDate(d));
     }
     if (a.submittedAt) parts.push('Submitted ' + shortDate(new Date(a.submittedAt)));
     if (!parts.length) return '';
@@ -2017,7 +2063,7 @@
     if (a.files.length) foot += '<span class="cp-due-chip">📎 '+a.files.length+'</span>';
     if (a.coachFeedback) foot += '<span class="cp-due-chip">💬 Feedback</span>';
     return '<div class="cp-hw-card" role="button" tabindex="0" data-hw-id="'+esc(a.id)+'">'
-      + '<div class="cp-hw-card-top">'+statusPill(def.label, def.color)+dueChip(a)+'</div>'
+      + '<div class="cp-hw-card-top"><span class="cp-hw-pills">'+hwStatusPills(a)+'</span>'+dueChip(a)+'</div>'
       + '<p class="cp-hw-card-title">'+esc(a.title)+'</p>'
       + (a.instructions ? '<p class="cp-hw-card-snippet">'+esc(a.instructions)+'</p>' : '')
       + (foot ? '<div class="cp-hw-card-foot">'+foot+'</div>' : '')
@@ -2065,7 +2111,7 @@
     $('cpHwCardMeta').textContent = submitted ? submitted + ' awaiting review' : '';
     var h = '';
     open.slice(0, 3).forEach(function(a){
-      var when = a.dueDate ? 'Due ' + shortDate(parseLocalDate(a.dueDate)) : hwStatusDef(a.status).label;
+      var when = a.dueDate ? (isHwPastDue(a) ? 'Overdue · ' : 'Due ') + shortDate(parseLocalDate(a.dueDate)) : hwStatusDef(a.status).label;
       h += '<div class="cp-note-row"><span class="cp-note-label">'+esc(a.title)+'</span><span class="cp-note-meta">'+esc(when)+'</span></div>';
     });
     $('cpHwCardList').innerHTML = h;
@@ -2137,7 +2183,7 @@
 
     var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">To Do\'s</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
       + '<button type="button" class="cp-sheet-close" data-close-hw-sheet aria-label="Close">×</button></div>';
-    h += '<div class="cp-hw-meta">'+statusPill(def.label, def.color)+coreChip(a.coreKey)+hwDatesChip(a)+'</div>';
+    h += '<div class="cp-hw-meta">'+hwStatusPills(a)+coreChip(a.coreKey)+hwDatesChip(a)+'</div>';
 
     h += '<div class="cp-hw-section"><h4>Instructions</h4>'
       + (a.instructions ? hwInstructionsHtml(a.instructions, own) : '<div class="cp-hw-instructions"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>')
@@ -5038,8 +5084,8 @@
   }
 
   // ?client=<id>&tab=<tab> (e.g. from the assignment library's "Assigned"
-  // pop-up) opens that client straight onto that tab. Used once, then the
-  // URL is cleaned so a refresh lands back on the roster.
+  // pop-up) opens that client straight onto that tab. The same ?client=<id>
+  // plus a #tab hash is what a coach's refresh reopens.
   var deepLinkUsed = false;
   function openDeepLinkedClient(){
     if (deepLinkUsed) return;
@@ -5047,11 +5093,10 @@
     var q = new URLSearchParams(window.location.search);
     var cid = q.get('client');
     if (!cid) return;
-    var tab = q.get('tab') || 'portal';
+    var tab = q.get('tab') || initialHashTab || 'portal';
     if (!document.querySelector('[data-portal-tab="' + tab.replace(/[^a-z-]/gi, '') + '"]')) tab = 'portal';
-    try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
     var c = findRosterClient(cid);
-    if (!c) return;
+    if (!c) { writeClientParam(null); return; }
     enterClientPortalView(cid, c.name, tab);
   }
 
