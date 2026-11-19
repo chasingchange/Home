@@ -319,7 +319,7 @@
           + '<input type="checkbox" data-sel="'+i.id+'"'+(selected[i.id] ? ' checked' : '')+' aria-label="Select '+esc(i.title)+'" />'
           + '<div class="al-col-code">'+(itemCode(i) ? '<span class="al-code">'+esc(itemCode(i))+'</span>' : '<span class="al-code al-code--none">—</span>')+'</div>'
           + '<div style="min-width:0;"><p class="al-row-title">'+esc(i.title)
-          + (i.source === 'notion' || i.notion_page_id ? '<span class="al-src">NOTION</span>' : '') + '</p>'
+          + (i.source === 'notion' || i.notion_page_id ? '<span class="al-src">Notion</span>' : '') + '</p>'
           + (sub ? '<p class="al-row-sub">'+esc(sub)+'</p>' : '')
           + ((i.tags || []).length ? '<div>' + i.tags.map(function(t){ return '<span class="al-tag">'+esc(t)+'</span>'; }).join('') + '</div>' : '')
           + '</div>'
