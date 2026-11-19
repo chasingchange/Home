@@ -326,7 +326,7 @@
 
   function coreChip(key){
     var c = CORE_BY_KEY[key];
-    return c ? '<span class="al-chip"><span class="al-chip-dot" style="background:'+c.color+'"></span>'+c.label+'</span>' : '<span class="al-row-meta">—</span>';
+    return c ? '<span class="al-chip al-chip--core" style="--core:'+c.color+'">'+c.label+'</span>' : '<span class="al-row-meta">—</span>';
   }
 
   function renderList(){

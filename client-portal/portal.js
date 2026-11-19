@@ -134,15 +134,22 @@
   ];
 
   // Homework lifecycle: assigned -> in_progress -> submitted -> complete,
-  // with needs_revision sending it back to the client.
+  // with needs_revision sending it back to the client. Overdue, On hold and
+  // In review are set by the coach only.
   var HW_STATUSES = [
     { key:"assigned",       label:"Not started",    color:"#5b6b7a" },
     { key:"in_progress",    label:"In progress",    color:"#2a9df0" },
     { key:"submitted",      label:"Submitted",      color:"#aa70d7" },
+    { key:"review",         label:"In review",      color:"#6a5acd" },
     { key:"needs_revision", label:"Needs revision", color:"#f58b1c" },
+    { key:"overdue",        label:"Overdue",        color:"#c01a38" },
+    { key:"on_hold",        label:"On hold",        color:"#8a96a3" },
     { key:"complete",       label:"Complete",       color:"#3d9b37" }
   ];
   var HW_CLIENT_STATUSES = ["assigned","in_progress","submitted"];
+  // Statuses the client can't move an assignment out of on their own.
+  var HW_COACH_LOCKED = ["complete","review","on_hold"];
+  function isHwAwaitingCoach(a){ return a.status === 'submitted' || a.status === 'review'; }
 
   var GOAL_STATUSES = [
     { key:"not_started", label:"Not started" },
@@ -628,7 +635,7 @@
         sb.from('client_dashboard').select('*').in('client_id', ids),
         sb.from('client_tasks').select('client_id, done').in('client_id', ids),
         sb.from('client_nonnegotiables').select('*').in('client_id', ids).eq('status','claimed').order('claimed_at'),
-        sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).eq('status','submitted').order('submitted_at'),
+        sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).in('status',['submitted','review']).order('submitted_at'),
         sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString())
       ]);
       dashRows = results[0].data || [];
@@ -1837,9 +1844,10 @@
     return esc(text).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   }
 
+  // Core tag: the whole bubble takes the core's color (Body green, Mind blue…).
   function coreChip(key){
     if (!key) return '';
-    return '<span class="cp-goal-chip"><span class="cp-dot" style="background:'+coreColor(key)+'"></span>'+esc(key.charAt(0).toUpperCase()+key.slice(1))+'</span>';
+    return '<span class="cp-core-tag" style="--core:'+coreColor(key)+'">'+esc(key.charAt(0).toUpperCase()+key.slice(1))+'</span>';
   }
 
   function statusPill(label, color){
@@ -1974,7 +1982,7 @@
     return HW_STATUSES.filter(function(s){ return s.key === key; })[0] || HW_STATUSES[0];
   }
 
-  function isHwOpen(a){ return a.status === 'assigned' || a.status === 'in_progress' || a.status === 'needs_revision'; }
+  function isHwOpen(a){ return ['assigned','in_progress','needs_revision','overdue','on_hold'].indexOf(a.status) !== -1; }
 
   function sortByDue(a, b){
     if (!a.dueDate && !b.dueDate) return 0;
@@ -1986,8 +1994,21 @@
   function dueChip(a){
     if (!a.dueDate) return '';
     var d = parseLocalDate(a.dueDate);
-    var overdue = isHwOpen(a) && d < todayStart();
-    return '<span class="cp-due-chip'+(overdue?' is-overdue':'')+'">'+(overdue ? 'Overdue · ' : 'Due ')+esc(shortDate(d))+'</span>';
+    var overdue = isHwOpen(a) && a.status !== 'on_hold' && d < todayStart();
+    return '<span class="cp-due-chip'+(overdue?' is-overdue':'')+'">'+(overdue && a.status !== 'overdue' ? 'Overdue · ' : 'Due ')+esc(shortDate(d))+'</span>';
+  }
+
+  // Due and submitted dates share one chip: "Due Nov 20 · Submitted Nov 18".
+  function hwDatesChip(a){
+    var parts = [], overdue = false;
+    if (a.dueDate) {
+      var d = parseLocalDate(a.dueDate);
+      overdue = isHwOpen(a) && a.status !== 'on_hold' && d < todayStart();
+      parts.push((overdue && a.status !== 'overdue' ? 'Overdue · ' : 'Due ') + shortDate(d));
+    }
+    if (a.submittedAt) parts.push('Submitted ' + shortDate(new Date(a.submittedAt)));
+    if (!parts.length) return '';
+    return '<span class="cp-due-chip'+(overdue?' is-overdue':'')+'">'+esc(parts.join(' · '))+'</span>';
   }
 
   function hwCardHtml(a){
@@ -2009,7 +2030,7 @@
     $('cpHwAddBtn').hidden = !isCoachUser;
 
     var open = list.filter(isHwOpen).sort(sortByDue);
-    var submitted = list.filter(function(a){ return a.status === 'submitted'; }).sort(sortByDue);
+    var submitted = list.filter(isHwAwaitingCoach).sort(sortByDue);
     var complete = list.filter(function(a){ return a.status === 'complete'; });
 
     $('cpHwSummary').textContent = list.length
@@ -2037,7 +2058,7 @@
   function renderHomeworkCard(){
     var list = portalData.assignments || [];
     var open = list.filter(isHwOpen).sort(sortByDue);
-    var submitted = list.filter(function(a){ return a.status === 'submitted'; }).length;
+    var submitted = list.filter(isHwAwaitingCoach).length;
     $('cpHwCardTitle').textContent = open.length
       ? open.length + ' open assignment' + (open.length === 1 ? '' : 's')
       : (list.length ? 'All caught up' : 'Nothing assigned yet');
@@ -2116,9 +2137,7 @@
 
     var h = '<div class="cp-sheet-head"><div><p class="cp-kicker">To Do\'s</p><h2 class="cp-sheet-title" id="cpHwSheetTitle">'+esc(a.title)+'</h2></div>'
       + '<button type="button" class="cp-sheet-close" data-close-hw-sheet aria-label="Close">×</button></div>';
-    h += '<div class="cp-hw-meta">'+statusPill(def.label, def.color)+dueChip(a)+coreChip(a.coreKey)
-      + (a.submittedAt ? '<span class="cp-due-chip">Submitted '+esc(shortDate(new Date(a.submittedAt)))+'</span>' : '')
-      + '</div>';
+    h += '<div class="cp-hw-meta">'+statusPill(def.label, def.color)+coreChip(a.coreKey)+hwDatesChip(a)+'</div>';
 
     h += '<div class="cp-hw-section"><h4>Instructions</h4>'
       + (a.instructions ? hwInstructionsHtml(a.instructions, own) : '<div class="cp-hw-instructions"><span style="color:rgba(7,31,53,.45)">No written instructions.</span></div>')
@@ -2127,8 +2146,9 @@
     var statusOpts = HW_STATUSES.filter(function(s){
       return isCoachUser || HW_CLIENT_STATUSES.indexOf(s.key) !== -1 || s.key === a.status;
     });
-    var lockStatus = !isCoachUser && a.status === 'complete';
-    // Status sits in the action row, just right of Submit / Mark complete.
+    var lockStatus = !isCoachUser && HW_COACH_LOCKED.indexOf(a.status) !== -1;
+    // Status sits in the action row: for the client it's last, right of
+    // Withdraw submission; for the coach, right of Mark complete.
     var statusSelHtml = '<select class="cp-hw-status-sel" id="cpHwStatusSel" aria-label="Status"'+(lockStatus?' disabled':'')+'>'
       + statusOpts.map(function(s){ return '<option value="'+s.key+'"'+(s.key===a.status?' selected':'')+'>'+esc(s.label)+'</option>'; }).join('')
       + '</select>';
@@ -2155,8 +2175,8 @@
     if (own) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>';
       if (isHwOpen(a)) h += '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-hw-action="submit">Submit for review</button>';
-      h += statusSelHtml;
       if (a.status === 'submitted') h += '<button type="button" class="cp-btn-sm" data-hw-action="withdraw">Withdraw submission</button>';
+      h += statusSelHtml;
     }
     if (isCoachUser) {
       h += '<button type="button" class="cp-btn-sm" data-hw-action="save">Save</button>'
