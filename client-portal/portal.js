@@ -2069,7 +2069,7 @@
 
     h += '<div class="cp-hw-section"><h4>'+(own ? 'Your work' : 'Client’s work')+'</h4>';
     if (own) {
-      h += '<textarea class="cp-textarea" id="cpHwNote" aria-label="Your response" placeholder="Write your response, reflections, or notes for your coach…">'+esc(prevNote !== null ? prevNote : a.clientNote)+'</textarea>';
+      h += '<textarea class="cp-textarea" id="cpHwNote" aria-label="Your response" placeholder="Write your response, reflections, or notes for your coach — or paste a link (Google Doc, Drive, video…)">'+esc(prevNote !== null ? prevNote : a.clientNote)+'</textarea>';
     } else {
       h += a.clientNote ? '<div class="cp-hw-instructions" style="font-size:15px;">'+linkify(a.clientNote)+'</div>' : '<p class="cp-caption" style="margin:0;">Nothing written yet.</p>';
     }
