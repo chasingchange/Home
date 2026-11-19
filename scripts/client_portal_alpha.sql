@@ -27,7 +27,7 @@ create table if not exists public.client_assignments (
   core_key        text not null default '',       -- body | mind | art | soul | career | life | ''
   due_date        date,
   status          text not null default 'assigned'
-                  check (status in ('assigned','in_progress','submitted','needs_revision','complete')),
+                  check (status in ('assigned','in_progress','submitted','review','needs_revision','overdue','on_hold','complete')),
   client_note     text not null default '',       -- the client's written response / submission note
   coach_feedback  text not null default '',
   files           jsonb not null default '[]',    -- [{ name, path, size, uploaded_at }] in bucket client-uploads
@@ -39,6 +39,12 @@ create table if not exists public.client_assignments (
 
 create index if not exists client_assignments_client_id_idx
   on public.client_assignments (client_id, due_date);
+
+-- Coach-only statuses (In review, Overdue, On hold) added later: widen the
+-- check on tables created before them.
+alter table public.client_assignments drop constraint if exists client_assignments_status_check;
+alter table public.client_assignments add constraint client_assignments_status_check
+  check (status in ('assigned','in_progress','submitted','review','needs_revision','overdue','on_hold','complete'));
 
 -- ─── Education curriculum (shared by every client) ───────────────────────
 create table if not exists public.education_questions (
