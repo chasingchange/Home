@@ -1670,10 +1670,10 @@
 
   function renderCoreList(){
     var hasHabits = portalData.habits.length > 0;
-    $('cpCoreKicker').textContent = hasHabits ? 'Habits' : 'The Six Cores';
-    $('cpCoreList').hidden = hasHabits;
+    // The six cores always show; the client's habits sit underneath them.
+    $('cpHabitKicker').hidden = !hasHabits;
     $('cpHabitList').hidden = !hasHabits;
-    if (hasHabits) { renderHabits(); return; }
+    if (hasHabits) renderHabits(); else $('cpHabitList').innerHTML = '';
     var h=''; portalData.cores.forEach(function(c){ h+='<a class="cp-core-row cp-core-link" data-core="'+esc(c.key)+'" href="'+coreHref(c.key, portalData.clientId)+'"><span class="cp-dot" style="background:'+c.color+'"></span><span class="cp-core-label">'+esc(c.label)+'</span><span class="cp-core-arrow" aria-hidden="true">→</span></a>'; });
     $('cpCoreList').innerHTML=h;
   }

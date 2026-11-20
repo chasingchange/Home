@@ -703,9 +703,11 @@
       .cp-cta-primary{display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:20px;background:#071f35;color:#fff;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;}
       .cp-cta-primary.cp-cta-schedule{background:rgba(7,31,53,.08);color:#071f35;}
       .cp-cta-secondary{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:20px;border:1px solid rgba(7,31,53,.12);font-size:14px;font-weight:700;color:rgba(7,31,53,.7);}
-      .cp-welcome-row{display:flex;align-items:baseline;gap:10px;}
-      .cp-nickname-edit{all:unset;cursor:pointer;font-size:15px;color:rgba(7,31,53,.35);}
-      .cp-nickname-edit:hover{color:rgba(7,31,53,.7);}
+      .cp-welcome-row{display:flex;align-items:center;gap:12px;}
+      .cp-nickname-edit{all:unset;box-sizing:border-box;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#fff;border:1.5px solid rgba(7,31,53,.3);font-size:18px;line-height:1;color:#071f35;box-shadow:0 1px 3px rgba(7,31,53,.1);transition:background-color .15s,color .15s,border-color .15s;}
+      .cp-nickname-edit:hover{background:#071f35;color:#fff;border-color:#071f35;}
+      .cp-nickname-edit:focus-visible{outline:2px solid #071f35;outline-offset:2px;}
+      .cp-habit-rail-kicker{margin-top:28px;}
       .cp-nickname-form{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
       .cp-nickname-form .cp-edit-input{width:220px;}
       .cp-nickname-save{all:unset;cursor:pointer;padding:8px 16px;border-radius:16px;background:#071f35;color:#fff;font-size:13px;font-weight:700;}
@@ -1146,7 +1148,7 @@
           <div>
             <div class="cp-welcome-row">
               <h1 class="cp-h1" id="cpWelcome"></h1>
-              <button type="button" class="cp-nickname-edit" id="cpNicknameEdit" hidden title="Go by a different name?">✎</button>
+              <button type="button" class="cp-nickname-edit" id="cpNicknameEdit" hidden title="Edit name" aria-label="Edit name">✎</button>
             </div>
             <div class="cp-nickname-form" id="cpNicknameForm" hidden>
               <input type="text" id="cpNicknameInput" class="cp-edit-input" placeholder="What should we call you?" maxlength="40" />
@@ -1175,7 +1177,7 @@
         </div>
 
         <div class="cp-portal-tabs" id="cpPortalTabs" hidden>
-          <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Portal</button>
+          <button type="button" class="cp-portal-tab is-active" data-portal-tab="portal">Start Line</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="homework">To Do List<span class="cp-tab-badge" id="cpTabBadgeHomework" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="goals">Goals</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="habits">Habits</button>
@@ -1188,6 +1190,7 @@
           <aside class="cp-core-rail">
             <p class="cp-kicker" id="cpCoreKicker">The Six Cores</p>
             <div class="cp-core-list" id="cpCoreList"></div>
+            <p class="cp-kicker cp-habit-rail-kicker" id="cpHabitKicker" hidden>Habits</p>
             <div class="cp-task-list" id="cpHabitList" hidden></div>
             <div class="cp-route-box" id="cpCardioBox" hidden>
               <p class="cp-label">Preferred Cardio</p>
@@ -2002,6 +2005,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
-    <script src="portal.js?v=20261119m"></script>
+    <script src="portal.js?v=20261120a"></script>
   </body>
 </html>
