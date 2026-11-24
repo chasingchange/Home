@@ -1421,7 +1421,7 @@ function getAutoTargetMuscle(slotType, slotIndex, dayPriority, dayFocus) {
 
 function isAnchorSlot(dayRows, rowIndex) {
   const row = dayRows[rowIndex];
-  if (!row) return false;
+  if (!row || row.custom) return false;
   const firstIndex = dayRows.findIndex((entry) => entry.slot === row.slot);
   return firstIndex === rowIndex && ['Compound', 'Machine', 'Isolated'].includes(row.slot);
 }
@@ -1469,7 +1469,15 @@ function ensureDayPlan() {
         reps: getSlotPrescription(slot).reps
       }));
     } else {
-      const normalizedRows = state.customDays[state.freq][dayKey].slice(0, slotPattern.length);
+      const existingRows = state.customDays[state.freq][dayKey];
+      // Rows added with "+ Add" are tagged `custom`. Older saves have no tag, so any
+      // row past the base slot pattern is treated as user-added too.
+      existingRows.forEach((row, idx) => {
+        if (idx >= slotPattern.length && row.custom === undefined) row.custom = true;
+      });
+      const baseRows = existingRows.filter((row) => !row.custom);
+      const addedRows = existingRows.filter((row) => row.custom);
+      const normalizedRows = baseRows.slice(0, slotPattern.length);
       while (normalizedRows.length < slotPattern.length) {
         const idx = normalizedRows.length;
         const slot = slotPattern[idx];
@@ -1483,7 +1491,7 @@ function ensureDayPlan() {
           reps: getSlotPrescription(slot).reps
         });
       }
-      state.customDays[state.freq][dayKey] = normalizedRows;
+      state.customDays[state.freq][dayKey] = [...normalizedRows, ...addedRows];
       state.customDays[state.freq][dayKey].forEach((item, idx) => {
         if (isAnchorSlot(state.customDays[state.freq][dayKey], idx)) item.targetMuscle = getAutoTargetMuscle(item.slot, idx, dayPriority, dayFocus) || '';
         if (typeof item.sets !== 'string' || !item.sets) item.sets = getSlotPrescription(item.slot).sets;
@@ -1915,7 +1923,7 @@ function renderDayCards() {
         ? 'Exercise + sets + reps complete'
         : (hasPartialPrescription ? 'Partially complete — finish selecting exercise, sets, and reps' : 'No selections yet');
       const matchStatus = hasExercise ? (matches ? 'Exercise matches this slot' : 'Exercise does not match this slot') : 'No exercise selected';
-      const isCustomRow = rowIndex >= slotPattern.length;
+      const isCustomRow = !!item.custom;
       const muscleOptions = ['', ...dayFocusMuscles]
         .map((muscle) => {
           const label = muscle || 'Select muscle';
@@ -1933,7 +1941,7 @@ function renderDayCards() {
           }), `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]
           : [`<option value="">No matching exercises for this muscle/category/environment.</option>`, `<option value="__custom__"${customSelected ? ' selected' : ''}>Custom exercise…</option>`]);
       const muscleLabel = anchorSlot ? `${resolvedTargetMuscle || dayTarget} · Priority default` : (resolvedTargetMuscle || 'Select muscle');
-      const muscleControl = `<select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1">${muscleOptions}</select>`;
+      const muscleControl = `<select class="slot-muscle-select" data-day="${dayKey}" data-row="${rowIndex}" data-muscle="1"${anchorSlot ? ' disabled title="Set by this day\'s priority target (Step 6)"' : ''}>${muscleOptions}</select>`;
       return `<div class="slot-row ${prescriptionClass}">
       <div class="slot-meta">
         <div class="slot-label">${item.slot} | ${muscleLabel}</div>
@@ -2017,8 +2025,18 @@ function renderDayCards() {
       const { day, row } = select.dataset;
       const rowIndex = parseInt(row, 10);
       const dayRows = state.customDays[state.freq][day];
-      if (isAnchorSlot(dayRows, rowIndex)) return;
-      dayRows[rowIndex].targetMuscle = select.value;
+      const entry = dayRows?.[rowIndex];
+      if (!entry || isAnchorSlot(dayRows, rowIndex)) {
+        renderDayCards();
+        return;
+      }
+      entry.targetMuscle = select.value;
+      const current = resolveExerciseByEntry(entry);
+      if (entry.exercise?.source !== 'custom' && current && select.value && getMuscle(current) !== select.value) {
+        entry.id = '';
+        entry.name = '';
+        entry.exercise = { source: 'matrix', value: '' };
+      }
       renderDayCards();
       if (state.step >= 9) buildSummary();
     };
@@ -2045,17 +2063,17 @@ function renderDayCards() {
   out.querySelectorAll('[data-custom-ex-input]').forEach((input) => {
     const syncCustom = () => {
       const { day, row } = input.dataset;
-      const entry = state.customDays[state.freq][day][parseInt(row, 10)];
+      const entry = state.customDays[state.freq][day]?.[parseInt(row, 10)];
+      if (!entry) return;
       const trimmed = input.value.trim();
-      input.value = trimmed;
       entry.exercise = { source: 'custom', value: trimmed };
       entry.id = '';
       entry.name = trimmed;
-      renderDayCards();
+      renderWeeklyVolumeSummary();
+      syncBuilderStepGate();
       if (state.step >= 9) buildSummary();
     };
-    input.addEventListener('change', syncCustom);
-    input.addEventListener('blur', syncCustom);
+    input.addEventListener('input', syncCustom);
   });
   out.querySelectorAll('[data-select-sets]').forEach((select) => {
     select.onchange = () => {
@@ -2099,6 +2117,7 @@ function renderDayCards() {
       const dayKey = btn.dataset.addSlot;
       const addType = out.querySelector(`[data-add-type="${dayKey}"]`)?.value || 'Isolated';
       state.customDays[state.freq][dayKey].push({
+        custom: true,
         slot: addType,
         name: '',
         id: '',
@@ -2530,7 +2549,7 @@ function renderStartupMacrocycleCard() {
       </div>
       <button type="button" class="btn btn-p" id="startup-load-btn">Load</button>
     </div>
-    
+    <p class="step-sub" id="startup-choice-msg"></p>
   `;
   const msg = card.querySelector('#startup-choice-msg');
   card.querySelector('#startup-new-btn')?.addEventListener('click', () => {
