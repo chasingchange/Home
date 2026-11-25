@@ -123,6 +123,20 @@
   var ORDER = ['homework', 'goals', 'precall', 'uploads', 'cookbook', 'cover'];
 
   // ─── one client ─────────────────────────────────────────────────────────
+  function stepBoxes(){ return Array.prototype.slice.call(document.querySelectorAll('[data-ni-step]')); }
+  // "Select all" until every step is ticked, then "Deselect all".
+  function syncToggle(){
+    var all = stepBoxes().every(function(el){ return el.checked; });
+    $('cpNiToggleAll').textContent = all ? 'Deselect all' : 'Select all';
+  }
+  function toggleAll(){
+    if (running) return;
+    var boxes = stepBoxes();
+    var check = !boxes.every(function(el){ return el.checked; });
+    boxes.forEach(function(el){ el.checked = check; });
+    syncToggle();
+  }
+
   function open(){
     var c = hooks.client && hooks.client();
     if (!c) return;
@@ -130,6 +144,7 @@
     $('cpNiTitle').textContent = 'Import ' + (c.name || 'client') + ' from Notion';
     $('cpNiSub').textContent = 'Copies their Notion dashboard into this portal. Safe to run again — nothing is duplicated.';
     $('cpNiSteps').hidden = false;
+    syncToggle();
     $('cpNiOverwrite').parentNode.hidden = false;
     $('cpNiRun').hidden = false;
     $('cpNiRun').disabled = false;
@@ -244,6 +259,8 @@
     start: function(client, h){
       sb = client; hooks = h || {};
       $('cpNotionImportBtn').addEventListener('click', open);
+      $('cpNiToggleAll').addEventListener('click', toggleAll);
+      stepBoxes().forEach(function(el){ el.addEventListener('change', syncToggle); });
       $('cpNiCookAllBtn').addEventListener('click', function(){ openAll('cookbook'); });
       $('cpNiCoverAllBtn').addEventListener('click', function(){ openAll('cover'); });
       document.querySelectorAll('[data-ni-close]').forEach(function(el){ el.addEventListener('click', close); });
