@@ -2255,8 +2255,7 @@
 
     var groups = [
       { label: isCoachUser ? 'Assignments · client is working on' : 'Assignments to do', items: open },
-      { label: isCoachUser ? 'Waiting on your review' : 'Submitted · waiting on your coach', items: submitted },
-      { label: 'Complete', items: complete }
+      { label: isCoachUser ? 'Waiting on your review' : 'Submitted · waiting on your coach', items: submitted }
     ];
     var h = '';
     if (!list.length && !todos.length) {
@@ -2266,6 +2265,16 @@
       if (!g.items.length) return;
       h += '<p class="cp-goals-section-label">'+esc(g.label)+'</p><div class="cp-hw-grid">' + g.items.map(hwCardHtml).join('') + '</div>';
     });
+    // Completed assignments stay folded away behind one line until asked for.
+    if (complete.length) {
+      complete.sort(function(a, b){ return sortByDue(b, a); });
+      var showDone = hwPref('assignments');
+      h += '<button type="button" class="cp-hw-done-toggle" data-hw-done-toggle aria-expanded="'+showDone+'">'
+        + '<span class="cp-hw-done-caret" aria-hidden="true">'+(showDone ? '▾' : '▸')+'</span>'
+        + (showDone ? 'Hide' : 'Show') + ' ' + complete.length + ' completed assignment' + (complete.length === 1 ? '' : 's')
+        + '</button>';
+      if (showDone) h += '<div class="cp-hw-grid cp-hw-grid-done">' + complete.map(hwCardHtml).join('') + '</div>';
+    }
     $('cpHwGroups').innerHTML = h;
     renderHomeworkCard();
   }
@@ -2287,6 +2296,9 @@
   }
 
   function onHwCardActivate(e){
+    if (e.type === 'click' && e.target.closest('[data-hw-done-toggle]')) {
+      setHwPref('assignments', !hwPref('assignments')); renderHomeworkTab(); return;
+    }
     var card = e.target.closest('[data-hw-id]'); if (!card) return;
     if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
@@ -2300,8 +2312,18 @@
   // stored in client_assignments with kind 'todo' (scripts/client_todos.sql).
   // The client ticks them off. The coach can turn one into a habit: the
   // to-do is marked complete and a client_habits row is added in its core.
-  var todoUi = { showAllDone: false, busy: {} };
-  var TODO_DONE_PREVIEW = 5;
+  var todoUi = { busy: {}, editingId: null };
+
+  // Whether completed to-dos / assignments are shown. Hidden by default and
+  // remembered on this device (per viewer), so finished work doesn't crowd
+  // the list.
+  var HW_PREF_KEY = 'cp.hw.showDone';
+  var hwPrefs = (function(){ try { return JSON.parse(localStorage.getItem(HW_PREF_KEY) || '{}') || {}; } catch (e) { return {}; } })();
+  function hwPref(k){ return !!hwPrefs[k]; }
+  function setHwPref(k, v){
+    hwPrefs[k] = !!v;
+    try { localStorage.setItem(HW_PREF_KEY, JSON.stringify(hwPrefs)); } catch (e) {}
+  }
 
   function todoHabit(t){
     return t.habitId ? (portalData.habits || []).filter(function(h){ return String(h.id) === String(t.habitId); })[0] || null : null;
@@ -2318,9 +2340,10 @@
     var actions = '';
     if (isCoachUser) {
       if (!habit) actions += '<button type="button" class="cp-todo-habit-btn" data-todo-habit="'+esc(t.id)+'"'+(busy?' disabled':'')+' title="Marks this to-do complete and adds it to the client’s habits">'+(busy ? 'Saving…' : 'Make it a habit')+'</button>';
+      actions += '<button type="button" class="cp-todo-edit" data-todo-edit="'+esc(t.id)+'" aria-label="Edit to-do: '+esc(t.title)+'" title="Edit">✎</button>';
       actions += '<button type="button" class="cp-todo-del" data-todo-del="'+esc(t.id)+'" aria-label="Delete to-do: '+esc(t.title)+'">×</button>';
     }
-    return '<div class="cp-todo-row'+(done ? ' is-done' : '')+'">'
+    return '<div class="cp-todo-row'+(done ? ' is-done' : '')+(todoUi.editingId === t.id ? ' is-editing' : '')+'">'
       + '<button type="button" class="cp-task-check'+(done ? ' is-done' : '')+'" data-todo-check="'+esc(t.id)+'" role="checkbox" aria-checked="'+done+'" aria-label="'+esc(t.title)+'"'+(canCheck && !busy ? '' : ' disabled')+'>'+(done ? '✓' : '')+'</button>'
       + '<span class="cp-todo-label">'+esc(t.title)+'</span>'
       + '<span class="cp-todo-tags">'+tags+'</span>'
@@ -2330,16 +2353,19 @@
 
   function renderTodoList(){
     var todos = hwTodos();
+    // Editing a to-do that's no longer here (e.g. switched client): close the form.
+    if (todoUi.editingId && !findTodo(todoUi.editingId)) { showTodoAddForm(false); return; }
     if (!todos.length) { $('cpTodoList').innerHTML = ''; return; }
     var open = todos.filter(function(t){ return t.status !== 'complete'; }).sort(sortByDue);
     var done = todos.filter(function(t){ return t.status === 'complete'; });
-    var shownDone = todoUi.showAllDone ? done : done.slice(0, TODO_DONE_PREVIEW);
+    var showDone = hwPref('todos');
     var h = '<p class="cp-goals-section-label">To-dos</p><div class="cp-todo-list">';
     h += open.map(todoRowHtml).join('');
     if (!open.length) h += '<div class="cp-todo-row"><span class="cp-todo-label" style="color:rgba(7,31,53,.45);font-weight:600;">All done.</span></div>';
-    h += shownDone.map(todoRowHtml).join('');
-    if (done.length > TODO_DONE_PREVIEW) {
-      h += '<button type="button" class="cp-todo-more" data-todo-more>'+(todoUi.showAllDone ? 'Show fewer' : 'Show all '+done.length+' completed')+'</button>';
+    if (showDone) h += done.map(todoRowHtml).join('');
+    if (done.length) {
+      h += '<button type="button" class="cp-todo-more" data-todo-more aria-expanded="'+showDone+'">'
+        + (showDone ? 'Hide completed' : 'Show ' + done.length + ' completed') + '</button>';
     }
     $('cpTodoList').innerHTML = h + '</div>';
   }
@@ -2379,7 +2405,14 @@
 
   $('cpTodoList').addEventListener('click', async function(e){
     if (!portalData) return;
-    if (e.target.closest('[data-todo-more]')) { todoUi.showAllDone = !todoUi.showAllDone; renderTodoList(); return; }
+    if (e.target.closest('[data-todo-more]')) { setHwPref('todos', !hwPref('todos')); renderTodoList(); return; }
+
+    var ed = e.target.closest('[data-todo-edit]');
+    if (ed && isCoachUser) {
+      var et = findTodo(ed.getAttribute('data-todo-edit'));
+      if (et) showTodoAddForm(true, et);
+      return;
+    }
 
     var check = e.target.closest('[data-todo-check]');
     if (check && !check.disabled) {
@@ -2426,13 +2459,26 @@
       }).join('');
   }
 
-  function showTodoAddForm(show){
+  // One form for both adding and editing. Pass a to-do to edit it.
+  function showTodoAddForm(show, editing){
+    var t = show && editing ? editing : null;
+    todoUi.editingId = t ? t.id : null;
     $('cpTodoAddForm').hidden = !show;
     $('cpTodoAddBtn').hidden = show || !isCoachUser;
-    $('cpTodoAddInput').value = '';
-    $('cpTodoAddDue').value = '';
+    $('cpTodoFormTitle').textContent = t ? 'Edit to-do' : 'New to-do';
+    $('cpTodoAddSave').textContent = t ? 'Save' : 'Add to-do';
+    $('cpTodoAddInput').value = t ? t.title : '';
+    $('cpTodoAddDue').value = t && t.dueDate ? t.dueDate : '';
     $('cpTodoAddCores').innerHTML = todoCorePicker();
-    if (show) $('cpTodoAddInput').focus();
+    if (t) {
+      var r = $('cpTodoAddCores').querySelector('input[value="'+(t.coreKey || '')+'"]');
+      if (r) r.checked = true;
+    }
+    if (portalData) renderTodoList();
+    if (show) {
+      $('cpTodoAddInput').focus();
+      if (t) $('cpTodoAddForm').scrollIntoView({ block: 'nearest', behavior: hwReducedMotion() ? 'auto' : 'smooth' });
+    }
   }
   $('cpTodoAddBtn').addEventListener('click', function(){ showTodoAddForm(true); });
   $('cpTodoAddCancel').addEventListener('click', function(){ showTodoAddForm(false); });
@@ -2445,6 +2491,21 @@
     if (!title) { $('cpTodoAddInput').focus(); return; }
     var coreEl = $('cpTodoAddCores').querySelector('input[type=radio]:checked');
     var clientId = viewingClientId;
+
+    if (todoUi.editingId) {
+      var editId = todoUi.editingId;
+      var patch = { title: title, core_key: coreEl ? coreEl.value : '', due_date: $('cpTodoAddDue').value || null };
+      setLoading($('cpTodoAddSave'), true, 'Saving…');
+      var up = await sb.from('client_assignments').update(patch).eq('id', editId).select().single();
+      setLoading($('cpTodoAddSave'), false, 'Save');
+      if (up.error) { alert('Could not save the to-do: ' + up.error.message); return; }
+      if (viewingClientId !== clientId) return;
+      replaceAssignment(up.data);
+      showTodoAddForm(false);
+      renderHomeworkTab();
+      return;
+    }
+
     var ids = [clientId];
     var fields = { kind: 'todo', title: title, core_key: coreEl ? coreEl.value : '', due_date: $('cpTodoAddDue').value || null, status: 'assigned' };
     setLoading($('cpTodoAddSave'), true, 'Adding…');
