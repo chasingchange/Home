@@ -1026,14 +1026,17 @@
       /* "Smart" fit: a photo too small to fill the band sharply is shown no bigger
          than it can stay crisp (portal.js sets its width), centred, with its sides
          feathered into a blurred, enlarged copy of itself that fills the rest. */
-      .cp-vision-band-backdrop{position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;pointer-events:none;user-select:none;
-        filter:blur(34px) saturate(1.15);opacity:.85;
-        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 92%);
-        mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 92%);}
+      .cp-vision-band-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;
+        /* Stretched (not zoomed) to the band, so the colour beside each edge of the photo
+           is that edge's own colour carried outward, with no ghost copies of the subject.
+           Scaling it slightly pushes the blur's faded rim outside the clipped band. */
+        transform:scale(1.12);filter:blur(48px) saturate(1.3);
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 96%);
+        mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 96%);}
       .cp-vision-band.is-contained .cp-vision-band-img{left:50%;right:auto;transform:translateX(-50%);
-        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%);
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 16%,#000 84%,transparent 100%);
         -webkit-mask-composite:source-in;
-        mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%);
+        mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 16%,#000 84%,transparent 100%);
         mask-composite:intersect;}
       .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
       .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
