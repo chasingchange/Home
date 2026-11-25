@@ -9,11 +9,13 @@
 //   precall   past Client Pre Call Forms → Check-ins (notion-checkins)
 //   uploads   homework uploaded on those forms → attached to its assignment
 //   cookbook  Cook Book → their Body page
+//   cover     the cover photo on their Notion dashboard → their portal banner
 // Steps run through supabase/functions/notion-client-import, except precall,
 // which reuses supabase/functions/notion-checkins with a client_id filter.
 // Re-running is safe: everything is keyed on its Notion page.
 //
-// Also "Import Cook Books" on the roster: the cookbook step for every client.
+// Also "Import Cook Books" and "Import cover photos" on the roster: that one
+// step for every client.
 //
 // portal.js calls NotionClientImport.start(sb, hooks) once, where hooks are
 //   client()  → { id, name } of the client being viewed (or null)
@@ -109,10 +111,16 @@
       var d = await call(FN, { action:'cookbook', client_id:ctx.id, link:ctx.link });
       replaceLast('<b>Cook Book:</b> ' + (d.created || d.updated ? 'copied to the Body page (' + plural(d.blocks || 0, 'block') + ').' : 'not imported.'));
       notes(d);
+    },
+    cover: async function(ctx){
+      log('Cover photo…');
+      var d = await call(FN, { action:'cover', client_id:ctx.id, link:ctx.link, overwrite:ctx.overwrite });
+      replaceLast('<b>Cover photo:</b> ' + (d.created || d.updated ? 'now the banner on their dashboard.' : (d.unchanged ? 'kept their current banner.' : 'not imported.')));
+      notes(d);
     }
   };
   // Pre-calls before uploads: uploads are matched from the imported forms.
-  var ORDER = ['homework', 'goals', 'precall', 'uploads', 'cookbook'];
+  var ORDER = ['homework', 'goals', 'precall', 'uploads', 'cookbook', 'cover'];
 
   // ─── one client ─────────────────────────────────────────────────────────
   function open(){
@@ -166,46 +174,67 @@
     }
   }
 
-  // ─── every client's Cook Book ───────────────────────────────────────────
-  function openAllCookbooks(){
+  // ─── one step for every client (roster) ─────────────────────────────────
+  var BULK = {
+    cookbook: {
+      title: 'Import Cook Books', thing: 'Cook Book', none: 'No Cook Book found in Notion for: ',
+      sub: function(n){ return 'Copies each client’s Cook Book from their Notion dashboard to their Body page (' + n + '). Safe to run again.'; },
+      skip: function(link){ return !link.cookbook; },
+      ok: function(d){ return d.created || d.updated; },
+      line: function(d){ return plural(d.blocks || 0, 'block') + '.'; }
+    },
+    cover: {
+      title: 'Import cover photos', thing: 'cover photo', none: 'No cover photo copied for: ',
+      sub: function(n){ return 'Copies the cover photo on each client’s Notion dashboard to the banner on their portal dashboard (' + n + '). Banners already set in the portal are kept unless you tick the box below.'; },
+      overwrite: true,
+      skip: function(){ return false; },
+      ok: function(d){ return d.created || d.updated; },
+      line: function(d){ return d.created || d.updated ? 'banner set.' : ((d.notes || [])[0] ? esc(d.notes[0]) : 'nothing to copy.'); }
+    }
+  };
+
+  function openAll(kind){
+    var b = BULK[kind];
     var list = (hooks.clients && hooks.clients()) || [];
     lines = []; paint();
-    $('cpNiTitle').textContent = 'Import Cook Books';
-    $('cpNiSub').textContent = 'Copies each client’s Cook Book from their Notion dashboard to their Body page (' + plural(list.length, 'client') + '). Safe to run again.';
+    $('cpNiTitle').textContent = b.title;
+    $('cpNiSub').textContent = b.sub(plural(list.length, 'client'));
     $('cpNiSteps').hidden = true;
-    $('cpNiOverwrite').parentNode.hidden = true;
+    $('cpNiOverwrite').checked = false;
+    $('cpNiOverwrite').parentNode.hidden = !b.overwrite;
     $('cpNiRun').hidden = false;
     $('cpNiRun').disabled = !list.length;
-    $('cpNiRun').textContent = 'Import Cook Books';
-    $('cpNiRun').onclick = runAllCookbooks;
+    $('cpNiRun').textContent = b.title;
+    $('cpNiRun').onclick = function(){ runAll(kind); };
     $('cpNiOverlay').hidden = false;
     document.body.style.overflow = 'hidden';
   }
 
-  async function runAllCookbooks(){
+  async function runAll(kind){
     if (running) return;
+    var b = BULK[kind];
     var list = (hooks.clients && hooks.clients()) || [];
+    var overwrite = !!b.overwrite && $('cpNiOverwrite').checked;
     running = true;
     $('cpNiRun').disabled = true;
     $('cpNiRun').textContent = 'Importing…';
     lines = []; paint();
-    var ok = 0, none = [], bad = [];
+    var ok = 0, none = [];
     for (var i = 0; i < list.length; i++) {
       var c = list[i];
       log(esc(c.name) + '…');
       try {
         var l = await call(FN, { action:'link', client_id:c.id });
-        if (!l.link.cookbook) { none.push(c.name); lines.pop(); paint(); continue; }
-        var d = await call(FN, { action:'cookbook', client_id:c.id, link:l.link });
-        ok++;
-        replaceLast('<b>' + esc(c.name) + ':</b> ' + plural(d.blocks || 0, 'block') + '.');
+        if (b.skip(l.link)) { none.push(c.name); lines.pop(); paint(); continue; }
+        var d = await call(FN, { action:kind, client_id:c.id, link:l.link, overwrite:overwrite });
+        if (b.ok(d)) ok++; else none.push(c.name);
+        replaceLast('<b>' + esc(c.name) + ':</b> ' + b.line(d), b.ok(d) ? '' : 'is-note');
       } catch (e) {
-        bad.push(c.name);
         replaceLast('<b>' + esc(c.name) + ':</b> ' + esc(e.message), 'is-error');
       }
     }
-    log('<b>' + plural(ok, 'Cook Book') + ' imported.</b>');
-    if (none.length) log('No Cook Book found in Notion for: ' + esc(none.join(', ')) + '.', 'is-note');
+    log('<b>' + plural(ok, b.thing) + ' imported.</b>');
+    if (none.length && kind === 'cookbook') log(b.none + esc(none.join(', ')) + '.', 'is-note');
     running = false;
     $('cpNiRun').disabled = false;
     $('cpNiRun').textContent = 'Import again';
@@ -215,7 +244,8 @@
     start: function(client, h){
       sb = client; hooks = h || {};
       $('cpNotionImportBtn').addEventListener('click', open);
-      $('cpNiCookAllBtn').addEventListener('click', openAllCookbooks);
+      $('cpNiCookAllBtn').addEventListener('click', function(){ openAll('cookbook'); });
+      $('cpNiCoverAllBtn').addEventListener('click', function(){ openAll('cover'); });
       document.querySelectorAll('[data-ni-close]').forEach(function(el){ el.addEventListener('click', close); });
       document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('cpNiOverlay').hidden) close(); });
     }

@@ -185,6 +185,14 @@
       .cp-todo-habit-btn[disabled]{opacity:.5;cursor:default;}
       .cp-todo-del{all:unset;cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-size:18px;color:rgba(7,31,53,.35);}
       .cp-todo-del:hover{color:#c01a38;background:rgba(192,26,56,.08);}
+      .cp-todo-edit{all:unset;cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-size:15px;color:rgba(7,31,53,.35);}
+      .cp-todo-edit:hover{color:#071f35;background:rgba(7,31,53,.06);}
+      .cp-todo-row.is-editing{background:rgba(7,31,53,.04);margin:0 -18px;padding-left:18px;padding-right:18px;}
+      .cp-hw-done-toggle{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;margin:4px 0 16px;padding:8px 14px;border-radius:99px;border:1px solid rgba(7,31,53,.12);font-size:13px;font-weight:700;color:rgba(7,31,53,.55);}
+      .cp-hw-done-toggle:hover{color:#071f35;border-color:rgba(7,31,53,.3);}
+      .cp-hw-done-caret{font-size:11px;}
+      .cp-hw-grid-done{opacity:.7;}
+      .cp-todo-edit:focus-visible,.cp-hw-done-toggle:focus-visible,
       .cp-todo-habit-btn:focus-visible,.cp-todo-del:focus-visible{outline:2px solid #071f35;outline-offset:1px;}
       .cp-todo-more{all:unset;cursor:pointer;display:block;padding:12px 0;font-size:13px;font-weight:700;color:rgba(7,31,53,.5);border-top:1px solid rgba(7,31,53,.08);width:100%;}
       .cp-todo-more:hover{color:#071f35;}
@@ -1352,7 +1360,7 @@
           </div>
           <form class="cp-todo-form" id="cpTodoAddForm" hidden>
             <div class="cp-todo-form-head">
-              <p class="cp-todo-form-title">New to-do</p>
+              <p class="cp-todo-form-title" id="cpTodoFormTitle">New to-do</p>
               <button type="button" class="cp-todo-form-x" id="cpTodoAddClose" aria-label="Close">×</button>
             </div>
             <input type="text" class="cp-goal-form-input cp-todo-form-input" id="cpTodoAddInput" placeholder="e.g. Read 10 pages" maxlength="140" aria-label="New to-do" />
@@ -1482,6 +1490,7 @@
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="precall" checked /><span><b>Past pre-call forms</b><small>Into Check-ins, with their uploads.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="uploads" checked /><span><b>Homework uploads → assignments</b><small>Files and answers sent on pre-call forms get attached to the assignment they were for.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="cookbook" checked /><span><b>Cook Book</b><small>Shown on their Body page.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="cover" checked /><span><b>Cover photo</b><small>The cover on their Notion dashboard becomes the banner on their portal dashboard. A banner already set here is kept unless you tick the box below.</small></span></label>
             </div>
             <label class="cp-ni-overwrite"><input type="checkbox" id="cpNiOverwrite" /> Replace statuses and details already changed in the portal with Notion’s</label>
             <div class="cp-ni-log" id="cpNiLog" aria-live="polite" hidden></div>
@@ -1681,6 +1690,7 @@
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
               <button type="button" class="cp-btn-sm" id="cpNiCookAllBtn" title="Copy every client's Cook Book from Notion to their Body page">Import Cook Books</button>
+              <button type="button" class="cp-btn-sm" id="cpNiCoverAllBtn" title="Copy the cover photo on each client's Notion dashboard to the banner on their portal dashboard">Import cover photos</button>
               <button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpInviteOpenBtn"><span aria-hidden="true" style="margin-right:6px;font-size:16px;line-height:1;">+</span>Invite client</button>
               </div>
             </div>

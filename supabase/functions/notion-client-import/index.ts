@@ -25,6 +25,10 @@
 //             belongs to, matched on file name / first line + due date.
 //   cookbook  The Cook Book page (or database) → client_cookbooks, shown on
 //             the client's Body page. Images are copied into client-uploads.
+//   cover     The cover photo on their Notion dashboard (or, failing that,
+//             their CRM page) → the banner on their portal dashboard. The
+//             image is copied into the vision-boards bucket. A banner already
+//             set in the portal is kept unless overwrite is on.
 //
 // Every step is safe to re-run: rows are keyed on their Notion page id. By
 // default a re-run leaves status / milestones the coach or client already
@@ -33,7 +37,7 @@
 // Actions (POST JSON, signed-in coach required):
 //   { action: "status" }                                → { configured }
 //   { action: "link", client_id }                       → { link, notes }
-//   { action: "homework"|"goals"|"uploads"|"cookbook", client_id, overwrite? }
+//   { action: "homework"|"goals"|"uploads"|"cookbook"|"cover", client_id, overwrite? }
 //                                                       → { created, updated, unchanged, notes, … }
 // App-level failures come back as 200 { error: "..." }.
 //
@@ -1019,6 +1023,69 @@ async function doCookbook(clientId: string, link: Link) {
 
 // ─── handler ─────────────────────────────────────────────────────────────
 
+// ─── cover ───────────────────────────────────────────────────────────────
+
+const VISION_BUCKET = "vision-boards";
+const VISION_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const VISION_MAX_BYTES = 16 * 1024 * 1024;
+
+function coverUrl(page: Json): string {
+  const c = page?.cover;
+  if (!c) return "";
+  const u = String(c.type === "external" ? c.external?.url ?? "" : c.file?.url ?? "");
+  // Notion's built-in covers can come back as a path on notion.so.
+  return u.startsWith("/") ? "https://www.notion.so" + u : u;
+}
+
+async function doCover(clientId: string, link: Link, overwrite: boolean) {
+  const out: Json = { created: 0, updated: 0, unchanged: 0, notes: [] as string[] };
+  const { data: cur, error } = await admin.from("client_dashboard")
+    .select("vision_board_url").eq("client_id", clientId).maybeSingle();
+  if (error) {
+    if (/vision_board_url/.test(error.message)) throw new Error("Run scripts/client_vision_board.sql in Supabase first.");
+    throw new Error(error.message);
+  }
+  if (cur?.vision_board_url && !overwrite) {
+    out.unchanged = 1;
+    out.notes.push("They already have a dashboard banner — tick “Replace…” to swap it for the Notion cover.");
+    return out;
+  }
+
+  let src = "", from = "";
+  for (const [id, label] of [[link.dashboard_id, "dashboard"], [link.crm_page_id, "CRM page"]]) {
+    if (!id) continue;
+    try { src = coverUrl(await notion(`/pages/${id}`)); } catch { /* try the next page */ }
+    if (src) { from = label; break; }
+  }
+  if (!src) { out.notes.push("No cover photo on their Notion dashboard."); return out; }
+
+  let buf: Uint8Array, type: string;
+  try {
+    const res = await fetch(src);
+    if (!res.ok) throw new Error(String(res.status));
+    buf = new Uint8Array(await res.arrayBuffer());
+    type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  } catch {
+    out.notes.push("Couldn't download the Notion cover photo.");
+    return out;
+  }
+  if (type === "image/jpg") type = "image/jpeg";
+  if (!VISION_TYPES.includes(type)) { out.notes.push(`The Notion cover is a ${type || "non-image"} file, which the banner can't show.`); return out; }
+  if (buf.length > VISION_MAX_BYTES) { out.notes.push("The Notion cover photo is over 16MB, too large for the banner."); return out; }
+
+  const path = `${clientId}/vision-board`;
+  const up = await admin.storage.from(VISION_BUCKET).upload(path, buf, { contentType: type, upsert: true });
+  if (up.error) throw new Error("Saving the cover failed: " + up.error.message);
+  const pub = admin.storage.from(VISION_BUCKET).getPublicUrl(path).data.publicUrl;
+  const url = `${pub}?t=${Date.now()}#pos=50,50`;
+  const { error: upErr } = await admin.from("client_dashboard")
+    .upsert({ client_id: clientId, vision_board_url: url }, { onConflict: "client_id" });
+  if (upErr) throw new Error(upErr.message);
+  if (cur?.vision_board_url) out.updated = 1; else out.created = 1;
+  if (from !== "dashboard") out.notes.push(`Used the cover from their ${from}.`);
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -1068,6 +1135,7 @@ Deno.serve(async (req) => {
     if (action === "goals") return json(await doGoals(dbs, clientId, link, overwrite));
     if (action === "uploads") return json(await doUploads(clientId, who));
     if (action === "cookbook") return json(await doCookbook(clientId, link));
+    if (action === "cover") return json(await doCover(clientId, link, overwrite));
     return json({ error: "Unknown action." });
   } catch (e) {
     return json({ error: (e as Error).message });
