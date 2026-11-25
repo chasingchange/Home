@@ -1470,11 +1470,8 @@ function ensureDayPlan() {
       }));
     } else {
       const existingRows = state.customDays[state.freq][dayKey];
-      // Rows added with "+ Add" are tagged `custom`. Older saves have no tag, so any
-      // row past the base slot pattern is treated as user-added too.
-      existingRows.forEach((row, idx) => {
-        if (idx >= slotPattern.length && row.custom === undefined) row.custom = true;
-      });
+      // Rows added with "+ Add" are tagged `custom` and kept as-is; only the base
+      // slot rows follow the session-length pattern.
       const baseRows = existingRows.filter((row) => !row.custom);
       const addedRows = existingRows.filter((row) => row.custom);
       const normalizedRows = baseRows.slice(0, slotPattern.length);
