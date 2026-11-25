@@ -190,6 +190,15 @@
         "Through working with Tyler, I realized that what I wanted was never truly out of reach. I simply needed the right knowledge, guidance, and tools to get there. Tyler is just as knowledgeable about nutrition and exercise science as he is thoughtful, supportive, and genuinely kind. He was an absolute gem to work with, and I’m incredibly glad I finally decided to chase change.",
       ],
     },
+    {
+      name: "John",
+      year: "2026",
+      quote: "Working with Tyler was the thing I needed this year to help me feel un-stuck.",
+      paragraphs: [
+        "Working with Tyler was the thing I needed this year to help me feel un-stuck. I was struggling with getting back into consistent exercise habits and Chasing Change not only helped me to achieve the goals I wanted to hit for my physical health, but also my mental health and wellbeing.",
+        "Tyler supports his clients unwaveringly, and his holistic approach to training the mind, body, and spirit, is something I feel lucky to have experienced. I am thankful to be able to take the skills we worked on together in our time, and implement and use them throughout the rest of my life - they will stick with me forever.",
+      ],
+    },
   ];
 
   const normalizeKey = (item) => `${item?.name || ""}::${item?.year || ""}`.toLowerCase();
