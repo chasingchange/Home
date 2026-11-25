@@ -2,6 +2,8 @@
 //
 // Ports one client's Notion dashboard into their portal, step by step:
 //   link      find them in Notion (CRM page, Notion person, dashboard, Cook Book)
+//   crm       their Current Clients row: program dates (→ week + route),
+//             status, email, time zone, address, cores, weight, renewal…
 //   homework  Assigned Homework → assignments (linked to a Master Assignment)
 //             and to-dos (plain-text rows)
 //   goals     Client Goals (+ sub-items as milestones, Quest) and the
@@ -14,13 +16,14 @@
 // which reuses supabase/functions/notion-checkins with a client_id filter.
 // Re-running is safe: everything is keyed on its Notion page.
 //
-// Also "Import Cook Books" and "Import cover photos" on the roster: that one
+// Also "Import client details", "Import Cook Books" and "Import cover photos" on the roster: that one
 // step for every client.
 //
 // portal.js calls NotionClientImport.start(sb, hooks) once, where hooks are
 //   client()  → { id, name } of the client being viewed (or null)
 //   clients() → [{ id, name }] on the roster
 //   done(id)  → called after an import so the portal reloads that client
+//   rosterDone() → called after a roster-wide import so the roster reloads
 (function () {
   var FN = 'notion-client-import';
   var $ = function(id){ return document.getElementById(id); };
@@ -68,6 +71,12 @@
       if (d.link.notion_user_id) found.push('Notion person' + (d.link.notion_user_name ? ' (' + esc(d.link.notion_user_name) + ')' : ''));
       if (d.link.cookbook) found.push('<a href="' + esc(d.link.cookbook.url) + '" target="_blank" rel="noopener">' + esc(d.link.cookbook.title) + '</a>');
       replaceLast('<b>Found:</b> ' + (found.join(' · ') || 'nothing'));
+      notes(d);
+    },
+    crm: async function(ctx){
+      log('Client details…');
+      var d = await call(FN, { action:'crm', client_id:ctx.id, link:ctx.link, overwrite:ctx.overwrite });
+      replaceLast('<b>Client details:</b> ' + crmLine(d));
       notes(d);
     },
     homework: async function(ctx){
@@ -119,10 +128,34 @@
       notes(d);
     }
   };
+  function crmLine(d){
+    var f = d.fields || {}, bits = [];
+    if (f.start && f.end) bits.push(esc(f.start) + ' → ' + esc(f.end) + (f.weeks ? ' (' + plural(f.weeks, 'week') + ')' : ''));
+    if (f.status) bits.push(esc(f.status));
+    if (f.email) bits.push(esc(f.email));
+    if (f.time_zone) bits.push(esc(f.time_zone));
+    var what = d.changed && d.changed.length ? d.changed.join(', ') + ' saved' : 'already up to date';
+    return (bits.length ? bits.join(' · ') + ' — ' : '') + what + '.';
+  }
+
   // Pre-calls before uploads: uploads are matched from the imported forms.
-  var ORDER = ['homework', 'goals', 'precall', 'uploads', 'cookbook', 'cover'];
+  var ORDER = ['crm', 'homework', 'goals', 'precall', 'uploads', 'cookbook', 'cover'];
 
   // ─── one client ─────────────────────────────────────────────────────────
+  function stepBoxes(){ return Array.prototype.slice.call(document.querySelectorAll('[data-ni-step]')); }
+  // "Select all" until every step is ticked, then "Deselect all".
+  function syncToggle(){
+    var all = stepBoxes().every(function(el){ return el.checked; });
+    $('cpNiToggleAll').textContent = all ? 'Deselect all' : 'Select all';
+  }
+  function toggleAll(){
+    if (running) return;
+    var boxes = stepBoxes();
+    var check = !boxes.every(function(el){ return el.checked; });
+    boxes.forEach(function(el){ el.checked = check; });
+    syncToggle();
+  }
+
   function open(){
     var c = hooks.client && hooks.client();
     if (!c) return;
@@ -130,6 +163,7 @@
     $('cpNiTitle').textContent = 'Import ' + (c.name || 'client') + ' from Notion';
     $('cpNiSub').textContent = 'Copies their Notion dashboard into this portal. Safe to run again — nothing is duplicated.';
     $('cpNiSteps').hidden = false;
+    syncToggle();
     $('cpNiOverwrite').parentNode.hidden = false;
     $('cpNiRun').hidden = false;
     $('cpNiRun').disabled = false;
@@ -176,6 +210,14 @@
 
   // ─── one step for every client (roster) ─────────────────────────────────
   var BULK = {
+    crm: {
+      title: 'Import client details', thing: 'client', none: '',
+      sub: function(n){ return 'Copies each client’s row in the Notion CRM — program dates (and so their week), status, email, time zone, address, cores, weight, renewal, testimonial and case study (' + n + '). Dates and statuses already set in the portal are kept unless you tick the box below.'; },
+      overwrite: true,
+      skip: function(link){ return !link.crm_page_id; },
+      ok: function(d){ return !!(d.created || d.updated || d.unchanged); },
+      line: crmLine
+    },
     cookbook: {
       title: 'Import Cook Books', thing: 'Cook Book', none: 'No Cook Book found in Notion for: ',
       sub: function(n){ return 'Copies each client’s Cook Book from their Notion dashboard to their Body page (' + n + '). Safe to run again.'; },
@@ -234,16 +276,21 @@
       }
     }
     log('<b>' + plural(ok, b.thing) + ' imported.</b>');
+    if (none.length && kind === 'crm') log('No CRM page found in Notion for: ' + esc(none.join(', ')) + '.', 'is-note');
     if (none.length && kind === 'cookbook') log(b.none + esc(none.join(', ')) + '.', 'is-note');
     running = false;
     $('cpNiRun').disabled = false;
     $('cpNiRun').textContent = 'Import again';
+    if (hooks.rosterDone) { try { await hooks.rosterDone(); } catch (e) { /* reload is best-effort */ } }
   }
 
   window.NotionClientImport = {
     start: function(client, h){
       sb = client; hooks = h || {};
       $('cpNotionImportBtn').addEventListener('click', open);
+      $('cpNiToggleAll').addEventListener('click', toggleAll);
+      stepBoxes().forEach(function(el){ el.addEventListener('change', syncToggle); });
+      $('cpNiCrmAllBtn').addEventListener('click', function(){ openAll('crm'); });
       $('cpNiCookAllBtn').addEventListener('click', function(){ openAll('cookbook'); });
       $('cpNiCoverAllBtn').addEventListener('click', function(){ openAll('cover'); });
       document.querySelectorAll('[data-ni-close]').forEach(function(el){ el.addEventListener('click', close); });

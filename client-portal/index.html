@@ -79,6 +79,9 @@
       .cp-gl-quest--side{background:rgba(160,120,32,.12);color:#8a6716;}
       /* Import from Notion (client-portal/notion-import.js) */
       .cp-ni-steps{display:flex;flex-direction:column;gap:8px;}
+      .cp-ni-toggle{all:unset;align-self:flex-end;cursor:pointer;font-size:13px;font-weight:700;color:#1a6fa8;padding:2px 4px;border-radius:6px;}
+      .cp-ni-toggle:hover{text-decoration:underline;}
+      .cp-ni-toggle:focus-visible{outline:2px solid #1a6fa8;outline-offset:2px;}
       .cp-ni-step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(7,31,53,.1);border-radius:14px;cursor:pointer;}
       .cp-ni-step input,.cp-ni-overwrite input{flex:none;width:16px;height:16px;min-width:0;margin:3px 0 0;padding:0;accent-color:#071f35;}
       .cp-ni-step > span{flex:1;min-width:0;}
@@ -90,6 +93,17 @@
       .cp-ni-log ul{margin:2px 0 8px;padding-left:18px;}
       .cp-ni-log .is-error{color:#c01a38;}
       .cp-ni-log .is-note{color:rgba(7,31,53,.6);}
+      /* CRM details from Notion (coach only, scripts/client_crm.sql) */
+      .cp-crm-card{margin:0 0 18px;padding:14px 18px;border-radius:16px;background:#fff;border:1px solid rgba(7,31,53,.1);}
+      .cp-crm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px;}
+      .cp-crm-head p{margin:0;font-family:"Raleway",sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:rgba(7,31,53,.55);}
+      .cp-crm-head a,.cp-crm-head span{font-size:12px;color:rgba(7,31,53,.5);}
+      .cp-crm-head a{font-weight:700;color:#1a6fa8;text-decoration:none;}
+      .cp-crm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 18px;margin:0;}
+      .cp-crm-grid div{min-width:0;}
+      .cp-crm-grid dt{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:rgba(7,31,53,.45);}
+      .cp-crm-grid dd{margin:2px 0 0;font-size:14px;line-height:1.4;color:#071f35;overflow-wrap:anywhere;}
+      .cp-crm-grid dd a{color:#1a6fa8;text-decoration:none;}
       .cp-client-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:#fff6d6;border:1px solid #f0d27a;color:#4a3a06;font-size:14px;line-height:1.4;}
       .cp-client-mode-banner[hidden]{display:none;}
       .cp-client-mode-banner button{all:unset;cursor:pointer;font-weight:700;font-size:13px;padding:6px 12px;border-radius:980px;background:#4a3a06;color:#fff;white-space:nowrap;}
@@ -1192,6 +1206,8 @@
           <button type="button" id="cpClientModeExit">Back to coach view</button>
         </div>
 
+        <section class="cp-crm-card" id="cpCrmCard" aria-label="Client details from the CRM" hidden></section>
+
         <div class="cp-biometric-banner" id="cpBiometricBanner" hidden>
           <span>Enable Face ID / Touch ID for quick unlock on this device?</span>
           <div class="cp-biometric-banner-actions">
@@ -1485,6 +1501,8 @@
             <p class="cp-goal-form-title" id="cpNiTitle">Import from Notion</p>
             <p class="cp-goal-form-subtitle" id="cpNiSub"></p>
             <div class="cp-ni-steps" id="cpNiSteps">
+              <button type="button" class="cp-ni-toggle" id="cpNiToggleAll">Deselect all</button>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="crm" checked /><span><b>Client details (CRM)</b><small>Their Current Clients row: program start and end dates (which set their week and route), status, email, time zone, address, cores, weight and goal, renewal, testimonial and case study.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="homework" checked /><span><b>Homework &amp; to-dos</b><small>Rows linked to a Master Assignment come in as assignments; plain-text rows as to-dos. Status and due dates carry over.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="goals" checked /><span><b>Goals</b><small>Their goal from onboarding (The Quest), every goal with its status, core and Main / Side Quest; sub-items become milestones.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="precall" checked /><span><b>Past pre-call forms</b><small>Into Check-ins, with their uploads.</small></span></label>
@@ -1492,7 +1510,7 @@
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="cookbook" checked /><span><b>Cook Book</b><small>Shown on their Body page.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="cover" checked /><span><b>Cover photo</b><small>The cover on their Notion dashboard becomes the banner on their portal dashboard. A banner already set here is kept unless you tick the box below.</small></span></label>
             </div>
-            <label class="cp-ni-overwrite"><input type="checkbox" id="cpNiOverwrite" /> Replace statuses and details already changed in the portal with Notion’s</label>
+            <label class="cp-ni-overwrite"><input type="checkbox" id="cpNiOverwrite" /> Replace statuses, dates and details already changed in the portal with Notion’s</label>
             <div class="cp-ni-log" id="cpNiLog" aria-live="polite" hidden></div>
             <div class="cp-goal-form-actions">
               <button type="button" class="cp-goal-form-cancel" data-ni-close>Close</button>
@@ -1689,6 +1707,7 @@
             <div class="cp-card-head" style="align-items:center;">
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <button type="button" class="cp-btn-sm" id="cpNiCrmAllBtn" title="Copy every client's CRM row from Notion: dates, week, status, email and more">Import client details</button>
               <button type="button" class="cp-btn-sm" id="cpNiCookAllBtn" title="Copy every client's Cook Book from Notion to their Body page">Import Cook Books</button>
               <button type="button" class="cp-btn-sm" id="cpNiCoverAllBtn" title="Copy the cover photo on each client's Notion dashboard to the banner on their portal dashboard">Import cover photos</button>
               <button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpInviteOpenBtn"><span aria-hidden="true" style="margin-right:6px;font-size:16px;line-height:1;">+</span>Invite client</button>
@@ -2056,7 +2075,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
-    <script src="notion-import.js?v=20261125a"></script>
+    <script src="notion-import.js?v=20261125c"></script>
     <script src="portal.js?v=20261125a"></script>
   </body>
 </html>
