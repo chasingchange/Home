@@ -82,6 +82,40 @@
 
       .rt-gate{margin:0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.68);}
 
+      /* ─── Cook Book (client_cookbooks, imported from Notion) ─────────── */
+      .cb-section{margin-bottom:20px;background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:26px;}
+      .cb-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+      .cb-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+      .cb-actions [hidden]{display:none !important;}
+      .cb-body{margin-top:18px;font-size:15px;line-height:1.6;color:#071f35;overflow-wrap:anywhere;}
+      .cb-body > :first-child{margin-top:0;}
+      .cb-body h3,.cb-body h4,.cb-body h5{font-family:"Raleway",sans-serif;font-weight:800;letter-spacing:-.01em;margin:22px 0 8px;}
+      .cb-body h3{font-size:22px;}
+      .cb-body h4{font-size:18px;padding-top:14px;border-top:1px solid rgba(7,31,53,.08);}
+      .cb-body h5{font-size:16px;}
+      .cb-body p{margin:6px 0;color:rgba(7,31,53,.8);}
+      .cb-body ul,.cb-body ol{margin:6px 0;padding-left:22px;}
+      .cb-body li{margin:4px 0;}
+      .cb-body ul.cb-todo{list-style:none;padding-left:2px;}
+      .cb-body ul.cb-todo li::before{content:"☐ ";color:rgba(7,31,53,.4);}
+      .cb-body ul.cb-todo li.is-done::before{content:"☑ ";color:#2b8a3e;}
+      .cb-body a{color:#1a6fa8;font-weight:700;text-decoration:none;}
+      .cb-body a:hover{text-decoration:underline;}
+      .cb-body blockquote,.cb-callout{margin:10px 0;padding:12px 16px;border-radius:12px;background:#f4f5f7;}
+      .cb-body blockquote{border-left:3px solid rgba(7,31,53,.25);border-radius:0 12px 12px 0;}
+      .cb-body hr{border:0;border-top:1px solid rgba(7,31,53,.1);margin:18px 0;}
+      .cb-body details{margin:8px 0;}
+      .cb-body summary{cursor:pointer;font-weight:700;}
+      .cb-table-wrap{overflow-x:auto;margin:12px 0;border:1px solid rgba(7,31,53,.1);border-radius:12px;}
+      .cb-body table{border-collapse:collapse;width:100%;font-size:14px;}
+      .cb-body td,.cb-body th{padding:9px 12px;border-bottom:1px solid rgba(7,31,53,.08);text-align:left;vertical-align:top;overflow-wrap:normal;word-break:normal;min-width:84px;}
+      .cb-body th{background:#f4f5f7;font-weight:800;white-space:nowrap;}
+      .cb-body tr:last-child td{border-bottom:0;}
+      .cb-body figure{margin:12px 0;}
+      .cb-body img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid rgba(7,31,53,.08);}
+      .cb-body figcaption{margin-top:6px;font-size:13px;color:rgba(7,31,53,.55);}
+      .cb-empty{margin:14px 0 0;font-size:15px;line-height:1.6;color:rgba(7,31,53,.6);}
+
       .cp-embed .cc-global-nav-wrap,.cp-embed .cc-global-footer,.cp-embed .cp-back{display:none !important;}
       .cp-embed body.cc-page{background:#eaeaee;}
       .cp-embed .cp-dash{padding-bottom:32px;}
@@ -131,6 +165,23 @@
             <p class="rt-status" id="rtStatus" role="status"></p>
           </div>
         </div>
+      </section>
+
+      <!-- COOK BOOK (client_cookbooks, imported from Notion) -->
+      <section class="cb-section" id="cbSection" hidden>
+        <div class="cb-head">
+          <div>
+            <p class="cp-kicker">Nutrition</p>
+            <h2 class="cp-card-title" style="margin-top:6px;" id="cbTitle">Cook Book</h2>
+            <p class="rt-sub" id="cbSub">Your go-to meals, with their macros.</p>
+          </div>
+          <div class="cb-actions">
+            <a class="rt-btn" id="cbNotionLink" href="#" target="_blank" rel="noopener" hidden>Open in Notion ↗</a>
+            <button type="button" class="rt-btn" id="cbImport" hidden>Import from Notion</button>
+          </div>
+        </div>
+        <p class="rt-status" id="cbStatus" role="status"></p>
+        <div class="cb-body" id="cbBody"></div>
       </section>
 
       <div class="cp-card-grid">
@@ -509,6 +560,158 @@
         renderSynced();
       }
       init();
+    })();
+    </script>
+    <script>
+    (function(){
+      // Cook Book: the client's meals from their Notion dashboard, imported by
+      // supabase/functions/notion-client-import into client_cookbooks.blocks
+      // (block format: scripts/notion_client_import.sql). Everything is built
+      // from text with esc(), never stored HTML. The coach can (re)import it
+      // from here; the client only reads it.
+      var SUPABASE_URL = window.CC_SUPABASE_URL || 'https://datrgkjqwyfcbmtwwifm.supabase.co';
+      var SUPABASE_KEY = window.CC_SUPABASE_KEY || 'sb_publishable_HrGR9fNaldor1FvDa0sDWA_VM3EPTZ9';
+      var COACH_EMAIL  = 'tywadebusiness@gmail.com';
+      var BUCKET = 'client-uploads';
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      var st = { clientId:null, isCoach:false };
+
+      function $(id){ return document.getElementById(id); }
+      function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+      function safeUrl(u){ return /^https?:\/\//i.test(String(u || '')) ? String(u) : ''; }
+      function status(msg, isError){ var el = $('cbStatus'); el.textContent = msg || ''; el.classList.toggle('is-error', !!isError); }
+
+      function spans(rt){
+        return (rt || []).map(function(sp){
+          var h = esc(sp.text).replace(/\n/g, '<br>');
+          if (sp.b) h = '<strong>' + h + '</strong>';
+          if (sp.i) h = '<em>' + h + '</em>';
+          var href = safeUrl(sp.href);
+          return href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + h + '</a>' : h;
+        }).join('');
+      }
+
+      // Image paths in the private bucket → one batch of signed URLs.
+      function collectPaths(blocks, out){
+        (blocks || []).forEach(function(b){
+          if ((b.t === 'image' || b.t === 'file') && b.path) out.push(b.path);
+          if (b.children) collectPaths(b.children, out);
+          (b.items || []).forEach(function(it){ if (it.children) collectPaths(it.children, out); });
+        });
+        return out;
+      }
+
+      function render(blocks, urls){
+        return (blocks || []).map(function(b){
+          switch (b.t) {
+            case 'h1': return '<h3>' + spans(b.rt) + '</h3>';
+            case 'h2': return '<h4>' + spans(b.rt) + '</h4>';
+            case 'h3': return '<h5>' + spans(b.rt) + '</h5>';
+            case 'p': return '<p>' + spans(b.rt) + '</p>';
+            case 'quote': return '<blockquote>' + spans(b.rt) + render(b.children, urls) + '</blockquote>';
+            case 'callout': return '<div class="cb-callout">' + spans(b.rt) + render(b.children, urls) + '</div>';
+            case 'divider': return '<hr>';
+            case 'toggle': return '<details><summary>' + spans(b.rt) + '</summary>' + render(b.children, urls) + '</details>';
+            case 'ul': case 'ol': case 'todo': {
+              var tag = b.t === 'ol' ? 'ol' : 'ul';
+              return '<' + tag + (b.t === 'todo' ? ' class="cb-todo"' : '') + '>' + (b.items || []).map(function(it){
+                return '<li' + (it.done ? ' class="is-done"' : '') + '>' + spans(it.rt) + render(it.children, urls) + '</li>';
+              }).join('') + '</' + tag + '>';
+            }
+            case 'table': {
+              var rows = b.rows || [];
+              var head = b.header && rows.length ? '<thead><tr>' + rows[0].map(function(c){ return '<th>' + spans(c) + '</th>'; }).join('') + '</tr></thead>' : '';
+              var bodyRows = (b.header ? rows.slice(1) : rows).map(function(r){ return '<tr>' + r.map(function(c){ return '<td>' + spans(c) + '</td>'; }).join('') + '</tr>'; }).join('');
+              return '<div class="cb-table-wrap"><table>' + head + '<tbody>' + bodyRows + '</tbody></table></div>';
+            }
+            case 'image': {
+              var src = b.path ? urls[b.path] : safeUrl(b.url);
+              if (!src) return '';
+              var cap = spans(b.caption);
+              return '<figure><img src="' + esc(src) + '" alt="' + esc((b.caption || []).map(function(c){ return c.text; }).join('') || 'Cook Book image') + '" loading="lazy">' + (cap ? '<figcaption>' + cap + '</figcaption>' : '') + '</figure>';
+            }
+            case 'file': {
+              var href = b.path ? urls[b.path] : '';
+              return href ? '<p><a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(b.name || 'File') + ' ↗</a></p>' : '';
+            }
+            default: return '';
+          }
+        }).join('');
+      }
+
+      async function load(){
+        var { data: row, error } = await sb.from('client_cookbooks').select('*').eq('client_id', st.clientId).maybeSingle();
+        $('cbSection').hidden = false;
+        if (error) {
+          // Table not there yet (scripts/notion_client_import.sql): stay out of the client's way.
+          if (!st.isCoach) { $('cbSection').hidden = true; return; }
+          $('cbBody').innerHTML = '<p class="cb-empty">Run scripts/notion_client_import.sql in Supabase to turn on Cook Books.</p>';
+          return;
+        }
+        var blocks = row && Array.isArray(row.blocks) ? row.blocks : [];
+        $('cbTitle').textContent = (row && row.title) || 'Cook Book';
+        $('cbNotionLink').hidden = !(st.isCoach && row && safeUrl(row.notion_url));
+        if (row && safeUrl(row.notion_url)) $('cbNotionLink').href = row.notion_url;
+        $('cbImport').textContent = row ? 'Re-import from Notion' : 'Import from Notion';
+        if (!blocks.length) {
+          if (!st.isCoach) { $('cbSection').hidden = true; return; }
+          $('cbSub').textContent = 'This client’s go-to meals, from their Notion dashboard.';
+          $('cbBody').innerHTML = '<p class="cb-empty">No Cook Book yet. Import it from their Notion dashboard.</p>';
+          return;
+        }
+        if (st.isCoach) $('cbSub').textContent = 'This client’s go-to meals' + (row.synced_at ? ' · imported from Notion ' + new Date(row.synced_at).toLocaleDateString(undefined, { month:'short', day:'numeric' }) : '') + '.';
+        var paths = collectPaths(blocks, []);
+        var urls = {};
+        if (paths.length) {
+          var signed = await sb.storage.from(BUCKET).createSignedUrls(paths, 60 * 60);
+          (signed.data || []).forEach(function(s){ if (s.signedUrl) urls[s.path] = s.signedUrl; });
+        }
+        $('cbBody').innerHTML = render(blocks, urls);
+      }
+
+      async function call(body){
+        var r = await sb.functions.invoke('notion-client-import', { body: body });
+        if (r.error) {
+          var msg = r.error.message;
+          if (r.error.context && r.error.context.status === 404) msg = 'The notion-client-import function is not deployed yet.';
+          try { var j = await r.error.context.json(); if (j && j.error) msg = j.error; } catch (e) { /* not json */ }
+          throw new Error(msg);
+        }
+        if (r.data && r.data.error) throw new Error(r.data.error);
+        return r.data || {};
+      }
+
+      async function importNow(){
+        var btn = $('cbImport');
+        btn.disabled = true;
+        status('Finding the Cook Book in Notion…');
+        try {
+          var l = await call({ action:'link', client_id:st.clientId });
+          if (!l.link.cookbook) throw new Error((l.notes || []).join(' ') || 'No Cook Book found on their Notion dashboard.');
+          status('Copying ' + l.link.cookbook.title + '…');
+          var d = await call({ action:'cookbook', client_id:st.clientId, link:l.link });
+          status('Imported.' + ((d.notes || []).length ? ' ' + d.notes.join(' ') : ''));
+          await load();
+        } catch (e) {
+          status(e.message, true);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+      $('cbImport').addEventListener('click', importNow);
+
+      (async function(){
+        var { data } = await sb.auth.getSession();
+        var user = data && data.session && data.session.user;
+        if (!user) return;
+        var { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).maybeSingle();
+        st.isCoach = (profile && profile.role === 'coach') || user.email === COACH_EMAIL;
+        var param = new URLSearchParams(location.search).get('client');
+        if (st.isCoach && !param) return;
+        st.clientId = st.isCoach ? param : user.id;
+        $('cbImport').hidden = !st.isCoach;
+        load();
+      })();
     })();
     </script>
   </body>
