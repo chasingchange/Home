@@ -409,9 +409,13 @@ async function doLink(dbs: Json, who: Who): Promise<{ link: Link; notes: string[
 
 // Saves the link and fills program dates / cardio from Notion when empty.
 async function saveLink(clientId: string, link: Link, notes: string[]) {
+  // select("*") so columns from optional migrations (program dates:
+  // scripts/client_program_dates.sql) are only filled in when they exist.
   const { data: cur, error } = await admin.from("client_dashboard")
-    .select("client_id, onboard_date, offboard_date, cardio_goal, preferred_cardio").eq("client_id", clientId).maybeSingle();
+    .select("*").eq("client_id", clientId).maybeSingle();
   if (error) throw new Error(error.message);
+  const { data: anyRow } = cur ? { data: cur } : await admin.from("client_dashboard").select("*").limit(1).maybeSingle();
+  const has = (col: string) => !anyRow || col in anyRow;
 
   const patch: Json = { client_id: clientId, notion_page_id: link.crm_page_id, notion_user_id: link.notion_user_id };
 
@@ -419,8 +423,12 @@ async function saveLink(clientId: string, link: Link, notes: string[]) {
     try {
       const page = await notion(`/pages/${link.crm_page_id}`);
       const d = prop(page.properties, "Chasing Change Dates")?.date;
-      if (d?.start && !cur?.onboard_date) { patch.onboard_date = String(d.start).slice(0, 10); notes.push("Program start date set from Notion."); }
-      if (d?.end && !cur?.offboard_date) { patch.offboard_date = String(d.end).slice(0, 10); notes.push("Program end date set from Notion."); }
+      if (!has("onboard_date")) {
+        if (d?.start) notes.push("Program dates skipped: run scripts/client_program_dates.sql to bring them over.");
+      } else {
+        if (d?.start && !cur?.onboard_date) { patch.onboard_date = String(d.start).slice(0, 10); notes.push("Program start date set from Notion."); }
+        if (d?.end && !cur?.offboard_date) { patch.offboard_date = String(d.end).slice(0, 10); notes.push("Program end date set from Notion."); }
+      }
     } catch { /* dates are a bonus */ }
   }
   if (link.audit_id) {
@@ -428,8 +436,8 @@ async function saveLink(clientId: string, link: Link, notes: string[]) {
       const audit = await notion(`/pages/${link.audit_id}`);
       const goal = text(prop(audit.properties, "Cardio Goal"));
       const kind = text(prop(audit.properties, "Cardio(s)", "Cardio"));
-      if (goal && !cur?.cardio_goal) patch.cardio_goal = goal.slice(0, 500);
-      if (kind && !cur?.preferred_cardio) patch.preferred_cardio = kind.slice(0, 200);
+      if (goal && has("cardio_goal") && !cur?.cardio_goal) patch.cardio_goal = goal.slice(0, 500);
+      if (kind && has("preferred_cardio") && !cur?.preferred_cardio) patch.preferred_cardio = kind.slice(0, 200);
     } catch { /* cardio is a bonus */ }
   }
 
