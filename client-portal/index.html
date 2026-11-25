@@ -1023,6 +1023,18 @@
       .cp-vision-band-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;user-select:none;-webkit-user-drag:none;
         -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);
         mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);}
+      /* "Smart" fit: a photo too small to fill the band sharply is shown no bigger
+         than it can stay crisp (portal.js sets its width), centred, with its sides
+         feathered into a blurred, enlarged copy of itself that fills the rest. */
+      .cp-vision-band-backdrop{position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;pointer-events:none;user-select:none;
+        filter:blur(34px) saturate(1.15);opacity:.85;
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 92%);
+        mask-image:linear-gradient(to bottom,#000 0%,#000 64%,transparent 92%);}
+      .cp-vision-band.is-contained .cp-vision-band-img{left:50%;right:auto;transform:translateX(-50%);
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%);
+        -webkit-mask-composite:source-in;
+        mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%),linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%);
+        mask-composite:intersect;}
       .cp-vision-band.is-repositioning .cp-vision-band-img{cursor:grab;touch-action:none;}
       .cp-vision-band.is-dragging .cp-vision-band-img{cursor:grabbing;}
       .cp-vision-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:8px 16px;border-radius:999px;background:rgba(7,31,53,.6);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.02em;}
@@ -1164,6 +1176,7 @@
       <section class="cp-dash" id="cpDash" hidden>
         <div class="cp-vision-band" id="cpVisionBand" hidden>
           <div class="cp-vision-band-inner">
+            <img class="cp-vision-band-backdrop" id="cpVisionBackdrop" alt="" aria-hidden="true" draggable="false" hidden />
             <img class="cp-vision-band-img" id="cpVisionImg" alt="Vision board" draggable="false" hidden />
             <span class="cp-vision-hint" id="cpVisionHint" hidden>Drag to reposition</span>
             <button type="button" class="cp-vision-empty" id="cpVisionEmptyBtn" hidden>
@@ -2076,6 +2089,6 @@
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
     <script src="notion-import.js?v=20261125c"></script>
-    <script src="portal.js?v=20261125a"></script>
+    <script src="portal.js?v=20261125b"></script>
   </body>
 </html>

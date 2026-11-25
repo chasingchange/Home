@@ -6138,14 +6138,19 @@
     band.classList.remove('is-busy');
 
     var img = $('cpVisionImg');
+    var backdrop = $('cpVisionBackdrop');
     if (url) {
       var parsed = parseVisionUrl(url);
-      if (img.getAttribute('src') !== parsed.src) img.src = parsed.src;
+      if (img.getAttribute('src') !== parsed.src) { img.src = parsed.src; backdrop.src = parsed.src; }
       img.hidden = false;
+      fitVisionImage();
       if (visionEdit) applyVisionPos(visionEdit.x, visionEdit.y);
       else applyVisionPos(parsed.x, parsed.y);
     } else {
       img.hidden = true; img.removeAttribute('src');
+      backdrop.hidden = true; backdrop.removeAttribute('src');
+      band.classList.remove('is-contained');
+      img.style.width = '';
     }
 
     var editing = !!visionEdit;
@@ -6159,6 +6164,39 @@
     $('cpVisionControls').hidden = !(isOwner && url && !editing);
     $('cpVisionEditControls').hidden = !(isOwner && url && editing);
   }
+
+  // Keep small photos sharp: never enlarge the image past VISION_MAX_UPSCALE
+  // times its real pixels on this screen (devicePixelRatio counts, so Retina
+  // needs twice the pixels). If filling the band would go past that, narrow the
+  // image to the widest crisp size, centre it, and let the blurred backdrop
+  // fill the sides. Photos big enough to fill the band are left full-bleed.
+  var VISION_MAX_UPSCALE = 1.5;
+  var VISION_MIN_SHARE = 0.45; // never narrower than this share of the band, however small the photo
+  function fitVisionImage(){
+    var band = $('cpVisionBand'), img = $('cpVisionImg'), backdrop = $('cpVisionBackdrop');
+    if (img.hidden || !img.naturalWidth) return;
+    var inner = img.parentNode;
+    var bw = inner.clientWidth, bh = inner.clientHeight;
+    if (!bw || !bh) return;
+    var nw = img.naturalWidth, nh = img.naturalHeight;
+    var maxScale = VISION_MAX_UPSCALE / (window.devicePixelRatio || 1);
+    // object-fit:cover scale for a box of width w is max(w/nw, bh/nh). Height
+    // alone sets a floor on the scale that narrowing the width can't lower.
+    var crispW = Math.max(nw * maxScale, bh * nw / nh);
+    var w = Math.max(crispW, bw * VISION_MIN_SHARE);
+    var contain = w < bw - 1;
+    band.classList.toggle('is-contained', contain);
+    img.style.width = contain ? Math.round(w) + 'px' : '';
+    backdrop.hidden = !contain;
+  }
+  $('cpVisionImg').addEventListener('load', fitVisionImage);
+  (function(){
+    var raf = 0;
+    window.addEventListener('resize', function(){
+      if (raf) return;
+      raf = requestAnimationFrame(function(){ raf = 0; fitVisionImage(); });
+    });
+  })();
 
   function startVisionReposition(){
     if (!portalData || !portalData.visionBoardUrl) return;
