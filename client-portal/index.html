@@ -1490,6 +1490,7 @@
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="precall" checked /><span><b>Past pre-call forms</b><small>Into Check-ins, with their uploads.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="uploads" checked /><span><b>Homework uploads → assignments</b><small>Files and answers sent on pre-call forms get attached to the assignment they were for.</small></span></label>
               <label class="cp-ni-step"><input type="checkbox" data-ni-step="cookbook" checked /><span><b>Cook Book</b><small>Shown on their Body page.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="cover" checked /><span><b>Cover photo</b><small>The cover on their Notion dashboard becomes the banner on their portal dashboard. A banner already set here is kept unless you tick the box below.</small></span></label>
             </div>
             <label class="cp-ni-overwrite"><input type="checkbox" id="cpNiOverwrite" /> Replace statuses and details already changed in the portal with Notion’s</label>
             <div class="cp-ni-log" id="cpNiLog" aria-live="polite" hidden></div>
@@ -1689,6 +1690,7 @@
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
               <button type="button" class="cp-btn-sm" id="cpNiCookAllBtn" title="Copy every client's Cook Book from Notion to their Body page">Import Cook Books</button>
+              <button type="button" class="cp-btn-sm" id="cpNiCoverAllBtn" title="Copy the cover photo on each client's Notion dashboard to the banner on their portal dashboard">Import cover photos</button>
               <button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpInviteOpenBtn"><span aria-hidden="true" style="margin-right:6px;font-size:16px;line-height:1;">+</span>Invite client</button>
               </div>
             </div>
