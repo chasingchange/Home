@@ -75,6 +75,21 @@
       .cp-client-mode-btn{all:unset;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.02em;padding:7px 14px;border-radius:980px;border:1.5px solid rgba(7,31,53,.18);color:rgba(7,31,53,.75);white-space:nowrap;}
       .cp-client-mode-btn:hover{border-color:rgba(7,31,53,.45);color:#071f35;}
       .cp-client-mode-btn.is-on{background:#071f35;border-color:#071f35;color:#fff;}
+      .cp-gl-quest{display:inline-block;vertical-align:2px;margin-left:8px;padding:2px 8px;border-radius:999px;font-family:"Muli",sans-serif;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(26,111,168,.1);color:#1a6fa8;white-space:nowrap;}
+      .cp-gl-quest--side{background:rgba(160,120,32,.12);color:#8a6716;}
+      /* Import from Notion (client-portal/notion-import.js) */
+      .cp-ni-steps{display:flex;flex-direction:column;gap:8px;}
+      .cp-ni-step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(7,31,53,.1);border-radius:14px;cursor:pointer;}
+      .cp-ni-step input,.cp-ni-overwrite input{flex:none;width:16px;height:16px;min-width:0;margin:3px 0 0;padding:0;accent-color:#071f35;}
+      .cp-ni-step > span{flex:1;min-width:0;}
+      .cp-ni-step b{display:block;font-size:15px;color:#071f35;}
+      .cp-ni-step small{display:block;margin-top:2px;font-size:13px;line-height:1.45;color:rgba(7,31,53,.6);}
+      .cp-ni-overwrite{display:flex;gap:10px;align-items:flex-start;margin:14px 2px 0;font-size:13px;line-height:1.45;color:rgba(7,31,53,.7);cursor:pointer;}
+      .cp-ni-log{margin-top:16px;padding:12px 14px;border-radius:12px;background:#f4f5f7;font-size:13px;line-height:1.5;color:rgba(7,31,53,.8);max-height:260px;overflow-y:auto;}
+      .cp-ni-log p{margin:0 0 6px;}
+      .cp-ni-log ul{margin:2px 0 8px;padding-left:18px;}
+      .cp-ni-log .is-error{color:#c01a38;}
+      .cp-ni-log .is-note{color:rgba(7,31,53,.6);}
       .cp-client-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:#fff6d6;border:1px solid #f0d27a;color:#4a3a06;font-size:14px;line-height:1.4;}
       .cp-client-mode-banner[hidden]{display:none;}
       .cp-client-mode-banner button{all:unset;cursor:pointer;font-weight:700;font-size:13px;padding:6px 12px;border-radius:980px;background:#4a3a06;color:#fff;white-space:nowrap;}
@@ -1158,6 +1173,7 @@
             <p class="cp-route-line" id="cpRouteLine"></p>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
+            <button type="button" class="cp-client-mode-btn" id="cpNotionImportBtn" title="Bring this client's homework, goals, pre-call forms and Cook Book over from Notion" hidden>Import from Notion</button>
             <button type="button" class="cp-client-mode-btn" id="cpClientModeBtn" aria-pressed="false" title="See this portal exactly as the client does" hidden>👁 Client mode</button>
             <button type="button" class="cp-back-roster-btn" id="cpBackToRoster" hidden>← Back to roster</button>
           </div>
@@ -1454,6 +1470,28 @@
           </div>
         </div>
 
+        <div class="cp-modal-overlay" id="cpNiOverlay" hidden>
+          <div class="cp-goal-form-backdrop" data-ni-close></div>
+          <div class="cp-goal-form-sheet" role="dialog" aria-modal="true" aria-labelledby="cpNiTitle">
+            <div class="cp-goal-form-handle"></div>
+            <p class="cp-goal-form-title" id="cpNiTitle">Import from Notion</p>
+            <p class="cp-goal-form-subtitle" id="cpNiSub"></p>
+            <div class="cp-ni-steps" id="cpNiSteps">
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="homework" checked /><span><b>Homework &amp; to-dos</b><small>Rows linked to a Master Assignment come in as assignments; plain-text rows as to-dos. Status and due dates carry over.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="goals" checked /><span><b>Goals</b><small>Their goal from onboarding (The Quest), every goal with its status, core and Main / Side Quest; sub-items become milestones.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="precall" checked /><span><b>Past pre-call forms</b><small>Into Check-ins, with their uploads.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="uploads" checked /><span><b>Homework uploads → assignments</b><small>Files and answers sent on pre-call forms get attached to the assignment they were for.</small></span></label>
+              <label class="cp-ni-step"><input type="checkbox" data-ni-step="cookbook" checked /><span><b>Cook Book</b><small>Shown on their Body page.</small></span></label>
+            </div>
+            <label class="cp-ni-overwrite"><input type="checkbox" id="cpNiOverwrite" /> Replace statuses and details already changed in the portal with Notion’s</label>
+            <div class="cp-ni-log" id="cpNiLog" aria-live="polite" hidden></div>
+            <div class="cp-goal-form-actions">
+              <button type="button" class="cp-goal-form-cancel" data-ni-close>Close</button>
+              <button type="button" class="cp-goal-form-save" id="cpNiRun">Import</button>
+            </div>
+          </div>
+        </div>
+
         <div class="cp-modal-overlay" id="cpDeleteOverlay" hidden>
           <div class="cp-goal-form-backdrop" data-close-modal="cpDeleteOverlay"></div>
           <div class="cp-goal-form-sheet" role="alertdialog" aria-modal="true" aria-labelledby="cpDeleteTitle" aria-describedby="cpDeleteBody">
@@ -1641,7 +1679,10 @@
           <div class="cp-card cp-roster-card">
             <div class="cp-card-head" style="align-items:center;">
               <div><p class="cp-kicker">Roster</p><h3 class="cp-card-title">Active clients</h3></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <button type="button" class="cp-btn-sm" id="cpNiCookAllBtn" title="Copy every client's Cook Book from Notion to their Body page">Import Cook Books</button>
               <button type="button" class="cp-btn-sm cp-btn-sm--primary" id="cpInviteOpenBtn"><span aria-hidden="true" style="margin-right:6px;font-size:16px;line-height:1;">+</span>Invite client</button>
+              </div>
             </div>
             <div class="cp-roster-list" id="cpRosterList"></div>
           </div>
@@ -2005,6 +2046,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js" defer></script>
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
-    <script src="portal.js?v=20261120a"></script>
+    <script src="notion-import.js?v=20261125a"></script>
+    <script src="portal.js?v=20261125a"></script>
   </body>
 </html>

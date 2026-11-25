@@ -45,7 +45,9 @@
 // Actions (POST JSON, signed-in coach required):
 //   { action: "status" } → { configured, databases: { precall, checkin } }
 //   { action: "pull", source: "precall" | "checkin", since?: "YYYY-MM-DD",
-//     cursor?, overwrite? }
+//     cursor?, overwrite?, client_id? }
+//     client_id (precall only) imports just that client's forms — the
+//     portal's per-client "Import from Notion" uses it.
 //     → { created, updated, unchanged, unmatched: [{ name, url }],
 //         errors: [string], next_cursor }
 //     Handles one page of 25 Notion rows; the caller loops while
@@ -420,7 +422,28 @@ Deno.serve(async (req) => {
   }));
 
   const query: Json = { page_size: PAGE_SIZE, sorts: [{ timestamp: "created_time", direction: "ascending" }] };
-  if (since) query.filter = { timestamp: "created_time", created_time: { on_or_after: since } };
+  const filters: Json[] = [];
+  if (since) filters.push({ timestamp: "created_time", created_time: { on_or_after: since } });
+
+  // One client's pre-call forms: narrow by their first name in the title,
+  // then only keep the rows that actually match them.
+  let onlyClient = "";
+  if (source === "precall" && body.client_id) {
+    onlyClient = String(body.client_id);
+    const me = clients.find((c) => c.id === onlyClient);
+    const prof = (profiles ?? []).find((p: Json) => p.id === onlyClient);
+    if (!me || !prof) return json({ error: "That client wasn't found." });
+    const first = norm(prof.full_name || prof.preferred_name).split(" ")[0];
+    if (first) {
+      try {
+        const db = await notion(`/databases/${dbs.precall}`);
+        const titleName = Object.entries(db.properties ?? {}).find(([, p]) => (p as Json)?.type === "title")?.[0];
+        if (titleName) filters.push({ property: titleName, title: { contains: first } });
+      } catch { /* fall back to reading every row */ }
+    }
+  }
+  if (filters.length === 1) query.filter = filters[0];
+  else if (filters.length > 1) query.filter = { and: filters };
   if (body.cursor) query.start_cursor = String(body.cursor);
 
   let data: Json;
@@ -437,7 +460,13 @@ Deno.serve(async (req) => {
   const out: Json = { created: 0, updated: 0, unchanged: 0, unmatched: [], errors: [] };
   for (const page of data.results ?? []) {
     try {
-      if (source === "precall") await importPreCall(admin, page, clients, out);
+      if (source === "precall") {
+        if (onlyClient) {
+          const name = text(Object.values(page.properties ?? {}).find((p: Json) => p?.type === "title"));
+          if (matchClient(clients, name)?.id !== onlyClient) continue;
+        }
+        await importPreCall(admin, page, clients, out);
+      }
       else await importCheckIn(admin, page, clients, overwrite, out);
     } catch (e) {
       out.errors.push(`${page.url ?? page.id}: ${(e as Error).message}`);

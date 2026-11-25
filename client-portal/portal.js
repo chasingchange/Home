@@ -171,6 +171,9 @@
     { key:"achieved",    label:"Achieved" }
   ];
 
+  // Notion's "Quest" on a goal (scripts/notion_client_import.sql).
+  var GOAL_QUESTS = { the_quest:'The Quest', main:'Main Quest', side:'Side Quest' };
+
   function normalizeGoalStatus(s){
     if (s === 'active' || !s) return 'in_progress';
     return GOAL_STATUSES.some(function(g){ return g.key === s; }) ? s : 'in_progress';
@@ -504,6 +507,7 @@
     renderClientModeUi();
 
     if (isCoachUser) {
+      startNotionImport();
       state.view = 'coach';
       ownProfile = null;
       nicknameProfile = null;
@@ -602,7 +606,7 @@
   // Row -> portal-shape mappers, shared by the initial load and every
   // targeted re-fetch after a save.
   function mapGoal(g){
-    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client', milestones:mapMilestones(g.milestones), coachNote:g.coach_note||'' };
+    return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client', milestones:mapMilestones(g.milestones), coachNote:g.coach_note||'', quest:g.quest||'' };
   }
 
   function mapMilestones(ms){
@@ -639,6 +643,7 @@
 
   async function loadClientPortal(clientId, displayName){
     viewingClientId = clientId;
+    viewingClientFullName = String(displayName || '');
     viewingClientName = String(displayName || '').split(' ')[0];
     renderClientModeUi();
     portalData = null;
@@ -829,6 +834,19 @@
 
   $('cpBackToRoster').addEventListener('click', exitClientPortalView);
 
+  // ─── Coach: import a client from Notion (client-portal/notion-import.js) ─
+  var viewingClientFullName = '';
+  var notionImportStarted = false;
+  function startNotionImport(){
+    if (notionImportStarted || !window.NotionClientImport) return;
+    notionImportStarted = true;
+    window.NotionClientImport.start(sb, {
+      client: function(){ return viewingClientId ? { id: viewingClientId, name: viewingClientFullName || viewingClientName } : null; },
+      clients: function(){ return roster.map(function(c){ return { id: c.id, name: c.name }; }); },
+      done: function(id){ if (state.view === 'client' && viewingClientId === id) return loadClientPortal(id, viewingClientFullName); }
+    });
+  }
+
   // ─── Coach: client mode ───────────────────────────────────────────────
   // Lets the coach see a client's portal exactly as that client does: no
   // coach controls, the client's own prompts and forms. Anything done in
@@ -845,6 +863,7 @@
     var inClient = isCoachSession && state.view === 'client' && !!viewingClientId;
     var btn = $('cpClientModeBtn');
     btn.hidden = !inClient;
+    $('cpNotionImportBtn').hidden = !inClient || clientMode;
     btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
     btn.classList.toggle('is-on', clientMode);
     btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
@@ -1244,12 +1263,20 @@
       ? '<button type="button" class="cp-gl-chip cp-gl-chip--core" data-goal-core="" title="Show every core"><i style="background:'+coreDef.color+'"></i>'+esc(coreDef.label)+' ✕</button>'
       : '');
 
-    // One section per core (plus "No core" for goals without one)
-    var groups = CORE_DEFS.concat([{ key:'', label:'No core', color:'rgba(7,31,53,.3)' }]).map(function(c){
+    // The Quest (the client's overall goal) first, then one section per
+    // core (plus "No core" for goals without one). Main quests lead each core.
+    var questRank = { main:0, side:2 };
+    var groups = [{ key:'__quest', label:'The Quest', color:'#071f35' }].concat(CORE_DEFS, [{ key:'', label:'No core', color:'rgba(7,31,53,.3)' }]).map(function(c){
       var list = goals.filter(function(g){
+        if (!goalMatches(g, true)) return false;
+        if (g.quest === 'the_quest') return c.key === '__quest';
         var key = CORE_DEFS.some(function(d){ return d.key === g.coreKey; }) ? g.coreKey : '';
-        return key === c.key && goalMatches(g, true);
-      }).sort(function(a, b){ return ((a.status === 'achieved') - (b.status === 'achieved')) || goalByDate(a, b); });
+        return key === c.key;
+      }).sort(function(a, b){
+        return ((a.status === 'achieved') - (b.status === 'achieved'))
+          || ((questRank[a.quest] != null ? questRank[a.quest] : 1) - (questRank[b.quest] != null ? questRank[b.quest] : 1))
+          || goalByDate(a, b);
+      });
       return { def:c, goals:list };
     }).filter(function(s){ return s.goals.length; });
 
@@ -1277,7 +1304,7 @@
       : '<i'+(g.status === 'achieved' ? ' style="background:'+color+'"' : '')+'></i>';
     var h = '<div class="cp-gl-goal'+(open ? ' is-open' : '')+(g.status === 'achieved' ? ' is-achieved' : '')+'" data-goal-id="'+esc(g.id)+'">'
       + '<button type="button" class="cp-gl-row" data-goal-toggle aria-expanded="'+open+'">'
-        + '<span class="cp-gl-row-main" style="min-width:0;"><span class="cp-gl-row-title">'+esc(g.title)+'</span>'
+        + '<span class="cp-gl-row-main" style="min-width:0;"><span class="cp-gl-row-title">'+esc(g.title)+(g.quest === 'main' || g.quest === 'side' ? ' <span class="cp-gl-quest cp-gl-quest--'+g.quest+'">'+GOAL_QUESTS[g.quest]+'</span>' : '')+'</span>'
           + (g.description ? '<span class="cp-gl-row-desc">'+esc(g.description)+'</span>' : '') + '</span>'
         + '<span class="cp-gl-row-meta">'
           + '<span class="cp-gl-progress"><span class="cp-gl-segs">'+segs+'</span><span class="cp-gl-small">'
