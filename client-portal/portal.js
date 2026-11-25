@@ -664,6 +664,7 @@
     renderClientPortal();
     renderViewToggle();
     renderVisionBand();
+    loadCrmCard(clientId);
     calLoadForClient(clientId);
     subscribePortalRealtime(clientId);
   }
@@ -820,6 +821,8 @@
     unsubscribePortalRealtime();
     viewingClientId = null;
     portalData = null;
+    crmRow = null;
+    $('cpCrmCard').hidden = true;
     nicknameProfile = null;
     $('cpNicknameEdit').hidden = true;
     $('cpNicknameForm').hidden = true;
@@ -843,8 +846,53 @@
     window.NotionClientImport.start(sb, {
       client: function(){ return viewingClientId ? { id: viewingClientId, name: viewingClientFullName || viewingClientName } : null; },
       clients: function(){ return roster.map(function(c){ return { id: c.id, name: c.name }; }); },
-      done: function(id){ if (state.view === 'client' && viewingClientId === id) return loadClientPortal(id, viewingClientFullName); }
+      done: function(id){ if (state.view === 'client' && viewingClientId === id) return loadClientPortal(id, viewingClientFullName); },
+      rosterDone: function(){ if (state.view === 'coach') return loadRoster(); }
     });
+  }
+
+  // ─── Coach: CRM details (client_crm, filled by Import from Notion) ─────
+  // Coach only — the table isn't readable by clients and the card is hidden
+  // in client mode. Days left counts down to the offboarding date.
+  var crmRow = null;
+  async function loadCrmCard(clientId){
+    crmRow = null;
+    $('cpCrmCard').hidden = true;
+    if (!isCoachSession) return;
+    var r = await sb.from('client_crm').select('*').eq('client_id', clientId).maybeSingle();
+    if (viewingClientId !== clientId) return;
+    crmRow = r.data || null; // missing table (client_crm.sql not run) → no card
+    renderCrmCard();
+  }
+
+  function renderCrmCard(){
+    var el = $('cpCrmCard'), c = crmRow;
+    if (!c) { el.hidden = true; el.innerHTML = ''; return; }
+    var d = portalData || {};
+    var items = [];
+    function add(label, html){ if (html) items.push('<div><dt>' + esc(label) + '</dt><dd>' + html + '</dd></div>'); }
+    add('Email', c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '');
+    var on = parseDay(d.onboardDate), off = parseDay(d.offboardDate);
+    if (on || off) add('Program', esc((on ? shortDate(on) : '?') + ' → ' + (off ? shortDate(off) : '?')));
+    if (d.weekTotal) add('Week', esc(weekLabel(d)));
+    if (off) {
+      var left = daysBetween(todayStart(), off);
+      add('Days left', esc(left >= 0 ? String(left) : 'Ended ' + shortDate(off)));
+    }
+    add('Notion status', esc(c.notion_status));
+    add('Time zone', esc(c.time_zone));
+    add('Cores', esc(c.cores));
+    var w = c.weight != null ? String(+c.weight) : '', g = c.goal_weight != null ? String(+c.goal_weight) : '';
+    add('Weight → goal', esc(w && g ? w + ' → ' + g : (w || (g ? 'Goal ' + g : ''))));
+    add('Address', esc(c.address));
+    add('Renewal', esc(c.renewal));
+    add('Testimonial', esc(c.testimonial));
+    add('Case study', esc(c.case_study));
+    el.innerHTML = '<div class="cp-crm-head"><p>Client details</p>'
+      + (c.notion_url ? '<a href="' + esc(c.notion_url) + '" target="_blank" rel="noopener">Open in Notion ↗</a>' : '')
+      + (c.synced_at ? '<span>Synced ' + esc(shortDate(new Date(c.synced_at))) + '</span>' : '')
+      + '</div><dl class="cp-crm-grid">' + items.join('') + '</dl>';
+    el.hidden = clientMode || !items.length;
   }
 
   // ─── Coach: client mode ───────────────────────────────────────────────
@@ -864,6 +912,7 @@
     var btn = $('cpClientModeBtn');
     btn.hidden = !inClient;
     $('cpNotionImportBtn').hidden = !inClient || clientMode;
+    $('cpCrmCard').hidden = !inClient || clientMode || !crmRow;
     btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
     btn.classList.toggle('is-on', clientMode);
     btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
@@ -7083,6 +7132,7 @@
         route: portalData.route, week_now: portalData.weekNow, week_total: portalData.weekTotal
       }, patch)));
       $('cpQeTimeline').textContent = timelineHint(portalData.onboardDate, portalData.offboardDate);
+      if (crmRow) renderCrmCard();
       col = 'dates';
     }
     if (col === 'flag_status') { portalData.flagColor = FLAG_COLORS[val] || '#77d770'; patch.flag_color = portalData.flagColor; }

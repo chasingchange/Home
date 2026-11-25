@@ -25,6 +25,12 @@
 //             belongs to, matched on file name / first line + due date.
 //   cookbook  The Cook Book page (or database) → client_cookbooks, shown on
 //             the client's Body page. Images are copied into client-uploads.
+//   crm       Their row in the CRM ("Current Clients"): Chasing Change Dates
+//             → program start / end (the portal works out the week and route
+//             from them), Client Status → client_status, and email, time
+//             zone, address, cores, weight / goal, renewal, testimonial and
+//             case study → client_crm (coach only). Dates and status already
+//             set in the portal are kept unless overwrite is on.
 //   cover     The cover photo on their Notion dashboard (or, failing that,
 //             their CRM page) → the banner on their portal dashboard. The
 //             image is copied into the vision-boards bucket. A banner already
@@ -37,11 +43,11 @@
 // Actions (POST JSON, signed-in coach required):
 //   { action: "status" }                                → { configured }
 //   { action: "link", client_id }                       → { link, notes }
-//   { action: "homework"|"goals"|"uploads"|"cookbook"|"cover", client_id, overwrite? }
+//   { action: "homework"|"goals"|"uploads"|"cookbook"|"cover"|"crm", client_id, overwrite? }
 //                                                       → { created, updated, unchanged, notes, … }
 // App-level failures come back as 200 { error: "..." }.
 //
-// Needs scripts/notion_client_import.sql. Secrets: NOTION_TOKEN (shared with
+// Needs scripts/notion_client_import.sql (and scripts/client_crm.sql for "crm"). Secrets: NOTION_TOKEN (shared with
 // notion-assignments / notion-checkins; share the CRM, Assigned Homework,
 // Client Goals and Onboarding Audit databases and the client dashboards with
 // the integration). Optional overrides: NOTION_CRM_DATABASE_ID,
@@ -177,7 +183,21 @@ function text(p: Json): string {
     case "date": return p.date?.start ?? "";
     case "formula": {
       const f = p.formula ?? {};
-      return f.type === "string" ? (f.string ?? "") : f.type === "number" ? (f.number == null ? "" : String(f.number)) : "";
+      return f.type === "string" ? (f.string ?? "") : f.type === "number" ? (f.number == null ? "" : String(f.number))
+        : f.type === "date" ? (f.date?.start ?? "") : f.type === "boolean" ? (f.boolean ? "Yes" : "") : "";
+    }
+    case "rollup": {
+      const r = p.rollup ?? {};
+      if (r.type === "number") return r.number == null ? "" : String(r.number);
+      if (r.type === "date") return r.date?.start ?? "";
+      if (r.type === "array") {
+        const seen: string[] = [];
+        for (const item of r.array ?? []) {
+          for (const v of text(item).split(", ")) if (v && !seen.includes(v)) seen.push(v);
+        }
+        return seen.join(", ");
+      }
+      return "";
     }
     default: return "";
   }
@@ -1086,6 +1106,128 @@ async function doCover(clientId: string, link: Link, overwrite: boolean) {
   return out;
 }
 
+// ─── CRM row ─────────────────────────────────────────────────────────────
+
+// Notion "Client Status" → the portal's list (scripts/client_status.sql).
+const CLIENT_STATUS: Record<string, string> = {
+  "onboarding": "Onboarding", "core client": "Core Client", "college client": "College Client",
+  "paused": "Paused", "off boarded": "Graduated", "offboarded": "Graduated", "graduated": "Graduated",
+  "terminated": "Terminated",
+};
+
+function dayDiff(a: string, b: string): number {
+  return Math.round((Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / 86400000);
+}
+
+function addDays(day: string, n: number): string {
+  const d = new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10) + n));
+  return d.toISOString().slice(0, 10);
+}
+
+function addMonths(day: string, n: number): string {
+  const d = new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1 + n, +day.slice(8, 10)));
+  return d.toISOString().slice(0, 10);
+}
+
+// Same as timelinePatch() in client-portal/portal.js: route / week snapshot
+// stored next to the dates (the portal recomputes them on load).
+function timeline(on: string, off: string): Json {
+  const out: Json = { onboard_date: on || null, offboard_date: off || null };
+  if (!on || !off || off <= on) return out;
+  const total = Math.max(1, Math.ceil(dayDiff(on, off) / 7));
+  const elapsed = dayDiff(on, new Date().toISOString().slice(0, 10));
+  out.week_total = total;
+  out.week_now = elapsed < 0 ? 0 : Math.min(total, Math.floor(elapsed / 7) + 1);
+  // routeForProgram(): the end date less a week, against 12 weeks / 6 months.
+  const end = addDays(off, -7);
+  out.route = end <= addDays(on, 84) ? "The 5K" : end <= addMonths(on, 6) ? "The 10K" : "The Marathon";
+  return out;
+}
+
+function num(s: string): number | null {
+  const n = parseFloat(String(s).replace(/[^0-9.\-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+async function doCrm(clientId: string, link: Link, who: Who, overwrite: boolean) {
+  const out: Json = { created: 0, updated: 0, unchanged: 0, notes: [] as string[], fields: {} as Json };
+  if (!link.crm_page_id) { out.notes.push(`No "Current Clients" page in Notion for ${who.full || who.email}.`); return out; }
+  const page = await notion(`/pages/${link.crm_page_id}`);
+  const p = page.properties ?? {};
+  const changed: string[] = [];
+
+  // Program dates → client_dashboard (week + route follow from them).
+  const d = prop(p, "Chasing Change Dates")?.date;
+  const on = d?.start ? String(d.start).slice(0, 10) : "";
+  const off = d?.end ? String(d.end).slice(0, 10) : "";
+  const { data: dash, error: dErr } = await admin.from("client_dashboard")
+    .select("onboard_date, offboard_date").eq("client_id", clientId).maybeSingle();
+  if (dErr) throw new Error(/onboard_date/.test(dErr.message) ? "Run scripts/client_program_dates.sql in Supabase first." : dErr.message);
+  const newOn = on && (overwrite || !dash?.onboard_date) ? on : (dash?.onboard_date ?? "");
+  const newOff = off && (overwrite || !dash?.offboard_date) ? off : (dash?.offboard_date ?? "");
+  if (newOn !== (dash?.onboard_date ?? "") || newOff !== (dash?.offboard_date ?? "")) {
+    const { error } = await admin.from("client_dashboard").upsert({ client_id: clientId, ...timeline(newOn, newOff) }, { onConflict: "client_id" });
+    if (error) throw new Error(error.message);
+    changed.push("program dates");
+  } else if ((on && on !== dash?.onboard_date) || (off && off !== dash?.offboard_date)) {
+    out.notes.push("Kept the program dates already set in the portal (tick “Replace…” to take Notion’s).");
+  }
+  out.fields.start = newOn; out.fields.end = newOff;
+
+  // Client Status → client_status.
+  const rawStatus = text(prop(p, "Client Status"));
+  const status = CLIENT_STATUS[rawStatus.toLowerCase()] ?? "";
+  if (rawStatus && !status) out.notes.push(`Notion status “${rawStatus}” has no match in the portal, so it wasn't copied.`);
+  if (status) {
+    const { data: cur, error } = await admin.from("client_status").select("status").eq("client_id", clientId).maybeSingle();
+    if (error) out.notes.push("Status not copied: run scripts/client_status.sql in Supabase.");
+    else if (cur?.status !== status && (overwrite || !cur?.status)) {
+      const { error: e2 } = await admin.from("client_status")
+        .upsert({ client_id: clientId, status, updated_at: new Date().toISOString() }, { onConflict: "client_id" });
+      if (e2) throw new Error(e2.message);
+      changed.push("status");
+    } else if (cur?.status && cur.status !== status) {
+      out.notes.push(`Kept the portal status “${cur.status}” (Notion says “${rawStatus}”).`);
+    }
+  }
+  out.fields.status = status || rawStatus;
+
+  // The rest → client_crm.
+  const row: Json = {
+    client_id: clientId,
+    email: text(prop(p, "Email")).slice(0, 320),
+    time_zone: text(prop(p, "Time Zone")).slice(0, 120),
+    address: text(prop(p, "Address")).slice(0, 500),
+    cores: text(prop(p, "Core(s)", "Cores")).slice(0, 200),
+    weight: num(text(prop(p, "Weight"))),
+    goal_weight: num(text(prop(p, "Goal"))),
+    notion_status: rawStatus.slice(0, 80),
+    renewal: text(prop(p, "Renewal")).slice(0, 80),
+    testimonial: text(prop(p, "Testimonial")).slice(0, 80),
+    case_study: text(prop(p, "Case Study")).slice(0, 80),
+    notion_url: link.crm_url || notionUrl(link.crm_page_id),
+  };
+  const { data: prev, error: cErr } = await admin.from("client_crm").select("*").eq("client_id", clientId).maybeSingle();
+  if (cErr) throw new Error(/client_crm/.test(cErr.message) ? "Run scripts/client_crm.sql in Supabase first." : cErr.message);
+  const same = prev && Object.keys(row).every((k) => String(prev[k] ?? "") === String(row[k] ?? ""));
+  if (!same) {
+    const now = new Date().toISOString();
+    const { error } = await admin.from("client_crm").upsert({ ...row, synced_at: now, updated_at: now }, { onConflict: "client_id" });
+    if (error) throw new Error(error.message);
+    changed.push("details");
+  }
+  if (row.email && who.email && row.email.toLowerCase() !== who.email.toLowerCase()) {
+    out.notes.push(`Notion email ${row.email} differs from their portal login (${who.email}); the login is unchanged.`);
+  }
+  Object.assign(out.fields, { email: row.email, time_zone: row.time_zone, weeks: out.fields.start && out.fields.end ? timeline(newOn, newOff).week_total ?? null : null });
+
+  if (!changed.length) out.unchanged = 1;
+  else if (!prev && !dash) out.created = 1;
+  else out.updated = 1;
+  out.changed = changed;
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -1136,6 +1278,7 @@ Deno.serve(async (req) => {
     if (action === "uploads") return json(await doUploads(clientId, who));
     if (action === "cookbook") return json(await doCookbook(clientId, link));
     if (action === "cover") return json(await doCover(clientId, link, overwrite));
+    if (action === "crm") return json(await doCrm(clientId, link, who, overwrite));
     return json({ error: "Unknown action." });
   } catch (e) {
     return json({ error: (e as Error).message });
