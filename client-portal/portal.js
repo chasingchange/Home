@@ -1617,6 +1617,8 @@
     $('cpGoalMsInput').value = '';
     renderGoalFormMs();
     $('cpGoalNoteField').hidden = !isCoachUser;
+    $('cpGoalQuestField').hidden = !isCoachUser;
+    $('cpGoalQuest').value = goal ? (goal.quest || '') : '';
     $('cpGoalNoteLabel').textContent = 'Note for ' + (viewingClientName || 'the client');
     $('cpGoalNote').value = goal ? goal.coachNote : '';
     var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
@@ -1656,7 +1658,10 @@
       status: status,
       milestones: goalFormMs.slice()
     };
-    if (isCoachUser) fields.coach_note = $('cpGoalNote').value.trim();
+    if (isCoachUser) {
+      fields.coach_note = $('cpGoalNote').value.trim();
+      fields.quest = $('cpGoalQuest').value;
+    }
 
     setLoading($('cpGoalFormSave'), true, 'Saving…');
     var res = goalEditingId
@@ -1664,9 +1669,19 @@
       : await sb.from('client_goals').insert(Object.assign({ client_id: clientId, created_by: isCoachUser ? 'coach' : 'client' }, fields)).select().single();
     setLoading($('cpGoalFormSave'), false, 'Save goal');
     if (res.error) { alert('Could not save goal: ' + res.error.message); return; }
-    if (viewingClientId !== clientId) return;
-
     var saved = mapGoal(res.data);
+    // Only one goal is The Quest: making this one it takes the title off any other.
+    var demoted = [];
+    if (saved.quest === 'the_quest') {
+      demoted = (portalData.goals || []).filter(function(g){ return g.id !== saved.id && g.quest === 'the_quest'; }).map(function(g){ return g.id; });
+      if (demoted.length) {
+        var dem = await sb.from('client_goals').update({ quest:'' }).in('id', demoted);
+        if (dem.error) { alert('Saved, but could not take The Quest off the other goal: ' + dem.error.message); demoted = []; }
+      }
+    }
+    if (viewingClientId !== clientId) return;
+    if (demoted.length) portalData.goals.forEach(function(g){ if (demoted.indexOf(g.id) >= 0) g.quest = ''; });
+
     var exists = portalData.goals.some(function(g){ return g.id === saved.id; });
     portalData.goals = exists
       ? portalData.goals.map(function(g){ return g.id === saved.id ? saved : g; })

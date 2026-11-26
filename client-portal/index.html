@@ -1694,6 +1694,15 @@
                 <label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select>
               </div>
             </div>
+            <div class="cp-goal-form-field" id="cpGoalQuestField" hidden>
+              <label for="cpGoalQuest">Quest</label>
+              <select id="cpGoalQuest" class="cp-goal-form-input">
+                <option value="">None</option>
+                <option value="the_quest">The Quest (their overall goal)</option>
+                <option value="main">Main Quest</option>
+                <option value="side">Side Quest</option>
+              </select>
+            </div>
             <div class="cp-goal-form-field" id="cpGoalNoteField" hidden>
               <label for="cpGoalNote" id="cpGoalNoteLabel">Note for the client</label>
               <textarea id="cpGoalNote" class="cp-goal-form-input cp-goal-form-input--ta" placeholder="Why this goal matters, what to watch for…" maxlength="1000"></textarea>
