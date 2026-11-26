@@ -889,7 +889,6 @@
     add('Testimonial', esc(c.testimonial));
     add('Case study', esc(c.case_study));
     el.innerHTML = '<div class="cp-crm-head"><p>Client details</p>'
-      + (c.notion_url ? '<a href="' + esc(c.notion_url) + '" target="_blank" rel="noopener">Open in Notion ↗</a>' : '')
       + (c.synced_at ? '<span>Synced ' + esc(shortDate(new Date(c.synced_at))) + '</span>' : '')
       + '</div><dl class="cp-crm-grid">' + items.join('') + '</dl>';
     el.hidden = clientMode || !items.length;
