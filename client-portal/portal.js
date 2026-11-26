@@ -658,7 +658,7 @@
     if (viewingClientId !== clientId) return; // superseded by a newer view
 
     portalData = data;
-    $('cpRouteLine').textContent = routeLine(data);
+    $('cpRouteLine').textContent = headerLine(data);
     $('cpWeekLine2').textContent = weekLabel(data);
 
     renderClientPortal();
@@ -675,7 +675,7 @@
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
-    var dashRows = [], taskRows = [], hwRows = [], ciRows = [], statusRows = [];
+    var dashRows = [], taskRows = [], hwRows = [], ciRows = [], statusRows = [], crmRows = [];
     if (ids.length) {
       var results = await Promise.all([
         sb.from('client_dashboard').select('*').in('client_id', ids),
@@ -683,14 +683,19 @@
         sb.from('client_assignments').select('id, client_id, title, submitted_at').in('client_id', ids).in('status',['submitted','review']).order('submitted_at'),
         sb.from('client_pre_call_submissions').select('client_id, submitted_at').in('client_id', ids).gte('submitted_at', startOfWeek(new Date()).toISOString()),
         // Missing table (client_status.sql not run yet) just leaves statuses blank.
-        sb.from('client_status').select('client_id, status, updated_at').in('client_id', ids)
+        sb.from('client_status').select('client_id, status, updated_at').in('client_id', ids),
+        // Missing table (client_crm.sql not run yet) just leaves the database's CRM columns blank.
+        sb.from('client_crm').select('*').in('client_id', ids)
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
       hwRows = results[2].data || [];
       ciRows = results[3].data || [];
       statusRows = results[4].data || [];
+      crmRows = results[5].data || [];
     }
+    crmByClient = {};
+    crmRows.forEach(function(r){ crmByClient[r.client_id] = r; });
     var statusByClient = {};
     statusRows.forEach(function(r){ statusByClient[r.client_id] = r.status; });
 
@@ -715,6 +720,8 @@
         weekNow: t.weekNow,
         weekTotal: t.weekTotal,
         startsOn: t.startsOn,
+        onboardDate: d.onboard_date || '',
+        offboardDate: d.offboard_date || '',
         progress: t.weekTotal ? Math.round(t.weekNow / t.weekTotal * 100) : 0,
         flag: d.flag_status || 'On track',
         color: d.flag_color || '#77d770',
@@ -752,7 +759,7 @@
       if (!ciWeekByClient[r.client_id] || r.submitted_at > ciWeekByClient[r.client_id]) ciWeekByClient[r.client_id] = r.submitted_at;
     });
 
-    renderRoster(); renderFlags(); renderQueue(); renderHwQueue(); renderCiQueue();
+    renderRoster(); renderDatabase(); renderFlags(); renderQueue(); renderHwQueue(); renderCiQueue();
   }
 
   // ─── Coach: homework review + weekly check-in queues ───────────────────
@@ -855,6 +862,60 @@
   // Coach only — the table isn't readable by clients and the card is hidden
   // in client mode. Days left counts down to the offboarding date.
   var crmRow = null;
+  var crmByClient = {};   // client_id → client_crm row, for the roster's Client database
+
+  // The CRM fields the coach can change from the portal. Options match the
+  // Notion CRM ("Current Clients"); a change is written to Notion as well
+  // (notion-client-import, action "crm_set"), so a re-import keeps it.
+  var CRM_FIELDS = {
+    testimonial: { label: 'Testimonial', options: ['Not started', 'Asked', 'Recontacted', 'NA', 'Done'] },
+    case_study:  { label: 'Case study',  options: ['Potential', 'Not started', 'In progress', 'NA', 'Done'] },
+    renewal:     { label: 'Renewal',     options: ['', 'Contacted', 'Considering', '1st Renewal', 'Declined', 'NA'] }
+  };
+  function crmOptions(field, value){
+    var opts = CRM_FIELDS[field].options.slice(), h = '';
+    value = value || '';
+    if (opts.indexOf(value) === -1) opts.unshift(value); // keep an unknown / blank Notion value visible
+    opts.forEach(function(o){ h += '<option value="' + esc(o) + '"' + (o === value ? ' selected' : '') + '>' + esc(o || '—') + '</option>'; });
+    return h;
+  }
+  function crmSelect(clientId, field, value, label){
+    return '<select class="cp-crm-select" data-crm-client="' + clientId + '" data-crm-field="' + field + '" aria-label="' + esc(label || CRM_FIELDS[field].label) + '">' + crmOptions(field, value) + '</select>';
+  }
+  function weightGoal(c){
+    var w = c.weight != null ? String(+c.weight) : '', g = c.goal_weight != null ? String(+c.goal_weight) : '';
+    return w && g ? w + ' → ' + g : (w || (g ? 'Goal ' + g : ''));
+  }
+
+  // → { ok } or { error }. Writes Notion first; the portal copy follows.
+  async function saveCrmField(clientId, field, value){
+    var r = await sb.functions.invoke('notion-client-import', { body: { action: 'crm_set', client_id: clientId, field: field, value: value } });
+    var err = r.error ? (r.error.message || String(r.error)) : (r.data && r.data.error);
+    if (err) return { error: err };
+    var row = crmByClient[clientId] || (crmRow && viewingClientId === clientId ? crmRow : null);
+    if (row) row[field] = value;
+    if (crmRow && viewingClientId === clientId && crmRow !== row) crmRow[field] = value;
+    return { ok: true, notion: !!(r.data && r.data.notion) };
+  }
+
+  // Any Testimonial / Case study select (Client Info card or Client database).
+  document.addEventListener('change', async function(e){
+    var sel = e.target.closest && e.target.closest('[data-crm-field]'); if (!sel) return;
+    var cid = sel.getAttribute('data-crm-client'), field = sel.getAttribute('data-crm-field');
+    var row = crmByClient[cid] || (viewingClientId === cid ? crmRow : null);
+    var prev = row ? (row[field] || '') : '';
+    sel.disabled = true;
+    var out = await saveCrmField(cid, field, sel.value);
+    sel.disabled = false;
+    if (out.error) {
+      sel.value = prev;
+      alert('Couldn\'t save ' + CRM_FIELDS[field].label.toLowerCase() + ': ' + out.error);
+      return;
+    }
+    if (viewingClientId === cid && state.view === 'client') renderCrmCard();
+    if (state.view === 'coach') renderDatabase();
+  });
+
   async function loadCrmCard(clientId){
     crmRow = null;
     $('cpCrmCard').hidden = true;
@@ -883,12 +944,11 @@
     add('Notion status', esc(c.notion_status));
     add('Time zone', esc(c.time_zone));
     add('Cores', esc(c.cores));
-    var w = c.weight != null ? String(+c.weight) : '', g = c.goal_weight != null ? String(+c.goal_weight) : '';
-    add('Weight → goal', esc(w && g ? w + ' → ' + g : (w || (g ? 'Goal ' + g : ''))));
+    add('Weight → goal', esc(weightGoal(c)));
     add('Address', esc(c.address));
     add('Renewal', esc(c.renewal));
-    add('Testimonial', esc(c.testimonial));
-    add('Case study', esc(c.case_study));
+    add('Testimonial', crmSelect(viewingClientId, 'testimonial', c.testimonial));
+    add('Case study', crmSelect(viewingClientId, 'case_study', c.case_study));
     el.innerHTML = '<div class="cp-crm-head"><p>Client details</p>'
       + (c.synced_at ? '<span>Synced ' + esc(shortDate(new Date(c.synced_at))) + '</span>' : '')
       + '</div><dl class="cp-crm-grid">' + items.join('') + '</dl>';
@@ -2086,6 +2146,17 @@
     return 'Week ' + p.weekNow + ' of ' + p.weekTotal;
   }
   function routeLine(p){ return (p.route || 'No route set yet') + ' · ' + weekLabel(p); }
+  // "Program Oct 12 → Jan 11", from the onboarding / offboarding dates.
+  function programLabel(on, off){
+    on = parseDay(on); off = parseDay(off);
+    if (!on || !off) return '';
+    return 'Program ' + shortDate(on) + ' → ' + shortDate(off);
+  }
+  // The dashboard header (client and coach both see it).
+  function headerLine(p){
+    var prog = programLabel(p.onboardDate, p.offboardDate);
+    return routeLine(p) + (prog ? ' · ' + prog : '');
+  }
 
   // client_dashboard columns for a pair of dates. route/week are stored as
   // a snapshot alongside them, but the portal always recomputes on load.
@@ -6485,6 +6556,56 @@
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
 
+  // ─── Coach: Client database (every client's CRM row, one table) ────────
+  // Current hides Graduated / Terminated / Paused. Testimonial and Case study
+  // are editable in place; the name opens the client's portal.
+  var dbFilter = 'active';
+  function renderDatabase(){
+    var rows = roster.filter(function(c){ return dbFilter === 'all' || !(isInactiveStatus(c.status) || c.status === 'Paused'); });
+    rows = rows.slice().sort(function(a, b){
+      return isInactiveStatus(a.status) - isInactiveStatus(b.status) || String(a.name).localeCompare(String(b.name));
+    });
+    var dash = '<span class="cp-db-muted">—</span>';
+    var h = '<thead><tr><th>Client</th><th>Status</th><th>Program</th><th>Week</th><th>Days left</th><th>Testimonial</th><th>Case study</th><th>Renewal</th><th>Email</th><th>Time zone</th><th>Cores</th><th>Weight → goal</th></tr></thead><tbody>';
+    rows.forEach(function(c){
+      var m = crmByClient[c.id];
+      var on = parseDay(c.onboardDate), off = parseDay(c.offboardDate);
+      var prog = on || off ? (on ? shortDate(on) : '?') + ' → ' + (off ? shortDate(off) : '?') : '';
+      var left = off ? daysBetween(todayStart(), off) : null;
+      var email = (m && m.email) || c.email;
+      h += '<tr' + (isInactiveStatus(c.status) ? ' class="is-inactive"' : '') + '>'
+        + '<td class="cp-db-nowrap"><button type="button" class="cp-db-name" data-db-open="' + c.id + '">' + esc(c.name) + '</button></td>'
+        + '<td class="cp-db-nowrap">' + (c.status ? esc(c.status) : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (prog ? esc(prog) : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (c.weekTotal || c.startsOn ? esc(weekLabel(c)) : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (left == null ? dash : esc(left >= 0 ? String(left) : 'Ended')) + '</td>'
+        + '<td>' + (m ? crmSelect(c.id, 'testimonial', m.testimonial, 'Testimonial for ' + c.name) : dash) + '</td>'
+        + '<td>' + (m ? crmSelect(c.id, 'case_study', m.case_study, 'Case study for ' + c.name) : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (m && m.renewal ? esc(m.renewal) : dash) + '</td>'
+        + '<td>' + (email ? '<a href="mailto:' + esc(email) + '">' + esc(email) + '</a>' : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (m && m.time_zone ? esc(m.time_zone) : dash) + '</td>'
+        + '<td>' + (m && m.cores ? esc(m.cores) : dash) + '</td>'
+        + '<td class="cp-db-nowrap">' + (m && weightGoal(m) ? esc(weightGoal(m)) : dash) + '</td>'
+        + '</tr>';
+    });
+    if (!rows.length) h += '<tr><td colspan="12" class="cp-db-muted">' + (roster.length ? 'No current clients. Tap All to see everyone.' : 'No clients yet.') + '</td></tr>';
+    $('cpDbTable').innerHTML = h + '</tbody>';
+  }
+  $('cpDbTable').addEventListener('click', function(e){
+    var b = e.target.closest('[data-db-open]'); if (!b) return;
+    var c = findRosterClient(b.getAttribute('data-db-open'));
+    if (c) enterClientPortalView(c.id, c.name);
+  });
+  document.querySelectorAll('[data-db-filter]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      dbFilter = btn.getAttribute('data-db-filter');
+      document.querySelectorAll('[data-db-filter]').forEach(function(b){
+        var on = b === btn; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      renderDatabase();
+    });
+  });
+
   function renderFlags(){
     var h=''; flags.forEach(function(f){ h+='<div class="cp-flag-row"><p class="cp-flag-name">'+esc(f.name)+'</p><p class="cp-flag-why">'+esc(f.why)+'</p></div>'; });
     $('cpFlagList').innerHTML = h || '<p class="cp-caption" style="margin:0;">Nobody flagged.</p>';
@@ -6547,7 +6668,7 @@
     }
     if (c) c.status = sel.value;
     roster.sort(function(a, b){ return isInactiveStatus(a.status) - isInactiveStatus(b.status); });
-    renderRoster();
+    renderRoster(); renderDatabase();
   });
 
   $('cpRosterList').addEventListener('click', function(e){
@@ -6652,105 +6773,10 @@
     if(!$('cpHwSheetOverlay').hidden) closeHwSheet();
   });
 
-  // ─── Coach: Edit portal ─────────────────────────────────────────────────
-  (function(){
-    var h = '<option value="">— none —</option>';
-    CARDIO_OPTIONS.forEach(function(c){ h += '<option value="'+c.value+'">'+esc(c.label)+'</option>'; });
-    $('cpEditCardioType').innerHTML = h;
-  })();
-
-  $('cpEditCardioType').addEventListener('change', function(){
-    var opt = CARDIO_OPTIONS.filter(function(c){ return c.value === $('cpEditCardioType').value; })[0];
-    $('cpEditCardioGoal').placeholder = opt ? opt.hint : 'e.g. 30 min @ zone 2';
-  });
-
-  var editSections = {
-    cpEditOnboardingList: { items: [], fields: [
-      { key:'label', placeholder:'Checklist item', type:'text' }
-    ] },
-    cpEditNonNegList: { items: [], fields: [
-      { key:'label', placeholder:'Non-negotiable', type:'text' }
-    ] },
-    cpEditTaskList:     { items: [], fields: [
-      { key:'label', placeholder:'Task', type:'text' },
-      { key:'coreKey', type:'select', options: CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; }) }
-    ] },
-    cpEditNoteList:     { items: [], fields: [
-      { key:'label', placeholder:'Title', type:'text' },
-      { key:'meta', placeholder:'Date', type:'text' },
-      { key:'body', placeholder:'Recap', type:'text' }
-    ] },
-    cpEditMetricList:   { items: [], fields: [
-      { key:'label', placeholder:'Label', type:'text' },
-      { key:'value', placeholder:'Value', type:'text' }
-    ] },
-    cpEditResourceList: { items: [], fields: [
-      { key:'label', placeholder:'Resource name', type:'text' }
-    ] },
-    cpEditWinList:      { items: [], fields: [
-      { key:'label', placeholder:'Win', type:'text' },
-      { key:'meta', placeholder:'When', type:'text' }
-    ] },
-    cpEditHabitList:    { items: [], fields: [
-      { key:'label', placeholder:'Habit', type:'text' },
-      { key:'coreKey', type:'select', options: [{value:'',label:'— Core —'}].concat(CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; })) }
-    ] },
-    cpEditGoalList:     { items: [], fields: [
-      { key:'title', placeholder:'Goal title', type:'text' },
-      { key:'coreKey', type:'select', options: [{value:'',label:'— Core —'}].concat(CORE_DEFS.map(function(c){ return { value:c.key, label:c.label }; })) },
-      { key:'targetDate', placeholder:'Target date (YYYY-MM-DD)', type:'text' }
-    ] }
-  };
-
-  function renderListEditor(containerId){
-    var sec = editSections[containerId];
-    var h='';
-    sec.items.forEach(function(item,i){
-      h+='<div class="cp-assign-row">';
-      sec.fields.forEach(function(f){
-        if (f.type === 'select') {
-          h+='<select data-field="'+f.key+'" data-idx="'+i+'">';
-          f.options.forEach(function(o){ h+='<option value="'+o.value+'"'+(item[f.key]===o.value?' selected':'')+'>'+esc(o.label)+'</option>'; });
-          h+='</select>';
-        } else {
-          h+='<input type="text" placeholder="'+esc(f.placeholder||'')+'" value="'+esc(item[f.key]==null?'':item[f.key])+'" data-field="'+f.key+'" data-idx="'+i+'" />';
-        }
-      });
-      h+='<button type="button" class="cp-assign-remove" data-remove-idx="'+i+'">×</button></div>';
-    });
-    $(containerId).innerHTML = h;
-  }
-
-  Object.keys(editSections).forEach(function(containerId){
-    var el = $(containerId);
-    el.addEventListener('input', function(e){
-      var t = e.target.closest('[data-field]'); if (!t) return;
-      var sec = editSections[containerId];
-      sec.items[parseInt(t.getAttribute('data-idx'),10)][t.getAttribute('data-field')] = t.value;
-    });
-    el.addEventListener('change', function(e){
-      var t = e.target.closest('[data-field]'); if (!t) return;
-      var sec = editSections[containerId];
-      sec.items[parseInt(t.getAttribute('data-idx'),10)][t.getAttribute('data-field')] = t.value;
-    });
-    el.addEventListener('click', function(e){
-      var btn = e.target.closest('[data-remove-idx]'); if (!btn) return;
-      var sec = editSections[containerId];
-      sec.items.splice(parseInt(btn.getAttribute('data-remove-idx'),10),1);
-      renderListEditor(containerId);
-    });
-  });
-
-  $('cpEditOnboardingAdd').addEventListener('click', function(){ editSections.cpEditOnboardingList.items.push({label:'',done:false}); renderListEditor('cpEditOnboardingList'); });
-  $('cpEditNonNegAdd').addEventListener('click', function(){ editSections.cpEditNonNegList.items.push({label:'',status:'active'}); renderListEditor('cpEditNonNegList'); });
-  $('cpEditTaskAdd').addEventListener('click', function(){ editSections.cpEditTaskList.items.push({label:'',coreKey:CORE_DEFS[0].key,done:false}); renderListEditor('cpEditTaskList'); });
-  $('cpEditNoteAdd').addEventListener('click', function(){ editSections.cpEditNoteList.items.push({label:'',meta:'',body:''}); renderListEditor('cpEditNoteList'); });
-  $('cpEditMetricAdd').addEventListener('click', function(){ editSections.cpEditMetricList.items.push({label:'',value:''}); renderListEditor('cpEditMetricList'); });
-  $('cpEditResourceAdd').addEventListener('click', function(){ editSections.cpEditResourceList.items.push({label:'',color:'#2a9df0'}); renderListEditor('cpEditResourceList'); });
-  $('cpEditWinAdd').addEventListener('click', function(){ editSections.cpEditWinList.items.push({label:'',meta:'',color:'#77d770'}); renderListEditor('cpEditWinList'); });
-  $('cpEditHabitAdd').addEventListener('click', function(){ editSections.cpEditHabitList.items.push({label:'',coreKey:'',done:false}); renderListEditor('cpEditHabitList'); });
-  $('cpEditGoalAdd').addEventListener('click', function(){ editSections.cpEditGoalList.items.push({title:'',description:'',coreKey:'',targetDate:'',status:'not_started',createdBy:'coach'}); renderListEditor('cpEditGoalList'); });
-
+  // ─── Coach: Client details (the roster's Edit button) ──────────────────
+  // Program dates, the Testimonial / Case Study / Renewal statuses (saved to
+  // the portal and to Notion), the rest of their CRM row read-only, and
+  // Delete client.
   // Coach sees what the dates work out to; the client only sees route + week.
   function timelineHint(onboard, offboard){
     if (!onboard || !offboard) return 'Set both dates to start the route and week counter.';
@@ -6762,185 +6788,79 @@
   function renderEditTimeline(){
     $('cpEditTimeline').textContent = timelineHint($('cpEditOnboard').value, $('cpEditOffboard').value);
   }
+  ['cpEditOnboard','cpEditOffboard'].forEach(function(id){ $(id).addEventListener('input', renderEditTimeline); });
+
+  var EDIT_CRM_SELECTS = { testimonial: 'cpEditTestimonial', case_study: 'cpEditCaseStudy', renewal: 'cpEditRenewal' };
 
   async function openEditPortal(clientId, name){
     editState = null;
     $('cpEditTitle').textContent = name;
     $('cpEditSave').disabled = true;
+    $('cpEditHint').textContent = 'Loading…';
     $('cpEditOverlay').hidden = false;
+    $('cpEditorScroll').scrollTop = 0;
 
-    var data;
-    try {
-      data = await fetchPortalData(clientId);
-    } catch (err) {
-      console.error('Failed to load portal for editing:', err);
-      alert('Couldn\'t load this client\'s portal: ' + (err && err.message || err));
+    var res = await Promise.all([
+      sb.from('client_dashboard').select('onboard_date, offboard_date').eq('client_id', clientId).maybeSingle(),
+      sb.from('client_crm').select('*').eq('client_id', clientId).maybeSingle()
+    ]);
+    if (res[0].error) {
+      alert('Couldn\'t load this client: ' + res[0].error.message);
       closeEditPortal();
       return;
     }
-    editState = data;
+    var dash = res[0].data || {}, crm = res[1].data || null;
+    editState = { clientId: clientId, crm: crm, onboard: dash.onboard_date || '', offboard: dash.offboard_date || '' };
+    crmByClient[clientId] = crm || crmByClient[clientId];
 
-    $('cpEditOnboard').value = editState.onboardDate;
-    $('cpEditOffboard').value = editState.offboardDate;
+    $('cpEditOnboard').value = editState.onboard;
+    $('cpEditOffboard').value = editState.offboard;
     renderEditTimeline();
-    $('cpEditFlagStatus').value = editState.flagStatus;
-    $('cpEditSessionLabel').value = editState.nextSessionLabel;
-    $('cpEditSessionAgenda').value = editState.nextSessionAgenda;
-    $('cpEditReminderDay').value = editState.reminderDay;
-    $('cpEditReminderChannel').value = editState.reminderChannel;
-    $('cpEditReminderOn').checked = editState.reminderOn;
-    $('cpEditCardioType').value = editState.preferredCardio;
-    $('cpEditCardioType').dispatchEvent(new Event('change'));
-    $('cpEditCardioGoal').value = editState.cardioGoal;
+    Object.keys(EDIT_CRM_SELECTS).forEach(function(f){
+      var sel = $(EDIT_CRM_SELECTS[f]);
+      sel.innerHTML = crmOptions(f, crm ? crm[f] : '');
+      sel.disabled = !crm;
+    });
 
-    editSections.cpEditOnboardingList.items = editState.onboardingItems;
-    editSections.cpEditNonNegList.items = editState.nonNegotiables.filter(function(t){ return t.status !== 'archived'; });
-    editSections.cpEditTaskList.items = editState.tasks;
-    editSections.cpEditNoteList.items = editState.notes;
-    editSections.cpEditMetricList.items = editState.metrics;
-    editSections.cpEditResourceList.items = editState.resources;
-    editSections.cpEditWinList.items = editState.wins;
-    editSections.cpEditHabitList.items = editState.habits;
-    editSections.cpEditGoalList.items = editState.goals.map(function(g){ return { id:g.id, title:g.title, description:g.description, coreKey:g.coreKey, targetDate:g.targetDate, status:g.status, createdBy:g.createdBy, milestones:g.milestones, coachNote:g.coachNote }; });
-    Object.keys(editSections).forEach(renderListEditor);
-
-    $('cpEditorPreviewKicker').textContent = 'What ' + (name.split(' ')[0] || 'they') + ' sees';
-    scrollToEditorSection('overview');
-    $('cpEditorScroll').scrollTop = 0;
-    renderEditorPreview();
-
+    var items = [];
+    function add(label, html){ if (html) items.push('<div><dt>' + esc(label) + '</dt><dd>' + html + '</dd></div>'); }
+    if (crm) {
+      add('Email', crm.email ? '<a href="mailto:' + esc(crm.email) + '">' + esc(crm.email) + '</a>' : '');
+      add('Notion status', esc(crm.notion_status));
+      add('Time zone', esc(crm.time_zone));
+      add('Cores', esc(crm.cores));
+      add('Weight → goal', esc(weightGoal(crm)));
+      add('Address', esc(crm.address));
+      add('Last synced', crm.synced_at ? esc(shortDate(new Date(crm.synced_at))) : '');
+    }
+    $('cpEditCrmInfo').innerHTML = items.join('') || '<p class="cp-caption" style="margin:0;">Nothing from Notion yet. Use Import client details on the roster to copy their CRM row.</p>';
+    $('cpEditHint').textContent = crm ? 'Changes save when you hit Save.' : 'Import client details from Notion to set statuses here.';
     $('cpEditSave').disabled = false;
   }
 
-  function renderEditorPreview(){
-    if (!editState) return;
-
-    var h = '';
-    editState.cores.forEach(function(c){
-      h += '<div class="cp-editor-preview-core-row"><div class="cp-editor-preview-core-top">'
-         + '<span class="cp-dot" style="background:'+c.color+'"></span>'
-         + '<span class="cp-core-label">'+esc(c.label)+'</span>'
-         + '<span class="cp-core-pct">'+(parseInt(c.pct,10)||0)+'%</span></div>'
-         + '<div class="cp-meter"><div class="cp-meter-fill" style="width:'+(parseInt(c.pct,10)||0)+'%;background:'+c.color+'"></div></div></div>';
-    });
-    $('cpEditorPreviewCores').innerHTML = h;
-
-    var openTasks = editSections.cpEditTaskList.items.filter(function(t){ return (t.label||'').trim() && !t.done; });
-    $('cpEditorPreviewReminder').textContent = ($('cpEditReminderDay').value || 'Monday') + ' by ' + ($('cpEditReminderChannel').value || 'text')
-      + ' — ' + openTasks.length + ' open item' + (openTasks.length === 1 ? '' : 's') + '.';
-
-    var th = '';
-    editSections.cpEditTaskList.items.forEach(function(t){
-      if (!(t.label||'').trim()) return;
-      th += '<div class="cp-editor-preview-task"><span class="cp-check"></span><span class="cp-label">'+esc(t.label)+'</span></div>';
-    });
-    $('cpEditorPreviewTasks').innerHTML = th || '<p class="cp-caption" style="margin:9px 0 0;">No tasks assigned.</p>';
-
-    $('cpEditorPreviewSession').textContent = $('cpEditSessionLabel').value || 'Not scheduled';
-    $('cpEditorPreviewAgenda').textContent = $('cpEditSessionAgenda').value || '';
-  }
-
-  $('cpEditOverlay').addEventListener('input', renderEditorPreview);
-  ['cpEditOnboard','cpEditOffboard'].forEach(function(id){ $(id).addEventListener('input', renderEditTimeline); });
-  $('cpEditOverlay').addEventListener('change', renderEditorPreview);
-
   function closeEditPortal(){ editState = null; $('cpEditOverlay').hidden = true; }
-
-  async function syncListTable(table, clientId, rows, conflictKey){
-    if (conflictKey) {
-      return sb.from(table).upsert(rows, { onConflict: 'client_id,' + conflictKey });
-    }
-    await sb.from(table).delete().eq('client_id', clientId);
-    if (rows.length) return sb.from(table).insert(rows);
-  }
-
-  // Non-negotiables get their own sync: it only replaces active/claimed rows,
-  // leaving archived rows (the client's confirmed history) untouched.
-  async function syncNonNegotiables(clientId, rows){
-    await sb.from('client_nonnegotiables').delete().eq('client_id', clientId).neq('status','archived');
-    if (rows.length) return sb.from('client_nonnegotiables').insert(rows);
-  }
 
   $('cpEditSave').addEventListener('click', async function(){
     if (!editState) return;
-    var clientId = editState.clientId;
+    var st = editState, clientId = st.clientId;
+    var on = $('cpEditOnboard').value, off = $('cpEditOffboard').value;
+    if (on && off && parseDay(off) <= parseDay(on)) { alert('Offboarding needs to be after onboarding.'); return; }
     setLoading($('cpEditSave'), true, 'Saving…');
 
-    var flagVal = $('cpEditFlagStatus').value;
-    var dashRow = Object.assign({
-      client_id: clientId,
-      flag_status: flagVal,
-      flag_color: FLAG_COLORS[flagVal] || '#77d770',
-      next_session_label: $('cpEditSessionLabel').value.trim(),
-      next_session_agenda: $('cpEditSessionAgenda').value.trim(),
-      reminder_day: $('cpEditReminderDay').value,
-      reminder_channel: $('cpEditReminderChannel').value,
-      reminder_on: $('cpEditReminderOn').checked,
-      preferred_cardio: $('cpEditCardioType').value,
-      cardio_goal: $('cpEditCardioGoal').value.trim()
-    }, timelinePatch($('cpEditOnboard').value, $('cpEditOffboard').value));
-
-    var onboardingRows = editState.onboardingItems.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
-      return { client_id: clientId, label: t.label.trim(), done: !!t.done, position:i };
-    });
-
-    var taskRows = editState.tasks.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
-      return { client_id: clientId, label: t.label.trim(), core_key: t.coreKey||'', color: coreColor(t.coreKey), done: !!t.done, position:i };
-    });
-    var noteRows = editState.notes.filter(function(n){ return (n.label||'').trim(); }).map(function(n){
-      return { client_id: clientId, label: n.label.trim(), meta: n.meta||'', body: n.body||'' };
-    });
-    var metricRows = editState.metrics.filter(function(m){ return (m.label||'').trim(); }).map(function(m,i){
-      return { client_id: clientId, label: m.label.trim(), value: m.value||'', position:i };
-    });
-    var resourceRows = editState.resources.filter(function(r){ return (r.label||'').trim(); }).map(function(r,i){
-      return { client_id: clientId, label: r.label.trim(), color: r.color||'#2a9df0', position:i };
-    });
-    var winRows = editState.wins.filter(function(w){ return (w.label||'').trim(); }).map(function(w,i){
-      return { client_id: clientId, label: w.label.trim(), meta: w.meta||'', color: w.color||'#77d770', position:i };
-    });
-    var nonNegRows = editSections.cpEditNonNegList.items.filter(function(t){ return (t.label||'').trim(); }).map(function(t,i){
-      return { client_id: clientId, label: t.label.trim(), status: t.status || 'active', claimed_at: t.claimedAt || null, position:i };
-    });
-    var habitRows = editState.habits.filter(function(h){ return (h.label||'').trim(); }).map(function(h,i){
-      return { client_id: clientId, label: h.label.trim(), core_key: h.coreKey||'', done: !!h.done, position:i };
-    });
-
-    var goalRows = editSections.cpEditGoalList.items.filter(function(g){ return (g.title||'').trim(); }).map(function(g){
-      // Re-inserted with their original id/description/milestones/note so a save
-      // here doesn't wipe what was set from the Goals tab.
-      var row = { client_id: clientId, title: g.title.trim(), description: g.description||'', core_key: g.coreKey||'', target_date: g.targetDate||null, status: g.status||'not_started', created_by: g.createdBy||'coach', milestones: g.milestones||[], coach_note: g.coachNote||'' };
-      if (g.id) row.id = g.id;
-      return row;
-    });
-
-    var results = await Promise.all([
-      sb.from('client_dashboard').upsert(dashRow, { onConflict: 'client_id' }),
-      syncListTable('client_onboarding_items', clientId, onboardingRows),
-      syncListTable('client_tasks', clientId, taskRows),
-      syncListTable('client_notes', clientId, noteRows),
-      syncListTable('client_metrics', clientId, metricRows),
-      syncListTable('client_resources', clientId, resourceRows),
-      syncListTable('client_wins', clientId, winRows),
-      syncNonNegotiables(clientId, nonNegRows),
-      syncListTable('client_habits', clientId, habitRows),
-      syncListTable('client_goals', clientId, goalRows)
-    ]);
-
-    var saveError = results.map(function(r){ return r && r.error; }).filter(Boolean)[0];
-    // Habits renamed here keep their check-in history (logs are keyed by label).
-    if (!saveError) {
-      var renames = editState.habits.filter(function(h){ return h.origLabel && (h.label||'').trim() && h.origLabel !== h.label.trim(); });
-      for (var ri = 0; ri < renames.length && !saveError; ri++) {
-        saveError = (await renameHabitLogs(clientId, renames[ri].origLabel, renames[ri].label.trim())).error;
+    var errors = [];
+    if (on !== st.onboard || off !== st.offboard) {
+      var r = await sb.from('client_dashboard').upsert(Object.assign({ client_id: clientId }, timelinePatch(on, off)), { onConflict: 'client_id' });
+      if (r.error) errors.push('Program dates: ' + r.error.message);
+    }
+    if (st.crm) {
+      var fields = Object.keys(EDIT_CRM_SELECTS).filter(function(f){ return $(EDIT_CRM_SELECTS[f]).value !== (st.crm[f] || ''); });
+      for (var i = 0; i < fields.length; i++) {
+        var out = await saveCrmField(clientId, fields[i], $(EDIT_CRM_SELECTS[fields[i]]).value);
+        if (out.error) errors.push(CRM_FIELDS[fields[i]].label + ': ' + out.error);
       }
     }
     setLoading($('cpEditSave'), false, 'Save');
-    if (saveError) {
-      console.error('Failed to save portal edits:', saveError);
-      alert('Saving failed: ' + saveError.message);
-      return;
-    }
+    if (errors.length) { alert('Some changes didn\'t save:\n' + errors.join('\n')); return; }
     closeEditPortal();
     await loadRoster();
     if (viewingClientId === clientId) {
@@ -6952,7 +6872,7 @@
   $('cpEditCancel').addEventListener('click',closeEditPortal);
   $('cpEditClose').addEventListener('click',closeEditPortal);
   $('cpEditDelete').addEventListener('click', function(){
-    var id = editState && (editState.clientId || editState.id);
+    var id = editState && editState.clientId;
     if (!id) return;
     openDeleteClient(id, $('cpEditTitle').textContent);
   });
@@ -7210,7 +7130,7 @@
   $('cpQeFlag').addEventListener('change', onQeDashInput);
 
   function renderDashBehind(){
-    $('cpRouteLine').textContent = routeLine(portalData);
+    $('cpRouteLine').textContent = headerLine(portalData);
     $('cpWeekLine2').textContent = weekLabel(portalData);
     renderSessionCard();
   }
@@ -7258,35 +7178,5 @@
     renderDashBehind();
   }
 
-  // ─── Editor: section jump nav + scrollspy ──────────────────────────────
-  var EDITOR_SECTIONS = ['overview','plan','progress','goals','library'];
-
-  function scrollToEditorSection(id){
-    var root = $('cpEditorScroll');
-    var target = root.querySelector('[data-editor-sec="'+id+'"]');
-    if (target) root.scrollTop = target.offsetTop - 16;
-    setActiveEditorNav(id);
-  }
-
-  function setActiveEditorNav(id){
-    $('cpEditorNav').querySelectorAll('[data-editor-jump]').forEach(function(btn){
-      btn.classList.toggle('is-active', btn.getAttribute('data-editor-jump') === id);
-    });
-  }
-
-  $('cpEditorNav').addEventListener('click', function(e){
-    var btn = e.target.closest('[data-editor-jump]'); if (!btn) return;
-    scrollToEditorSection(btn.getAttribute('data-editor-jump'));
-  });
-
-  $('cpEditorScroll').addEventListener('scroll', function(){
-    var root = $('cpEditorScroll');
-    var current = EDITOR_SECTIONS[0];
-    EDITOR_SECTIONS.forEach(function(id){
-      var el = root.querySelector('[data-editor-sec="'+id+'"]');
-      if (el && el.offsetTop - 60 <= root.scrollTop) current = id;
-    });
-    setActiveEditorNav(current);
-  });
 
 })();
