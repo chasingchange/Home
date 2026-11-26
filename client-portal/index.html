@@ -104,6 +104,24 @@
       .cp-crm-grid dt{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:rgba(7,31,53,.45);}
       .cp-crm-grid dd{margin:2px 0 0;font-size:14px;line-height:1.4;color:#071f35;overflow-wrap:anywhere;}
       .cp-crm-grid dd a{color:#1a6fa8;text-decoration:none;}
+      .cp-editor-body--single{grid-template-columns:1fr !important;}
+      .cp-editor-body--single .cp-editor-section{max-width:860px;margin-left:auto;margin-right:auto;}
+      .cp-db-card{grid-column:1 / -1;min-width:0;}
+      .cp-db-filter{display:flex;gap:6px;}
+      .cp-db-filter .is-on{background:#071f35;color:#fff;border-color:#071f35;}
+      .cp-db-scroll{margin-top:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      .cp-db-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px;}
+      .cp-db-table th{text-align:left;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:rgba(7,31,53,.45);padding:8px 10px;border-bottom:1px solid rgba(7,31,53,.12);white-space:nowrap;}
+      .cp-db-table td{padding:10px;border-bottom:1px solid rgba(7,31,53,.07);color:#071f35;vertical-align:middle;}
+      .cp-db-table tr.is-inactive td{opacity:.55;}
+      .cp-db-table td.cp-db-nowrap{white-space:nowrap;}
+      .cp-db-table .cp-db-name{all:unset;cursor:pointer;font-family:"Raleway",sans-serif;font-weight:700;font-size:14px;color:#071f35;}
+      .cp-db-table .cp-db-name:hover{text-decoration:underline;text-underline-offset:3px;}
+      .cp-db-table .cp-db-muted{color:rgba(7,31,53,.4);}
+      .cp-db-table a{color:#1a6fa8;text-decoration:none;}
+      .cp-crm-select{font:inherit;font-size:12px;font-weight:700;color:rgba(7,31,53,.8);background:#fff;border:1px solid rgba(7,31,53,.15);border-radius:8px;padding:5px 6px;cursor:pointer;max-width:100%;}
+      .cp-db-table .cp-crm-select{min-width:128px;}
+      .cp-crm-select[disabled]{opacity:.5;cursor:wait;}
       .cp-client-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:#fff6d6;border:1px solid #f0d27a;color:#4a3a06;font-size:14px;line-height:1.4;}
       .cp-client-mode-banner[hidden]{display:none;}
       .cp-client-mode-banner button{all:unset;cursor:pointer;font-weight:700;font-size:13px;padding:6px 12px;border-radius:980px;background:#4a3a06;color:#fff;white-space:nowrap;}
@@ -1439,7 +1457,7 @@
         <!-- CLIENT INFO TAB (coach only; client_crm, filled by Import from Notion) -->
         <div class="cp-goals-view" id="cpDetailsView" hidden>
           <div class="cp-goals-header">
-            <div><h2 class="cp-goals-title">Client Info</h2><p class="cp-tab-sub">From their row in the Notion CRM. Only you can see this.</p></div>
+            <div><h2 class="cp-goals-title">Client Info</h2></div>
           </div>
           <section class="cp-crm-card" id="cpCrmCard" aria-label="Client details from the CRM" hidden></section>
         </div>
@@ -1766,6 +1784,16 @@
               <div class="cp-queue-list" id="cpQueueList"></div>
             </div>
           </aside>
+          <div class="cp-card cp-roster-card cp-db-card">
+            <div class="cp-card-head" style="align-items:center;">
+              <div><p class="cp-kicker">Master database</p><h3 class="cp-card-title">Client database</h3></div>
+              <div class="cp-db-filter" role="group" aria-label="Show">
+                <button type="button" class="cp-btn-sm is-on" data-db-filter="active" aria-pressed="true">Current</button>
+                <button type="button" class="cp-btn-sm" data-db-filter="all" aria-pressed="false">All</button>
+              </div>
+            </div>
+            <div class="cp-db-scroll"><table class="cp-db-table" id="cpDbTable"></table></div>
+          </div>
         </div>
       </section>
     </main>
@@ -1841,28 +1869,19 @@
           <button type="button" class="cp-editor-back" id="cpEditBack">← Roster</button>
           <div class="cp-editor-divider"></div>
           <div>
-            <p class="cp-kicker">Editing client portal</p>
+            <p class="cp-kicker">Client details</p>
             <h2 class="cp-editor-title" id="cpEditTitle"></h2>
           </div>
         </div>
         <button type="button" class="cp-sheet-close" id="cpEditClose" aria-label="Close">×</button>
       </header>
 
-      <div class="cp-editor-body">
-        <nav class="cp-editor-nav" id="cpEditorNav">
-          <p class="cp-editor-nav-kicker">Sections</p>
-          <button type="button" class="cp-editor-nav-btn is-active" data-editor-jump="overview">Overview</button>
-          <button type="button" class="cp-editor-nav-btn" data-editor-jump="plan">The plan</button>
-          <button type="button" class="cp-editor-nav-btn" data-editor-jump="progress">Progress</button>
-          <button type="button" class="cp-editor-nav-btn" data-editor-jump="goals">Goals</button>
-          <button type="button" class="cp-editor-nav-btn" data-editor-jump="library">Resources</button>
-        </nav>
-
+      <div class="cp-editor-body cp-editor-body--single">
         <div class="cp-editor-scroll" id="cpEditorScroll">
 
-          <div class="cp-editor-section" data-editor-sec="overview">
-            <h3>Overview</h3>
-            <p class="cp-editor-section-lede">Program dates, status and the next call. Route and week follow from the dates.</p>
+          <div class="cp-editor-section">
+            <h3>Program</h3>
+            <p class="cp-editor-section-lede">Route and week follow from the dates. The client sees the week and these dates on their dashboard.</p>
             <div class="cp-editor-card cp-editor-grid">
               <div class="cp-edit-field">
                 <label for="cpEditOnboard">Onboarding date</label>
@@ -1873,120 +1892,37 @@
                 <input type="date" id="cpEditOffboard" class="cp-edit-input" />
               </div>
               <p class="cp-edit-timeline cp-edit-field--full" id="cpEditTimeline"></p>
+            </div>
+          </div>
+
+          <div class="cp-editor-section">
+            <h3>Statuses</h3>
+            <p class="cp-editor-section-lede">Saved to the portal and to their row in the Notion CRM.</p>
+            <div class="cp-editor-card cp-editor-grid">
               <div class="cp-edit-field">
-                <label>Status</label>
-                <select id="cpEditFlagStatus" class="cp-edit-input">
-                  <option>On track</option>
-                  <option>Needs a nudge</option>
-                  <option>At risk</option>
-                </select>
+                <label for="cpEditTestimonial">Testimonial</label>
+                <select id="cpEditTestimonial" class="cp-edit-input"></select>
               </div>
-              <div class="cp-edit-field" hidden>
-                <label>Weekly reminder</label>
-                <div class="cp-edit-week-row">
-                  <select id="cpEditReminderDay" class="cp-edit-input" style="width:130px">
-                    <option>Monday</option><option>Tuesday</option><option>Sunday</option>
-                  </select>
-                  <select id="cpEditReminderChannel" class="cp-edit-input" style="width:110px">
-                    <option value="text">text</option><option value="email">email</option><option value="push">push</option>
-                  </select>
-                  <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;">
-                    <input type="checkbox" id="cpEditReminderOn" /> On
-                  </label>
-                </div>
+              <div class="cp-edit-field">
+                <label for="cpEditCaseStudy">Case study</label>
+                <select id="cpEditCaseStudy" class="cp-edit-input"></select>
               </div>
-              <div class="cp-edit-field cp-edit-field--full">
-                <label>Next session</label>
-                <input type="text" id="cpEditSessionLabel" class="cp-edit-input" placeholder="Thursday, 9:00 AM" />
-                <input type="text" id="cpEditSessionAgenda" class="cp-edit-input" placeholder="Agenda" style="margin-top:8px" />
-              </div>
-              <div class="cp-edit-field cp-edit-field--full">
-                <label>Preferred cardio &amp; goal</label>
-                <div class="cp-edit-week-row">
-                  <select id="cpEditCardioType" class="cp-edit-input" style="width:220px"></select>
-                  <input type="text" id="cpEditCardioGoal" class="cp-edit-input" placeholder="e.g. 30 min @ zone 2" />
-                </div>
+              <div class="cp-edit-field">
+                <label for="cpEditRenewal">Renewal</label>
+                <select id="cpEditRenewal" class="cp-edit-input"></select>
               </div>
             </div>
           </div>
 
-          <div class="cp-editor-section" data-editor-sec="plan">
-            <h3>The plan</h3>
-            <p class="cp-editor-section-lede">Tasks, non-negotiables, habits and onboarding — the lists they act on.</p>
-
-            <div class="cp-editor-card">
-              <h4>This week's tasks</h4>
-              <div class="cp-assign-list" id="cpEditTaskList" style="margin-top:14px;"></div>
-              <button type="button" class="cp-assign-add" id="cpEditTaskAdd">+ Add task</button>
-            </div>
-
-            <div class="cp-editor-row" style="margin-top:14px;">
-              <div class="cp-editor-card" style="margin-top:0;">
-                <h4>Non-negotiables</h4>
-                <p class="cp-editor-section-lede">Items awaiting client claim or your review stay here.</p>
-                <div class="cp-assign-list" id="cpEditNonNegList" style="margin-top:14px;"></div>
-                <button type="button" class="cp-assign-add" id="cpEditNonNegAdd">+ Add non-negotiable</button>
-              </div>
-              <div class="cp-editor-card" style="margin-top:0;">
-                <h4>Habits</h4>
-                <p class="cp-editor-section-lede">Leave empty to keep showing the Six Cores rail.</p>
-                <div class="cp-assign-list" id="cpEditHabitList" style="margin-top:14px;"></div>
-                <button type="button" class="cp-assign-add" id="cpEditHabitAdd">+ Add habit</button>
-              </div>
-            </div>
-
-            <div class="cp-editor-card">
-              <h4>Onboarding checklist</h4>
-              <div class="cp-assign-list" id="cpEditOnboardingList" style="margin-top:14px;"></div>
-              <button type="button" class="cp-assign-add" id="cpEditOnboardingAdd">+ Add checklist item</button>
-            </div>
+          <div class="cp-editor-section">
+            <h3>From Notion</h3>
+            <p class="cp-editor-section-lede">Copied from the CRM by Import client details. Change these in Notion.</p>
+            <div class="cp-editor-card"><dl class="cp-crm-grid" id="cpEditCrmInfo"></dl></div>
           </div>
 
-          <div class="cp-editor-section" data-editor-sec="progress">
-            <h3>Progress</h3>
-            <p class="cp-editor-section-lede">Session recaps, body metrics and wins on record.</p>
-
-            <div class="cp-editor-card">
-              <h4>Session notes</h4>
-              <div class="cp-assign-list" id="cpEditNoteList" style="margin-top:14px;"></div>
-              <button type="button" class="cp-assign-add" id="cpEditNoteAdd">+ Add recap</button>
-            </div>
-
-            <div class="cp-editor-row" style="margin-top:14px;">
-              <div class="cp-editor-card" style="margin-top:0;">
-                <h4>Body metrics</h4>
-                <div class="cp-assign-list" id="cpEditMetricList" style="margin-top:14px;"></div>
-                <button type="button" class="cp-assign-add" id="cpEditMetricAdd">+ Add metric</button>
-              </div>
-              <div class="cp-editor-card" style="margin-top:0;">
-                <h4>Wins</h4>
-                <div class="cp-assign-list" id="cpEditWinList" style="margin-top:14px;"></div>
-                <button type="button" class="cp-assign-add" id="cpEditWinAdd">+ Add win</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="cp-editor-section" data-editor-sec="goals">
-            <h3>Goals</h3>
-            <p class="cp-editor-section-lede">Set goals for this client — they see them in the Goals tab.</p>
-            <div class="cp-editor-card">
-              <div class="cp-assign-list" id="cpEditGoalList" style="margin-top:4px;"></div>
-              <button type="button" class="cp-assign-add" id="cpEditGoalAdd">+ Add goal</button>
-            </div>
-          </div>
-
-          <div class="cp-editor-section" data-editor-sec="library">
-            <h3>Resource library</h3>
-            <p class="cp-editor-section-lede">What's assigned to them right now.</p>
-            <div class="cp-editor-card">
-              <div class="cp-assign-list" id="cpEditResourceList"></div>
-              <button type="button" class="cp-assign-add" id="cpEditResourceAdd">+ Add resource</button>
-            </div>
-          </div>
-
-          <div class="cp-editor-section" data-editor-sec="danger">
+          <div class="cp-editor-section">
             <h3>Remove client</h3>
-            <p class="cp-editor-section-lede">Finished working together? Set their status to Graduated or Terminated in Overview to keep their history. Delete only if you want them gone for good.</p>
+            <p class="cp-editor-section-lede">Finished working together? Set their status to Graduated or Terminated on the roster to keep their history. Delete only if you want them gone for good.</p>
             <div class="cp-editor-card cp-danger-card">
               <div>
                 <h4>Delete this client</h4>
@@ -1997,38 +1933,10 @@
           </div>
 
         </div>
-
-        <aside class="cp-editor-aside">
-          <div class="cp-editor-aside-head">
-            <p class="cp-kicker" id="cpEditorPreviewKicker">What they see</p>
-            <span class="cp-editor-live-dot"><span></span>live</span>
-          </div>
-
-          <div class="cp-editor-preview-card">
-            <p class="cp-editor-preview-kicker">The Six Cores</p>
-            <div id="cpEditorPreviewCores"></div>
-          </div>
-
-          <div class="cp-editor-preview-card" style="background:#071f35;" hidden>
-            <p class="cp-editor-preview-kicker" style="color:rgba(255,255,255,.5);">Weekly Reminder</p>
-            <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#fff;" id="cpEditorPreviewReminder"></p>
-          </div>
-
-          <div class="cp-editor-preview-card">
-            <p class="cp-editor-preview-kicker">This Week</p>
-            <div class="cp-editor-preview-tasks" id="cpEditorPreviewTasks"></div>
-          </div>
-
-          <div class="cp-editor-preview-card">
-            <p class="cp-editor-preview-kicker">Next Session</p>
-            <p style="margin:9px 0 0;font-family:'Raleway',sans-serif;font-weight:800;font-size:15px;" id="cpEditorPreviewSession"></p>
-            <p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:rgba(7,31,53,.68);" id="cpEditorPreviewAgenda"></p>
-          </div>
-        </aside>
       </div>
 
       <div class="cp-editor-foot">
-        <span class="cp-editor-foot-hint">This is everything this client sees. Changes save when you hit Save.</span>
+        <span class="cp-editor-foot-hint" id="cpEditHint">Changes save when you hit Save.</span>
         <div style="display:flex;gap:10px;">
           <button type="button" class="cp-btn-secondary" id="cpEditCancel" style="width:auto;padding:0 24px;height:44px;">Cancel</button>
           <button type="button" class="cp-btn-primary" id="cpEditSave" style="width:auto;padding:0 28px;height:44px;">Save</button>
@@ -2091,7 +1999,7 @@
         </div>
         <div class="cp-qe-foot">
           <span>The portal behind updates as you type.</span>
-          <button type="button" id="cpQeFull">Open full editor</button>
+          <button type="button" id="cpQeFull">Client details</button>
         </div>
       </div>
     </div>
@@ -2105,6 +2013,6 @@
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
     <script src="notion-import.js?v=20261125c"></script>
-    <script src="portal.js?v=20261125b"></script>
+    <script src="portal.js?v=20261126a"></script>
   </body>
 </html>

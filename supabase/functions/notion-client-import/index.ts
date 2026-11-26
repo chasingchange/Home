@@ -31,6 +31,9 @@
 //             zone, address, cores, weight / goal, renewal, testimonial and
 //             case study → client_crm (coach only). Dates and status already
 //             set in the portal are kept unless overwrite is on.
+//   crm_set   The coach changed Testimonial, Case Study or Renewal on the
+//             site: write it to their CRM row in Notion and to client_crm,
+//             so the next "crm" import keeps it.
 //   cover     The cover photo on their Notion dashboard (or, failing that,
 //             their CRM page) → the banner on their portal dashboard. The
 //             image is copied into the vision-boards bucket. A banner already
@@ -45,6 +48,8 @@
 //   { action: "link", client_id }                       → { link, notes }
 //   { action: "homework"|"goals"|"uploads"|"cookbook"|"cover"|"crm", client_id, overwrite? }
 //                                                       → { created, updated, unchanged, notes, … }
+//   { action: "crm_set", client_id, field: "testimonial"|"case_study"|"renewal", value }
+//                                                       → { ok, notion }
 // App-level failures come back as 200 { error: "..." }.
 //
 // Needs scripts/notion_client_import.sql (and scripts/client_crm.sql for "crm"). Secrets: NOTION_TOKEN (shared with
@@ -1237,6 +1242,39 @@ async function doCrm(clientId: string, link: Link, who: Who, overwrite: boolean)
   return out;
 }
 
+// Notion property and type for each field the coach can set from the site.
+// Values must be one of the options already in Notion (or "" to clear).
+const CRM_SETTABLE: Record<string, { prop: string; kind: "status" | "select"; options: string[] }> = {
+  testimonial: { prop: "Testimonial", kind: "status", options: ["Not started", "Asked", "Recontacted", "NA", "Done"] },
+  case_study: { prop: "Case Study", kind: "status", options: ["Potential", "Not started", "In progress", "NA", "Done"] },
+  renewal: { prop: "Renewal", kind: "select", options: ["Contacted", "Considering", "1st Renewal", "Declined", "NA"] },
+};
+
+async function doCrmSet(clientId: string, dbs: Json, who: Who, field: string, value: string) {
+  const def = CRM_SETTABLE[field];
+  if (!def) throw new Error("That field can't be set from the portal.");
+  if (value && !def.options.includes(value)) throw new Error(`“${value}” isn't a ${def.prop} option in Notion.`);
+  if (def.kind === "status" && !value) throw new Error(`${def.prop} can't be blank.`);
+
+  // The CRM page id from the last import, else look it up again.
+  const { data: prev } = await admin.from("client_crm").select("notion_url").eq("client_id", clientId).maybeSingle();
+  const m = String(prev?.notion_url ?? "").replace(/-/g, "").match(/([0-9a-f]{32})(?:\?|$)/i);
+  let pageId = m ? normalizeId(m[1]) : "";
+  if (!pageId) pageId = (await loadLink(clientId, dbs, who)).crm_page_id;
+
+  let notionOk = false;
+  if (pageId) {
+    const val = value ? { name: value } : null;
+    await notion(`/pages/${pageId}`, { method: "PATCH", body: { properties: { [def.prop]: { [def.kind]: val } } } });
+    notionOk = true;
+  }
+  const now = new Date().toISOString();
+  const { error } = await admin.from("client_crm")
+    .upsert({ client_id: clientId, [field]: value, updated_at: now }, { onConflict: "client_id" });
+  if (error) throw new Error(/client_crm/.test(error.message) ? "Run scripts/client_crm.sql in Supabase first." : error.message);
+  return { ok: true, notion: notionOk };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -1279,6 +1317,7 @@ Deno.serve(async (req) => {
       await saveLink(clientId, link, notes);
       return json({ link, notes });
     }
+    if (action === "crm_set") return json(await doCrmSet(clientId, dbs, who, String(body.field ?? ""), String(body.value ?? "").trim()));
     // Later steps reuse the link the UI got from "link" (it round-trips),
     // and look it up again when called on their own.
     const link: Link = body.link && typeof body.link === "object" ? body.link : await loadLink(clientId, dbs, who);
