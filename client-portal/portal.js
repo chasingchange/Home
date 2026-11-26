@@ -858,6 +858,7 @@
   async function loadCrmCard(clientId){
     crmRow = null;
     $('cpCrmCard').hidden = true;
+    syncDetailsTab();
     if (!isCoachSession) return;
     var r = await sb.from('client_crm').select('*').eq('client_id', clientId).maybeSingle();
     if (viewingClientId !== clientId) return;
@@ -867,7 +868,7 @@
 
   function renderCrmCard(){
     var el = $('cpCrmCard'), c = crmRow;
-    if (!c) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!c) { el.hidden = true; el.innerHTML = ''; syncDetailsTab(); return; }
     var d = portalData || {};
     var items = [];
     function add(label, html){ if (html) items.push('<div><dt>' + esc(label) + '</dt><dd>' + html + '</dd></div>'); }
@@ -892,6 +893,17 @@
       + (c.synced_at ? '<span>Synced ' + esc(shortDate(new Date(c.synced_at))) + '</span>' : '')
       + '</div><dl class="cp-crm-grid">' + items.join('') + '</dl>';
     el.hidden = clientMode || !items.length;
+    syncDetailsTab();
+  }
+
+  // The Client Info tab shows only to the coach (not in client mode), and
+  // only once there's a CRM row to show. Switching to client mode while
+  // it's open drops back to Start Line.
+  function syncDetailsTab(){
+    var show = isCoachSession && !clientMode && state.view === 'client' && !!viewingClientId && !!crmRow;
+    $('cpTabDetails').hidden = !show;
+    // Don't bounce while the CRM row is still loading (e.g. a refresh on #details).
+    if (state.portalTab === 'details' && state.view === 'client' && (clientMode || !isCoachSession)) setPortalTab('portal');
   }
 
   // ─── Coach: client mode ───────────────────────────────────────────────
@@ -912,6 +924,7 @@
     btn.hidden = !inClient;
     $('cpNotionImportBtn').hidden = !inClient || clientMode;
     $('cpCrmCard').hidden = !inClient || clientMode || !crmRow;
+    syncDetailsTab();
     btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
     btn.classList.toggle('is-on', clientMode);
     btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
@@ -1160,7 +1173,8 @@
 
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView', habits:'cpHabitsView',
-    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
+    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView',
+    details:'cpDetailsView'
   };
 
   function tabFromHash(){
@@ -1177,6 +1191,7 @@
 
   function setPortalTab(tab){
     if (!PORTAL_TABS[tab]) tab = 'portal';
+    if (tab === 'details' && !isCoachUser) tab = 'portal'; // coach only, never in client mode
     state.portalTab = tab;
     writeTabHash(tab);
     $('cpPortalTabs').querySelectorAll('[data-portal-tab]').forEach(function(btn){
