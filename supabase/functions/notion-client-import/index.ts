@@ -667,8 +667,16 @@ async function doGoals(dbs: Json, clientId: string, link: Link, overwrite: boole
     out.notes.push("No Notion person for this client — goals skipped.");
   }
 
-  // The overall goal from the Onboarding Audit → The Quest.
-  if (link.audit_id) {
+  // The overall goal from the Onboarding Audit → The Quest. Only brought in
+  // the first time, and only if no goal is The Quest yet: once the coach has
+  // picked (or removed) The Quest in the portal, re-imports leave it alone.
+  let hasQuest = upserts.some((u) => u.quest === "the_quest");
+  if (!hasQuest) {
+    const { data: q } = await admin.from("client_goals").select("id, notion_page_id")
+      .eq("client_id", clientId).or("quest.eq.the_quest,notion_page_id.like.audit:*").limit(1);
+    hasQuest = !!(q && q.length);
+  }
+  if (link.audit_id && !hasQuest) {
     try {
       const audit = await notion(`/pages/${link.audit_id}`);
       const goal = text(prop(audit.properties, "Goal"));
@@ -711,8 +719,9 @@ async function doGoals(dbs: Json, clientId: string, link: Link, overwrite: boole
     }
     const patch: Json = {};
     const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-    if (cur.quest !== g.quest) patch.quest = g.quest;
+    // Quest is set in the portal too, so Notion only overrides it on overwrite.
     if (overwrite) {
+      if (cur.quest !== g.quest) patch.quest = g.quest;
       for (const k of ["title", "description", "core_key", "status", "target_date", "milestones"]) {
         if (k in g && !same(cur[k], g[k])) patch[k] = g[k];
       }

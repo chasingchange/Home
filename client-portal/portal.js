@@ -858,6 +858,7 @@
   async function loadCrmCard(clientId){
     crmRow = null;
     $('cpCrmCard').hidden = true;
+    syncDetailsTab();
     if (!isCoachSession) return;
     var r = await sb.from('client_crm').select('*').eq('client_id', clientId).maybeSingle();
     if (viewingClientId !== clientId) return;
@@ -867,7 +868,7 @@
 
   function renderCrmCard(){
     var el = $('cpCrmCard'), c = crmRow;
-    if (!c) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!c) { el.hidden = true; el.innerHTML = ''; syncDetailsTab(); return; }
     var d = portalData || {};
     var items = [];
     function add(label, html){ if (html) items.push('<div><dt>' + esc(label) + '</dt><dd>' + html + '</dd></div>'); }
@@ -889,10 +890,20 @@
     add('Testimonial', esc(c.testimonial));
     add('Case study', esc(c.case_study));
     el.innerHTML = '<div class="cp-crm-head"><p>Client details</p>'
-      + (c.notion_url ? '<a href="' + esc(c.notion_url) + '" target="_blank" rel="noopener">Open in Notion ↗</a>' : '')
       + (c.synced_at ? '<span>Synced ' + esc(shortDate(new Date(c.synced_at))) + '</span>' : '')
       + '</div><dl class="cp-crm-grid">' + items.join('') + '</dl>';
     el.hidden = clientMode || !items.length;
+    syncDetailsTab();
+  }
+
+  // The Client Info tab shows only to the coach (not in client mode), and
+  // only once there's a CRM row to show. Switching to client mode while
+  // it's open drops back to Start Line.
+  function syncDetailsTab(){
+    var show = isCoachSession && !clientMode && state.view === 'client' && !!viewingClientId && !!crmRow;
+    $('cpTabDetails').hidden = !show;
+    // Don't bounce while the CRM row is still loading (e.g. a refresh on #details).
+    if (state.portalTab === 'details' && state.view === 'client' && (clientMode || !isCoachSession)) setPortalTab('portal');
   }
 
   // ─── Coach: client mode ───────────────────────────────────────────────
@@ -913,6 +924,7 @@
     btn.hidden = !inClient;
     $('cpNotionImportBtn').hidden = !inClient || clientMode;
     $('cpCrmCard').hidden = !inClient || clientMode || !crmRow;
+    syncDetailsTab();
     btn.textContent = clientMode ? 'Exit client mode' : '👁 Client mode';
     btn.classList.toggle('is-on', clientMode);
     btn.setAttribute('aria-pressed', clientMode ? 'true' : 'false');
@@ -1161,7 +1173,8 @@
 
   var PORTAL_TABS = {
     portal:'cpClientView', homework:'cpHomeworkView', goals:'cpGoalsView', habits:'cpHabitsView',
-    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView'
+    checkins:'cpCheckinsView', education:'cpEducationView', calendar:'cpCalendarView',
+    details:'cpDetailsView'
   };
 
   function tabFromHash(){
@@ -1178,6 +1191,7 @@
 
   function setPortalTab(tab){
     if (!PORTAL_TABS[tab]) tab = 'portal';
+    if (tab === 'details' && !isCoachUser) tab = 'portal'; // coach only, never in client mode
     state.portalTab = tab;
     writeTabHash(tab);
     $('cpPortalTabs').querySelectorAll('[data-portal-tab]').forEach(function(btn){
@@ -1603,6 +1617,8 @@
     $('cpGoalMsInput').value = '';
     renderGoalFormMs();
     $('cpGoalNoteField').hidden = !isCoachUser;
+    $('cpGoalQuestField').hidden = !isCoachUser;
+    $('cpGoalQuest').value = goal ? (goal.quest || '') : '';
     $('cpGoalNoteLabel').textContent = 'Note for ' + (viewingClientName || 'the client');
     $('cpGoalNote').value = goal ? goal.coachNote : '';
     var radios = $('cpGoalCoreGrid').querySelectorAll('input[type=radio]');
@@ -1642,7 +1658,10 @@
       status: status,
       milestones: goalFormMs.slice()
     };
-    if (isCoachUser) fields.coach_note = $('cpGoalNote').value.trim();
+    if (isCoachUser) {
+      fields.coach_note = $('cpGoalNote').value.trim();
+      fields.quest = $('cpGoalQuest').value;
+    }
 
     setLoading($('cpGoalFormSave'), true, 'Saving…');
     var res = goalEditingId
@@ -1650,9 +1669,19 @@
       : await sb.from('client_goals').insert(Object.assign({ client_id: clientId, created_by: isCoachUser ? 'coach' : 'client' }, fields)).select().single();
     setLoading($('cpGoalFormSave'), false, 'Save goal');
     if (res.error) { alert('Could not save goal: ' + res.error.message); return; }
-    if (viewingClientId !== clientId) return;
-
     var saved = mapGoal(res.data);
+    // Only one goal is The Quest: making this one it takes the title off any other.
+    var demoted = [];
+    if (saved.quest === 'the_quest') {
+      demoted = (portalData.goals || []).filter(function(g){ return g.id !== saved.id && g.quest === 'the_quest'; }).map(function(g){ return g.id; });
+      if (demoted.length) {
+        var dem = await sb.from('client_goals').update({ quest:'' }).in('id', demoted);
+        if (dem.error) { alert('Saved, but could not take The Quest off the other goal: ' + dem.error.message); demoted = []; }
+      }
+    }
+    if (viewingClientId !== clientId) return;
+    if (demoted.length) portalData.goals.forEach(function(g){ if (demoted.indexOf(g.id) >= 0) g.quest = ''; });
+
     var exists = portalData.goals.some(function(g){ return g.id === saved.id; });
     portalData.goals = exists
       ? portalData.goals.map(function(g){ return g.id === saved.id ? saved : g; })

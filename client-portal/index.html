@@ -1219,8 +1219,6 @@
           <button type="button" id="cpClientModeExit">Back to coach view</button>
         </div>
 
-        <section class="cp-crm-card" id="cpCrmCard" aria-label="Client details from the CRM" hidden></section>
-
         <div class="cp-biometric-banner" id="cpBiometricBanner" hidden>
           <span>Enable Face ID / Touch ID for quick unlock on this device?</span>
           <div class="cp-biometric-banner-actions">
@@ -1237,6 +1235,7 @@
           <button type="button" class="cp-portal-tab" data-portal-tab="checkins">Check-ins<span class="cp-tab-badge" id="cpTabBadgeCheckins" hidden></span></button>
           <button type="button" class="cp-portal-tab" data-portal-tab="education">Education</button>
           <button type="button" class="cp-portal-tab" data-portal-tab="calendar" id="cpTabCalendar" hidden>Calendar</button>
+          <button type="button" class="cp-portal-tab" data-portal-tab="details" id="cpTabDetails" hidden>Client Info</button>
         </div>
 
         <div class="cp-client-view" id="cpClientView">
@@ -1435,6 +1434,14 @@
           </div>
           <div class="cp-core-chips" id="cpEduCoreChips" role="tablist" aria-label="Core"></div>
           <div id="cpEduList"></div>
+        </div>
+
+        <!-- CLIENT INFO TAB (coach only; client_crm, filled by Import from Notion) -->
+        <div class="cp-goals-view" id="cpDetailsView" hidden>
+          <div class="cp-goals-header">
+            <div><h2 class="cp-goals-title">Client Info</h2><p class="cp-tab-sub">From their row in the Notion CRM. Only you can see this.</p></div>
+          </div>
+          <section class="cp-crm-card" id="cpCrmCard" aria-label="Client details from the CRM" hidden></section>
         </div>
 
         <!-- CALENDAR TAB -->
@@ -1686,6 +1693,15 @@
               <div class="cp-goal-form-field">
                 <label for="cpGoalStatus">Status</label><select id="cpGoalStatus" class="cp-goal-form-input"></select>
               </div>
+            </div>
+            <div class="cp-goal-form-field" id="cpGoalQuestField" hidden>
+              <label for="cpGoalQuest">Quest</label>
+              <select id="cpGoalQuest" class="cp-goal-form-input">
+                <option value="">None</option>
+                <option value="the_quest">The Quest (their overall goal)</option>
+                <option value="main">Main Quest</option>
+                <option value="side">Side Quest</option>
+              </select>
             </div>
             <div class="cp-goal-form-field" id="cpGoalNoteField" hidden>
               <label for="cpGoalNote" id="cpGoalNoteLabel">Note for the client</label>
