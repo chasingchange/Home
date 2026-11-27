@@ -1,5 +1,5 @@
--- Run this once in the Supabase SQL editor, AFTER client_onboarding_offboarding_cardio.sql
--- (depends on public.is_coach(uuid) and public.client_offboarding).
+-- Run this once in the Supabase SQL editor, AFTER client_portal_profile.sql
+-- (depends on public.is_coach(uuid)).
 --
 -- Milestone check-ins: one-off forms tied to where a client is in their
 -- program, on top of the weekly pre-call form (client-portal/portal.js,
@@ -60,37 +60,45 @@ grant select, insert, update, delete on public.client_program_forms to authentic
 -- ─── Carry over any old offboarding answers ────────────────────────────────
 -- public.client_offboarding (one fixed column per question) was never shown
 -- in the portal, but copy anything in it so nothing is lost. Ratings become
--- "1"–"5" strings, the way the portal stores 1–5 answers. Safe to re-run.
-insert into public.client_program_forms (client_id, form_key, program_start, answers, status, submitted_at, updated_at)
-select
-  o.client_id,
-  'offboarding',
-  d.onboard_date,
-  jsonb_strip_nulls(jsonb_build_object(
-    'hoped_for',              nullif(o.hoped_for, ''),
-    'what_changed',           nullif(o.what_changed, ''),
-    'surprised',              nullif(o.surprised, ''),
-    'habits_stuck',           nullif(o.habits_stuck, ''),
-    'most_proud',             nullif(o.most_proud, ''),
-    'old_you',                nullif(o.old_you, ''),
-    'do_differently',         nullif(o.do_differently, ''),
-    'still_unclear',          nullif(o.still_unclear, ''),
-    'most_helpful',           nullif(o.most_helpful, ''),
-    'improve_structurally',   nullif(o.improve_structurally, ''),
-    'tools_confusing',        nullif(o.tools_confusing, ''),
-    'clarity_of_plan',        o.clarity_of_plan::text,
-    'accountability_support', o.accountability_support::text,
-    'check_ins',              o.check_ins::text,
-    'communication_speed',    o.communication_speed::text,
-    'next_goal',              nullif(o.next_goal, ''),
-    'continued_structure',    nullif(o.continued_structure, ''),
-    'continuation_signal',    case when cardinality(o.continuation_signal) > 0 then to_jsonb(o.continuation_signal) end
-  )),
-  case when o.submitted then 'submitted' else 'draft' end,
-  case when o.submitted then o.updated_at end,
-  o.updated_at
-from public.client_offboarding o
-left join public.client_dashboard d on d.client_id = o.client_id
-where o.submitted
-   or o.hoped_for <> '' or o.what_changed <> '' or o.most_proud <> '' or o.next_goal <> ''
-on conflict do nothing;
+-- "1"–"5" strings, the way the portal stores 1–5 answers. Safe to re-run,
+-- and skipped if that table doesn't exist.
+do $$
+begin
+  -- Skipped when client_offboarding was never created.
+  if to_regclass('public.client_offboarding') is null then return; end if;
+  execute $sql$
+    insert into public.client_program_forms (client_id, form_key, program_start, answers, status, submitted_at, updated_at)
+    select
+      o.client_id,
+      'offboarding',
+      d.onboard_date,
+      jsonb_strip_nulls(jsonb_build_object(
+        'hoped_for',              nullif(o.hoped_for, ''),
+        'what_changed',           nullif(o.what_changed, ''),
+        'surprised',              nullif(o.surprised, ''),
+        'habits_stuck',           nullif(o.habits_stuck, ''),
+        'most_proud',             nullif(o.most_proud, ''),
+        'old_you',                nullif(o.old_you, ''),
+        'do_differently',         nullif(o.do_differently, ''),
+        'still_unclear',          nullif(o.still_unclear, ''),
+        'most_helpful',           nullif(o.most_helpful, ''),
+        'improve_structurally',   nullif(o.improve_structurally, ''),
+        'tools_confusing',        nullif(o.tools_confusing, ''),
+        'clarity_of_plan',        o.clarity_of_plan::text,
+        'accountability_support', o.accountability_support::text,
+        'check_ins',              o.check_ins::text,
+        'communication_speed',    o.communication_speed::text,
+        'next_goal',              nullif(o.next_goal, ''),
+        'continued_structure',    nullif(o.continued_structure, ''),
+        'continuation_signal',    case when cardinality(o.continuation_signal) > 0 then to_jsonb(o.continuation_signal) end
+      )),
+      case when o.submitted then 'submitted' else 'draft' end,
+      case when o.submitted then o.updated_at end,
+      o.updated_at
+    from public.client_offboarding o
+    left join public.client_dashboard d on d.client_id = o.client_id
+    where o.submitted
+       or o.hoped_for <> '' or o.what_changed <> '' or o.most_proud <> '' or o.next_goal <> ''
+    on conflict do nothing
+  $sql$;
+end $$;
