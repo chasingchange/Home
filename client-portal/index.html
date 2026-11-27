@@ -57,6 +57,15 @@
       .cp-biometric-banner-actions button{all:unset;cursor:pointer;font-weight:700;font-size:14px;padding:6px 14px;border-radius:20px;}
       .cp-biometric-banner-actions #cpBiometricEnable{background:#2a9df0;color:#fff;}
       .cp-biometric-banner-actions #cpBiometricDecline{color:rgba(7,31,53,.55);}
+      /* Face ID / passkey sign-in (primary) */
+      .cp-passkey{margin-top:34px;}
+      .cp-btn-passkey{gap:10px;height:56px;border-radius:28px;font-size:16px;}
+      .cp-faceid{width:22px;height:22px;flex-shrink:0;}
+      .cp-passkey-or{margin-top:22px;}
+      .cp-email-form{display:none;}
+      .cp-email-form.is-open{display:block;}
+      .cp-passkey:not([hidden]) + .cp-email-form .cp-input:first-child{margin-top:18px;}
+      .cp-passkey:not([hidden]) + .cp-email-form .cp-btn-primary{background:transparent;border:1px solid rgba(7,31,53,.2);color:#071f35;}
       .cp-hint{margin:20px 0 0;font-size:14px;line-height:1.6;color:rgba(7,31,53,.5);}
       .cp-auth-footer{margin-top:36px;padding-top:24px;border-top:1px solid rgba(7,31,53,.08);display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-size:14px;}
       .cp-auth-footer span{color:rgba(7,31,53,.55);}
@@ -1143,6 +1152,19 @@
             <p class="cp-kicker">Client Portal</p>
             <h1 class="cp-h1">Sign in.</h1>
             <p class="cp-lede" style="max-width:333px">Your route | Your pace&nbsp;— all in one place.</p>
+            <div class="cp-passkey" id="cpPasskeyBlock" hidden>
+              <button type="button" class="cp-btn-primary cp-btn-passkey" id="cpPasskeySignIn">
+                <svg class="cp-faceid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V6a3 3 0 0 1 3-3h2M16 3h2a3 3 0 0 1 3 3v2M21 16v2a3 3 0 0 1-3 3h-2M8 21H6a3 3 0 0 1-3-3v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 16a3.5 3.5 0 0 0 5 0"/></svg>
+                <span id="cpPasskeyLabel">Sign in with Face ID</span>
+              </button>
+              <div class="cp-auth-error" id="cpPasskeyError"></div>
+              <div class="cp-pw-reveal cp-passkey-or">
+                <div class="cp-pw-reveal-line"></div>
+                <button type="button" class="cp-pw-reveal-btn" id="cpUseEmailToggle" aria-expanded="false" aria-controls="cpEmailForm">Use email instead</button>
+                <div class="cp-pw-reveal-line"></div>
+              </div>
+            </div>
+            <div class="cp-email-form is-open" id="cpEmailForm">
             <input type="email" id="cpEmailInput" placeholder="you@email.com" class="cp-input" autocomplete="email" />
             <div class="cp-pw-field is-open" id="cpPwField">
               <input type="password" id="cpPasswordInput" placeholder="Password" class="cp-input" autocomplete="current-password" />
@@ -1159,6 +1181,7 @@
               <button type="button" class="cp-btn-secondary" id="cpEmailSubmit" hidden>Email me a sign-in link</button>
             </div>
             <p class="cp-hint" id="cpEmailHint" hidden>No password. We'll email you a link to sign in.</p>
+            </div>
             <div class="cp-auth-footer">
               <span>Not a client yet?</span>
               <a href="https://tally.so/r/w5JXKE" target="_blank" rel="noopener noreferrer">Apply for 1:1 Coaching</a>
@@ -1220,10 +1243,10 @@
             </div>
             <p class="cp-kicker">Client Portal</p>
             <h1 class="cp-h1">Welcome back.</h1>
-            <p class="cp-lede">Unlock with Face ID or Touch ID to continue.</p>
+            <p class="cp-lede" id="cpBiometricLede">Unlock with Face ID to continue.</p>
             <div class="cp-auth-error" id="cpBiometricError"></div>
             <div class="cp-actions">
-              <button type="button" class="cp-btn-primary" id="cpBiometricUnlock">Unlock with Face ID / Touch ID</button>
+              <button type="button" class="cp-btn-primary" id="cpBiometricUnlock">Unlock with Face ID</button>
               <button type="button" class="cp-btn-secondary" id="cpBiometricUseEmail">Use email instead</button>
             </div>
           </div>
@@ -1279,9 +1302,9 @@
         </div>
 
         <div class="cp-biometric-banner" id="cpBiometricBanner" hidden>
-          <span>Enable Face ID / Touch ID for quick unlock on this device?</span>
+          <span id="cpBiometricBannerText">Sign in with Face ID next time? No email or password needed on this device.</span>
           <div class="cp-biometric-banner-actions">
-            <button type="button" id="cpBiometricEnable">Enable</button>
+            <button type="button" id="cpBiometricEnable">Turn on</button>
             <button type="button" id="cpBiometricDecline">No thanks</button>
           </div>
         </div>
