@@ -93,31 +93,155 @@
   var remDays  = ["Monday","Tuesday","Sunday"];
   var remChans = ["text","email","push"];
 
-  // Offboarding: the end-of-program reflection form, mirrored from the
-  // coach's Notion "Chasing Change Offboarding" form. Text fields are
-  // free-form, rating fields are 1-5 selects, keys match the
-  // client_offboarding table columns exactly so the form can read/write
-  // the row directly with no key-mapping layer.
-  var OFFBOARD_FIELDS = [
-    { key:"hoped_for",             label:"When you started, what were you hoping would change most?", type:"textarea" },
-    { key:"what_changed",          label:"What actually changed?", type:"textarea" },
-    { key:"surprised",             label:"What surprised you about your progress?", type:"textarea" },
-    { key:"habits_stuck",          label:"Which habits stuck the strongest?", type:"textarea" },
-    { key:"most_proud",            label:"What are you most proud of from this program?", type:"textarea" },
-    { key:"old_you",               label:"What are you doing now that “old you” wouldn’t have done?", type:"textarea" },
-    { key:"do_differently",        label:"What would you do differently if you restarted the program?", type:"textarea" },
-    { key:"still_unclear",         label:"What still feels unclear?", type:"textarea" },
-    { key:"most_helpful",          label:"What part of coaching helped you the most?", type:"textarea" },
-    { key:"improve_structurally",  label:"What could I improve structurally?", type:"textarea" },
-    { key:"tools_confusing",       label:"What tools felt confusing or unnecessary?", type:"textarea" },
-    { key:"clarity_of_plan",       label:"Clarity of plan (1-5)", type:"rating" },
-    { key:"accountability_support",label:"Accountability support (1-5)", type:"rating" },
-    { key:"check_ins",             label:"Check-ins (1-5)", type:"rating" },
-    { key:"communication_speed",   label:"Communication speed (1-5)", type:"rating" },
-    { key:"next_goal",             label:"What’s the next goal from here?", type:"textarea" },
-    { key:"continued_structure",   label:"Would continued structure help with the next phase?", type:"textarea" }
+  // ─── Program milestone forms ────────────────────────────────────────────
+  // Three one-off check-ins tied to where a client is in their program,
+  // on top of the weekly pre-call form:
+  //
+  //   midpoint     halfway through (week 6 of 12, week 12 of 24…)
+  //   renewal      a couple of weeks before the end: continuing? same split?
+  //                cut or bulk next?
+  //   offboarding  the final week: the end-of-program reflection (was the
+  //                Notion "Chasing Change Offboarding" form)
+  //
+  // The coach edits each form's questions and when it's due from the form
+  // editor; that version is stored in public.form_settings (key 'pf_<form>',
+  // fields = { questions:[…], due:{…} }) and replaces the defaults below.
+  // Answers live in public.client_program_forms, one row per client, form
+  // and program (scripts/client_program_forms.sql), as an `answers` jsonb
+  // keyed by question key — so every question can be reworded, retyped,
+  // hidden or deleted.
+  //
+  // due.mode 'half'       → week ceil(total / 2)
+  // due.mode 'before_end' → week total − due.weeks
+  var PF_FIELD_TYPES = [
+    { key:"text",     label:"Short answer" },
+    { key:"textarea", label:"Long answer" },
+    { key:"choice",   label:"Pick one" },
+    { key:"multi",    label:"Pick any" },
+    { key:"scale",    label:"1–5 rating" }
   ];
-  var CONTINUATION_SIGNALS = ["Testimonial","Referral","Check-in call later","Next phase coaching"];
+  var PROGRAM_FORMS = [
+    { key:"midpoint", label:"Midpoint check-in", short:"Midpoint", color:"#f58b1c",
+      lede:"You’re halfway through the program. Take a few minutes to look back on the first half and set up the second.",
+      due:{ mode:"half", weeks:0 },
+      defaults:[
+        { key:"overall",           label:"Overall, how is the program going so far?", type:"scale", required:true },
+        { key:"biggest_win",       label:"What’s your biggest win from the first half?", type:"textarea", required:true },
+        { key:"hardest_part",      label:"What’s been the hardest part so far?", type:"textarea" },
+        { key:"goals_still_right", label:"Are the goals you started with still the right goals?", type:"choice", options:["Yes","Mostly — a few tweaks","No, they’ve changed"] },
+        { key:"goals_changed",     label:"What’s changed?", type:"textarea", showIf:{ key:"goals_still_right", values:["Mostly — a few tweaks","No, they’ve changed"] } },
+        { key:"second_half_focus", label:"What do you want the second half to focus on?", type:"textarea" },
+        { key:"more_or_less",      label:"Anything you’d like more (or less) of from me?", type:"textarea" }
+      ] },
+    { key:"renewal", label:"Renewal questionnaire", short:"Renewal", color:"#aa70d7",
+      lede:"Your program wraps up soon. A few questions about what comes next so we can plan it together.",
+      due:{ mode:"before_end", weeks:2 },
+      defaults:[
+        { key:"continue",         label:"Are you thinking about continuing coaching after this program?", type:"choice", options:["Yes","Maybe — I’d like to talk it through","No, I’m ready to go solo"], required:true },
+        { key:"next_length",      label:"If you continue, how long would you like the next block to be?", type:"choice", options:["12 weeks","24 weeks","Month to month","Not sure yet"], showIf:{ key:"continue", values:["Yes","Maybe — I’d like to talk it through"] } },
+        { key:"keep_split",       label:"Do you want to keep your current training split?", type:"choice", options:["Keep it","Tweak it","Try something new"] },
+        { key:"split_changes",    label:"What would you change about your split?", type:"textarea", showIf:{ key:"keep_split", values:["Tweak it","Try something new"] } },
+        { key:"nutrition_phase",  label:"For the next phase, are we…", type:"choice", options:["Continuing the cut","Switching to a bulk","Maintenance / recomp","Not sure — let’s decide together"] },
+        { key:"next_focus",       label:"What’s the main thing you want the next phase to focus on?", type:"textarea" },
+        { key:"plan_around",      label:"Anything coming up (travel, schedule, life changes) we should plan around?", type:"textarea" },
+        { key:"questions",        label:"Any questions about next steps?", type:"textarea" }
+      ] },
+    { key:"offboarding", label:"Offboarding reflection", short:"Offboarding", color:"#f02348",
+      lede:"A few questions to close out the program. Answer whenever you’re ready, your coach sees your responses.",
+      due:{ mode:"before_end", weeks:0 },
+      defaults:[
+        { key:"hoped_for",              label:"When you started, what were you hoping would change most?", type:"textarea" },
+        { key:"what_changed",           label:"What actually changed?", type:"textarea" },
+        { key:"surprised",              label:"What surprised you about your progress?", type:"textarea" },
+        { key:"habits_stuck",           label:"Which habits stuck the strongest?", type:"textarea" },
+        { key:"most_proud",             label:"What are you most proud of from this program?", type:"textarea" },
+        { key:"old_you",                label:"What are you doing now that “old you” wouldn’t have done?", type:"textarea" },
+        { key:"do_differently",         label:"What would you do differently if you restarted the program?", type:"textarea" },
+        { key:"still_unclear",          label:"What still feels unclear?", type:"textarea" },
+        { key:"most_helpful",           label:"What part of coaching helped you the most?", type:"textarea" },
+        { key:"improve_structurally",   label:"What could I improve structurally?", type:"textarea" },
+        { key:"tools_confusing",        label:"What tools felt confusing or unnecessary?", type:"textarea" },
+        { key:"clarity_of_plan",        label:"Clarity of plan", type:"scale" },
+        { key:"accountability_support", label:"Accountability support", type:"scale" },
+        { key:"check_ins",              label:"Check-ins", type:"scale" },
+        { key:"communication_speed",    label:"Communication speed", type:"scale" },
+        { key:"next_goal",              label:"What’s the next goal from here?", type:"textarea" },
+        { key:"continued_structure",    label:"Would continued structure help with the next phase?", type:"textarea" },
+        { key:"continuation_signal",    label:"Would you be open to any of these?", type:"multi", options:["Testimonial","Referral","Check-in call later","Next phase coaching"] }
+      ] }
+  ];
+  // Live question lists + due rules, replaced by the coach's saved version on load.
+  var PF_FIELDS = {}, PF_DUE = {};
+
+  function pfDef(key){ return PROGRAM_FORMS.filter(function(p){ return p.key === key; })[0] || null; }
+
+  // Cleans a stored question list. Everything here answers into jsonb, so
+  // every question is fully editable (custom:true in the editor's terms).
+  function normalizePfFields(list){
+    var out = [], seen = {};
+    (Array.isArray(list) ? list : []).forEach(function(f){
+      if (!f || typeof f.key !== 'string' || seen[f.key] || !/^[a-z0-9_]+$/.test(f.key)) return;
+      if (!PF_FIELD_TYPES.some(function(t){ return t.key === f.type; })) return;
+      seen[f.key] = true;
+      var o = {
+        key: f.key, type: f.type, custom: true,
+        label: String(f.label || '').trim() || 'Untitled question',
+        hint: String(f.hint || '').trim(),
+        required: !!f.required,
+        legacy: !!f.legacy
+      };
+      if (f.type === 'choice' || f.type === 'multi') {
+        var opts = (Array.isArray(f.options) ? f.options : []).map(function(x){ return String(x).trim(); }).filter(Boolean);
+        o.options = opts.length ? opts : ['Yes','No'];
+      }
+      if (f.showIf && typeof f.showIf.key === 'string' && Array.isArray(f.showIf.values) && f.showIf.values.length) {
+        o.showIf = { key: f.showIf.key, values: f.showIf.values.map(String) };
+      }
+      out.push(o);
+    });
+    return out;
+  }
+  function normalizePfDue(due, fallback){
+    var mode = due && (due.mode === 'half' || due.mode === 'before_end') ? due.mode : fallback.mode;
+    var weeks = due && isFinite(parseInt(due.weeks, 10)) ? Math.max(0, Math.min(52, parseInt(due.weeks, 10))) : fallback.weeks;
+    return { mode: mode, weeks: mode === 'half' ? 0 : weeks };
+  }
+  PROGRAM_FORMS.forEach(function(p){
+    PF_FIELDS[p.key] = normalizePfFields(p.defaults);
+    PF_DUE[p.key] = normalizePfDue(null, p.due);
+  });
+
+  async function loadProgramForms(){
+    var { data, error } = await sb.from('form_settings').select('key, fields').in('key', PROGRAM_FORMS.map(function(p){ return 'pf_' + p.key; }));
+    if (error || !data) return;
+    data.forEach(function(r){
+      var p = pfDef(String(r.key).replace(/^pf_/, '')); if (!p || !r.fields) return;
+      if (Array.isArray(r.fields.questions) && r.fields.questions.length) PF_FIELDS[p.key] = normalizePfFields(r.fields.questions);
+      PF_DUE[p.key] = normalizePfDue(r.fields.due, p.due);
+    });
+  }
+
+  // The week a form is due in a program of `total` weeks.
+  function pfDueWeek(key, total){
+    if (!total) return 0;
+    var due = PF_DUE[key];
+    var w = due.mode === 'half' ? Math.ceil(total / 2) : total - due.weeks;
+    return Math.max(1, Math.min(total, w));
+  }
+  function pfDueLabel(key){
+    var due = PF_DUE[key];
+    if (due.mode === 'half') return 'Halfway (week 6 of 12, week 12 of 24)';
+    if (!due.weeks) return 'Final week';
+    return due.weeks + ' week' + (due.weeks === 1 ? '' : 's') + ' before the end (week ' + (12 - due.weeks) + ' of 12)';
+  }
+  // Milestone forms that fall in program week `week` of `total`.
+  function pfFormsForWeek(week, total){
+    if (!week || !total) return [];
+    return PROGRAM_FORMS.filter(function(p){ return pfDueWeek(p.key, total) === week; });
+  }
+  function pfChip(p, text, solid){
+    return '<span class="cp-pf-chip' + (solid ? ' cp-pf-chip--solid' : '') + '" style="--pf:' + p.color + '">' + esc(text || p.short) + '</span>';
+  }
 
   // Weekly pre-call form, mirrored from the coach's Notion "Client Pre Call
   // Form". Keys are client_pre_call_submissions columns, so Notion-synced
@@ -501,7 +625,7 @@
 
     currentUser = user;
     maybeOfferBiometric(user);
-    preCallFormReady = loadPreCallForm();
+    preCallFormReady = Promise.all([loadPreCallForm(), loadProgramForms()]);
 
     $('cpBackToRoster').hidden = true;
     renderClientModeUi();
@@ -538,7 +662,8 @@
       sb.from('client_resources').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_wins').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_onboarding_items').select('*').eq('client_id', clientId).order('position'),
-      sb.from('client_offboarding').select('*').eq('client_id', clientId).maybeSingle(),
+      // Milestone forms (scripts/client_program_forms.sql); a missing table just leaves them empty.
+      sb.from('client_program_forms').select('*').eq('client_id', clientId).order('updated_at', { ascending:false }),
       sb.from('client_nonnegotiables').select('*').eq('client_id', clientId).order('position'),
       sb.from('client_pre_call_submissions').select('*').eq('client_id', clientId).order('submitted_at', { ascending:false }).limit(52),
       sb.from('client_habits').select('*').eq('client_id', clientId).order('position'),
@@ -590,7 +715,7 @@
       resources: (results[5].data || []).map(function(r){ return { id:r.id, label:r.label, color:r.color }; }),
       wins: (results[6].data || []).map(function(w){ return { id:w.id, label:w.label, meta:w.meta, color:w.color }; }),
       onboardingItems: (results[7].data || []).map(function(t){ return { id:t.id, label:t.label, done:t.done }; }),
-      offboarding: results[8].data || {},
+      programForms: (results[8].data || []).map(mapProgramForm),
       nonNegotiables: (results[9].data || []).map(function(t){ return { id:t.id, label:t.label, status:t.status, claimedAt:t.claimed_at, archivedAt:t.archived_at }; }),
       preCallSubmissions: (results[10].data || []).map(mapPreCall),
       habits: (results[11].data || []).map(function(h){ return { id:h.id, label:h.label, origLabel:h.label, coreKey:h.core_key||'', done:h.done }; }),
@@ -605,6 +730,10 @@
 
   // Row -> portal-shape mappers, shared by the initial load and every
   // targeted re-fetch after a save.
+  function mapProgramForm(r){
+    return { id:r.id, formKey:r.form_key, programStart:r.program_start || '', answers:r.answers || {}, status:r.status || 'draft', submittedAt:r.submitted_at || null };
+  }
+
   function mapGoal(g){
     return { id:g.id, title:g.title, description:g.description||'', coreKey:g.core_key||'', targetDate:g.target_date||'', status:normalizeGoalStatus(g.status), createdBy:g.created_by||'client', milestones:mapMilestones(g.milestones), coachNote:g.coach_note||'', quest:g.quest||'' };
   }
@@ -675,7 +804,7 @@
     var clients = (profs || []).filter(function(p){ return p.role !== 'coach' && p.email !== COACH_EMAIL; });
     var ids = clients.map(function(p){ return p.id; });
 
-    var dashRows = [], taskRows = [], hwRows = [], ciRows = [], statusRows = [], crmRows = [];
+    var dashRows = [], taskRows = [], hwRows = [], ciRows = [], statusRows = [], crmRows = [], pfRows = [];
     if (ids.length) {
       var results = await Promise.all([
         sb.from('client_dashboard').select('*').in('client_id', ids),
@@ -685,7 +814,9 @@
         // Missing table (client_status.sql not run yet) just leaves statuses blank.
         sb.from('client_status').select('client_id, status, updated_at').in('client_id', ids),
         // Missing table (client_crm.sql not run yet) just leaves the database's CRM columns blank.
-        sb.from('client_crm').select('*').in('client_id', ids)
+        sb.from('client_crm').select('*').in('client_id', ids),
+        // Missing table (client_program_forms.sql not run yet) just leaves milestone chips off.
+        sb.from('client_program_forms').select('id, client_id, form_key, program_start, status, submitted_at').in('client_id', ids)
       ]);
       dashRows = results[0].data || [];
       taskRows = results[1].data || [];
@@ -693,6 +824,7 @@
       ciRows = results[3].data || [];
       statusRows = results[4].data || [];
       crmRows = results[5].data || [];
+      pfRows = results[6].data || [];
     }
     crmByClient = {};
     crmRows.forEach(function(r){ crmByClient[r.client_id] = r; });
@@ -701,6 +833,8 @@
 
     var dashByClient = {};
     dashRows.forEach(function(d){ dashByClient[d.client_id] = d; });
+    var pfByClient = {};
+    pfRows.forEach(function(r){ (pfByClient[r.client_id] = pfByClient[r.client_id] || []).push(mapProgramForm(r)); });
 
     var taskCounts = {};
     taskRows.forEach(function(t){
@@ -734,7 +868,8 @@
         email: p.email || '',
         // Never set a password → still hasn't accepted the portal invite.
         invitePending: p.has_password !== true,
-        invitedAt: p.invited_at || null
+        invitedAt: p.invited_at || null,
+        milestones: pfStates({ onboardDate: d.onboard_date || '', weekNow: t.weekNow, weekTotal: t.weekTotal, startsOn: t.startsOn }, pfByClient[p.id] || [])
       };
     });
     // Graduated / Terminated clients sink to the bottom of the roster.
@@ -774,14 +909,57 @@
 
   function renderCiQueue(){
     var done = roster.filter(function(c){ return ciWeekByClient[c.id]; }).length;
-    $('cpCiQueueSummary').textContent = roster.length ? (done + ' of ' + roster.length + ' submitted since Monday.') : '';
+    var due = roster.filter(function(c){ return !isInactiveStatus(c.status) && pfAttention(c.milestones).length; }).length;
+    $('cpCiQueueSummary').textContent = roster.length
+      ? (done + ' of ' + roster.length + ' submitted since Monday.' + (due ? ' ' + due + ' with a milestone check-in.' : ''))
+      : '';
     $('cpCiQueueList').innerHTML = roster.map(function(c){
       var at = ciWeekByClient[c.id];
+      var wk = c.weekTotal && !c.startsOn ? 'Week ' + c.weekNow + ' of ' + c.weekTotal : (c.startsOn ? weekLabel(c) : '');
+      var chips = isInactiveStatus(c.status) ? '' : pfRosterChips(c);
       return '<div class="cp-flag-row cp-queue-click" role="button" tabindex="0" data-queue-client="'+esc(c.id)+'" data-queue-tab="checkins">'
         + '<div class="cp-nn-row"><p class="cp-flag-name">'+esc(c.name)+'</p>'
         + (at ? statusPill('In · ' + shortDate(new Date(at)), '#3d9b37') : statusPill('Not yet', '#5b6b7a'))
-        + '</div></div>';
+        + '</div>'
+        + (wk || chips ? '<p class="cp-flag-why cp-pf-why">' + esc(wk) + chips + '</p>' : '')
+        + '</div>';
     }).join('');
+  }
+
+  // ─── Milestone check-ins: where each client is on midpoint / renewal /
+  // offboarding (see PROGRAM_FORMS). t: { onboardDate, weekNow, weekTotal,
+  // startsOn }; rows: that client's mapped client_program_forms rows. Only
+  // rows for the current program (program_start = onboarding date) count,
+  // so a client who renews gets a fresh set.
+  function pfStates(t, rows){
+    if (!t.weekTotal) return [];
+    var start = t.onboardDate || '';
+    return PROGRAM_FORMS.map(function(p){
+      var dueWeek = pfDueWeek(p.key, t.weekTotal);
+      var row = rows.filter(function(r){ return r.formKey === p.key && (r.programStart || '') === start; })[0] || null;
+      var reached = !t.startsOn && t.weekNow >= dueWeek;
+      var state = row && row.status === 'reviewed' ? 'reviewed'
+        : row && row.status === 'submitted' ? 'submitted'
+        : reached ? 'due' : 'upcoming';
+      return { p: p, dueWeek: dueWeek, row: row, state: state, thisWeek: !t.startsOn && t.weekNow === dueWeek };
+    });
+  }
+  // Milestones that need something: due and not in, or in and not reviewed.
+  function pfAttention(ms){
+    return (ms || []).filter(function(m){ return m.state === 'due' || m.state === 'submitted'; });
+  }
+  function pfStateText(m){
+    if (m.state === 'reviewed') return 'Reviewed';
+    if (m.state === 'submitted') return 'In · to review';
+    if (m.state === 'due') return m.thisWeek ? 'Due this week' : 'Due since week ' + m.dueWeek;
+    return 'Upcoming';
+  }
+  function pfRosterChips(c){
+    var ms = pfAttention(c.milestones);
+    if (!ms.length) return '';
+    return ' <span class="cp-pf-chips">' + ms.map(function(m){
+      return pfChip(m.p, m.p.short + (m.state === 'submitted' ? ' ✓' : ''), m.state === 'due');
+    }).join('') + '</span>';
   }
 
   function onQueueActivate(e){
@@ -3554,15 +3732,31 @@
 
   function renderCheckinsTab(){
     if (!portalData) return;
-    var ws = startOfWeek(new Date());
-    $('cpCiWeekLabel').textContent = 'Week of ' + ws.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })
-      + (isOwnPortal() ? ' — fill this out before your call.' : '');
-    setBadge('cpTabBadgeCheckins', isOwnPortal() && !thisWeeksPreCall() ? 1 : 0);
+    renderCheckinsHeader();
+    renderPfSection();
     renderCiFormCard();
     renderCiCoachCard();
     renderCiHistory();
     renderCheckinCard();
     if (isCoachUser) ciLoadCalendar(viewingClientId);
+  }
+
+  // "Week 6 of 12 · Week of Mon, Nov 23" (+ that week's milestone chip),
+  // the tab badge, and the weekly panel's accent on a milestone week.
+  function renderCheckinsHeader(){
+    var own = isOwnPortal();
+    var ws = startOfWeek(new Date());
+    var t = portalData;
+    var prog = t.startsOn ? weekLabel(t) + ' · ' : (t.weekTotal ? 'Week ' + t.weekNow + ' of ' + t.weekTotal + ' · ' : '');
+    var miles = t.startsOn ? [] : pfFormsForWeek(t.weekNow, t.weekTotal);
+    $('cpCiWeekLabel').innerHTML = esc(prog + 'Week of ' + ws.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })
+      + (own ? ' — fill this out before your call.' : ''))
+      + (miles.length ? ' ' + miles.map(function(p){ return pfChip(p, p.label + ' week', true); }).join(' ') : '');
+    var panel = $('cpCiWeekPanel');
+    panel.classList.toggle('cp-ci-week--mile', !!miles.length);
+    panel.style.setProperty('--pf', miles.length ? miles[0].color : '');
+    var pfDue = own ? pfCurrentStates().filter(function(m){ return m.state === 'due'; }).length : 0;
+    setBadge('cpTabBadgeCheckins', (own && !thisWeeksPreCall() ? 1 : 0) + pfDue);
   }
 
   // One submission's answers, as label / value rows.
@@ -3702,14 +3896,15 @@
   }
 
   // A field is visible when its parent is visible and has a matching answer.
-  function ciFieldVisible(f, vals, depth){
+  function fieldVisible(fields, f, vals, depth){
     if (f.legacy) return false;
     if (!f.showIf) return true;
-    if ((depth || 0) > PRECALL_FIELDS.length) return false; // circular show-if
-    var parent = PRECALL_FIELDS.filter(function(p){ return p.key === f.showIf.key; })[0];
-    if (!parent || !ciFieldVisible(parent, vals, (depth || 0) + 1)) return false;
+    if ((depth || 0) > fields.length) return false; // circular show-if
+    var parent = fields.filter(function(p){ return p.key === f.showIf.key; })[0];
+    if (!parent || !fieldVisible(fields, parent, vals, (depth || 0) + 1)) return false;
     return (vals[f.showIf.key] || []).some(function(v){ return f.showIf.values.indexOf(v) !== -1; });
   }
+  function ciFieldVisible(f, vals, depth){ return fieldVisible(PRECALL_FIELDS, f, vals, depth); }
 
   function applyCiVisibility(form){
     form = form || $('cpCiForm'); if (!form) return;
@@ -3923,8 +4118,11 @@
       var pill = first
         ? statusPill(first.status || 'Submitted', isReviewedStatus(first.status) ? '#3d9b37' : '#aa70d7')
         : statusPill('No check-in', '#9aa3ad');
-      return '<details class="cp-ci-item" data-ci-item="' + esc(oid) + '"' + (ciOpenIds[oid] ? ' open' : '') + '><summary>'
-        + '<span class="cp-ci-date">' + esc(date) + '</span>' + pill
+      var wkNum = programWeekOf(first ? new Date(first.submittedAt) : parseDay(wk));
+      var mile = wkNum ? pfFormsForWeek(wkNum, portalData.weekTotal)[0] : null;
+      return '<details class="cp-ci-item' + (mile ? ' cp-ci-item--mile' : '') + '" data-ci-item="' + esc(oid) + '"' + (ciOpenIds[oid] ? ' open' : '')
+        + (mile ? ' style="--pf:' + mile.color + '"' : '') + '><summary>'
+        + '<span class="cp-ci-date">' + esc(date) + '</span>' + programWeekChips(wkNum) + pill
         + '</summary><div class="cp-ci-body"><div class="cp-ci-cols">'
         + '<div class="cp-ci-col cp-ci-col--client">' + clientColumnHtml(subs, own ? 'Your check-in' : 'Their check-in', 'No check-in submitted that week.') + '</div>'
         + '<div class="cp-ci-col cp-ci-col--coach">' + (isThis && !closed
@@ -3963,6 +4161,13 @@
     var cur = thisWeeksPreCall();
     var own = isOwnPortal();
     var total = (portalData.preCallSubmissions || []).length;
+    var due = pfCurrentStates().filter(function(m){ return m.state === 'due'; })[0];
+    if (due) {
+      $('cpCiCardTitle').textContent = own ? 'Your ' + due.p.label.toLowerCase() + ' is ready' : due.p.label + ' due';
+      $('cpCiCardBody').textContent = own ? 'A few extra questions this week, on the Check-ins tab.' : 'Week ' + due.dueWeek + ' of ' + portalData.weekTotal + ' — not sent yet.';
+      $('cpCiCardCta').textContent = own ? 'Fill it out' : 'View check-ins';
+      return;
+    }
     $('cpCiCardTitle').textContent = cur ? 'Submitted for this week ✓' : 'Not submitted yet';
     $('cpCiCardBody').textContent = (cur
       ? 'Sent ' + longDate(new Date(cur.submittedAt)) + '.'
@@ -3971,16 +4176,351 @@
     $('cpCiCardCta').textContent = (!cur && own) ? 'Fill out check-in' : 'View check-ins';
   }
 
+  // ─── Check-ins tab: milestone forms (midpoint / renewal / offboarding) ─
+  // A strip of the program's weeks with the milestone weeks marked in their
+  // color, then:
+  //   client — each milestone form once its week arrives, highlighted above
+  //            the weekly check-in; once sent it folds up with the answers
+  //            (editable until the coach marks it reviewed).
+  //   coach  — every milestone for this program with its week and status,
+  //            the answers, Mark reviewed and Edit questions.
+  var pfEditing = {};   // form key → client is editing answers already sent
+  var pfOpenKeys = {};  // form key → folded card is open
+  var pfOpenFor = null;
+
+  function pfCurrentStates(){
+    return pfStates(portalData, portalData.programForms || []);
+  }
+
+  // Program week (1…total) a date falls in, or 0 outside the program.
+  function programWeekOf(d){
+    var on = parseDay(portalData.onboardDate), total = portalData.weekTotal;
+    if (!on || !total || !d) return 0;
+    var day = new Date(d); day.setHours(0,0,0,0);
+    var w = Math.floor(daysBetween(on, day) / 7) + 1;
+    return w >= 1 && w <= total ? w : 0;
+  }
+  // "Week 6 of 12" + the milestone chip(s) for that week.
+  function programWeekChips(w){
+    if (!w) return '';
+    return '<span class="cp-pf-weekchip">Week ' + w + ' of ' + portalData.weekTotal + '</span>'
+      + pfFormsForWeek(w, portalData.weekTotal).map(function(p){ return pfChip(p); }).join('');
+  }
+
+  function fieldAnswered(f, v){
+    if (v == null) return false;
+    return Array.isArray(v) ? v.length > 0 : String(v).trim() !== '';
+  }
+  function pfHasAnswers(row){
+    if (!row) return false;
+    return Object.keys(row.answers || {}).some(function(k){ return fieldAnswered(null, row.answers[k]); });
+  }
+
+  function renderPfSection(){
+    var el = $('cpPfSection'); if (!el) return;
+    if (pfOpenFor !== viewingClientId) { pfOpenKeys = {}; pfEditing = {}; pfOpenFor = viewingClientId; }
+    // Don't wipe a form the client is typing into.
+    if (el.contains(document.activeElement) && document.activeElement.matches('textarea, input[type="text"]')) return;
+    var own = isOwnPortal();
+    var ms = pfCurrentStates();
+    if (!ms.length) {
+      el.innerHTML = isCoachUser
+        ? '<p class="cp-cn-hint cp-pf-empty">Set this client’s onboarding and offboarding dates to schedule their midpoint, renewal and offboarding check-ins.</p>'
+        : '';
+      return;
+    }
+    var h = pfTrackHtml(ms);
+    if (own) {
+      h += ms.filter(function(m){
+        if (m.state === 'upcoming') return false;
+        return m.state === 'due' || pfHasAnswers(m.row);
+      }).map(pfClientCardHtml).join('');
+    } else {
+      h += '<div class="cp-pf-list">' + ms.map(pfCoachRowHtml).join('') + '</div>';
+    }
+    el.innerHTML = '<div class="cp-pf-section">' + h + '</div>';
+  }
+
+  function pfTrackHtml(ms){
+    var total = portalData.weekTotal, now = portalData.startsOn ? 0 : portalData.weekNow;
+    var byWeek = {};
+    ms.forEach(function(m){ (byWeek[m.dueWeek] = byWeek[m.dueWeek] || []).push(m); });
+    var cells = '';
+    for (var w = 1; w <= total; w++) {
+      var mm = byWeek[w];
+      var title = 'Week ' + w + (mm ? ' · ' + mm.map(function(x){ return x.p.label; }).join(' + ') : '') + (w === now ? ' (this week)' : '');
+      cells += '<span class="cp-pf-wk' + (w < now ? ' is-past' : '') + (w === now ? ' is-now' : '') + (mm ? ' is-mile' : '') + '"'
+        + (mm ? ' style="--pf:' + mm[0].p.color + '"' : '') + ' title="' + esc(title) + '"></span>';
+    }
+    var legend = ms.map(function(m){
+      return '<span class="cp-pf-legend-item"><span class="cp-pf-dot" style="--pf:' + m.p.color + '"></span>' + esc(m.p.short) + ' · wk ' + m.dueWeek + '</span>';
+    }).join('');
+    return '<div class="cp-pf-track-wrap">'
+      + '<div class="cp-pf-track-head"><span class="cp-goals-section-label" style="margin:0;">Program check-ins</span><span class="cp-pf-legend">' + legend + '</span></div>'
+      + '<div class="cp-pf-track" aria-hidden="true">' + cells + '</div></div>';
+  }
+
+  function pfPillColor(m){
+    return m.state === 'reviewed' ? '#3d9b37' : m.state === 'submitted' ? '#2a9df0' : m.state === 'due' ? m.p.color : '#9aa3ad';
+  }
+
+  function pfCoachRowHtml(m){
+    var p = m.p, row = m.row;
+    var open = m.p.key in pfOpenKeys ? pfOpenKeys[p.key] : m.state === 'submitted';
+    var body = pfHasAnswers(row)
+      ? pfAnswersHtml(PF_FIELDS[p.key], row.answers)
+      : '<p class="cp-body-text" style="margin:0;">' + (row && row.status === 'draft' ? 'They’ve started it but haven’t sent it yet.' : (m.state === 'upcoming' ? 'Opens for them in week ' + m.dueWeek + '.' : 'Not filled in yet.')) + '</p>';
+    var btns = '';
+    if (m.state === 'submitted') btns += '<button type="button" class="cp-btn-sm cp-btn-sm--primary" data-pf-act="review" data-pf-key="' + p.key + '">Mark reviewed</button>';
+    else if (m.state === 'reviewed') btns += '<button type="button" class="cp-btn-sm" data-pf-act="unreview" data-pf-key="' + p.key + '">Mark not reviewed</button>';
+    else if (m.state === 'due') btns += '<button type="button" class="cp-btn-sm" data-pf-act="review" data-pf-key="' + p.key + '">Mark done</button>';
+    btns += '<button type="button" class="cp-btn-sm" data-pf-act="editq" data-pf-key="' + p.key + '">Edit questions</button>';
+    return '<details class="cp-ci-item cp-pf-item" style="--pf:' + p.color + '" data-pf-item="' + p.key + '"' + (open ? ' open' : '') + '><summary>'
+      + pfChip(p, p.label, m.state === 'due')
+      + '<span class="cp-pf-weekchip">Week ' + m.dueWeek + ' of ' + portalData.weekTotal + '</span>'
+      + statusPill(pfStateText(m), pfPillColor(m))
+      + (row && row.submittedAt ? '<span class="cp-ci-date cp-pf-sent">' + esc(shortDate(new Date(row.submittedAt))) + '</span>' : '')
+      + '</summary><div class="cp-ci-body cp-pf-body">' + body
+      + '<div class="cp-btn-row" style="margin-top:16px;">' + btns + '<span class="cp-save-note" id="cpPfNote_' + p.key + '"></span></div>'
+      + '</div></details>';
+  }
+
+  function pfClientCardHtml(m){
+    var p = m.p, row = m.row;
+    var sent = !!(row && (row.status === 'submitted' || row.status === 'reviewed'));
+    if (!sent || pfEditing[p.key]) {
+      return '<div class="cp-panel cp-pf-card" style="--pf:' + p.color + '">'
+        + '<div class="cp-pf-card-head">' + pfChip(p, m.thisWeek ? 'This week' : 'Week ' + m.dueWeek + ' of ' + portalData.weekTotal, true)
+        + '<h3 class="cp-card-title" style="margin:0;">' + esc(p.label) + '</h3></div>'
+        + '<p class="cp-body-text" style="margin:8px 0 22px;">' + esc(p.lede) + '</p>'
+        + pfFormHtml(p.key, PF_FIELDS[p.key], row ? row.answers : {}, { sent: sent, editing: !!pfEditing[p.key] })
+        + '</div>';
+    }
+    var open = !!pfOpenKeys[p.key];
+    return '<details class="cp-ci-item cp-pf-item" style="--pf:' + p.color + '" data-pf-item="' + p.key + '"' + (open ? ' open' : '') + '><summary>'
+      + pfChip(p, p.label)
+      + statusPill(row.status === 'reviewed' ? 'Reviewed by your coach' : 'Sent', row.status === 'reviewed' ? '#3d9b37' : '#2a9df0')
+      + (row.submittedAt ? '<span class="cp-ci-date cp-pf-sent">' + esc(shortDate(new Date(row.submittedAt))) + '</span>' : '')
+      + '</summary><div class="cp-ci-body cp-pf-body">' + pfAnswersHtml(PF_FIELDS[p.key], row.answers)
+      + (row.status === 'submitted' ? '<div class="cp-btn-row" style="margin-top:16px;"><button type="button" class="cp-btn-sm" data-pf-act="edit" data-pf-key="' + p.key + '">Edit answers</button></div>' : '')
+      + '</div></details>';
+  }
+
+  // Answers as label / value rows (hidden questions too, if answered).
+  function pfAnswersHtml(fields, answers){
+    var h = '';
+    fields.forEach(function(f){
+      var v = answers ? answers[f.key] : null;
+      if (!fieldAnswered(f, v)) return;
+      var html = f.type === 'multi' && Array.isArray(v) ? esc(v.join(', '))
+        : f.type === 'scale' ? '<span class="cp-pf-scale-val">' + esc(String(v)) + '</span> / 5'
+        : linkify(String(v));
+      h += '<div class="cp-ci-row"><span class="cp-ci-key">' + esc(f.label) + '</span><div class="cp-ci-value">' + html + '</div></div>';
+    });
+    return h || '<p class="cp-cn-hint" style="margin-top:0;">No answers recorded.</p>';
+  }
+
+  // The fill-in form. opts: { sent, editing, preview, idPrefix, noteId }.
+  function pfFormHtml(formKey, fields, answers, opts){
+    opts = opts || {};
+    answers = answers || {};
+    var idp = (opts.idPrefix || 'cpPf') + '_' + formKey + '_';
+    var vals = pfValuesFrom(fields, answers);
+    var h = '<form class="cp-pf-form" data-pf-form="' + formKey + '"' + (opts.preview ? ' id="cpFmPreviewForm"' : '') + ' novalidate>';
+    fields.forEach(function(f){
+      if (f.legacy) return;
+      var v = answers[f.key];
+      var lid = idp + f.key;
+      h += '<div class="cp-ci-field" data-pf-wrap="' + f.key + '"' + (fieldVisible(fields, f, vals) ? '' : ' hidden') + '>'
+        + '<span class="cp-ci-label" id="' + lid + '">' + esc(f.label) + (f.required ? ' *' : '') + '</span>'
+        + (f.hint ? '<p class="cp-ci-hint">' + esc(f.hint) + '</p>' : '');
+      if (f.type === 'textarea') {
+        h += '<textarea class="cp-textarea" data-pf-field="' + f.key + '" aria-labelledby="' + lid + '">' + esc(v || '') + '</textarea>';
+      } else if (f.type === 'text') {
+        h += '<input type="text" class="cp-ci-input" data-pf-field="' + f.key + '" aria-labelledby="' + lid + '" value="' + esc(v || '') + '" />';
+      } else {
+        var multi = f.type === 'multi';
+        var options = f.type === 'scale' ? ['1','2','3','4','5'] : (f.options || []);
+        var cur = Array.isArray(v) ? v : (v != null && v !== '' ? [String(v)] : []);
+        h += '<div class="cp-opt-row' + (f.type === 'scale' ? ' cp-pf-scale' : '') + '" role="' + (multi ? 'group' : 'radiogroup') + '" aria-labelledby="' + lid + '">';
+        options.forEach(function(o){
+          h += '<label class="cp-opt"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="pf_' + f.key + '" value="' + esc(o) + '"' + (cur.indexOf(o) !== -1 ? ' checked' : '') + ' /><span>' + esc(o) + '</span></label>';
+        });
+        h += '</div>';
+        if (f.type === 'scale') h += '<p class="cp-ci-hint" style="margin-top:6px;">1 = not great · 5 = excellent</p>';
+      }
+      h += '</div>';
+    });
+    var noteId = opts.noteId || ('cpPfNote_' + formKey);
+    h += '<div class="cp-btn-row" style="margin-top:28px;">'
+      + '<button type="submit" class="cp-btn-sm cp-btn-sm--primary">' + (opts.sent ? 'Save changes' : 'Send to your coach') + '</button>'
+      + (!opts.sent ? '<button type="button" class="cp-btn-sm" data-pf-act="draft" data-pf-key="' + formKey + '">Save draft</button>' : '')
+      + (opts.editing ? '<button type="button" class="cp-btn-sm" data-pf-act="cancel" data-pf-key="' + formKey + '">Cancel</button>' : '')
+      + '<span class="cp-save-note" id="' + noteId + '"></span></div></form>';
+    return h;
+  }
+
+  // Current answers for the choice-type questions that drive `showIf`.
+  function pfValuesFrom(fields, answers){
+    var vals = {};
+    fields.forEach(function(f){
+      if (f.type !== 'choice' && f.type !== 'multi' && f.type !== 'scale') return;
+      var v = answers[f.key];
+      vals[f.key] = Array.isArray(v) ? v : (v != null && v !== '' ? [String(v)] : []);
+    });
+    return vals;
+  }
+  function pfValuesFromForm(form, fields){
+    var vals = {};
+    fields.forEach(function(f){
+      if (f.type !== 'choice' && f.type !== 'multi' && f.type !== 'scale') return;
+      vals[f.key] = Array.prototype.map.call(form.querySelectorAll('input[name="pf_' + f.key + '"]:checked'), function(c){ return c.value; });
+    });
+    return vals;
+  }
+  function pfApplyVisibility(form, fields){
+    var vals = pfValuesFromForm(form, fields);
+    fields.forEach(function(f){
+      var wrap = form.querySelector('[data-pf-wrap="' + f.key + '"]');
+      if (wrap) wrap.hidden = !fieldVisible(fields, f, vals);
+    });
+  }
+
+  // Reads the form into an answers object. Questions that are hidden by
+  // show-if are dropped; answers to questions the coach has since hidden
+  // from the form are kept.
+  function pfCollect(form, fields, prev){
+    var vals = pfValuesFromForm(form, fields);
+    var answers = Object.assign({}, prev || {});
+    var missing = null;
+    fields.forEach(function(f){
+      if (f.legacy) return;
+      delete answers[f.key];
+      if (!fieldVisible(fields, f, vals)) return;
+      var v;
+      if (f.type === 'text' || f.type === 'textarea') v = form.querySelector('[data-pf-field="' + f.key + '"]').value.trim();
+      else if (f.type === 'multi') v = vals[f.key];
+      else v = vals[f.key][0] || '';
+      if (fieldAnswered(f, v)) answers[f.key] = v;
+      else if (f.required && !missing) missing = f;
+    });
+    return { answers: answers, missing: missing };
+  }
+
+  function pfStateFor(key){ return pfCurrentStates().filter(function(m){ return m.p.key === key; })[0] || null; }
+
+  function pfErrorText(err){
+    return /client_program_forms/.test(err.message || '') ? 'run scripts/client_program_forms.sql in Supabase first' : err.message;
+  }
+
+  // Writes this program's row for a form: updates it if there is one.
+  async function pfWrite(clientId, m, patch){
+    patch.updated_at = new Date().toISOString();
+    if (m.row) return sb.from('client_program_forms').update(patch).eq('id', m.row.id).select().single();
+    return sb.from('client_program_forms').insert(Object.assign({
+      client_id: clientId, form_key: m.p.key, program_start: portalData.onboardDate || null
+    }, patch)).select().single();
+  }
+
+  function pfStore(clientId, data){
+    if (viewingClientId !== clientId || !portalData) return;
+    var saved = mapProgramForm(data);
+    var list = (portalData.programForms || []).filter(function(r){ return r.id !== saved.id; });
+    portalData.programForms = [saved].concat(list);
+  }
+
+  async function pfSaveAnswers(key, status){
+    var form = document.querySelector('#cpPfSection [data-pf-form="' + key + '"]');
+    var m = pfStateFor(key);
+    if (!form || !m || !isOwnPortal()) return;
+    var clientId = viewingClientId;
+    var noteId = 'cpPfNote_' + key;
+    var got = pfCollect(form, PF_FIELDS[key], m.row ? m.row.answers : {});
+    var sent = m.row && (m.row.status === 'submitted' || m.row.status === 'reviewed');
+    if (sent) status = m.row.status;
+    if (status === 'submitted' && got.missing) {
+      setNote(noteId, 'Please answer: ' + got.missing.label, true);
+      return;
+    }
+    var patch = { answers: got.answers, status: status };
+    if (status === 'submitted' && !(m.row && m.row.submittedAt)) patch.submitted_at = new Date().toISOString();
+    Array.prototype.forEach.call(form.querySelectorAll('button'), function(b){ b.disabled = true; });
+    setNote(noteId, 'Saving…');
+    var res = await pfWrite(clientId, m, patch);
+    if (res.error) {
+      Array.prototype.forEach.call(form.querySelectorAll('button'), function(b){ b.disabled = false; });
+      setNote(noteId, 'Could not save: ' + pfErrorText(res.error), true);
+      return;
+    }
+    pfStore(clientId, res.data);
+    if (viewingClientId !== clientId) return;
+    if (status === 'draft') { setNote(noteId, 'Draft saved.'); Array.prototype.forEach.call(form.querySelectorAll('button'), function(b){ b.disabled = false; }); return; }
+    pfEditing[key] = false;
+    pfOpenKeys[key] = false;
+    if (document.activeElement) document.activeElement.blur();
+    renderCheckinsTab();
+  }
+
+  async function pfSetStatus(key, status){
+    var m = pfStateFor(key); if (!m || !isCoachUser) return;
+    var clientId = viewingClientId;
+    var patch = { status: status };
+    if (!m.row) patch.answers = {};
+    var res = await pfWrite(clientId, m, patch);
+    if (res.error) { setNote('cpPfNote_' + key, 'Could not update: ' + pfErrorText(res.error), true); return; }
+    pfStore(clientId, res.data);
+    if (viewingClientId !== clientId) return;
+    renderPfSection();
+    renderCheckinsHeader();
+  }
+
+  $('cpPfSection').addEventListener('change', function(e){
+    var form = e.target.closest('[data-pf-form]');
+    if (form && e.target.matches('input[name^="pf_"]')) pfApplyVisibility(form, PF_FIELDS[form.getAttribute('data-pf-form')]);
+  });
+
+  $('cpPfSection').addEventListener('submit', function(e){
+    var form = e.target.closest('[data-pf-form]'); if (!form) return;
+    e.preventDefault();
+    pfSaveAnswers(form.getAttribute('data-pf-form'), 'submitted');
+  });
+
+  $('cpPfSection').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-pf-act]'); if (!btn) return;
+    var key = btn.getAttribute('data-pf-key'), act = btn.getAttribute('data-pf-act');
+    if (act === 'draft') { pfSaveAnswers(key, 'draft'); return; }
+    if (act === 'edit') { pfEditing[key] = true; renderPfSection(); return; }
+    if (act === 'cancel') { pfEditing[key] = false; if (document.activeElement) document.activeElement.blur(); renderPfSection(); return; }
+    if (act === 'review') { btn.disabled = true; pfSetStatus(key, 'reviewed'); return; }
+    if (act === 'unreview') { btn.disabled = true; pfSetStatus(key, 'submitted'); return; }
+    if (act === 'editq') openFormEditor(key);
+  });
+
+  // 'toggle' doesn't bubble, so listen in the capture phase.
+  $('cpPfSection').addEventListener('toggle', function(e){
+    var d = e.target; if (!d.matches || !d.matches('[data-pf-item]')) return;
+    pfOpenKeys[d.getAttribute('data-pf-item')] = d.open;
+  }, true);
+
   // ─── Coach: check-in form editor ──────────────────────────────────────
-  // Edits a draft copy of PRECALL_FIELDS; "Save form" writes it to
-  // public.form_settings (key 'pre_call') and every client gets it on
-  // their next load.
+  // Edits a draft copy of one form's questions: the weekly check-in
+  // (PRECALL_FIELDS, saved to public.form_settings key 'pre_call') or a
+  // milestone form (PF_FIELDS[key] + when it's due, saved as 'pf_<key>').
+  // Every client gets the saved version on their next load.
+  var fmForm = 'pre_call';
   var fmDraft = [];
+  var fmDue = null;
   var fmOpenKey = null;
   var fmMode = 'edit';
   var fmDirty = false;
 
-  function fmTypeLabel(t){ var x = PRECALL_FIELD_TYPES.filter(function(y){ return y.key === t; })[0]; return x ? x.label : t; }
+  function fmIsPre(){ return fmForm === 'pre_call'; }
+  function fmTypes(){ return fmIsPre() ? PRECALL_FIELD_TYPES : PF_FIELD_TYPES; }
+  function fmNormalize(list){ return fmIsPre() ? normalizePreCallFields(list) : normalizePfFields(list); }
+  function fmLiveFields(){ return fmIsPre() ? PRECALL_FIELDS : PF_FIELDS[fmForm]; }
+  function fmFormLabel(key){ return key === 'pre_call' ? 'Weekly check-in' : pfDef(key).label; }
+
+  function fmTypeLabel(t){ var x = fmTypes().filter(function(y){ return y.key === t; })[0]; return x ? x.label : t; }
   function fmFind(key){ return fmDraft.filter(function(f){ return f.key === key; })[0] || null; }
   function fmCopy(list){ return JSON.parse(JSON.stringify(list)); }
 
@@ -3989,21 +4529,55 @@
     setNote('cpFormNote', d ? 'Unsaved changes' : '');
   }
 
-  async function openFormEditor(){
-    if (!isCoachUser) return;
+  var FM_LEDES = {
+    pre_call: 'Every client fills this out before their call. Reword, reorder or add questions, and use “Only show when” to ask a question based on an earlier answer. Nothing changes for clients until you save.',
+    midpoint: 'Shows up on a client’s Check-ins tab at the halfway point of their program, on top of that week’s check-in. Nothing changes for clients until you save.',
+    renewal: 'Shows up near the end of a client’s program so you can plan what’s next: renewing, their split, cut or bulk. Nothing changes for clients until you save.',
+    offboarding: 'The end-of-program reflection, in the client’s final week. Nothing changes for clients until you save.'
+  };
+
+  async function openFormEditor(formKey){
+    if (!isCoachSession) return;
+    formKey = formKey === 'pre_call' || pfDef(formKey) ? formKey : 'pre_call';
     $('cpFormOverlay').hidden = false;
     document.body.style.overflow = 'hidden';
+    fmForm = formKey;
+    fmRenderHead();
     $('cpFormBody').innerHTML = '<p class="cp-caption">Loading…</p>';
-    await loadPreCallForm();
-    fmDraft = fmCopy(PRECALL_FIELDS);
+    if (fmIsPre()) await loadPreCallForm(); else await loadProgramForms();
+    if (fmForm !== formKey) return; // switched while loading
+    fmDraft = fmCopy(fmLiveFields());
+    fmDue = fmIsPre() ? null : Object.assign({}, PF_DUE[fmForm]);
     fmOpenKey = null;
     fmMode = 'edit';
     fmSetDirty(false);
     fmRender();
   }
 
+  // Title, intro and the form picker (weekly / midpoint / renewal / offboarding).
+  function fmRenderHead(){
+    $('cpFormTitle').textContent = fmFormLabel(fmForm);
+    $('cpFormLede').textContent = FM_LEDES[fmForm] || '';
+    $('cpFmSwitch').hidden = !fmIsPre();
+    $('cpFmForms').innerHTML = ['pre_call'].concat(PROGRAM_FORMS.map(function(p){ return p.key; })).map(function(k){
+      var p = pfDef(k);
+      return '<button type="button" class="cp-fm-form' + (k === fmForm ? ' is-active' : '') + '" data-fm-form="' + k + '">'
+        + (p ? '<span class="cp-pf-dot" style="--pf:' + p.color + '"></span>' : '') + esc(k === 'pre_call' ? 'Weekly' : p.short) + '</button>';
+    }).join('');
+  }
+
+  $('cpEditFormsBtn').addEventListener('click', function(){ openFormEditor('pre_call'); });
+
+  $('cpFmForms').addEventListener('click', function(e){
+    var b = e.target.closest('[data-fm-form]'); if (!b) return;
+    var k = b.getAttribute('data-fm-form');
+    if (k === fmForm) return;
+    if (fmDirty && !confirm('Discard your unsaved changes to the ' + fmFormLabel(fmForm).toLowerCase() + '?')) return;
+    openFormEditor(k);
+  });
+
   function closeFormEditor(){
-    if (fmDirty && !confirm('Discard your unsaved changes to the check-in form?')) return;
+    if (fmDirty && !confirm('Discard your unsaved changes to the ' + fmFormLabel(fmForm).toLowerCase() + '?')) return;
     $('cpFormOverlay').hidden = true;
     document.body.style.overflow = '';
   }
@@ -4020,6 +4594,11 @@
       b.classList.toggle('is-active', b.getAttribute('data-fm-mode') === fmMode);
     });
     $('cpFormAdd').hidden = fmMode !== 'edit';
+    if (fmMode === 'preview' && !fmIsPre()) {
+      $('cpFormBody').innerHTML = '<p class="cp-ci-hint">This is what clients see. Try different answers to check which questions show up. Nothing here is saved.</p>'
+        + '<div class="cp-fm-preview">' + pfFormHtml(fmForm, normalizePfFields(fmCleaned()), {}, { preview: true, idPrefix: 'cpFmPv', noteId: 'cpFmPreviewNote' }) + '</div>';
+      return;
+    }
     if (fmMode === 'preview') {
       var html = fmWithDraft(function(){ return ciFormHtml(null); })
         .replace('id="cpCiForm"', 'id="cpFmPreviewForm"')
@@ -4029,9 +4608,31 @@
         + '<div class="cp-fm-preview">' + html + '</div>';
       return;
     }
-    var h = '<div class="cp-fm-list">';
+    var h = fmIsPre() ? '' : fmDueHtml();
+    h += '<div class="cp-fm-list">';
     fmDraft.forEach(function(f, i){ h += fmQuestionHtml(f, i); });
     $('cpFormBody').innerHTML = h + '</div>';
+  }
+
+  // Milestone forms: when the form shows up for clients.
+  function fmDueHtml(){
+    var ex = [8, 12, 24].map(function(n){
+      var w = fmDue.mode === 'half' ? Math.ceil(n / 2) : Math.max(1, n - fmDue.weeks);
+      return 'week ' + w + ' of ' + n;
+    }).join(', ');
+    return '<div class="cp-fm-due">'
+      + '<label class="cp-ci-hint" for="cpFmDueMode">Shows up for clients</label>'
+      + '<div class="cp-fm-row">'
+      + '<select class="cp-select" id="cpFmDueMode" data-fm-due="mode">'
+      + '<option value="half"' + (fmDue.mode === 'half' ? ' selected' : '') + '>Halfway through the program</option>'
+      + '<option value="before_end"' + (fmDue.mode === 'before_end' ? ' selected' : '') + '>A set number of weeks before the end</option>'
+      + '</select>'
+      + (fmDue.mode === 'before_end'
+        ? '<label class="cp-fm-check"><input type="number" class="cp-ci-input cp-fm-due-n" min="0" max="52" data-fm-due="weeks" value="' + fmDue.weeks + '" aria-label="Weeks before the end" /> weeks before the end' + (fmDue.weeks === 0 ? ' (final week)' : '') + '</label>'
+        : '')
+      + '</div>'
+      + '<p class="cp-ci-hint" style="margin:8px 0 0;">For example: ' + esc(ex) + '. It stays open until they send it.</p>'
+      + '</div>';
   }
 
   function fmQuestionHtml(f, i){
@@ -4053,7 +4654,7 @@
     h += '<div><label class="cp-ci-hint">Help text (optional)</label><input type="text" class="cp-ci-input" data-fm="hint" value="'+esc(f.hint || '')+'" maxlength="300" /></div>';
     if (f.custom) {
       h += '<div><label class="cp-ci-hint">Answer type</label><select class="cp-select" data-fm="type">'
-        + PRECALL_FIELD_TYPES.map(function(t){ return '<option value="'+t.key+'"'+(t.key === f.type ? ' selected' : '')+'>'+esc(t.label)+'</option>'; }).join('')
+        + fmTypes().map(function(t){ return '<option value="'+t.key+'"'+(t.key === f.type ? ' selected' : '')+'>'+esc(t.label)+'</option>'; }).join('')
         + '</select></div>';
     } else {
       h += '<p class="cp-ci-hint" style="margin:0;">Answer type: '+esc(fmTypeLabel(f.type))+' — this is one of the original Notion questions, so its type is fixed.</p>';
@@ -4116,7 +4717,7 @@
     q.delete('open');
     var search = q.toString() ? '?' + q.toString() : '';
     try { history.replaceState(history.state, '', window.location.pathname + search + window.location.hash); } catch (e) {}
-    if (isCoachUser && state.view === 'coach') openFormEditor();
+    if (isCoachUser && state.view === 'coach') openFormEditor('pre_call');
   }
   $('cpFormOverlay').addEventListener('click', function(e){ if (e.target.closest('[data-close-form]')) closeFormEditor(); });
 
@@ -4136,7 +4737,19 @@
   $('cpFormBody').addEventListener('change', function(e){
     // Preview: re-run the show/hide rules against the draft.
     var pv = $('cpFmPreviewForm');
-    if (pv && pv.contains(e.target)) { fmWithDraft(function(){ applyCiVisibility(pv); }); return; }
+    if (pv && pv.contains(e.target)) {
+      if (fmIsPre()) fmWithDraft(function(){ applyCiVisibility(pv); });
+      else pfApplyVisibility(pv, normalizePfFields(fmCleaned()));
+      return;
+    }
+    var due = e.target.closest('[data-fm-due]');
+    if (due && fmDue) {
+      if (due.getAttribute('data-fm-due') === 'mode') { fmDue.mode = due.value; if (fmDue.mode === 'before_end' && !fmDue.weeks) fmDue.weeks = 2; }
+      else fmDue.weeks = Math.max(0, Math.min(52, parseInt(due.value, 10) || 0));
+      fmSetDirty(true);
+      fmRender();
+      return;
+    }
 
     var el = e.target.closest('[data-fm], [data-fm-ifval]'); if (!el) return;
     var card = el.closest('[data-fm-key]'); var f = card && fmFind(card.getAttribute('data-fm-key')); if (!f) return;
@@ -4179,7 +4792,7 @@
       var a = act.getAttribute('data-fm-act');
       if (a === 'hide') f.legacy = !f.legacy;
       if (a === 'delete') {
-        if (!confirm('Delete “' + f.label + '”? Clients’ past answers to it will no longer show in their check-in history. (To keep them, hide the question instead.)')) return;
+        if (!confirm('Delete “' + f.label + '”? Clients’ past answers to it will no longer show. (To keep them, hide the question instead.)')) return;
         fmDraft.splice(fmDraft.indexOf(f), 1);
         fmDraft.forEach(function(c){ if (c.showIf && c.showIf.key === key) delete c.showIf; });
         fmOpenKey = null;
@@ -4204,8 +4817,9 @@
   });
 
   $('cpFormReset').addEventListener('click', function(){
-    if (!confirm('Reset to the original Notion questions? Questions you added will be removed when you save, and past answers to them will no longer show.')) return;
-    fmDraft = fmCopy(normalizePreCallFields(DEFAULT_PRECALL_FIELDS));
+    if (!confirm('Reset to the original questions? Questions you added will be removed when you save, and past answers to them will no longer show.')) return;
+    if (fmIsPre()) fmDraft = fmCopy(normalizePreCallFields(DEFAULT_PRECALL_FIELDS));
+    else { fmDraft = fmCopy(normalizePfFields(pfDef(fmForm).defaults)); fmDue = normalizePfDue(null, pfDef(fmForm).due); }
     fmOpenKey = null;
     fmSetDirty(true);
     fmRender();
@@ -4215,22 +4829,36 @@
     var fields = fmCleaned();
     var empty = fields.filter(function(f){ return (f.type === 'choice' || f.type === 'multi') && !f.options.length; })[0];
     if (empty) { setNote('cpFormNote', '“' + empty.label + '” needs at least one answer choice.', true); return; }
+    if (!fmIsPre() && !fields.filter(function(f){ return !f.legacy; }).length) { setNote('cpFormNote', 'Keep at least one question showing.', true); return; }
     var btn = $('cpFormSave');
+    var formKey = fmForm;
     btn.disabled = true;
     setNote('cpFormNote', 'Saving…');
-    var { error } = await sb.from('form_settings').upsert({ key:'pre_call', fields:fields, updated_at:new Date().toISOString() });
+    var row = formKey === 'pre_call'
+      ? { key:'pre_call', fields:fields }
+      : { key:'pf_' + formKey, fields:{ questions:fields, due:normalizePfDue(fmDue, pfDef(formKey).due) } };
+    row.updated_at = new Date().toISOString();
+    var { error } = await sb.from('form_settings').upsert(row);
     btn.disabled = false;
     if (error) { setNote('cpFormNote', 'Could not save: ' + error.message, true); return; }
-    PRECALL_FIELDS = normalizePreCallFields(fields);
-    fmDraft = fmCopy(PRECALL_FIELDS);
+    if (formKey === 'pre_call') {
+      PRECALL_FIELDS = normalizePreCallFields(fields);
+    } else {
+      PF_FIELDS[formKey] = normalizePfFields(fields);
+      PF_DUE[formKey] = row.fields.due;
+    }
+    if (fmForm !== formKey) return;
+    fmDraft = fmCopy(fmLiveFields());
     fmSetDirty(false);
     setNote('cpFormNote', 'Saved — clients see the new form next time they open it.');
     fmRender();
     // Re-read open check-ins against the new questions.
     if (portalData && portalData.preCallSubmissions) {
-      portalData.preCallSubmissions = portalData.preCallSubmissions.map(function(sub){ return mapPreCall(sub._row); });
+      if (formKey === 'pre_call') portalData.preCallSubmissions = portalData.preCallSubmissions.map(function(sub){ return mapPreCall(sub._row); });
       renderCheckinsTab();
     }
+    // A new due week moves the milestone chips on the roster.
+    if (formKey !== 'pre_call' && state.view === 'coach') loadRoster();
   });
 
   // ─── Education tab: shared curriculum ─────────────────────────────────
@@ -6551,7 +7179,7 @@
   function renderRoster(){
     var h='';
     roster.forEach(function(c){
-      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><div><span class="cp-roster-name">'+esc(c.name)+'</span>'+inviteLine(c)+'</div>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><div class="cp-roster-actions"><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button><button type="button" class="cp-roster-delete" data-delete-client="'+c.id+'" aria-label="Delete '+esc(c.name)+'">Delete</button></div></div>';
+      h+='<div class="cp-roster-row'+(isInactiveStatus(c.status)?' is-inactive':'')+'" data-view-client="'+c.id+'"><div><span class="cp-roster-name">'+esc(c.name)+'</span>'+inviteLine(c)+'</div>'+statusSelect(c)+'<span class="cp-roster-route">'+esc(c.route)+'</span><span class="cp-roster-week">'+(c.startsOn ? esc(weekLabel(c)) : 'Wk '+c.weekNow+' / '+c.weekTotal)+(isInactiveStatus(c.status) ? '' : pfRosterChips(c))+'</span><div><div class="cp-meter"><div class="cp-meter-fill" style="width:'+c.progress+'%;background:'+c.color+'"></div></div><span class="cp-roster-flag">'+esc(c.flag)+'</span></div><span class="cp-roster-next">'+esc(c.next)+'</span><div class="cp-roster-actions"><button type="button" class="cp-roster-edit" data-edit-client="'+c.id+'">Edit</button><button type="button" class="cp-roster-delete" data-delete-client="'+c.id+'" aria-label="Delete '+esc(c.name)+'">Delete</button></div></div>';
     });
     $('cpRosterList').innerHTML = h || '<p class="cp-caption" style="margin:0;">No clients yet.</p>';
   }
