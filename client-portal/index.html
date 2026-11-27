@@ -507,6 +507,44 @@
       .cp-fm-if{background:rgba(42,157,240,.06);border-radius:12px;padding:12px;}
       .cp-fm-foot{position:sticky;bottom:0;background:#fff;border-top:1px solid rgba(7,31,53,.08);margin:24px -36px 0;padding:14px 36px 18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
       .cp-fm-preview{border:1px dashed rgba(7,31,53,.2);border-radius:18px;padding:22px;}
+      /* Milestone check-ins (midpoint / renewal / offboarding) */
+      .cp-pf-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--pf);background:color-mix(in srgb,var(--pf) 14%,transparent);white-space:nowrap;vertical-align:middle;}
+      .cp-pf-chip--solid{background:var(--pf);color:#fff;}
+      .cp-pf-chips{display:inline-flex;flex-wrap:wrap;gap:4px;margin-left:6px;vertical-align:middle;}
+      .cp-pf-why{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px;}
+      .cp-pf-why .cp-pf-chips{margin-left:2px;}
+      .cp-pf-weekchip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;color:rgba(7,31,53,.6);background:rgba(7,31,53,.06);white-space:nowrap;}
+      .cp-pf-dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:var(--pf);flex-shrink:0;}
+      .cp-pf-section{display:grid;gap:14px;margin-bottom:18px;}
+      .cp-pf-empty{margin:0 0 18px;}
+      .cp-pf-track-wrap{background:#fff;border:1px solid rgba(7,31,53,.1);border-radius:18px;padding:16px 20px;}
+      .cp-pf-track-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:12px;}
+      .cp-pf-legend{display:flex;flex-wrap:wrap;gap:6px 14px;}
+      .cp-pf-legend-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:rgba(7,31,53,.6);}
+      .cp-pf-track{display:flex;gap:3px;align-items:center;}
+      .cp-pf-wk{flex:1;min-width:2px;height:8px;border-radius:3px;background:rgba(7,31,53,.08);}
+      .cp-pf-wk.is-past{background:rgba(7,31,53,.25);}
+      .cp-pf-wk.is-mile{background:color-mix(in srgb,var(--pf) 35%,transparent);height:14px;}
+      .cp-pf-wk.is-mile.is-past{background:var(--pf);}
+      .cp-pf-wk.is-now{background:#071f35;height:18px;box-shadow:0 0 0 2px #fff,0 0 0 3px #071f35;}
+      .cp-pf-wk.is-mile.is-now{background:var(--pf);box-shadow:0 0 0 2px #fff,0 0 0 3px var(--pf);}
+      .cp-pf-card{border:2px solid var(--pf);box-shadow:0 0 0 4px color-mix(in srgb,var(--pf) 10%,transparent);}
+      .cp-pf-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+      .cp-pf-list{display:grid;gap:10px;}
+      .cp-ci-item.cp-pf-item{border-left:4px solid var(--pf);}
+      .cp-pf-body{padding-top:16px;}
+      .cp-pf-sent{font-size:13px;font-weight:700;color:rgba(7,31,53,.5);}
+      .cp-pf-scale .cp-opt span{min-width:20px;justify-content:center;}
+      .cp-pf-scale-val{font-weight:800;}
+      .cp-panel.cp-ci-week--mile{border-color:var(--pf);border-width:2px;}
+      .cp-ci-item.cp-ci-item--mile{border-left:4px solid var(--pf);}
+      .cp-fm-forms{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+      .cp-fm-form{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:10px;font-size:13px;font-weight:700;color:rgba(7,31,53,.65);background:rgba(7,31,53,.05);}
+      .cp-fm-form.is-active{background:#071f35;color:#fff;}
+      .cp-fm-form:focus-visible{outline:2px solid #2a9df0;outline-offset:2px;}
+      .cp-fm-due{background:rgba(7,31,53,.04);border-radius:14px;padding:14px;margin-bottom:14px;}
+      .cp-fm-due .cp-select{max-width:none;}
+      .cp-fm-due-n{width:70px !important;max-width:70px;}
       @media(max-width:720px){ .cp-fm-q-body{padding-left:14px;} }
       .cp-ci-done{display:flex;align-items:flex-start;gap:14px;}
       .cp-ci-done-icon{width:38px;height:38px;border-radius:999px;background:rgba(119,215,112,.18);color:#3d8c39;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
@@ -1345,15 +1383,6 @@
               <h3 class="cp-card-title">Confirmed non-negotiables</h3>
               <div class="cp-note-list" id="cpArchiveList"></div>
             </div>
-            <div class="cp-card cp-card--wide" id="cpOffboardingCard" hidden>
-              <div class="cp-card-head">
-                <div><p class="cp-kicker">Wrapping Up</p><h3 class="cp-card-title">Offboarding reflection</h3></div>
-                <span class="cp-meta" id="cpOffboardingStatus"></span>
-              </div>
-              <p class="cp-body-text">A few questions to close out the program — answer whenever you're ready, your coach sees your responses.</p>
-              <div id="cpOffboardingForm"></div>
-              <div class="cp-cta-row"><button type="button" class="cp-cta-primary" id="cpOffboardingSave" style="border:none;">Save reflection</button></div>
-            </div>
           </div>
         </div>
 
@@ -1434,7 +1463,8 @@
           <div class="cp-goals-header">
             <div><h2 class="cp-goals-title">Weekly Check-in</h2><p class="cp-tab-sub" id="cpCiWeekLabel"></p></div>
           </div>
-          <div class="cp-panel cp-ci-week">
+          <div id="cpPfSection"></div>
+          <div class="cp-panel cp-ci-week" id="cpCiWeekPanel">
             <div class="cp-ci-cols">
               <div class="cp-ci-col cp-ci-col--client" id="cpCiFormCard"></div>
               <div class="cp-ci-col cp-ci-col--coach" id="cpCiCoachCard"></div>
@@ -1775,6 +1805,7 @@
               <h3 class="cp-card-title">Check-ins this week</h3>
               <p class="cp-body-text" id="cpCiQueueSummary"></p>
               <div class="cp-flag-list" id="cpCiQueueList"></div>
+              <div class="cp-btn-row" style="margin-top:14px;"><button type="button" class="cp-btn-sm" id="cpEditFormsBtn">Edit check-in forms</button></div>
             </div>
             <div class="cp-reminder-queue" hidden>
               <div class="cp-card-head">
@@ -1839,16 +1870,17 @@
       </div>
     </div>
 
-    <!-- CHECK-IN FORM EDITOR (coach) — one weekly pre-call form shared by every client -->
+    <!-- CHECK-IN FORM EDITOR (coach) — the weekly pre-call form and the midpoint / renewal / offboarding forms, shared by every client -->
     <div class="cp-sheet-overlay" id="cpFormOverlay" hidden>
       <div class="cp-sheet-backdrop" data-close-form></div>
       <div class="cp-sheet cp-fm-sheet" role="dialog" aria-modal="true" aria-labelledby="cpFormTitle">
         <div class="cp-sheet-head">
           <div><p class="cp-kicker">Check-ins</p><h2 class="cp-sheet-title" id="cpFormTitle">Check-in form</h2>
-            <nav class="cp-ci-switch" aria-label="Check-ins"><a href="../checkin-notes/">Notes</a><span class="is-active" aria-current="page">Form</span></nav></div>
+            <nav class="cp-ci-switch" id="cpFmSwitch" aria-label="Check-ins"><a href="../checkin-notes/">Notes</a><span class="is-active" aria-current="page">Form</span></nav></div>
           <button type="button" class="cp-sheet-close" data-close-form aria-label="Close">×</button>
         </div>
-        <p class="cp-sheet-lede">Every client fills this out before their call. Reword, reorder or add questions, and use “Only show when” to ask a question based on an earlier answer. Nothing changes for clients until you save.</p>
+        <div class="cp-fm-forms" id="cpFmForms" aria-label="Which form"></div>
+        <p class="cp-sheet-lede" id="cpFormLede">Every client fills this out before their call. Reword, reorder or add questions, and use “Only show when” to ask a question based on an earlier answer. Nothing changes for clients until you save.</p>
         <div class="cp-fm-tabs" role="tablist">
           <button type="button" class="cp-fm-tab is-active" data-fm-mode="edit" role="tab">Edit</button>
           <button type="button" class="cp-fm-tab" data-fm-mode="preview" role="tab">Preview</button>
@@ -2013,6 +2045,6 @@
     <script src="../shared-supabase-config.js"></script>
     <script src="../shared-precall-form.js?v=20261119a"></script>
     <script src="notion-import.js?v=20261125c"></script>
-    <script src="portal.js?v=20261126a"></script>
+    <script src="portal.js?v=20261127a"></script>
   </body>
 </html>
