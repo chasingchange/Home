@@ -347,17 +347,21 @@
 
   var editState = null;         // client being edited in the "Edit portal" form
 
-  // ─── Biometric (Face ID / Touch ID) unlock ─────────────────────────────
-  var BIOMETRIC_CRED_KEY     = 'cpBiometricCredentialId';
-  var BIOMETRIC_EMAIL_KEY    = 'cpBiometricEmail';
-  var BIOMETRIC_DECLINED_KEY = 'cpBiometricDeclined';
-  // After a Face ID / Touch ID unlock (or a fresh sign-in) the portal stays open on
-  // this device for 24 hours; only then does it ask to unlock again.
+  // ─── Face ID / Touch ID sign-in (passkeys) ─────────────────────────────
+  // Real sign-in, not just a screen lock: the device signs a one-time
+  // challenge with a passkey that Face ID / Touch ID unlocks, and the
+  // passkey-auth Edge Function checks it against the stored public key
+  // before handing back a session. See scripts/client_passkeys.sql.
+  var PASSKEY_FUNCTION      = 'passkey-auth';
+  var PASSKEY_EMAIL_KEY     = 'cpPasskeyEmail';     // who turned it on, on this device
+  var PASSKEY_OFFERED_KEY   = 'cpPasskeyOffered';   // emails already asked on this device
+  // After a sign-in the portal stays open on this device for 24 hours; only
+  // then does it ask for Face ID again.
   var BIOMETRIC_UNLOCKED_KEY = 'cpBiometricUnlockedAt';
   var BIOMETRIC_LOCK_AFTER_MS = 24 * 60 * 60 * 1000;
 
   function b64urlToBuf(s){
-    s = s.replace(/-/g,'+').replace(/_/g,'/');
+    s = String(s).replace(/-/g,'+').replace(/_/g,'/');
     while (s.length % 4) s += '=';
     var bin = atob(s), buf = new Uint8Array(bin.length);
     for (var i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
@@ -370,8 +374,11 @@
     return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }
 
+  function lsGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
+
   function biometricSupported(){
-    return !!(window.PublicKeyCredential && navigator.credentials);
+    return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext);
   }
 
   function platformAuthAvailable(){
@@ -379,54 +386,134 @@
     return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function(){ return false; });
   }
 
+  // What the device calls it, for button labels.
+  var BIOMETRIC_NAME = (function(){
+    var ua = navigator.userAgent || '';
+    var touchMac = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;   // iPadOS reports as Mac
+    if (/iPhone|iPad|iPod/.test(ua) || touchMac) return 'Face ID';
+    if (/Macintosh/.test(ua)) return 'Touch ID';
+    if (/Windows/.test(ua)) return 'Windows Hello';
+    if (/Android/.test(ua)) return 'fingerprint';
+    return 'Face ID';
+  })();
+
   function biometricEnabledFor(email){
-    return !!(biometricSupported() && localStorage.getItem(BIOMETRIC_CRED_KEY) && localStorage.getItem(BIOMETRIC_EMAIL_KEY) === email);
+    return !!(email && biometricSupported() && lsGet(PASSKEY_EMAIL_KEY) === email);
   }
 
   function markUnlocked(email){
     if (!email) return;
-    try { localStorage.setItem(BIOMETRIC_UNLOCKED_KEY, JSON.stringify({ email: email, at: Date.now() })); } catch (e) {}
+    lsSet(BIOMETRIC_UNLOCKED_KEY, JSON.stringify({ email: email, at: Date.now() }));
   }
 
   function biometricLockDue(email){
     if (!biometricEnabledFor(email)) return false;
     var last = null;
-    try { last = JSON.parse(localStorage.getItem(BIOMETRIC_UNLOCKED_KEY) || 'null'); } catch (e) {}
+    try { last = JSON.parse(lsGet(BIOMETRIC_UNLOCKED_KEY) || 'null'); } catch (e) {}
     if (!last || last.email !== email || !isFinite(last.at)) return true;
     var age = Date.now() - last.at;
     return age < 0 || age >= BIOMETRIC_LOCK_AFTER_MS;
   }
 
+  async function passkeyCall(payload){
+    var res = await sb.functions.invoke(PASSKEY_FUNCTION, { body: payload });
+    if (res.error) {
+      var msg = 'unavailable';
+      try { var b = await res.error.context.json(); if (b && b.error) msg = b.error; } catch (e) {}
+      throw new Error(msg);
+    }
+    if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || 'failed');
+    return res.data;
+  }
+
+  // Adds a passkey for the signed-in user on this device.
   async function registerBiometric(user){
+    var start = await passkeyCall({ action:'register-options' });
+    var o = start.options;
     var cred = await navigator.credentials.create({
       publicKey: {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        rp: { name: 'Client Portal' },
-        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: user.email, displayName: user.email },
-        pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
-        authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
-        timeout: 60000
+        challenge: b64urlToBuf(o.challenge),
+        rp: o.rp,
+        user: { id: b64urlToBuf(o.user.id), name: o.user.name, displayName: o.user.displayName },
+        pubKeyCredParams: o.pubKeyCredParams,
+        timeout: o.timeout,
+        attestation: o.attestation,
+        excludeCredentials: (o.excludeCredentials || []).map(function(c){ return { id: b64urlToBuf(c.id), type: c.type, transports: c.transports }; }),
+        authenticatorSelection: o.authenticatorSelection,
+        extensions: o.extensions
       }
     });
     if (!cred) throw new Error('No credential created.');
-    localStorage.setItem(BIOMETRIC_CRED_KEY, bufToB64url(cred.rawId));
-    localStorage.setItem(BIOMETRIC_EMAIL_KEY, user.email);
+    var r = cred.response;
+    await passkeyCall({
+      action: 'register-verify',
+      challenge_id: start.challenge_id,
+      device_label: BIOMETRIC_NAME + ' · ' + (navigator.platform || ''),
+      response: {
+        id: cred.id,
+        rawId: bufToB64url(cred.rawId),
+        type: cred.type,
+        authenticatorAttachment: cred.authenticatorAttachment || undefined,
+        clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
+        response: {
+          clientDataJSON: bufToB64url(r.clientDataJSON),
+          attestationObject: bufToB64url(r.attestationObject),
+          transports: r.getTransports ? r.getTransports() : []
+        }
+      }
+    });
+    lsSet(PASSKEY_EMAIL_KEY, user.email);
     rememberBiometricAnswer(user.email);
     markUnlocked(user.email);
   }
 
-  async function authenticateBiometric(){
-    var credId = localStorage.getItem(BIOMETRIC_CRED_KEY);
-    if (!credId) throw new Error('No biometric credential on this device.');
+  // Face ID → verified on the server → a fresh Supabase session.
+  async function passkeySignIn(){
+    var start = await passkeyCall({ action:'login-options' });
+    var o = start.options;
     var assertion = await navigator.credentials.get({
       publicKey: {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials: [{ id: b64urlToBuf(credId), type:'public-key' }],
-        userVerification: 'required',
-        timeout: 60000
+        challenge: b64urlToBuf(o.challenge),
+        rpId: o.rpId,
+        timeout: o.timeout,
+        userVerification: o.userVerification,
+        allowCredentials: (o.allowCredentials || []).map(function(c){ return { id: b64urlToBuf(c.id), type: c.type, transports: c.transports }; })
       }
     });
-    if (!assertion) throw new Error('Verification failed.');
+    if (!assertion) throw new Error('cancelled');
+    var r = assertion.response;
+    var done = await passkeyCall({
+      action: 'login-verify',
+      challenge_id: start.challenge_id,
+      response: {
+        id: assertion.id,
+        rawId: bufToB64url(assertion.rawId),
+        type: assertion.type,
+        authenticatorAttachment: assertion.authenticatorAttachment || undefined,
+        clientExtensionResults: assertion.getClientExtensionResults ? assertion.getClientExtensionResults() : {},
+        response: {
+          clientDataJSON: bufToB64url(r.clientDataJSON),
+          authenticatorData: bufToB64url(r.authenticatorData),
+          signature: bufToB64url(r.signature),
+          userHandle: r.userHandle ? bufToB64url(r.userHandle) : undefined
+        }
+      }
+    });
+    var v = await sb.auth.verifyOtp({ token_hash: done.token_hash, type: 'email' });
+    if (v.error) v = await sb.auth.verifyOtp({ token_hash: done.token_hash, type: 'magiclink' });
+    if (v.error || !v.data || !v.data.user) throw new Error('session_failed');
+    lsSet(PASSKEY_EMAIL_KEY, v.data.user.email);
+    markUnlocked(v.data.user.email);
+    return v.data.user;
+  }
+
+  function passkeyErrorText(e){
+    var name = e && e.name, msg = e && e.message;
+    if (name === 'NotAllowedError' || name === 'AbortError' || msg === 'cancelled') {
+      return BIOMETRIC_NAME + " didn't finish, or there's no passkey for this portal on this device yet. Sign in with email once, then turn on " + BIOMETRIC_NAME + '.';
+    }
+    if (msg === 'unknown_passkey') return "That passkey isn't linked to a portal account anymore. Sign in with email, then turn " + BIOMETRIC_NAME + ' back on.';
+    return "Couldn't sign in with " + BIOMETRIC_NAME + ' right now. Use email instead.';
   }
 
   function showBiometricLock(user){
@@ -436,26 +523,20 @@
     showStep('cpStepBiometric');
   }
 
-  // Remembers, per email on this device, that the Face ID / Touch ID offer was
-  // answered (enabled, declined, or Enable tried and cancelled/failed) so the
-  // banner never asks the same person twice.
+  // Remembers, per email on this device, that the Face ID offer was answered
+  // (turned on, declined, or tried and cancelled) so the banner never asks
+  // the same person twice.
   function biometricAnsweredList(){
     var list = [];
-    try {
-      var raw = localStorage.getItem(BIOMETRIC_DECLINED_KEY);
-      if (raw) {
-        try { list = JSON.parse(raw); } catch (e) { list = [raw]; } // legacy: a single email string
-        if (!Array.isArray(list)) list = [String(list)];
-      }
-    } catch (e) {}
-    return list;
+    try { list = JSON.parse(lsGet(PASSKEY_OFFERED_KEY) || '[]'); } catch (e) {}
+    return Array.isArray(list) ? list : [];
   }
 
   function rememberBiometricAnswer(email){
     if (!email) return;
     var list = biometricAnsweredList();
     if (list.indexOf(email) === -1) list.push(email);
-    try { localStorage.setItem(BIOMETRIC_DECLINED_KEY, JSON.stringify(list)); } catch (e) {}
+    lsSet(PASSKEY_OFFERED_KEY, JSON.stringify(list));
   }
 
   function maybeOfferBiometric(user){
@@ -465,6 +546,8 @@
     platformAuthAvailable().then(function(avail){
       if (!avail) return;
       biometricOfferedThisLoad = true;
+      $('cpBiometricBannerText').textContent = 'Sign in with ' + BIOMETRIC_NAME + ' next time? No email or password needed on this device.';
+      $('cpBiometricBanner').querySelector('.cp-biometric-banner-actions').style.display = '';
       $('cpBiometricBanner').hidden = false;
     });
   }
@@ -498,6 +581,42 @@
       }
     });
   })();
+
+  // ─── Sign-in screen: Face ID first, email as the fallback ──────────────
+  function setEmailFormOpen(open){
+    $('cpEmailForm').classList.toggle('is-open', open);
+    $('cpUseEmailToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('cpUseEmailToggle').textContent = open ? 'Hide email sign-in' : 'Use email instead';
+  }
+
+  if (biometricSupported()) {
+    $('cpPasskeyLabel').textContent = 'Sign in with ' + BIOMETRIC_NAME;
+    $('cpBiometricLede').textContent = 'Unlock with ' + BIOMETRIC_NAME + ' to continue.';
+    $('cpBiometricUnlock').textContent = 'Unlock with ' + BIOMETRIC_NAME;
+    $('cpPasskeyBlock').hidden = false;
+    setEmailFormOpen(false);
+  }
+
+  $('cpUseEmailToggle').addEventListener('click', function(){
+    var open = !$('cpEmailForm').classList.contains('is-open');
+    setEmailFormOpen(open);
+    if (open) $('cpEmailInput').focus();
+  });
+
+  $('cpPasskeySignIn').addEventListener('click', async function(){
+    var btn = $('cpPasskeySignIn');
+    btn.disabled = true;
+    hideErr('cpPasskeyError');
+    try {
+      var user = await passkeySignIn();
+      btn.disabled = false;
+      if (!currentUser || currentUser.id !== user.id) showDash(user);
+    } catch (e) {
+      btn.disabled = false;
+      showErr('cpPasskeyError', passkeyErrorText(e));
+      setEmailFormOpen(true);
+    }
+  });
 
   // ─── Password reveal ──────────────────────────────────────────────────
   $('cpPwRevealBtn').addEventListener('click', function(){
@@ -559,7 +678,7 @@
   // ─── Helpers ──────────────────────────────────────────────────────────
   function showStep(id){
     ['cpStepEmail','cpStepMagic','cpStepName','cpStepSetPassword','cpStepForgotSent','cpStepBiometric'].forEach(function(s){ $(s).hidden = s!==id; });
-    hideErr('cpEmailError'); hideErr('cpNameError'); hideErr('cpSetPasswordError'); hideErr('cpBiometricError');
+    hideErr('cpEmailError'); hideErr('cpNameError'); hideErr('cpSetPasswordError'); hideErr('cpBiometricError'); hideErr('cpPasskeyError');
   }
 
   function showErr(id, msg){ var e=$(id); e.textContent=msg; e.classList.add('show'); }
@@ -1345,19 +1464,18 @@
 
   // ─── Biometric unlock step ─────────────────────────────────────────────
   $('cpBiometricUnlock').addEventListener('click', async function(){
+    var label = 'Unlock with ' + BIOMETRIC_NAME;
     setLoading($('cpBiometricUnlock'), true, 'Verifying…');
     hideErr('cpBiometricError');
     try {
-      await authenticateBiometric();
-      setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
-      var user = pendingUser;
+      var user = await passkeySignIn();
+      setLoading($('cpBiometricUnlock'), false, label);
       pendingUser = null;
-      markUnlocked(user.email);
       // Re-locked while the dashboard was already open: just reveal it again.
       if (currentUser && currentUser.id === user.id) { $('cpAuth').hidden = true; $('cpDash').hidden = false; }
       else showDash(user);
     } catch (e) {
-      setLoading($('cpBiometricUnlock'), false, 'Unlock with Face ID / Touch ID');
+      setLoading($('cpBiometricUnlock'), false, label);
       showErr('cpBiometricError','Could not verify. Try again or use email.');
     }
   });
@@ -1381,7 +1499,13 @@
     // Remember the answer up front, so a cancelled or failed Face ID prompt
     // doesn't bring the banner back on every visit.
     rememberBiometricAnswer(currentUser.email);
-    try { await registerBiometric(currentUser); } catch (e) { /* user cancelled or unsupported — nothing to do */ }
+    try {
+      await registerBiometric(currentUser);
+      $('cpBiometricBannerText').textContent = BIOMETRIC_NAME + ' is on. Next time, just tap “Sign in with ' + BIOMETRIC_NAME + '”.';
+      $('cpBiometricBanner').querySelector('.cp-biometric-banner-actions').style.display = 'none';
+      $('cpBiometricBanner').hidden = false;
+      setTimeout(function(){ $('cpBiometricBanner').hidden = true; }, 5000);
+    } catch (e) { /* user cancelled or unsupported — nothing to do */ }
   });
 
   $('cpBiometricDecline').addEventListener('click', function(){
